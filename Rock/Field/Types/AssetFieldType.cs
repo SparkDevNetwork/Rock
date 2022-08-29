@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Newtonsoft.Json;
@@ -54,6 +55,8 @@ namespace Rock.Field.Types
         Select Asset
     </span>
 </div>";
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -115,18 +118,14 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Overridden to take JSON input of AssetStorageID and Key and create a URL. If the asset is using Amazon then a presigned URL is
-        /// created.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            Storage.AssetStorage.Asset asset = GetAssetInfoFromValue( value );
+            Storage.AssetStorage.Asset asset = GetAssetInfoFromValue( privateValue );
 
             if ( asset == null )
             {
@@ -150,6 +149,45 @@ namespace Rock.Field.Types
             return uri;
         }
 
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Don't truncate the value.
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var url = GetTextValue( privateValue, privateConfigurationValues );
+
+            if ( url.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var encodedUrl = url.EncodeHtml();
+
+            return $"<a href=\"{encodedUrl}\">{encodedUrl}</a>";
+        }
+
+        /// <summary>
+        /// Overridden to take JSON input of AssetStorageID and Key and create a URL. If the asset is using Amazon then a presigned URL is
+        /// created.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Original implementation always returns non-condensed and did not HTML format.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the asset information from value.
         /// </summary>
@@ -167,5 +205,16 @@ namespace Rock.Field.Types
 
             return asset;
         }
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            // The download links expire so we need to keep them up to date.
+            return true;
+        }
+
+        #endregion
     }
 }

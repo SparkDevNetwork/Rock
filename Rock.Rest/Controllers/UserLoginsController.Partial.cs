@@ -120,6 +120,7 @@ namespace Rock.Rest.Controllers
                 if ( !string.IsNullOrWhiteSpace( userLoginWithPlainTextPassword.PlainTextPassword ) )
                 {
                     ( this.Service as UserLoginService ).SetPassword( value, userLoginWithPlainTextPassword.PlainTextPassword );
+                    value.IsLockedOut = false; // unlock the user account if they reset their password.
                 }
             }
             else

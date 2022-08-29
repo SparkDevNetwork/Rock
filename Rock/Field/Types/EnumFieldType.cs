@@ -171,6 +171,19 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var intValue = privateValue.AsIntegerOrNull();
+
+            if ( intValue.HasValue && _EnumValues.ContainsKey( intValue.Value ) )
+            {
+                return _EnumValues[intValue.Value];
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -181,13 +194,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            int? intValue = value.AsIntegerOrNull();
-            if ( intValue.HasValue && _EnumValues.ContainsKey( intValue.Value ) )
-            {
-                return _EnumValues[intValue.Value];
-            }
-
-            return string.Empty;
+            // Don't ever truncate the value even in condensed mode.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>

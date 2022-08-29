@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,10 +33,32 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "10842787-7C17-413A-A562-9CA19E6FCE52")]
-    public class ConnectionRequestActivityFieldType : FieldType, IEntityFieldType
+    public class ConnectionRequestActivityFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            ConnectionRequestActivity connectionRequestActivity = null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                Guid? guid = privateValue.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    connectionRequestActivity = new ConnectionRequestActivityService( rockContext ).GetNoTracking( guid.Value );
+                }
+
+                if ( connectionRequestActivity != null &&
+                    connectionRequestActivity.Note != null )
+                {
+                    return connectionRequestActivity.Note;
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -46,26 +70,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
-
-            ConnectionRequestActivity connectionRequestActivity = null;
-
-            using ( var rockContext = new RockContext() )
-            {
-                Guid? guid = value.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    connectionRequestActivity = new ConnectionRequestActivityService( rockContext ).GetNoTracking( guid.Value );
-                }
-
-                if ( connectionRequestActivity != null &&
-                    connectionRequestActivity.Note != null )
-                {
-                    formattedValue = connectionRequestActivity.Note;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -139,5 +146,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestActivityId = new ConnectionRequestActivityService( rockContext ).GetId( guid.Value );
+
+                if ( !connectionRequestActivityId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<ConnectionRequestActivity>().Value, connectionRequestActivityId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<ConnectionRequestActivity>().Value, nameof( ConnectionRequestActivity.Note ) )
+            };
+        }
+
+        #endregion
     }
 }

@@ -47,7 +47,7 @@ export type FinancialPledgeBag = {
     startDate?: string | null;
 
     /** Gets or sets the pledge amount that is promised to be given. */
-    totalAmount?: number;
+    totalAmount: number;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;

@@ -309,6 +309,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Determines whether the specified EntityTypeId has any active <see cref="AchievementType"/>.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        public static bool HasActiveAchievementTypesForEntityTypeId(int entityTypeId)
+        {
+            var sourceEntityTypeCache = EntityTypeCache.Get( entityTypeId );
+
+            if ( sourceEntityTypeCache == null || sourceEntityTypeCache.IsAchievementsEnabled == false )
+            {
+                return false;
+            }
+
+            return All().Where( at => at.SourceEntityTypeId == entityTypeId && at.IsActive ).Any();
+        }
+
+        /// <summary>
         /// Gets the by source entity.
         /// </summary>
         /// <param name="sourceEntity">The entity.</param>

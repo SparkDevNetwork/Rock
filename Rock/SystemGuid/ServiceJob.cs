@@ -79,6 +79,16 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX = "219BF98C-C10C-4B19-86DB-C69D9B8705FC";
 
         /// <summary>
+        /// The Job to run the Post v13.6 Data Migration to fix the eRA Start Date issue (#5072)
+        /// </summary>
+        public const string DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE = "C02ADF2E-A5C3-484F-9C7B-666AB7C5B333";
+
+        /// <summary>
+        /// The Job to Migrate pre-v8.0 History Summary Data
+        /// </summary>
+        public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
+
+        /// <summary>
         /// The Job to run Post v14.0 Data Migrations for Add missing Media Element interactions
         /// </summary>
         public const string DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS = "3E6817DA-CEE0-42F8-A30E-FF787719493C";
@@ -87,6 +97,11 @@ namespace Rock.SystemGuid
         /// The Job to run Post v14.0 Data Migrations to update current sessions
         /// </summary>
         public const string DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS = "53A6804F-5895-4E19-907D-916B5CF175AB";
+
+        /// <summary>
+        /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
+        /// </summary>
+        public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";
 
         /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.

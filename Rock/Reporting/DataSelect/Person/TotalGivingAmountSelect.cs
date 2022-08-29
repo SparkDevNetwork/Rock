@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -185,7 +185,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
@@ -250,10 +250,10 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 5 )
                 {
                     var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                    var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
+                    var accounts = FinancialAccountCache.GetByGuids( accountGuids );
                     if ( accounts != null && accounts.Any() )
                     {
-                        accountPicker.SetValues( accounts );
+                        accountPicker.SetValuesFromCache( accounts );
                     }
                 }
 
@@ -375,7 +375,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Length >= 5 )
             {
                 var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).Where( a => a != Guid.Empty ).ToList();
-                accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                accountIdList = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
             bool combineGiving = false;

@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Rock.Model
@@ -23,7 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.Attribute"/> entities.
     /// </summary>
-    public partial class AttributeService 
+    public partial class AttributeService
     {
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> by <see cref="Rock.Model.EntityType"/>.
@@ -124,7 +125,7 @@ namespace Rock.Model
                 query = query.Where( t => !t.EntityTypeId.HasValue );
             }
 
-            if ( string.IsNullOrWhiteSpace(entityQualifierColumn ) )
+            if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
             {
                 query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty );
             }
@@ -162,7 +163,7 @@ namespace Rock.Model
         /// </returns>
         public Attribute Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key )
         {
-            var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true);
+            var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true );
             return query.Where( t => t.Key == key ).FirstOrDefault();
         }
 
@@ -175,12 +176,12 @@ namespace Rock.Model
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool AlreadyExists( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key)
+        public bool AlreadyExists( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key )
         {
             var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true );
             return query.Where( t => t.Key == key ).Any();
         }
-        
+
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the provided <see cref="Rock.Model.BinaryFileType"/>.
         /// </summary>
@@ -198,11 +199,11 @@ namespace Rock.Model
         public IQueryable<Attribute> GetGlobalAttributes()
         {
             var query = Queryable( "Categories,AttributeQualifiers" );
-            query = query.Where( t => !t.EntityTypeId.HasValue);
+            query = query.Where( t => !t.EntityTypeId.HasValue );
 
             return query
                 .Where( t =>
-                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) && 
+                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) &&
                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ) );
         }
 
@@ -271,7 +272,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetSystemSettingValue(string key)
+        public string GetSystemSettingValue( string key )
         {
             return this.GetByEntityTypeQualifier( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, true ).Where( t => t.Key == key ).Select( a => a.DefaultValue ).FirstOrDefault();
         }

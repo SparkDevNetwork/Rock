@@ -20,6 +20,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
@@ -366,7 +367,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             factory.StartDateTime = dateRange.Start;
             factory.EndDateTime = dateRange.End;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
-            factory.ChartColors = new List<string> { "#2ECC71", "#3498DB" };
+            factory.ChartColors = new List<RockColor> { new RockColor( "#2ECC71" ), new RockColor( "#3498DB" ) };
 
             var viewsSummary = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME );
             var completionSummary= summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME );

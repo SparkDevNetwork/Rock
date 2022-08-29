@@ -49,7 +49,7 @@ export function popover(node: Element | Element[], options?: PopoverOptions): vo
     }
 
     $(node).popover({
-        html: options?.html ?? false,
+        html: options?.html,
         sanitize: options?.sanitize ?? true
     });
 }

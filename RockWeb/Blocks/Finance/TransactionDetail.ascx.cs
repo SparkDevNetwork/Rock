@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,27 +106,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         private List<int> TransactionImagesState { get; set; }
-
-        private Dictionary<int, string> _accountNames = null;
-
-        private Dictionary<int, string> AccountNames
-        {
-            get
-            {
-                if ( _accountNames == null )
-                {
-                    _accountNames = new Dictionary<int, string>();
-                    new FinancialAccountService( new RockContext() ).Queryable()
-                        .OrderBy( a => a.Order )
-                        .Select( a => new { a.Id, a.Name } )
-                        .ToList()
-                        .ForEach( a => _accountNames.Add( a.Id, a.Name ) );
-                    _accountNames.Add( TotalRowAccountId, "<strong>Total</strong>" );
-                }
-
-                return _accountNames;
-            }
-        }
 
         private bool UseSimpleAccountMode
         {
@@ -387,18 +366,16 @@ namespace RockWeb.Blocks.Finance
 
             if ( isValid && savedTransactionId.HasValue )
             {
-                // Requery the batch to support EF navigation properties
-                var savedTxn = GetTransaction( savedTransactionId.Value );
-                if ( savedTxn != null )
-                {
-                    savedTxn.LoadAttributes();
-                    if ( savedTxn.FinancialPaymentDetail != null )
-                    {
-                        savedTxn.FinancialPaymentDetail.LoadAttributes();
-                    }
-
-                    ShowReadOnlyDetails( savedTxn );
-                }
+                /**
+                  * 08/07/2022 - KA
+                  *
+                  * We reload the page with the new transaction here so the recently added Transaction is displayed along with the History of the transaction.
+                  * This is the ideal option because the call to RockPage.UpdateBlocks( "~/Blocks/Core/HistoryLog.ascx" ) on line 651 will trigger a page reload
+                  * but without the newly created transactionId thus the page will not display the transaction details.
+                */
+                var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
+                pageRef.Parameters.Add( "TransactionId", savedTransactionId.ToString() );
+                NavigateToPage( pageRef );
             }
         }
 
@@ -2229,7 +2206,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( accountId.HasValue )
             {
-                return AccountNames.ContainsKey( accountId.Value ) ? AccountNames[accountId.Value] : string.Empty;
+                return FinancialAccountCache.Get( accountId.Value )?.Name ?? string.Empty;
             }
 
             return string.Empty;

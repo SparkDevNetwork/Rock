@@ -26,7 +26,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 /** RegistrationTemplateFeeItem View Model */
 export type RegistrationTemplateFeeItemBag = {
     /** Gets or sets the cost. */
-    cost?: number;
+    cost: number;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;

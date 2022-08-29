@@ -2,7 +2,8 @@
   "private": true,
   "description": "Project for all Rock Obsidian UI functionality.",
   "scripts": {
-    "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && npm run copy-webforms-framework && echo DONE",
+    "build-fast": "node build/build-fast.js",
+    "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && npm run copy-webforms-framework && echo '' > dist/.buildstamp && echo DONE",
     "build-framework": "tsc --build Framework && rollup --config Framework/rollup.config.js",
     "build-core": "webpack --no-color && lessc --js System/vendor.less dist/obsidian-vendor.css && cleancss --source-map dist/obsidian-vendor.css -o dist/obsidian-vendor.min.css",
     "watch": "echo \"Watch is currently not supported.\" && exit 1 && rollup --config Framework/rollup.config.js --watch",

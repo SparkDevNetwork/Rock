@@ -18,18 +18,11 @@
 import { Guid } from "@Obsidian/Types";
 import axios, { AxiosResponse } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
+import { inject } from "vue";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-export type HttpUrlParams = Record<string, unknown> | undefined | null;
-export type HttpBodyData = Record<string, unknown> | undefined | null;
 
-export type HttpResult<T> = {
-    statusCode: number;
-    data: T | null;
-    isSuccess: boolean;
-    isError: boolean;
-    errorMessage: string | null;
-};
+// #region HTTP Requests
 
 /**
  * Make an API call. This is only place Axios (or AJAX library) should be referenced to allow tools like performance metrics to provide
@@ -49,12 +42,15 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
 }
 
 /**
-* Make an API call
-* @param {string} method The HTTP method, such as GET
-* @param {string} url The endpoint to access, such as /api/campuses/
-* @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
-* @param {any} data This will be the body of the request
-*/
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ * 
+ * @param {string} method The HTTP method, such as GET
+ * @param {string} url The endpoint to access, such as /api/campuses/
+ * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param {any} data This will be the body of the request
+ */
 export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     try {
         const result = await doApiCallRaw(method, url, params, data);
@@ -100,23 +96,57 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
 }
 
 /**
-* Make a GET HTTP request
-* @param {string} url The endpoint to access, such as /api/campuses/
-* @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
-*/
+ * Make a GET HTTP request. This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ * 
+ * @param {string} url The endpoint to access, such as /api/campuses/
+ * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ */
 export async function get<T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> {
     return await doApiCall<T>("GET", url, params, undefined);
 }
 
 /**
-* Make a POST HTTP request
-* @param {string} url The endpoint to access, such as /api/campuses/
-* @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
-* @param {any} data This will be the body of the request
-*/
+ * Make a POST HTTP request. This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ * 
+ * @param {string} url The endpoint to access, such as /api/campuses/
+ * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param {any} data This will be the body of the request
+ */
 export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     return await doApiCall<T>("POST", url, params, data);
 }
+
+const httpFunctionsSymbol = Symbol("http-functions");
+
+/**
+ * Provides the HTTP functions that child components will use. This is an
+ * internal API and should not be used by third party components.
+ * 
+ * @param functions The functions that will be made available to child components.
+ */
+export function provideHttp(functions: HttpFunctions): void {
+    inject(httpFunctionsSymbol, functions);
+}
+
+/**
+ * Gets the HTTP functions that can be used by the component. This is the
+ * standard way to make HTTP requests.
+ *
+ * @returns An object that contains the functions which can be called.
+ */
+export function useHttp(): HttpFunctions {
+    return inject<HttpFunctions>(httpFunctionsSymbol) || {
+        doApiCall: doApiCall,
+        get: get,
+        post: post
+    };
+}
+
+// #endregion
 
 // #region File Upload
 
@@ -229,8 +259,13 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
 export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, options?: UploadOptions): Promise<ListItemBag> {
     let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?isBinaryFile=True&fileTypeGuid=${binaryFileTypeGuid}`;
 
-    if (options?.isTemporary) {
+    // Assume file is temporary unless specified otherwise so that files
+    // that don't end up getting used will get cleaned up.
+    if (options?.isTemporary === false) {
         url += "&isTemporary=False";
+    }
+    else {
+        url += "&isTemporary=True";
     }
 
     const formData = new FormData();

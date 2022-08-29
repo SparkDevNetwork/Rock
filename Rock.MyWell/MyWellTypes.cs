@@ -1386,6 +1386,16 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "updated_at" )]
         public DateTime? UpdatedDateTimeUTC { get; set; }
+
+        /// <summary>
+        /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
+        /// matching class member into the specified collection
+        /// </summary>
+        /// <value>
+        /// The other data.
+        /// </value>
+        [Newtonsoft.Json.JsonExtensionData( ReadData = true, WriteData = false )]
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken> _additionalData { get; set; }
     }
 
     /// <summary>
@@ -1445,7 +1455,22 @@ namespace Rock.MyWell
         /// The data.
         /// </value>
         [JsonProperty( "data" )]
-        public object Data { get; set; }
+        public TransactionVoidRefundResponseData Data { get; set; }
+    }
+
+    /// <summary>
+    /// Class TransactionVoidRefundResponseData.
+    /// Implements the <see cref="Rock.MyWell.TransactionResponseData" />
+    /// </summary>
+    /// <seealso cref="Rock.MyWell.TransactionResponseData" />
+    public class TransactionVoidRefundResponseData : TransactionResponseData
+    {
+        /// <summary>
+        /// Gets or sets the referenced transaction identifier.
+        /// </summary>
+        /// <value>The referenced transaction identifier.</value>
+        [JsonProperty( "referenced_transaction_id" )]
+        public string ReferencedTransactionId { get; set; }
     }
 
     #endregion Transactions

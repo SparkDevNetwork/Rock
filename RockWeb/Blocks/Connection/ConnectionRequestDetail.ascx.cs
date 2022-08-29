@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2298,16 +2298,21 @@ namespace RockWeb.Blocks.Connection
             }
 
             // Set the Connection State options.
-            ConnectionState[] ignoredConnectionTypes = { };
+            List<ConnectionState> ignoredConnectionTypes = new List<ConnectionState>();
 
             // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
             if ( !connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
             {
-                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
+                ignoredConnectionTypes.Add( ConnectionState.FutureFollowUp );
+            }
+
+            if ( connectionRequest == null || connectionRequest.ConnectionState != ConnectionState.Connected )
+            {
+                ignoredConnectionTypes.Add( ConnectionState.Connected );
             }
 
             // Ignore binding the Connection Types that are in the provided array.
-            rblState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
+            rblState.BindToEnum( ignoreTypes: ignoredConnectionTypes.ToArray() );
 
             rblState.SetValue( connectionRequest.ConnectionState.ConvertToInt().ToString() );
 

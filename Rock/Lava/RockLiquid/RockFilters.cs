@@ -52,6 +52,7 @@ using UAParser;
 using Ical.Net;
 using Rock.Web.UI.Controls;
 using System.Web.UI;
+using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava
 {
@@ -3835,15 +3836,34 @@ namespace Rock.Lava
 
         #endregion Person Filters
 
-        #region Group Filters
+        #region Personalize Filters
 
         /// <summary>
-        /// Loads a Group record from the database from it's GUID.
+        /// Gets the set of personalization items that are relevant to the specified person.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static Rock.Model.Group GroupByGuid( Context context, object input )
+        /// <param name="context">The DotLiquid context.</param>
+        /// <param name="input">The filter input, a reference to a Person or a Person object.</param>
+        /// <param name="itemTypeList">A comma-delimited list of item types to return.</param>
+        /// <returns>The value of the user preference.</returns>
+        public static List<PersonalizationItemInfo> PersonalizationItems( Context context, object input, string itemTypeList = "" )
+        {
+            // This filter implementation is only required for DotLiquid.
+            // Create a compatible context and call the newer Lava Filter implementation.
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.PersonalizationItems( lavaContext, input, itemTypeList );
+        }
+
+        #endregion
+
+        #region Group Filters
+
+            /// <summary>
+            /// Loads a Group record from the database from it's GUID.
+            /// </summary>
+            /// <param name="context">The context.</param>
+            /// <param name="input">The input.</param>
+            /// <returns></returns>
+            public static Rock.Model.Group GroupByGuid( Context context, object input )
         {
             if ( input == null )
             {

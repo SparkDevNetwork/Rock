@@ -8,9 +8,9 @@
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
     </div>
-    <div class="panel-body overflow-hidden" style="flex: 1 0 0">
+    <div class="panel-body">
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-        <div class="row row-eq-height-md">
+        <div class="row row-eq-height-md d-flex flex-column h-100 flex-md-row">
             <asp:UpdatePanel ID="upnlCategory" Class="filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
@@ -188,8 +188,8 @@
                                             <div class="flex-fill">
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
                                                 <div class="position-relative">
-                                                    <span class="text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
-                                                    <div class="d-flex justify-content-between align-items-center position-absolute inset-0 group-hover-item group-hover-show">
+                                                    <span class="position-absolute inset-0 d-inline-flex align-items-center text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
+                                                    <div class="d-flex justify-content-between align-items-center group-hover-item group-hover-show">
                                                         <div class="text-muted">
                                                             <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
                                                             <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
@@ -198,9 +198,9 @@
                                                             <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
 
                                                         </div>
-                                                        <div>
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-square btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-square btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Copy" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                        <div class="text-nowrap">
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Copy" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </div>

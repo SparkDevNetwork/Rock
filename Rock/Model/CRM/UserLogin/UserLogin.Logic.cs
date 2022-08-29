@@ -18,6 +18,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
+using Rock.Data;
+using Rock.Lava;
+
 namespace Rock.Model
 {
     public partial class UserLogin
@@ -28,8 +31,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the encrypted confirmation code.
         /// </value>
-        [DataMember]
+        [HideFromReporting]
         [NotMapped]
+        [LavaVisible]
         public virtual string ConfirmationCode
         {
             get
@@ -54,8 +58,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
         /// </value>
-        [DataMember]
+        [HideFromReporting]
         [NotMapped]
+        [LavaVisible]
         public virtual string ConfirmationCodeEncoded
         {
             get

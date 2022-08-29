@@ -87,6 +87,11 @@ namespace Rock.Web.UI
         private Stopwatch _onLoadStopwatch = null;
 
         /// <summary>
+        /// Contains the IRockBlockType wrapper objects that need to be initialized during OnLoad.
+        /// </summary>
+        private readonly List<RockBlockTypeWrapper> _blockTypeWrappers = new List<RockBlockTypeWrapper>();
+
+        /// <summary>
         /// The fingerprint to use with obsidian files.
         /// </summary>
         private static long _obsidianFingerprint = 0;
@@ -1324,6 +1329,8 @@ Rock.settings.initialize({{
                                             wrapper.InitializeAsUserControl( this );
                                             wrapper.AppRelativeTemplateSourceDirectory = "~";
 
+                                            _blockTypeWrappers.Add( wrapper );
+
                                             control = wrapper;
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
@@ -1413,7 +1420,7 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                         if ( body != null )
                         {
                             body.AddCssClass( "obsidian-loading" );
@@ -1731,20 +1738,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             PersonAlias currentVisitorCookiePersonAlias = null;
             if ( visitorKeyCookie != null )
             {
-                var visitorKeyPersonAliasIDKey = visitorKeyCookie.Value;
-                if ( visitorKeyPersonAliasIDKey.IsNullOrWhiteSpace() )
+                var visitorKeyPersonAliasIdKey = visitorKeyCookie.Value;
+                if ( visitorKeyPersonAliasIdKey.IsNullOrWhiteSpace() )
                 {
                     // There is a ROCK_VISITOR_KEY key, but it doesn't have a value, so invalid visitor key. 
                     visitorKeyCookie = null;
                 }
                 else
                 {
-                    var visitorPersonAliasIDKey = visitorKeyCookie.Value;
-                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorPersonAliasIDKey );
+                    var visitorPersonAliasIdKey = visitorKeyCookie.Value;
+                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorPersonAliasIdKey );
                     if ( currentVisitorCookiePersonAlias == null )
                     {
-                        // There is a ROCK_VISITOR_KEY key with an IDKey, but that PersonAlias record
-                        // isn't in the database, so it isn't a valid ROCK_VISITOR_KEY
+                        // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
+                        // isn't in the database, so it isn't a valid ROCK_VISITOR_KEY.
                         visitorKeyCookie = null;
                     }
                 }
@@ -1773,8 +1780,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     var visitorPersonAlias = new PersonAliasService( rockContext ).CreateAnonymousVisitorAlias();
                     rockContext.SaveChanges();
 
-                    var visitorPersonAliasIDKey = visitorPersonAlias.IdKey;
-                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIDKey )
+                    var visitorPersonAliasIdKey = visitorPersonAlias.IdKey;
+                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIdKey )
                     {
                         Expires = persistedCookieExpiration
                     };
@@ -1789,9 +1796,9 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
                 else
                 {
-                    // If ROCK_VISITOR_KEY does not exist and person *is* logged in, create a new ROCK_VISITOR_KEY cookie using the CurrentPersonAlias's IDKey
-                    var visitorPersonAliasIDKey = currentPersonAlias.IdKey;
-                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIDKey )
+                    // If ROCK_VISITOR_KEY does not exist and person *is* logged in, create a new ROCK_VISITOR_KEY cookie using the CurrentPersonAlias's IdKey
+                    var visitorPersonAliasIdKey = currentPersonAlias.IdKey;
+                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIdKey )
                     {
                         Expires = persistedCookieExpiration
                     };
@@ -1834,7 +1841,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         {
                             // Our current visitor cookie was associated with GhostPerson, but now we have a current person,
                             // so convert the GhostVisitor PersonAlias to a PersonAlias of the CurrentPerson.
-                            // NOTE: This needs to be done synchronously because we'll need to know if this PersonAlias is
+                            // NOTE: This needs to be done synchronously because we'll need to know which real person this
+                            // PersonAlias is for on subsequent requests.
                             if ( new PersonAliasService( rockContext ).MigrateAnonymousVisitorAliasToRealPerson( currentVisitorCookiePersonAlias, currentPerson ) )
                             {
                                 rockContext.SaveChanges();
@@ -1877,14 +1885,10 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 
         /// <summary>
         /// Loads the matching <see cref="PersonalizationSegmentIds"/> for the <see cref="CurrentPerson"/> or <see cref="CurrentVisitor"/>.
+        /// Only call this if the Site.EnablePersonalization is true. 
         /// </summary>
         private void LoadPersonalizationSegments()
         {
-            if ( !Site.EnablePersonalization )
-            {
-                return;
-            }
-
             var rockSegmentFiltersCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS );
             var personalizationPersonAliasId = CurrentVisitor?.Id ?? CurrentPersonAliasId;
             if ( !personalizationPersonAliasId.HasValue )
@@ -1973,6 +1977,13 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
+
+            // Cause the wrapper to render it's content so the initialization
+            // logic will be part of our page load timings.
+            foreach ( var wrapper in _blockTypeWrappers )
+            {
+                wrapper.RenderAndCache();
+            }
 
             // Finalize the debug settings
             if ( _showDebugTimings )
@@ -4182,8 +4193,9 @@ Sys.Application.add_load(function () {
 
                 if ( triggerData.StartsWith( "BLOCK_UPDATED:" ) )
                 {
-                    int blockId = int.MinValue;
-                    if ( int.TryParse( triggerData.Replace( "BLOCK_UPDATED:", "" ), out blockId ) )
+                    var dataSegments = triggerData.Split( ':' );
+
+                    if ( int.TryParse( dataSegments[1], out var blockId ) )
                     {
                         OnBlockUpdated( blockId );
                     }

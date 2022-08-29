@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -137,19 +137,12 @@ namespace Rock.Field.Types
 
         #region Formating
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string formattedValue = value;
+            string formattedValue = privateValue;
 
-            Guid guid = value.AsGuid();
+            Guid guid = privateValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
                 var attributes = GetContextAttributes();
@@ -168,8 +161,22 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
+        }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -300,5 +307,16 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This a special field type that only works within the workflow type
+            // editor. Persistence would not work well in this situation.
+            return false;
+        }
+
+        #endregion
     }
 }

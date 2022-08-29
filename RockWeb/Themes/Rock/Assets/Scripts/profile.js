@@ -1,6 +1,12 @@
 Sys.Application.add_load(function() {
     Rock.controls.priorityNav.initialize({controlId: 'overflow-nav'});
 
+    $('#overflow-nav').on('show.bs.dropdown', function (e) {
+        $(this).closest('.zone-nav').addClass('overflow-visible');
+    }).on('hide.bs.dropdown', function (e) {
+        $(this).closest('.zone-nav').removeClass('overflow-visible');
+    })
+
     const header = document.querySelector("#profilenavigation");
     const profileImage = document.querySelector("#profile-image");
 
@@ -25,7 +31,8 @@ Sys.Application.add_load(function() {
 
         profileImageObserver.observe(profileImage);
     } else {
-        console.log("no profile image");
+        console.log("No Bio Block");
         header.classList.add("nav-scrolled");
+        header.classList.add("nav-scrolled-notransition");
     }
 });

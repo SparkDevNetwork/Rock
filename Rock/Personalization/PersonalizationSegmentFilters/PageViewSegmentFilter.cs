@@ -47,7 +47,7 @@ namespace Rock.Personalization.SegmentFilters
         /// The Number of Sessions. 
         /// </summary>
         /// <value>The comparison value.</value>
-        public int ComparisonValue { get; set; } = 4;
+        public int ComparisonValue { get; set; } = 0;
 
         /// <summary>
         /// List of <see cref="Rock.Model.Site">sites</see> that apply to this filter (Required)

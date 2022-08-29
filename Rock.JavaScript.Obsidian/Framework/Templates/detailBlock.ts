@@ -32,7 +32,9 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
+import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 
 // Define jQuery and Rock for showing security modal.
 declare function $(value: unknown): unknown;
@@ -185,10 +187,11 @@ export default defineComponent({
          * A function to be called when the individual clicks the Cancel button
          * while in edit mode. If provided, the function must return true to
          * allow the panel to switch back to view mode. If it returns false then
-         * the panel will stay in edit mode.
+         * the panel will stay in edit mode. If it returns a string then the
+         * person will be redirected to that URL.
          */
         onCancelEdit: {
-            type: Function as PropType<() => boolean | PromiseLike<boolean>>,
+            type: Function as PropType<() => boolean | string | PromiseLike<boolean | string>>,
             required: false
         },
 
@@ -207,22 +210,23 @@ export default defineComponent({
          * A function to be called when the individual clicks the Save button
          * while in edit mode. If provided, the function must return true to
          * allow the panel to switch back to view mode. If it returns false then
-         * the panel will stay in edit mode. Your logic to save the entity to
-         * the server should be placed in this function.
+         * the panel will stay in edit mode. Return a string to redirect the
+         * person to the URL contained in the string. Your logic to save the
+         * entity to the server should be placed in this function.
          */
         onSave: {
-            type: Function as PropType<() => boolean | PromiseLike<boolean>>,
+            type: Function as PropType<() => boolean | string | PromiseLike<boolean | string>>,
             required: false
         },
 
         /**
          * A function to be called when the individual clicks the Delete button
          * while in view mode. Your logic to delete the entity should be placed
-         * in this function. It is also up to you to redirect the user to a new
-         * page after the entity has been deleted.
+         * in this function. If the person should be redirected to another page
+         * then return the URL. If the delete was aborted, return false.
          */
         onDelete: {
-            type: Function as PropType<() => void | PromiseLike<void>>,
+            type: Function as PropType<() => false | string | PromiseLike<false | string>>,
             required: false
         }
     },
@@ -234,14 +238,24 @@ export default defineComponent({
     setup(props, { emit }) {
         // #region Values
 
+        const http = useHttp();
         const internalMode = useVModelPassthrough(props, "mode", emit);
         const isFormSubmitting = ref(false);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
         const showAuditDetailsModal = ref(false);
+        const isPanelVisible = ref(true);
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
+
+        // AutoEditMode means we go directly into edit mode and, usually, have a
+        // custom return URL to use when leaving edit mode. This can be used
+        // in cases where it doesn't make sense for the detail block to show
+        // a read-only view.
+        const params = new URLSearchParams(window.location.search);
+        const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
+        const autoEditReturnUrl = params.get("returnUrl");
 
         // #endregion
 
@@ -337,7 +351,7 @@ export default defineComponent({
 
         /** True when we are in view mode. */
         const isViewMode = computed((): boolean => {
-            return internalMode.value === DetailPanelMode.View;
+            return internalMode.value === DetailPanelMode.View && !isAutoEditMode.value;
         });
 
         /** True when we are in one of the edit modes (edit or add). */
@@ -348,6 +362,11 @@ export default defineComponent({
         /** True when the edit button should be visible. */
         const isEditModeVisible = computed((): boolean => {
             return isEditMode.value || isEditModeLoading.value;
+        });
+
+        /** True if the panel should be shown on screen or False if it should be in the DOM but hidden. */
+        const isPanelShown = computed((): boolean => {
+            return !isAutoEditMode.value || isEditMode.value;
         });
 
         /** True if we have any labels to display. */
@@ -444,7 +463,7 @@ export default defineComponent({
                 entityKey: props.entityKey
             };
 
-            const response = await post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
+            const response = await http.post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
 
             isEntityFollowed.value = response.isSuccess && response.data && response.data.isFollowing;
         };
@@ -479,6 +498,24 @@ export default defineComponent({
                 if (result === false) {
                     return;
                 }
+
+                if (isAutoEditMode.value) {
+                    isAutoEditMode.value = false;
+
+                    if (autoEditReturnUrl) {
+                        window.location.href = makeUrlRedirectSafe(autoEditReturnUrl);
+
+                        // Don't switch back to view mode.
+                        return;
+                    }
+                }
+
+                if (typeof result === "string") {
+                    window.location.href = makeUrlRedirectSafe(result);
+
+                    // Don't switch back to view mode.
+                    return;
+                }
             }
 
             internalMode.value = DetailPanelMode.View;
@@ -488,7 +525,7 @@ export default defineComponent({
          * Called when the edit button has been clicked. Check with the block
          * if we should switch to edit mode or stay in view mode.
          */
-        const onEditClick = async (): Promise<void> => {
+        const onEditClick = async (): Promise<boolean> => {
             if (props.onEdit) {
                 let result = props.onEdit();
 
@@ -497,8 +534,13 @@ export default defineComponent({
                 }
 
                 if (result !== true) {
-                    return;
+                    return false;
                 }
+            }
+
+            // If we are in auto edit mode, the panel is currently hidden. Show it.
+            if (isAutoEditMode.value) {
+                isPanelVisible.value = true;
             }
 
             // Block has given go ahead for edit mode, note that we are currently
@@ -514,6 +556,8 @@ export default defineComponent({
             internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
             isEditModeLoading.value = false;
             editModeReadyCompletionSource = null;
+
+            return true;
         };
 
         /**
@@ -556,18 +600,36 @@ export default defineComponent({
                         result = await result;
                     }
 
-                    if (result !== true) {
+                    if (result === false) {
+                        return;
+                    }
+
+                    if (isAutoEditMode.value) {
+                        isAutoEditMode.value = false;
+
+                        if (autoEditReturnUrl) {
+                            window.location.href = makeUrlRedirectSafe(autoEditReturnUrl);
+
+                            // Don't switch back to view mode.
+                            return;
+                        }
+                    }
+
+                    if (typeof result === "string") {
+                        window.location.href = makeUrlRedirectSafe(result);
+
+                        // Don't switch back to view mode.
                         return;
                     }
                 }
+
+                internalMode.value = DetailPanelMode.View;
             }
             finally {
                 if (formSubmissionSource !== null) {
                     formSubmissionSource.resolve();
                 }
             }
-
-            internalMode.value = DetailPanelMode.View;
         };
 
         /**
@@ -580,10 +642,18 @@ export default defineComponent({
                     return;
                 }
 
-                const result = props.onDelete();
+                let result = props.onDelete();
 
                 if (isPromise(result)) {
-                    await result;
+                    result = await result;
+                }
+
+                if (result === false) {
+                    return;
+                }
+
+                if (typeof result === "string") {
+                    window.location.href = makeUrlRedirectSafe(result);
                 }
             }
         };
@@ -596,7 +666,7 @@ export default defineComponent({
          * @param event The DOM event that triggered the click.
          */
         const onActionClick = (action: PanelAction, event: Event): void => {
-            if (action.handler) {
+            if (action.handler && !action.disabled) {
                 action.handler(event);
             }
         };
@@ -617,7 +687,7 @@ export default defineComponent({
                 isFollowing: !isEntityFollowed.value
             };
 
-            const response = await post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
+            const response = await http.post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
 
             // If we got a 200 OK response then we can toggle our internal state.
             if (response.isSuccess) {
@@ -655,6 +725,12 @@ export default defineComponent({
             getEntityFollowedState();
         }
 
+        if (isAutoEditMode.value) {
+            isPanelVisible.value = false;
+
+            onEditClick();
+        }
+
         return {
             hasLabels,
             internalFooterSecondaryActions,
@@ -668,6 +744,8 @@ export default defineComponent({
             isEditMode,
             isEditModeVisible,
             isFormSubmitting,
+            isPanelShown,
+            isPanelVisible,
             isViewMode,
             onActionClick,
             onDeleteClick,
@@ -681,7 +759,9 @@ export default defineComponent({
     },
 
     template: `
-<Panel type="block"
+<Panel v-if="isPanelVisible"
+    v-show="isPanelShown"
+    type="block"
     :title="panelTitle"
     :titleIconCssClass="panelTitleIconCssClass"
     :hasFullscreen="true"
@@ -736,7 +816,7 @@ export default defineComponent({
     </template>
 
     <template #footerSecondaryActions>
-        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)">
+        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>

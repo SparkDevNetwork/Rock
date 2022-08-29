@@ -45,10 +45,16 @@ export const enum ServiceJob {
     DataMigrations130AddInteractionInteractionComponentIdIndex = "1D7FADEC-2A8A-46FD-898E-58544E7FD9F2",
     /** The Job to run Post v13.3 Data Migrations for Adding InteractionSessionLocationId index to Interaction Session */
     DataMigrations133AddInteractionSessionInteractionSessionLocationIdIndex = "219BF98C-C10C-4B19-86DB-C69D9B8705FC",
+    /** The Job to run the Post v13.6 Data Migration to fix the eRA Start Date issue (#5072) */
+    DataMigrations136FixIncorrectEraStartDate = "C02ADF2E-A5C3-484F-9C7B-666AB7C5B333",
+    /** The Job to Migrate pre-v8.0 History Summary Data */
+    MigrateHistorySummaryData = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14",
     /** The Job to run Post v14.0 Data Migrations for Add missing Media Element interactions */
     DataMigrations140AddMissingMediaElementInteractions = "3E6817DA-CEE0-42F8-A30E-FF787719493C",
     /** The Job to run Post v14.0 Data Migrations to update current sessions */
     DataMigrations140UpdateCurrentSessions = "53A6804F-5895-4E19-907D-916B5CF175AB",
+    /** The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId. */
+    DataMigrations140CreateFkIndexes = "D96BD1F7-6A4A-4DC0-B10D-40031F709573",
     /** The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields. */
     DataMigrations124DecryptFinancialPaymentDetails = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12",
     /** The Job to get NCOA */

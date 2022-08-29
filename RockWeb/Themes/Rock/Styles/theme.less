@@ -244,21 +244,13 @@ textarea,
   font-weight: @font-weight-base;
 }
 
-.label.btn-label {
-  padding: @label-padding;
-  color: @btn-default-color;
-  background: @btn-default-bg;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  box-shadow: inset 0 0 0 1px @btn-default-border;
+.btn-label {
+  padding: 5px 5px 4px;
+  margin-top: -1px;
+  font-size: 12px;
+  line-height: 1;
 }
 
-.label-group {
-  .label:not(:last-child) {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-}
 
 .nav-tabs {
   border-bottom: 1px solid @nav-tabs-border-color;
@@ -359,16 +351,14 @@ textarea,
 .tooltip-arrow {
   width: 10px;
   height: 10px;
-  background: @gray-darker;
+  background: @tooltip-arrow-color;
   border: 1px solid @ui-4;
   transform: rotate(45deg);
 }
 
 .tooltip-inner {
   padding: (@padding-base-horizontal / 2);
-  color: @white;
   text-align: left;
-  background-color: @gray-darker;
   border: 1px solid @ui-4;
   .box-shadow(@shadow-overlay);
 }
@@ -486,7 +476,7 @@ textarea,
 
     // Remove padding offset on center
     &[align="center"] {
-      padding: 18px 6px;
+      padding: @table-padding-vertical 6px;
     }
   }
 
@@ -988,10 +978,10 @@ body.nav-open {
   }
 
   .navbar-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0;
@@ -1578,13 +1568,20 @@ body.navbar-side-open {
     min-height: 600px;
   }
 
-  .page-title {
+  .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     padding: 20px 15px;
     margin: -5px -15px 5px;
     color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
     border-bottom: 1px solid @gray-lighter;
+
+    .page-title {
+      flex: 1 1 auto;
+    }
 
     .title {
       margin: 0;
@@ -1622,7 +1619,7 @@ body.navbar-side-open {
     padding: 0;
     margin: 35px 35px 0;
 
-    .page-title {
+    .page-header {
       padding: 20px 35px;
       margin: -35px -35px 35px;
     }
@@ -1851,7 +1848,6 @@ body.navbar-side-open {
 }
 
 
-
 .rock-bookmark {
   display: inline-flex;
   align-items: center;
@@ -1861,12 +1857,12 @@ body.navbar-side-open {
   margin: @navbar-element-margin 8px @navbar-element-margin 0;
   font-size: 20px;
   color: fade(@white, 75%);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, .1);
   border-radius: @border-radius-base;
 
   &:hover,
   &:active {
-    color: fade(@white, 50%)
+    color: fade(@white, 50%);
   }
 }
 
@@ -1902,9 +1898,56 @@ body.navbar-side-open {
 
 .container-in-block {
   max-width: 1020px;
+  padding: 24px 0;
   margin: 0 auto;
   @media (min-width: @screen-md-min) {
     padding: 48px 30px;
+  }
+}
+
+.zone-context {
+  width: 100%;
+
+  .contextsetter {
+    margin: 12px 0 0;
+    .navbar-link {
+      display: inline-flex;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      padding: @input-padding-y @input-padding-x;
+      color: #737475;
+      background: @body-background;
+      border-radius: @input-border-radius;
+
+      b {
+        margin-left: auto;
+      }
+    }
+
+    .open {
+      > .navbar-link {
+        color: @input-color;
+        background: mix(@body-background, @white, 65%);
+      }
+    }
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+
+  @media screen and (min-width: @grid-float-breakpoint) {
+    width: auto;
+
+    .contextsetter {
+      margin: 0;
+
+      .navbar-link {
+        width: @input-width-xl;
+      }
+    }
   }
 }
 

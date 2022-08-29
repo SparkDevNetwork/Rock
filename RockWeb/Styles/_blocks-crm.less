@@ -21,10 +21,6 @@
     19. Edit Person
 */
 
-.btn-step-flow {
-  display: none;
-}
-
 // 1. Page Styles
 // -------------------------
 
@@ -257,15 +253,15 @@
   align-items: center;
   justify-content: center;
   margin: 0 .133333em;
-  background-color: inherit;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
   line-height: 1;
   color: #fff;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
   cursor: default;
-  font-size: 45px;
-  font-size: var(--badge-size, 45px);
+  background-color: inherit;
 
   &:empty {
     display: none;
@@ -279,12 +275,12 @@
     position: absolute;
     top: 0;
     right: 0;
-    background: @brand-danger;
-    color: @white;
-    border-radius: 999px;
     min-width: 1.5em;
-    font-size: .26666em;
     padding: .25em .125em;
+    font-size: .26666em;
+    color: @white;
+    background: @brand-danger;
+    border-radius: 999px;
   }
 
   .tooltip-inner {
@@ -337,8 +333,8 @@
 }
 
 .rockbadge-grid {
-  font-size: 0;
   flex-direction: column;
+  font-size: 0;
 
   .rockbadge {
     width: 1em;
@@ -363,26 +359,24 @@
 }
 
 .rockbadge-standard {
-  color: #000;
   display: inline-flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 1em;
   height: 1em;
-  background: fade(#939393, 20%);
   color: #fff;
+  background: fade(#939393, 20%);
   border-radius: 999px;
-  cursor: pointer;
 
   .metric-value {
     font-size: .4em;
-    line-height: .9em;
     font-weight: 700;
+    line-height: .9em;
   }
 
   .metric-unit {
-    font-size: 0.2442em;
+    font-size: .2442em;
     font-weight: 400;
     line-height: 1;
   }
@@ -409,17 +403,17 @@
 }
 
 .rockbadge-icon {
-  background: currentColor;
-  width: 1em;
-  height: 1em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 1em;
+  height: 1em;
+  background: currentColor;
   border-radius: .1em;
 
   .badge-icon {
-    color: #fff;
     font-size: .65em;
+    color: #fff;
   }
 
   &.rockbadge-circle {
@@ -486,18 +480,18 @@
 }
 
 .rockbadge-slash {
-  &:before {
+  &::before {
     position: absolute;
-    font-family: @fa-font-face;
-    content: @fa-var-slash;
-    color: @brand-danger;
     display: block;
-    font-weight: 600;
+    font-family: @fa-font-face;
     font-size: .6em;
+    font-weight: 600;
+    color: @brand-danger;
+    content: @fa-var-slash;
   }
 
   &.rockbadge-disabled {
-    &:before {
+    &::before {
       color: #fff;
       text-shadow: -.074em .074em @badge-disabled-color;
     }
@@ -583,13 +577,13 @@
   height: 1em;
 
   .badge-icon {
-    font-size: inherit;
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
-    text-align: center;
+    left: 0;
+    font-size: inherit;
     line-height: 1.15em;
+    text-align: center;
   }
 
   &-invert {
@@ -599,14 +593,14 @@
   }
 
   .metric-value {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
     position: absolute;
     top: .5em; // 8px
     right: .3em;
-    left: .3em;
     bottom: .95em;
+    left: .3em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: .4em; // 16px
     font-weight: @font-weight-bold;
     text-align: center;
@@ -649,8 +643,8 @@
 
 .rockbadge-assessment {
   a {
-    color: inherit;
     display: inline-flex;
+    color: inherit;
   }
 
   .fa-stack-1x {
@@ -671,6 +665,29 @@
   }
 }
 
+.assessment-tooltip-item {
+  display: flex;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.assessment-tooltip-value {
+  margin: 2px 0 0 6px;
+
+  .assessment-name {
+    display: block;
+    font-weight: @font-weight-bold;
+  }
+
+  .assessment-summary {
+    display: block;
+    font-size: @font-size-xs;
+    color: fade(@tooltip-color, 60%);
+  }
+}
 
 .rockbadge-container {
   --badge-size: @badge-icon-height;
@@ -683,21 +700,21 @@
     flex-direction: row;
 
     .rockbadge {
-      font-size: var(--badge-size)
+      font-size: var(--badge-size);
     }
   }
 
   .rockbadge-fraction {
     .metric-value {
       top: 0;
-      left: 0;
       right: 0;
       bottom: 0;
+      left: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: .7em;
       width: 100%;
+      font-size: .7em;
     }
   }
 
@@ -712,7 +729,6 @@
 .rockbadge-container-sm {
   --badge-size: 32px;
 }
-
 
 
 @-webkit-keyframes bar-grow {

@@ -75,5 +75,10 @@ namespace Rock.SystemGuid
         /// The pastoral note type.
         /// </summary>
         public const string PASTORAL_NOTE = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42";
+
+        /// <summary>
+        /// The Note to display the errors particular to the profile that occurred while importing the people CSV.
+        /// </summary>
+        public const string PERSON_CSV_IMPORT_ERROR_NOTE = "4E22E9DA-06A7-45DB-9EB3-BFCB7A2A7F21";
     }
 }

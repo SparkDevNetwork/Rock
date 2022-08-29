@@ -143,7 +143,7 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is clustered using RockWebFarm or Redis.
+        /// Gets a value indicating whether this instance is clustered using RockWebFarm.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.

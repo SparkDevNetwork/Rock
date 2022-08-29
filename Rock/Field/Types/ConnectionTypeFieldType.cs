@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -34,10 +35,28 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_TYPE )]
-    public class ConnectionTypeFieldType : FieldType, IEntityFieldType
+    public class ConnectionTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var type = new ConnectionTypeService( rockContext ).GetNoTracking( guid.Value );
+                    if ( type != null )
+                    {
+                        return type.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -49,22 +68,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? guid = value.AsGuidOrNull();
-            if (guid.HasValue)
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var type = new ConnectionTypeService( rockContext ).GetNoTracking( guid.Value );
-                    if ( type != null )
-                    {
-                        formattedValue = type.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -201,5 +207,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionTypeId = new ConnectionTypeService( rockContext ).GetId( guid.Value );
+
+                if ( !connectionTypeId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<ConnectionType>().Value, connectionTypeId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<ConnectionType>().Value, nameof( ConnectionType.Name ) ),
+            };
+        }
+
+        #endregion
     }
 }

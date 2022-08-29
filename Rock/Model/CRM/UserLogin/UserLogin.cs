@@ -179,7 +179,6 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the API key that is associated with the UserLogin
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         [HideFromReporting]
         public string ApiKey { get; set; }
         

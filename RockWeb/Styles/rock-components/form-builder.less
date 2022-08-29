@@ -406,23 +406,6 @@
   align-items: center;
 }
 
-.rock-header {
-  .title {
-    margin: 0;
-  }
-
-  .description {
-    margin: 0;
-    font-size: @font-size-small;
-    color: @text-muted;
-  }
-}
-
-
-.section-header-hr {
-  margin-top: 16px;
-}
-
 /*** Form Template Items ***/
 
 .form-template-item {
@@ -469,6 +452,11 @@
 
 
 .block-instance.form-list {
+  .panel-body {
+    flex: 1 0 0;
+    overflow: hidden;
+  }
+
   .filter-options,
   .form-category-display {
     overflow-y: auto;
@@ -481,6 +469,11 @@
     .category-header {
       padding: 18px 18px 12px;
     }
+
+    @media (max-width: @screen-md-max) {
+      border-right: 0;
+      border-bottom: 1px solid @panel-border;
+    }
   }
 
   .form-actions {
@@ -489,10 +482,10 @@
 
   .btn-link-spaced {
     padding: 0;
-    margin-right: 16px;
+    margin-right: 8px;
   }
 
   .btn-link-spaced + .btn-link-spaced {
-    margin-left: 16px;
+    margin-left: 8px;
   }
 }

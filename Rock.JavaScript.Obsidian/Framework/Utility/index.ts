@@ -1,4 +1,5 @@
 export * as AspDateFormat from "./aspDateFormat";
+export * as ArrayUtils from "./arrayUtils";
 export * as Block from "./block";
 export * as BooleanUtils from "./booleanUtils";
 export * as Bus from "./bus";
@@ -9,6 +10,7 @@ export * as Dialogs from "./dialogs";
 export * as Email from "./email";
 export * as FieldTypes from "./fieldTypes";
 export * as Form from "./form";
+export * as Fullscreen from "./fullscreen";
 export * as Guid from "./guid";
 export * as Http from "./http";
 export * as Linq from "./linq";

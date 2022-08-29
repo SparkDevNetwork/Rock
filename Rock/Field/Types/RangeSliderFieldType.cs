@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -36,6 +37,20 @@ namespace Rock.Field.Types
     {
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            try
+            {
+                int? intValue = ( int? ) privateValue.AsDecimalOrNull();
+                return intValue.ToString();
+            }
+            catch ( System.OverflowException )
+            {
+                return "Not a valid integer";
+            }
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -46,15 +61,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            try
-            {
-                int? intValue = ( int? ) value.AsDecimalOrNull();
-                return base.FormatValue( parentControl, intValue.ToString(), configurationValues, condensed );
-            }
-            catch ( System.OverflowException )
-            {
-                return "Not a valid integer";
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>

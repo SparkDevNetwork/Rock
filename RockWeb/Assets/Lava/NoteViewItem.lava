@@ -120,7 +120,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 
                 <span class="note-details">
                     {% if NoteOptions.DisplayType != 'Light' %}
-                        {% if note.NoteType.Name != 'Personal Note' and note.NoteType.Name != 'Prayer Comment' %}<span class="tag-flair">{% if note.NoteType.BorderColor != '' %}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{% endif %}<span class="tag-label">{{ note.NoteType.Name }}</span></span> &nbsp;·&nbsp;{% endif %}
+                        <span class="tag-flair"><span class="tag-color" {% if note.NoteType.BorderColor != null %}style="background-color:{{ note.NoteType.BorderColor }}"{% endif %}></span><span class="tag-label">{{ note.NoteType.Name }}</span></span> &nbsp;·&nbsp;
                     {% endif %}
 
                     {% if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' %}

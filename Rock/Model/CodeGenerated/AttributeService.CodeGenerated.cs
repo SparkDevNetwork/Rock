@@ -56,6 +56,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<GroupRequirement>( Context ).Queryable().Any( a => a.DueDateAttributeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, GroupRequirement.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelAttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, MediaFolder.FriendlyTypeName );
@@ -97,6 +103,10 @@ namespace Rock.Model
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
                 AttributeColor = model.AttributeColor,
+                DefaultPersistedCondensedHtmlValue = model.DefaultPersistedCondensedHtmlValue,
+                DefaultPersistedCondensedTextValue = model.DefaultPersistedCondensedTextValue,
+                DefaultPersistedHtmlValue = model.DefaultPersistedHtmlValue,
+                DefaultPersistedTextValue = model.DefaultPersistedTextValue,
                 DefaultValue = model.DefaultValue,
                 Description = model.Description,
                 EnableHistory = model.EnableHistory,
@@ -108,6 +118,7 @@ namespace Rock.Model
                 IsActive = model.IsActive,
                 IsAnalytic = model.IsAnalytic,
                 IsAnalyticHistory = model.IsAnalyticHistory,
+                IsDefaultPersistedValueDirty = model.IsDefaultPersistedValueDirty,
                 IsGridColumn = model.IsGridColumn,
                 IsIndexEnabled = model.IsIndexEnabled,
                 IsMultiValue = model.IsMultiValue,
@@ -192,6 +203,10 @@ namespace Rock.Model
             target.AbbreviatedName = source.AbbreviatedName;
             target.AllowSearch = source.AllowSearch;
             target.AttributeColor = source.AttributeColor;
+            target.DefaultPersistedCondensedHtmlValue = source.DefaultPersistedCondensedHtmlValue;
+            target.DefaultPersistedCondensedTextValue = source.DefaultPersistedCondensedTextValue;
+            target.DefaultPersistedHtmlValue = source.DefaultPersistedHtmlValue;
+            target.DefaultPersistedTextValue = source.DefaultPersistedTextValue;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
             target.EnableHistory = source.EnableHistory;
@@ -205,6 +220,7 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.IsAnalytic = source.IsAnalytic;
             target.IsAnalyticHistory = source.IsAnalyticHistory;
+            target.IsDefaultPersistedValueDirty = source.IsDefaultPersistedValueDirty;
             target.IsGridColumn = source.IsGridColumn;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsMultiValue = source.IsMultiValue;

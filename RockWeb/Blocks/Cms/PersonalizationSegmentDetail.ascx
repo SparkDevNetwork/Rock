@@ -157,7 +157,7 @@
                             </div>
                         </div>
                         <div class="col flex-grow-0">
-                            <span>website(s)</span>
+                            <span>site(s)</span>
                         </div>
                     </div>
 
@@ -199,7 +199,7 @@
                         </div>
 
                         <div class="col flex-grow-0">
-                            <span>website(s)</span>
+                            <span>site(s)</span>
                         </div>
                     </div>
 

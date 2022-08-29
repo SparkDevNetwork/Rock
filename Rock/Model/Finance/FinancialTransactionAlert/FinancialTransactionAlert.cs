@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -253,7 +253,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionAlertConfiguration()
         {
-            this.HasOptional( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.TransactionId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.TransactionId ).WillCascadeOnDelete( true );
             this.HasRequired( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.FinancialTransactionAlertType ).WithMany( t => t.FinancialTransactionAlerts ).HasForeignKey( t => t.AlertTypeId ).WillCascadeOnDelete( true );
         }

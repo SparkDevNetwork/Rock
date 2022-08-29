@@ -62,13 +62,35 @@
   }
 }
 
+.section-header-hr {
+  margin-top: 16px;
+}
+
+.rock-header {
+  .title {
+    margin: 0;
+  }
+
+  .description {
+    margin: 0;
+    font-size: @font-size-small;
+    color: @text-muted;
+  }
+
+  hr {
+    &:extend(.section-header-hr);
+  }
+}
+
 .panel-section {
   border-color: @panel-section-border;
   box-shadow: none !important;
 
   > .panel-heading {
     position: relative;
+    padding: 18px;
     background: @panel-section-heading-bg;
+    border-radius: @panel-border-radius @panel-border-radius 0 0;
     &::after {
       position: absolute;
       right: (@panel-body-padding - 4px);
@@ -77,12 +99,23 @@
       content: "";
       border-bottom: 1px solid @input-border;
     }
+
+    .panel-title {
+      margin-bottom: 12px;
+    }
+
+    .description {
+      margin: 0;
+      color: @text-muted;
+    }
   }
 
   > .panel-body {
     background: @panel-section-body-bg;
+    border-radius: 0 0 @panel-border-radius @panel-border-radius;
   }
 }
+
 
 // Fancy Scrollbars
 
@@ -141,7 +174,7 @@
     display: inline-block;
     width: @font-size-xs;
     height: @font-size-xs;
-    margin: 0 8px 0 1px;
+    margin: 0 6px 0 1px;
     background-color: #999;
     border-radius: 50%;
   }
@@ -270,8 +303,8 @@
 
   .meta-body {
     display: flex;
-    flex-direction: column;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
 
     .flex {
@@ -306,19 +339,19 @@
 
 .note {
   + .note {
-    border-top: 1px solid #DEE2E6;
+    border-top: 1px solid #dee2e6;
   }
 
   .flag {
-    font-size: 12px;
     padding: 4px 8px 6px;
     margin: -16px -24px 12px;
+    font-size: 12px;
     color: @brand-danger;
     background: @state-danger-bg;
     border-top: 2px solid @brand-danger;
     @media @sm {
-      font-size: 14px;
       padding: 4px 23px 6px;
+      font-size: 14px;
     }
 
     &.warning {
@@ -435,9 +468,9 @@
 
 .note-editor {
   .meta-body {
+    background: @input-bg;
     border: 1px solid @input-border;
     border-radius: @input-border-radius;
-    background: @input-bg;
   }
 
   .settings {
@@ -522,8 +555,8 @@
 
   // Disable primary note field border and focus states
   .noteentry-control .form-control {
-    border: 0;
     background: transparent;
+    border: 0;
     box-shadow: none;
   }
 }

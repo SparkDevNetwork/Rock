@@ -2043,7 +2043,6 @@ namespace Rock.Model
             var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
 
             // Get the account identifier(s) for this transaction
-            var accountService = new FinancialAccountService( rockContext );
             var transactionAccountIds = transaction.TransactionDetails.Where( a => a.Amount > 0.00M ).Select( t => t.AccountId ).ToList();
             var accountAncestorIds = FinancialAccountCache.GetByIds( transactionAccountIds ).SelectMany( s => s.GetAncestorFinancialAccountIds() ).Distinct().ToList();
 
@@ -2373,8 +2372,7 @@ namespace Rock.Model
                         .FirstOrDefault( ic => ic.Id == structureEntityId.Value );
                     return $"{interactionComponent?.InteractionChannel?.Name} / {interactionComponent?.Name}";
                 case StreakStructureType.FinancialTransaction:
-                    var accountService = new FinancialAccountService( rockContext );
-                    return accountService.GetSelect( structureEntityId.Value, a => a.Name );
+                    return FinancialAccountCache.Get( structureEntityId.Value )?.Name;
                 default:
                     throw new NotImplementedException( string.Format( "Getting structure name for the StreakStructureType '{0}' is not implemented", structureType ) );
             }

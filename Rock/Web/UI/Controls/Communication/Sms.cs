@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -86,13 +87,19 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="communication">The communication.</param>
         public override void SetFromCommunication( CommunicationDetails communication )
         {
+            var currentPerson = ( HttpContext.Current.CurrentHandler as RockPage )?.CurrentPerson;
+
             EnsureChildControls();
             var valueItem = dvpFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
             if ( valueItem == null && communication.SMSFromDefinedValueId != null )
             {
                 var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-                dvpFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                if ( lookupDefinedValue != null && lookupDefinedValue.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                {
+                    dvpFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                }
             }
+
             dvpFrom.SetValue( communication.SMSFromDefinedValueId );
             tbMessage.Text = communication.SMSMessage;
         }

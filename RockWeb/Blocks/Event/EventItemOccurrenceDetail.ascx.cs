@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -856,6 +857,13 @@ namespace RockWeb.Blocks.Event
 
                 rockContext.SaveChanges();
                 eventItemOccurrence.SaveAttributeValues( rockContext );
+
+                // Update the content collection index.
+                new ProcessContentCollectionDocument.Message
+                {
+                    EntityTypeId = EntityTypeCache.GetId<EventItem>().Value,
+                    EntityId = eventItemOccurrence.EventItemId
+                }.Send();
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );

@@ -28,7 +28,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <Rock:Switch ID="swShowInactive" runat="server" OnCheckedChanged="swShowInactive_CheckedChanged" Text="Show Inactive" AutoPostBack="true" />
 
-                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" CssClass="input-width-xl mt-1 mt-sm-0" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
+                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" CssClass="input-width-xl input-sm mt-1 mt-sm-0" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
                 </div>
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
@@ -45,7 +45,7 @@
                                     <div class="example-toggle text-nowrap text-right d-none d-sm-block">
                                         <i class="fa fa-circle-o"></i> Show Details
                                     </div>
-                                    <div class="mb-2 mb-sm-0 mt-sm-2">
+                                    <div class="mb-2 mb-sm-0 mt-sm-2 text-right">
                                         <%# !Boolean.Parse(Eval("IsActive").ToString()) ? "<span class='label label-warning'>Inactive</span>" : "" %>
                                         <%# Boolean.Parse(Eval("IsSystem").ToString()) ? "<span class='label label-default'>System</span>" : "" %>
                                         <asp:Literal ID="litCategories" runat="server"></asp:Literal>
@@ -61,7 +61,6 @@
                                     <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>
                                 </div>
                                 <div id="divEditPanel" runat="server" class="pull-right">
-
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>

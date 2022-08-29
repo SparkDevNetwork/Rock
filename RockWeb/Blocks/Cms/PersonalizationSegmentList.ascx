@@ -18,6 +18,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gFilter" runat="server" OnApplyFilterClick="gfList_ApplyFilterClick" OnClearFilterClick="gfList_ClearFilterClick" >
                         <Rock:RockTextBox ID="tbNameFilter" runat="server" Label="Name" />
+                        <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Include Inactive" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" RowItemText="Personalization Segments" OnRowSelected="gList_RowSelected">
                         <Columns>
@@ -25,7 +26,12 @@
                             <Rock:RockBoundField DataField="FilterDataViewName" HeaderText="Data View" SortExpression="FilterDataViewName" />
                             <Rock:RockBoundField DataField="KnownIndividualsCount" HeaderText="Known Individuals" SortExpression="KnownIndividualsCount" />
                             <Rock:RockBoundField DataField="AnonymousIndividualsCount" HeaderText="Anonymous Individuals" SortExpression="AnonymousIndividualsCount" />
-                            <Rock:RockBoundField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <asp:TemplateField HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand">
+                                <ItemTemplate>
+                                    <a class="btn btn-default" href='<%# string.Format( "{0}{1}", ResolveRockUrl( "~/admin/cms/personalization-segments/" ), Eval("Guid") ) %>'><i class="fa fa-users"></i></a>
+                                </ItemTemplate>
+                            </asp:TemplateField>
                             <Rock:DeleteField OnClick="gList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

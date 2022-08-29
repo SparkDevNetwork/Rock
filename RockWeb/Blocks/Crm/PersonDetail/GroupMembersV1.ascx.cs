@@ -628,17 +628,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 currentPersonId = PageParameter( PageCache.PageContexts[Person.TypeName] );
             }
 
-            // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
-            var subpageRoute = Request.UrlProxySafe().AbsolutePath.ReplaceCaseInsensitive( ResolveRockUrl( $"~/Person/{currentPersonId}" ), "" );
+            // Look for a subpage route (anything after the "v1/Person/{id}" part of the URL)
+            var subpageRoute = Request.UrlProxySafe().AbsolutePath.ReplaceCaseInsensitive( ResolveRockUrl( $"~/v1/Person/{currentPersonId}" ), "" );
 
             // If the path is different, then append it onto the link
             if ( subpageRoute != Request.UrlProxySafe().AbsolutePath )
             {
-                return ResolveRockUrl( string.Format( "~/Person/{0}{1}", personId, subpageRoute ) );
+                return ResolveRockUrl( string.Format( "~/v1/Person/{0}{1}", personId, subpageRoute ) );
             }
             else
             {
-                return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
+                return ResolveRockUrl( string.Format( "~/v1/Person/{0}", personId ) );
             }
         }
 

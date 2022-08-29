@@ -26,7 +26,7 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
-import FlowNodeDiagram from "./StepFlow/flowNodeDiagram";
+import FlowNodeDiagram from "./StepFlow/flowNodeDiagram.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
@@ -95,7 +95,7 @@ export default defineComponent({
         const settings = ref<FlowNodeDiagramSettingsBag>({
             nodeWidth: configurationValues.nodeWidth,
             nodeVerticalSpacing: configurationValues.nodeVerticalSpacing,
-            nodeHorizontalSpacing: configurationValues.nodeHorizontalSpacing,
+            chartWidth: configurationValues.chartWidth,
             chartHeight: configurationValues.chartHeight
         });
 
@@ -168,7 +168,7 @@ export default defineComponent({
         <SectionHeader :title="configurationValues.programName + ' Path Flow'" :description="'The flow below shows how individuals move through the ' + configurationValues.stepTypeCount + ' step types in the ' + configurationValues.programName + ' Path program. You can filter the steps shown by date range or the number of levels to limit&nbsp;to.'" />
 
         <RockForm @submit="fetchData">
-            <div class="row form-row d-flex align-items-end flex-wrap mb-5">
+            <div class="row form-row d-flex align-items-start flex-wrap">
                 <div class="col-xs-12 col-lg-3">
                     <SlidingDateRangePicker v-model="dateRange" formGroupClasses="" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
                 </div>
@@ -176,6 +176,7 @@ export default defineComponent({
                 <DropDownList v-model="campus" formGroupClasses="col" label="Campus" :items="campusOptions" :showBlankItem="false" />
                 <div class="col flex-grow-0">
                     <div class="form-group">
+                        <label class="control-label">&nbsp;</label>
                         <RockButton class="btn-square" type="submit" :disabled="isLoading"><i class="fa fa-refresh" :class="{'fa-spin': isLoading}"></i></RockButton>
                     </div>
                 </div>

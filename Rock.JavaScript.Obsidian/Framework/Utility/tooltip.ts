@@ -49,7 +49,7 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
     }
 
     $(node).tooltip({
-        html: options?.html ?? false,
+        html: options?.html,
         sanitize: options?.sanitize ?? true
     });
 }

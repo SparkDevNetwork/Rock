@@ -28,6 +28,9 @@ export type GroupRequirementTypeBag = {
     /** Gets or sets a value indicating whether this requirement can expire. */
     canExpire: boolean;
 
+    /** Gets or sets the category identifier. */
+    categoryId?: number | null;
+
     /** Gets or sets the checkbox label. This is the text that is used for the checkbox if this is a manually set requirement */
     checkboxLabel?: string | null;
 
@@ -37,8 +40,23 @@ export type GroupRequirementTypeBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets the text for the "Does Not Meet" workflow link. */
+    doesNotMeetWorkflowLinkText?: string | null;
+
+    /** Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type it does not meet. */
+    doesNotMeetWorkflowTypeId?: number | null;
+
+    /** Gets or sets the number of days before the requirement is due. */
+    dueDateOffsetInDays?: number | null;
+
+    /** Gets or sets the type of due date. */
+    dueDateType: number;
+
     /** Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires */
     expireInDays?: number | null;
+
+    /** Gets or sets the icon CSS class. */
+    iconCssClass?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -52,8 +70,17 @@ export type GroupRequirementTypeBag = {
     /** Gets or sets the type of the requirement check. */
     requirementCheckType: number;
 
+    /** Gets or sets a value indicating whether this requirement type's "Does Not Meet" workflow should auto-initiate. */
+    shouldAutoInitiateDoesNotMeetWorkflow: boolean;
+
+    /** Gets or sets a value indicating whether this requirement type's "Warning" workflow should auto-initiate. */
+    shouldAutoInitiateWarningWorkflow: boolean;
+
     /** Gets or sets the SQL expression. */
     sqlExpression?: string | null;
+
+    /** Gets or sets the summary. */
+    summary?: string | null;
 
     /** Gets or sets the warning Rock.Model.DataView identifier. */
     warningDataViewId?: number | null;
@@ -63,6 +90,12 @@ export type GroupRequirementTypeBag = {
 
     /** Gets or sets the warning SQL expression. */
     warningSqlExpression?: string | null;
+
+    /** Gets or sets the text for the "Warning" workflow link. */
+    warningWorkflowLinkText?: string | null;
+
+    /** Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type's warning. */
+    warningWorkflowTypeId?: number | null;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;

@@ -156,64 +156,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the financial accounts lookup.
-        /// </summary>
-        /// <value>
-        /// The financial accounts lookup.
-        /// </value>
-        private Dictionary<int, FinancialAccountInfo> FinancialAccountsLookup
-        {
-            get
-            {
-                if ( _financialAccountsCache == null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        _financialAccountsCache = new FinancialAccountService( rockContext ).Queryable().AsNoTracking()
-                            .Select( a => new
-                            {
-                                a.Id,
-                                a.ParentAccountId,
-                                a.CampusId,
-                                a.IsActive,
-                                a.StartDate,
-                                a.EndDate
-                            } )
-                            .ToDictionary(
-                                k => k.Id,
-                                v => new FinancialAccountInfo
-                                {
-                                    Id = v.Id,
-                                    ParentAccountId = v.ParentAccountId,
-                                    CampusId = v.CampusId,
-                                    IsActive = v.IsActive,
-                                    StartDate = v.StartDate,
-                                    EndDate = v.EndDate
-                                } );
-
-                        foreach ( var account in _financialAccountsCache.Values )
-                        {
-                            account.ActiveChildAccounts = _financialAccountsCache.Values
-                                .Where( a =>
-                                    a.ParentAccountId == account.Id
-                                    && a.IsActive
-                                    && ( a.StartDate == null || a.StartDate <= RockDateTime.Today )
-                                    && ( a.EndDate == null || a.EndDate >= RockDateTime.Today )
-                                )
-                                .ToList();
-                            if ( account.ParentAccountId.HasValue )
-                            {
-                                account.ParentAccount = _financialAccountsCache.GetValueOrNull( account.ParentAccountId.Value );
-                            }
-                        }
-                    }
-                }
-
-                return _financialAccountsCache;
-            }
-        }
-
-        /// <summary>
         /// Class to specify an amount for a selected AccountId
         /// </summary>
         public class AccountIdAmount
@@ -254,6 +196,7 @@ namespace Rock.Web.UI.Controls
             public bool ReadOnly { get; set; } = false;
         }
 
+        /*
         /// <summary>
         /// The financial accounts cache
         /// </summary>
@@ -285,6 +228,7 @@ namespace Rock.Web.UI.Controls
                 return Id.ToString();
             }
         }
+        */
 
         /// <summary>
         /// Gets or sets the selected account ids (including the ones where an amount is not specified)
@@ -307,7 +251,7 @@ namespace Rock.Web.UI.Controls
                     if ( campusId.HasValue )
                     {
                         HashSet<int> selectedAccountIds = new HashSet<int>();
-                        foreach ( var displayedAccount in this.SelectableAccountIds.Select( a => FinancialAccountsLookup[a] ).ToList() )
+                        foreach ( var displayedAccount in this.SelectableAccountIds.Select( a => FinancialAccountCache.Get( a ) ).ToList() )
                         {
                             var returnedAccountId = GetBestMatchingAccountIdForCampusFromDisplayedAccount( campusId.Value, displayedAccount );
                             selectedAccountIds.Add( returnedAccountId );
@@ -325,7 +269,7 @@ namespace Rock.Web.UI.Controls
                     int? displayedAccountId = _ddlAccountSingle.SelectedValueAsId();
                     if ( displayedAccountId.HasValue )
                     {
-                        var displayedAccount = FinancialAccountsLookup[displayedAccountId.Value];
+                        var displayedAccount = FinancialAccountCache.Get( displayedAccountId.Value );
                         int selectedAccountId;
                         if ( campusId.HasValue )
                         {
@@ -414,10 +358,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="selectedAccountId">The selected account identifier.</param>
         private void SetCampusAndDisplayedAccountFromSelectedAccount( int? selectedAccountId )
         {
-            FinancialAccountInfo selectedAccount;
+            FinancialAccountCache selectedAccount;
             if ( selectedAccountId.HasValue )
             {
-                selectedAccount = this.FinancialAccountsLookup.GetValueOrNull( selectedAccountId.Value );
+                selectedAccount = FinancialAccountCache.Get( selectedAccountId.Value );
             }
             else
             {
@@ -425,7 +369,7 @@ namespace Rock.Web.UI.Controls
             }
 
             int? campusId = selectedAccount?.CampusId;
-            FinancialAccountInfo displayedAccount = GetDisplayedAccountFromSelectedAccount( selectedAccount );
+            var displayedAccount = GetDisplayedAccountFromSelectedAccount( selectedAccount );
 
             this.CampusId = campusId;
 
@@ -442,11 +386,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="selectedAccount">The selected account.</param>
         /// <returns></returns>
-        private FinancialAccountInfo GetDisplayedAccountFromSelectedAccount( FinancialAccountInfo selectedAccount )
+        private FinancialAccountCache GetDisplayedAccountFromSelectedAccount( FinancialAccountCache selectedAccount )
         {
             int? selectedAccountId = selectedAccount?.Id;
 
-            FinancialAccountInfo displayedAccount;
+            FinancialAccountCache displayedAccount;
             if ( selectedAccountId.HasValue && this.SelectableAccountIds.Contains( selectedAccountId.Value ) )
             {
                 // if the selected account is one of the selectable accounts (displayed accounts) set the displayed account to the selected account (instead of displaying the parent account)
@@ -473,7 +417,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="displayedAccount">The displayed account.</param>
         /// <returns></returns>
-        private int GetBestMatchingAccountIdForCampusFromDisplayedAccount( int campusId, FinancialAccountInfo displayedAccount )
+        private int GetBestMatchingAccountIdForCampusFromDisplayedAccount( int campusId, FinancialAccountCache displayedAccount )
         {
             if ( displayedAccount.CampusId.HasValue && displayedAccount.CampusId == campusId )
             {
@@ -483,7 +427,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = displayedAccount.ActiveChildAccounts.FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
+                var firstMatchingChildAccount = displayedAccount.ChildAccounts.Where(a => a.IsActive).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
                 if ( firstMatchingChildAccount != null )
                 {
                     // one of the child accounts is associated with the campus so, return the child account
@@ -783,7 +727,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var hfAccountAmountMultiAccountId = item.FindControl( RepeaterControlIds.ID_hfAccountAmountMultiAccountId ) as HiddenField;
                         var displayedAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
-                        var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
+                        var displayedAccount = FinancialAccountCache.Get ( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
                         var cbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
                         resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, cbAccountAmountMulti.Value ) );
@@ -792,7 +736,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     var displayedAccountId = _ddlAccountSingle.SelectedValue.AsInteger();
-                    var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
+                    var displayedAccount = FinancialAccountCache.Get( displayedAccountId );
                     var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
 
                     resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, _cbAmountAccountSingle.Value ) );
@@ -811,7 +755,7 @@ namespace Rock.Web.UI.Controls
                     foreach ( var selectedAccountAmount in value )
                     {
                         // get the best matching accountId for the specified selectedAccountId
-                        var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
+                        var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountCache.Get( selectedAccountAmount.AccountId ) )?.Id;
                         decimal? selectedAmount = selectedAccountAmount.Amount;
 
                         // find the repeater item for the displayedAccountId then set the displayed amount for that account
@@ -839,7 +783,7 @@ namespace Rock.Web.UI.Controls
                         return;
                     }
 
-                    var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
+                    var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountCache.Get( selectedAccountAmount.AccountId ) )?.Id;
                     _ddlAccountSingle.SetValue( displayedAccountId );
                     _cbAmountAccountSingle.Value = selectedAccountAmount.Amount;
                     _cbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;

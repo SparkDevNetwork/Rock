@@ -57,7 +57,7 @@ namespace Rock.Personalization
         /// <returns><c>true</c> if the data is stale; otherwise, <c>false</c>.</returns>
         public bool IsStale( DateTime currentDateTime )
         {
-            var activeSegments = PersonalizationSegmentCache.GetActiveSegments( false );
+            var activeSegments = PersonalizationSegmentCache.GetActiveSegments( true );
             if ( !activeSegments.Any() )
             {
                 return false;

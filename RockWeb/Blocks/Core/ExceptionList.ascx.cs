@@ -21,12 +21,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -57,9 +56,11 @@ namespace RockWeb.Blocks.Administration
         Order = 1 )]
     [DefinedValueField(
         Rock.SystemGuid.DefinedType.CHART_STYLES,
+        "Chart Style",
         Key = AttributeKey.ChartStyle,
-        Name = "Chart Style",
-        Order = 2 )]
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Order = 2)]
     [BooleanField(
         "Show Legend",
         Key = AttributeKey.ShowLegend,
@@ -647,7 +648,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="newIndex"></param>
         private void MoveItem( int oldIndex, int newIndex )
         {
-            bool success = OnReorderStepType( oldIndex, newIndex );
+            bool success = OnMoveItem( oldIndex, newIndex );
 
             if ( success )
             {
@@ -752,7 +753,7 @@ namespace RockWeb.Blocks.Administration
 
             var settings = OnStoreFilterSettings();
 
-            OnPopulateListItems( dataContext, this.ListGridControl, settings, ListGridControl.SortProperty );
+            OnPopulateListItems( dataContext );
 
             var dataSource = ListGridControl.DataSource;
 
@@ -780,11 +781,6 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
             }
-        }
-
-        private IQueryable<T> GetQueryableAsGeneric<T>( IQueryable query )
-        {
-            return query.Cast<T>();
         }
 
         #endregion
@@ -939,34 +935,6 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region ISecondaryBlock Implementation
-
-        /// <summary>
-        /// Indicates if this block should behave as a secondary block that responds to the state of a primary block on the same page.
-        /// </summary>
-        public bool IsSecondaryBlock { get; set; }
-
-        /// <summary>
-        /// Sets the visibility of this block in response to a directive from a primary block.
-        /// </summary>
-        /// <param name="visible">if set to <c>true</c> [visible].</param>
-        public void SetVisible( bool visible )
-        {
-            if ( !IsSecondaryBlock )
-            {
-                return;
-            }
-
-            var panel = GetMainUpdatePanel();
-
-            if ( panel != null )
-            {
-                panel.Visible = visible;
-            }
-        }
-
-        #endregion
-
         #region Default Implementation
 
         ///
@@ -1061,7 +1029,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="oldIndex"></param>
         /// <param name="newIndex"></param>
         /// <returns>Null if this operation is not implemented.</returns>
-        private bool OnReorderStepType( int oldIndex, int newIndex )
+        private bool OnMoveItem( int oldIndex, int newIndex )
         {
             throw new NotImplementedException();
         }
@@ -1088,7 +1056,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         protected void OnInitializeBlock( bool isPostBack )
         {
-            InitializeCharts();
+            InitializeCharts( null );
         }
 
         /// <summary>
@@ -1257,17 +1225,100 @@ namespace RockWeb.Blocks.Administration
             return value;
         }
 
+        private IQueryable<ExceptionLog> GetExceptionQuery( RockContext dataContext, GetExceptionQueryArgs args )
+        {
+            dataContext.Database.CommandTimeout = 60;
+            // Get the summary count attribute.
+            int summaryCountDays = Convert.ToInt32( GetAttributeValue( AttributeKey.SummaryCountDays ) );
+
+            var subsetCountField = gExceptionList.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "SubsetCount" );
+
+            if ( subsetCountField != null )
+            {
+                // Set the header text for the subset/summary field.
+                subsetCountField.HeaderText = string.Format( "Last {0} days", summaryCountDays );
+            }
+
+            // Get the subset/summary date.
+            DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
+
+            // Construct the query...
+            var exceptionService = new ExceptionLogService( dataContext );
+
+            // Filter for top-level exceptions that have a datestamp.
+            var filterQuery = exceptionService.Queryable().AsNoTracking()
+                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null );
+
+            // Filter by: SiteId
+            if ( args.SiteId.GetValueOrDefault(0) != 0 )
+            {
+                filterQuery = filterQuery.Where( e => e.SiteId == args.SiteId.Value );
+            }
+
+            // Filter by: PageId
+            if ( args.PageId.GetValueOrDefault(0) != 0 )
+            {
+                filterQuery = filterQuery.Where( e => e.PageId == args.PageId.Value );
+            }
+
+            // Filter by: PersonId
+            if ( args.PersonId.GetValueOrDefault(0) != 0 )
+            {
+                filterQuery = filterQuery.Where( e => e.CreatedByPersonAlias != null && e.CreatedByPersonAlias.PersonId == args.PersonId.Value );
+            }
+
+            // Filter by: Exception Type
+            if ( !string.IsNullOrEmpty( args.ExceptionTypeName ) )
+            {
+                filterQuery = filterQuery.Where( e => e.ExceptionType != null && e.ExceptionType.Contains( args.ExceptionTypeName ) );
+            }
+
+            // Filter by: Date Range
+            var dateRange = args.Period;
+            if ( dateRange != null )
+            {
+                if ( dateRange.Start.HasValue )
+                {
+                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
+                }
+                if ( dateRange.End.HasValue )
+                {
+                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
+                }
+            }
+
+            // Exclude all inner exceptions.
+            filterQuery = exceptionService.FilterByOutermost( filterQuery );
+
+            return filterQuery;
+        }
+
+        private GetExceptionQueryArgs GetExceptionQueryArguments()
+        {            
+            var filterSettingsKeyValueMap = OnStoreFilterSettings();
+
+            var args = new GetExceptionQueryArgs();
+            args.SiteId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Site, string.Empty ).AsIntegerOrNull();
+            args.PageId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Page, string.Empty ).AsIntegerOrNull();
+            args.PersonId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.User, string.Empty ).AsIntegerOrNull();
+            args.ExceptionTypeName = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.ExceptionType, string.Empty );
+
+            var dateRangeSettings = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.DateRange, string.Empty );
+            args.Period = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeSettings );
+
+            return args;
+        }
+
         /// <summary>
         /// Get the data source for the list after applying the specified filter settings.
         /// </summary>
         /// <param name="dataContext"></param>
         /// <param name="filterSettingsKeyValueMap"></param>
         /// <returns></returns>
-        private void OnPopulateListItems( RockContext dataContext, Grid listControl, Dictionary<string, string> filterSettingsKeyValueMap, SortProperty sortProperty )
+        private void OnPopulateListItems( RockContext dataContext )
         {
             try
             {
-                dataContext.Database.CommandTimeout = 60;
                 // Get the summary count attribute.
                 int summaryCountDays = Convert.ToInt32( GetAttributeValue( AttributeKey.SummaryCountDays ) );
 
@@ -1280,61 +1331,12 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // Get the subset/summary date.
-                DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
+                var minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
                 // Construct the query...
-                var exceptionService = new ExceptionLogService( dataContext );
+                var args = GetExceptionQueryArguments();
 
-                var filterQuery = exceptionService.Queryable().AsNoTracking();
-
-                // Filter by: SiteId
-                int siteId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Site, string.Empty ).AsInteger();
-
-                if ( siteId != 0 )
-                {
-                    filterQuery = filterQuery.Where( e => e.SiteId == siteId );
-                }
-
-                // Filter by: PageId
-                int pageId = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.Page, string.Empty ).AsInteger();
-
-                if ( pageId != 0 )
-                {
-                    filterQuery = filterQuery.Where( e => e.PageId == pageId );
-                }
-
-                // Filter by: PersonId
-                int userPersonID = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.User, string.Empty ).AsInteger();
-
-                if ( userPersonID != 0 )
-                {
-                    filterQuery = filterQuery.Where( e => e.CreatedByPersonAlias != null && e.CreatedByPersonAlias.PersonId == userPersonID );
-                }
-
-                // Filter by: Exception Type
-                var exceptionType = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.ExceptionType, string.Empty );
-
-                if ( !string.IsNullOrEmpty( exceptionType ) )
-                {
-                    filterQuery = filterQuery.Where( e => e.ExceptionType != null && e.ExceptionType.Contains( exceptionType ) );
-                }
-
-                // Filter by: Date Range
-                var dateRangeSettings = filterSettingsKeyValueMap.GetValueOrDefault( FilterSettingName.DateRange, string.Empty );
-
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeSettings );
-
-                if ( dateRange.Start.HasValue )
-                {
-                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
-                }
-                if ( dateRange.End.HasValue )
-                {
-                    filterQuery = filterQuery.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
-                }
-
-                // Exclude all inner exceptions.
-                filterQuery = exceptionService.FilterByOutermost( filterQuery );
+                var filterQuery = GetExceptionQuery( dataContext, args );
 
                 // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it.
                 var filterQueryList = filterQuery.Select( s => new { s.ExceptionType, s.Description, s.CreatedDateTime, s.Id } ).ToList();
@@ -1390,7 +1392,7 @@ namespace RockWeb.Blocks.Administration
                 gExceptionList.DataBind();
 
                 // Update the chart.
-                InitializeCharts();
+                InitializeCharts( filterQuery );
             }
             catch ( Exception ex )
             {
@@ -1416,49 +1418,38 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Configure the chart controls.
         /// </summary>
-        private void InitializeCharts()
+        private void InitializeCharts( IQueryable<ExceptionLog> exceptionsQuery )
         {
-            lcExceptions.Options.legend = lcExceptions.Options.legend ?? new Legend();
-            lcExceptions.Options.legend.show = GetAttributeValue( AttributeKey.ShowLegend ).AsBooleanOrNull();
-            lcExceptions.Options.legend.position = GetAttributeValue( AttributeKey.LegendPosition );
-            lcExceptions.Options.SetChartStyle( GetChartStyle() );
+            var chartStyle = GetChartStyle();
 
-            bcExceptions.Options.legend = bcExceptions.Options.legend ?? new Legend();
-            bcExceptions.Options.legend.show = GetAttributeValue( AttributeKey.ShowLegend ).AsBooleanOrNull();
-            bcExceptions.Options.legend.position = GetAttributeValue( AttributeKey.LegendPosition );
-            bcExceptions.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
-            bcExceptions.Options.series.bars.barWidth = 0.6;
-            bcExceptions.Options.series.bars.align = "center";
+            lcExceptions.SetChartStyle( chartStyle );
 
-            // Set chart style after setting options so they are not overwritten.
-            bcExceptions.Options.SetChartStyle( GetChartStyle() );
+            bcExceptions.BarWidth = 0.6;
+            bcExceptions.SetChartStyle( chartStyle );
 
-            bcExceptions.TooltipFormatter = @"
-function(item) {
-    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
-    var dateText = itemDate.toLocaleDateString();
-    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
-    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
-}
-";
+            if ( exceptionsQuery == null )
+            {
+                return;
+            }
+
+            var exceptions = GetChartData( exceptionsQuery );
 
             // Select the type of graph to show.
             // If there is only one X-axis datapoint, show a barchart.
-            var dataContext = GetDataContext();
+            var singleDate = exceptions.GroupBy( a => a.CreatedDate.Value.Date ).Count() == 1;
+            if ( singleDate )
+            {
+                // Show a bar chart to summarize the data for a single date.
+                var chartDataByCategory = bcExceptions.GetCategorySeriesFromChartData( exceptions );
+                bcExceptions.SetChartDataItems( chartDataByCategory );
+            }
+            else
+            {
+                lcExceptions.SetChartDataItems( exceptions );
+            }
 
-            var exceptionLogService = new ExceptionLogService( dataContext );
-
-            var exceptionListCount = exceptionLogService.Queryable()
-                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null )
-                .GroupBy( x => DbFunctions.TruncateTime( x.CreatedDateTime.Value ) )
-                .Count();
-
-
-            var showBarchart = ( exceptionListCount == 1 );
-
-            bcExceptions.Visible = showBarchart;
-            lcExceptions.Visible = !showBarchart;
+            bcExceptions.Visible = singleDate;
+            lcExceptions.Visible = !singleDate;
         }
 
         /// <summary>
@@ -1469,6 +1460,8 @@ function(item) {
         /// </value>
         private ChartStyle GetChartStyle()
         {
+            var chartStyle = new ChartStyle();
+
             var chartStyleDefinedValueGuid = GetAttributeValue( AttributeKey.ChartStyle ).AsGuidOrNull();
 
             if ( chartStyleDefinedValueGuid.HasValue )
@@ -1483,7 +1476,7 @@ function(item) {
                     {
                         definedValue.LoadAttributes( rockContext );
 
-                        return ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( AttributeKey.ChartStyle ) );
+                        chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( AttributeKey.ChartStyle ) );
                     }
                     catch
                     {
@@ -1492,7 +1485,12 @@ function(item) {
                 }
             }
 
-            return new ChartStyle();
+            // Apply the block settings to the chart style.
+            chartStyle.Legend = new LegendStyle();
+            chartStyle.Legend.Position = GetAttributeValue( AttributeKey.LegendPosition );
+            chartStyle.Legend.Show = GetAttributeValue( AttributeKey.ShowLegend ).AsBoolean();
+
+            return chartStyle;
         }
 
         /// <summary>
@@ -1591,5 +1589,97 @@ function(item) {
                 }
             }
         }
+
+        private IEnumerable<ExceptionChartData> GetChartData( IQueryable<ExceptionLog> exceptionsQuery )
+        {
+            // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
+            var rockContext = new RockContext();
+            var exceptionService = new ExceptionLogService( rockContext );
+
+            var exceptionList = exceptionsQuery.AsNoTracking()
+                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null ).Select( s => new
+                {
+                    s.CreatedDateTime,
+                    s.ExceptionType
+                } ).ToList();
+
+            var exceptionSummaryList = exceptionList.GroupBy( x => x.CreatedDateTime.Value.Date )
+            .Select( eg => new
+            {
+                DateValue = eg.Key,
+                ExceptionCount = eg.Count(),
+                UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
+            } )
+            .OrderBy( eg => eg.DateValue ).ToList();
+            
+            var allCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
+            {
+                CreatedDate = c.DateValue,
+                DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
+                YValue = c.ExceptionCount,
+                SeriesName = "Total Exceptions"
+            } );
+
+            var uniqueCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
+            {
+                CreatedDate = c.DateValue,
+                DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
+                YValue = c.UniqueExceptionCount,
+                SeriesName = "Unique Exceptions"
+            } );
+
+            var result = allCountsQry.Union( uniqueCountsQry );
+            return result;
+        }
     }
+
+    #region Helper Classes
+
+    internal class GetExceptionQueryArgs
+    {
+        public int? SiteId { get; set; }
+        public int? PageId { get; set; }
+        public int? PersonId { get; set; }
+        public string ExceptionTypeName { get; set; }
+        public DateRange Period { get; set; }
+    }
+
+    internal class ExceptionChartData : IChartData
+    {
+        public DateTime? CreatedDate { get; set; }
+
+        /// <summary>
+        /// Gets the date time stamp.
+        /// </summary>
+        /// <value>
+        /// The date time stamp.
+        /// </value>
+        public long DateTimeStamp { get; set; }
+
+        /// <summary>
+        /// Gets the y value.
+        /// </summary>
+        /// <value>
+        /// The y value.
+        /// </value>
+        public decimal? YValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        public string SeriesName { get; set; }
+
+        public string MetricValuePartitionEntityIds
+        {
+            get
+            {
+                return null;
+            }
+        }
+    }
+
+    #endregion
 }

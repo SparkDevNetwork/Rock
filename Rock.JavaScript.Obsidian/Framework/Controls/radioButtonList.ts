@@ -144,13 +144,13 @@ export default defineComponent({
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
-                    <label v-for="item in actualItems" class="radio-inline" :for="getItemUniqueId(uniqueId, item)">
+                    <label v-for="item in actualItems" class="radio-inline" :for="getItemUniqueId(uniqueId, item)" :key="item.value">
                         <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
                         <span class="label-text">{{item.text}}</span>
                     </label>
                 </template>
                 <template v-else>
-                    <div v-for="item in actualItems" class="radio">
+                    <div v-for="item in actualItems" class="radio" :key="item.value">
                         <label :for="getItemUniqueId(uniqueId, item)">
                             <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
                             <span class="label-text">{{item.text}}</span>

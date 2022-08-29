@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ATTRIBUTE )]
-    public class AttributeFieldType : FieldType, ICachedEntitiesFieldType, IEntityFieldType
+    public class AttributeFieldType : FieldType, ICachedEntitiesFieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Configuration
@@ -200,6 +201,63 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var names = new List<string>();
+            RockContext rockContext = null;
+            AttributeService attributeService = null;
+
+            foreach ( var guid in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+            {
+                // It's possible that this attribute field type is pointing
+                // back to our own attribute which could now cause an infinite
+                // loop. So try to get it from the cache without adding it and
+                // if that fails load from the database.
+                if ( AttributeCache.TryGet( guid, out var attributeCache ) )
+                {
+                    names.Add( attributeCache.Name );
+                }
+                else
+                {
+                    if ( rockContext == null )
+                    {
+                        rockContext = new RockContext();
+                        attributeService = new AttributeService( rockContext );
+                    }
+
+                    var attributeName = attributeService.GetSelect( guid, a => a.Name );
+
+                    if ( attributeName != null )
+                    {
+                        names.Add( attributeName );
+
+                        // Start a task to make sure this attribute gets loaded
+                        // into cache since we'll probably need it in the future.
+                        Task.Run( async () =>
+                        {
+                            // Brief delay to let things settle.
+                            await Task.Delay( 25 );
+                            AttributeCache.Get( guid );
+                        } );
+                    }
+                }
+            }
+
+            // Clean up if we created a context.
+            if ( rockContext != null )
+            {
+                rockContext.Dispose();
+            }
+
+            return names.AsDelimited( ", " );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -210,25 +268,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var names = new List<string>();
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var attribute = AttributeCache.Get( guid );
-                    if ( attribute != null )
-                    {
-                        names.Add( attribute.Name );
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -505,6 +547,73 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            RockContext rockContext = null;
+            AttributeService attributeService = null;
+            var entityReferences = new List<ReferencedEntity>();
+            var attributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id;
+
+            foreach ( var guid in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+            {
+                // It's possible that this attribute field type is pointing
+                // back to our own attribute which could now cause an infinite
+                // loop. So try to get it from the cache without adding it and
+                // if that fails load from the database.
+                if ( AttributeCache.TryGet( guid, out var attributeCache ) )
+                {
+                    entityReferences.Add( new ReferencedEntity( attributeEntityTypeId, attributeCache.Id ) );
+                }
+                else
+                {
+                    if ( rockContext == null )
+                    {
+                        rockContext = new RockContext();
+                        attributeService = new AttributeService( rockContext );
+                    }
+
+                    var attributeId = attributeService.GetSelect( guid, a => ( int? ) a.Id );
+
+                    if ( attributeId.HasValue )
+                    {
+                        entityReferences.Add( new ReferencedEntity( attributeEntityTypeId, attributeId.Value ) );
+
+                        // Start a task to make sure this attribute gets loaded
+                        // into cache since we'll probably need it in the future.
+                        Task.Run( async () =>
+                        {
+                            // Brief delay to let things settle.
+                            await Task.Delay( 25 );
+                            AttributeCache.Get( guid );
+                        } );
+                    }
+                }
+            }
+
+            return entityReferences;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // If the Name property of an Attribute we are referencing changes
+            // then we need to update our persisted values.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Rock.Model.Attribute>().Value, nameof( Rock.Model.Attribute.Name ) )
+            };
+        }
+
         #endregion
     }
 }

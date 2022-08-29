@@ -93,7 +93,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute(
         "Contact",
         "Attribute Value",
-        Description = "",
+        Description = "A optional person to connect to the business.",
         IsRequired = false,
         Order = 5,
         Key = AttributeKey.Contact,
@@ -102,7 +102,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute(
         "Business",
         "Attribute Value",
-        Description = "",
+        Description = "The resulting business that was either matched or created. This will return as a person attribute since businesses are people in the database.",
         IsRequired = false,
         Order = 6,
         Key = AttributeKey.Business,
@@ -170,7 +170,7 @@ namespace Rock.Workflow.Action
             }
 
             // Business Name
-            business.LastName = businessName.FixCase();
+            business.LastName = businessName;
             business.Email = email;
 
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( phoneNumber ) ) )

@@ -53,8 +53,8 @@ namespace Rock.Model
         public PersonalizationType PersonalizationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the personalization type identifier. Based on the <see cref="PersonalizationType"/> the <see cref="PersonalizationTypeId"/>
-        /// can be an identifier for <see cref="PersonalizationSegment"/> or a <see cref="RequestFilter"/>
+        /// Gets or sets the ID of the Entity based on the <see cref="PersonalizationType"/> the <see cref="PersonalizationEntityId"/>.
+        /// Can be an identifier for <see cref="PersonalizationSegment"/> or a <see cref="RequestFilter"/>.
         /// </summary>
         /// <value>
         /// The personalization type identifier.
@@ -62,7 +62,7 @@ namespace Rock.Model
         [DataMember]
         [Key]
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
-        public int PersonalizationTypeId { get; set; }
+        public int PersonalizationEntityId { get; set; }
 
         #region Navigation Properties
 
@@ -88,7 +88,7 @@ namespace Rock.Model
         /// </summary>
         public PersonAliasPersonalizationConfiguration()
         {
-            HasKey( a => new { a.PersonAliasId, a.PersonalizationType, a.PersonalizationTypeId } );
+            HasKey( a => new { a.PersonAliasId, a.PersonalizationType, a.PersonalizationEntityId } );
             HasRequired( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
         }
     }

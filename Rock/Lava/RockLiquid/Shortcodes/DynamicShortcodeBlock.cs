@@ -70,7 +70,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcodeId = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault()?.Id ?? 9;
+            _shortcodeId = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault()?.Id ?? 0;
 
             base.Initialize( tagName, markup, tokens );
         }

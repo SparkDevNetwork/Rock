@@ -20,7 +20,7 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the AddNamedTag API action of
+    /// The options that can be passed to the AddEntityTag API action of
     /// the EntityTagList control.
     /// </summary>
     public class EntityTagListAddEntityTagOptionsBag

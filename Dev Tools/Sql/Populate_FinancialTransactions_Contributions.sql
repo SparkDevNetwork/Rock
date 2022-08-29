@@ -2,9 +2,9 @@ set nocount on
 
 /* Change these settings to your liking*/
 declare
-    @yearsBack int = 5,
+    @yearsBack int = 10,
     @randomizePersonList bit = 1,  /* set to false to use a consistent set of X people (ordered by Person.Id) instead of using a randomized set */
-    @maxPersonCount INT = 100, /* limit to a count of X persons in the database (Handy for testing Statement Generator) */
+    @maxPersonCount INT = 1000, /* limit to a count of X persons in the database (Handy for testing Statement Generator) */
     @maxTransactionCount int = 500000, 
     @maxBatchNumber INT = 1000
 
@@ -20,7 +20,8 @@ declare
   @currencyTypeCheck int = (select top 1 Id from DefinedValue where Guid = '8B086A19-405A-451F-8D44-174E92D6B402'),
   @currencyTypeCreditCard int = (select top 1 Id from DefinedValue where Guid = '928A2E04-C77B-4282-888F-EC549CEE026A'),
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
-  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01') --FINANCIAL_SOURCE_TYPE 
+  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
+  @financialTestGatewayId int = (select top 1 Id from  FinancialGateway where [Guid] = '6432d2d2-32ff-443d-b5b3-fb6c8414c3ad') -- Test Gateway
 
 declare
   @sourceTypeValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID()), 
@@ -83,10 +84,21 @@ BEGIN
     DEALLOCATE personAliasIdCursor;
 END
 
--- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
-declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select top( @maxPersonCount ) Id from PersonAlias 
+declare @personAliasIds table ( id Int not null );
+
+-- Get a list of person alias ids into a temporary table so that the loop uses the same set of PersonAliasIds every time
+-- Exclude Giver Anonymous and Anonymous Visitor
+insert into @personAliasIds
+select top( @maxPersonCount ) pa.Id from 
+    PersonAlias pa
+    inner join Person p on pa.PersonId = p.Id
+    where p.[Guid] not in ('7ebc167b-512d-4683-9d80-98b6bb02e1b9', '802235dc-3ca5-94b0-4326-aace71180f48') 
     order by 
     case when @randomizePersonList = 1 then CHECKSUM(NEWID()) else PersonId end
+
+
+-- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
+declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select Id from @personAliasIds 
 
 open personAliasIdCursor;
 
@@ -128,7 +140,7 @@ begin
         SET @transactionAmount = (SELECT round(w.r, 1)
                 FROM (
                     SELECT (
-                            CASE floor(rand(CHECKSUM(newid())) * 10)
+                            CASE floor(rand(CHECKSUM(newid())) * 12)
                                 WHEN 1
                                     THEN 100.00
                                 WHEN 2
@@ -218,6 +230,7 @@ begin
         INSERT INTO [dbo].[FinancialTransaction]
                     ([AuthorizedPersonAliasId]
                     ,[BatchId]
+                    ,[FinancialGatewayId]
                     ,[TransactionDateTime]
                     ,[TransactionDateKey]
                     ,[SundayDate]
@@ -235,6 +248,7 @@ begin
                 VALUES
                     (@authorizedPersonAliasId
                     ,@batchId
+                    ,@financialTestGatewayId
                     ,@transactionDateTime
                     ,CONVERT(INT, (CONVERT(CHAR(8), @transactionDateTime, 112)))
                     ,dbo.ufnUtility_GetSundayDate(@transactionDateTime)

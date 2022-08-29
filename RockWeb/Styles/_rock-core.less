@@ -656,6 +656,10 @@ th[align="right"] {
       background: @gray-200;
     }
 
+    .form-group + h4 {
+      margin-top: 24px;
+    }
+
     // styles for matrix attributes
     .form-group.static-control.matrix-attribute label {
       width: 100%;
@@ -732,6 +736,34 @@ th[align="right"] {
 
   .panel-sidebar {
     border-right: 1px solid @panel-border;
+  }
+}
+
+.panel-body-columns {
+  padding: 0;
+  margin: -@panel-body-padding;
+
+  > [class*="col-"] {
+    padding: @panel-body-padding;
+  }
+
+  .sidebar {
+    background-color: @panel-drawer-bg;
+    border-bottom: 1px solid @panel-border;
+
+    &:last-child {
+      border-top: 1px solid @panel-border;
+    }
+
+    @media (min-width: @screen-md-min) {
+      border-bottom: 0;
+      border-right: 1px solid @panel-border;
+
+      &:last-child {
+        border-top: 0;
+        border-left: 1px solid @panel-border;
+      }
+    }
   }
 }
 

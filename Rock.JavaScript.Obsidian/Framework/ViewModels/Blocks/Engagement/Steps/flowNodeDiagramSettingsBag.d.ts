@@ -29,8 +29,8 @@ export type FlowNodeDiagramSettingsBag = {
     /** Gets or sets the Node vertical spacing */
     nodeVerticalSpacing?: number | null;
 
-    /** Gets or sets the Node horizontal spacing */
-    nodeHorizontalSpacing?: number | null;
+    /** Gets or sets the chart width */
+    chartWidth?: number | null;
 
     /** Gets or sets the chart height */
     chartHeight?: number | null;

@@ -2113,9 +2113,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
         private void SaveAttributeToAttributeState()
         {
-#pragma warning disable 0618 // Type or member is obsolete
-            var attribute = SaveChangesToStateCollection( edtAttributes, AttributesState );
-#pragma warning restore 0618 // Type or member is obsolete
+            var attribute = edtAttributes.SaveChangesToStateCollection( AttributesState );
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -2124,7 +2122,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             ReOrderAttributes( AttributesState );
-
             BindAttributesGrid();
         }
 
@@ -2179,10 +2176,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( ActivityAttributesState.ContainsKey( activityTypeGuid ) )
             {
                 var attributesState = ActivityAttributesState[activityTypeGuid];
-
-#pragma warning disable 0618 // Type or member is obsolete
-                var attribute = SaveChangesToStateCollection( edtActivityAttributes, attributesState );
-#pragma warning restore 0618 // Type or member is obsolete
+                var attribute = edtActivityAttributes.SaveChangesToStateCollection( attributesState );
 
                 // Controls will show warnings
                 if ( !attribute.IsValid )
@@ -2249,50 +2243,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         }
 
         #endregion
-
-        #endregion
-
-        #region Obsolete Code
-
-        /// <summary>
-        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
-        /// Non-editable system properties of the existing Attribute state are preserved.
-        /// </summary>
-        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
-        /// <param name="attributeStateCollection">The stored state collection.</param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
-        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
-        {
-            // Load the editor values into a new Attribute instance.
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-
-            editor.GetAttributeProperties( attribute );
-
-            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
-            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
-
-            if ( attributeState != null )
-            {
-                attribute.Order = attributeState.Order;
-                attribute.CreatedDateTime = attributeState.CreatedDateTime;
-                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
-                attribute.ForeignGuid = attributeState.ForeignGuid;
-                attribute.ForeignId = attributeState.ForeignId;
-                attribute.ForeignKey = attributeState.ForeignKey;
-
-                attributeStateCollection.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                // Set the Order of the new entry as the last item in the collection.
-                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
-            }
-
-            attributeStateCollection.Add( attribute );
-
-            return attribute;
-        }
 
         #endregion
     }

@@ -53,7 +53,7 @@ export type RegistrationTemplateBag = {
     confirmationSubject?: string | null;
 
     /** Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false). */
-    cost?: number;
+    cost: number;
 
     /**
      * Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).

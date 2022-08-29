@@ -17,7 +17,7 @@
 
 import { defineComponent, inject, PropType } from "vue";
 import Dialog from "@Obsidian/Controls/dialog";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { toWord } from "@Obsidian/Utility/numberUtils";
@@ -41,7 +41,7 @@ export default defineComponent({
     setup () {
         return {
             registrationEntryState: inject("registrationEntryState") as RegistrationEntryState,
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction: useInvokeBlockAction()
         };
     },
     data () {

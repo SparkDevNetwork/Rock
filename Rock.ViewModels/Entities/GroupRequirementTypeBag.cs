@@ -42,6 +42,14 @@ namespace Rock.ViewModels.Entities
         public bool CanExpire { get; set; }
 
         /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
+        public int? CategoryId { get; set; }
+
+        /// <summary>
         /// Gets or sets the checkbox label. This is the text that is used for the checkbox if this is a manually set requirement
         /// </summary>
         /// <value>
@@ -66,12 +74,49 @@ namespace Rock.ViewModels.Entities
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the text for the "Does Not Meet" workflow link.
+        /// </summary>
+        public string DoesNotMeetWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type it does not meet.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        public int? DoesNotMeetWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days before the requirement is due.
+        /// </summary>
+        /// <value>
+        /// The due date offset in days.
+        /// </value>
+        public int? DueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of due date.
+        /// </summary>
+        /// <value>
+        /// The type of due date.
+        /// </value>
+        public int DueDateType { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires
         /// </summary>
         /// <value>
         /// The expire in days.
         /// </value>
         public int? ExpireInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -106,12 +151,30 @@ namespace Rock.ViewModels.Entities
         public int RequirementCheckType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this requirement type's "Does Not Meet" workflow should auto-initiate.
+        /// </summary>
+        public bool ShouldAutoInitiateDoesNotMeetWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this requirement type's "Warning" workflow should auto-initiate.
+        /// </summary>
+        public bool ShouldAutoInitiateWarningWorkflow { get; set; }
+
+        /// <summary>
         /// Gets or sets the SQL expression.
         /// </summary>
         /// <value>
         /// The SQL expression.
         /// </value>
         public string SqlExpression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary.
+        /// </summary>
+        /// <value>
+        /// The summary.
+        /// </value>
+        public string Summary { get; set; }
 
         /// <summary>
         /// Gets or sets the warning Rock.Model.DataView identifier.
@@ -136,6 +199,19 @@ namespace Rock.ViewModels.Entities
         /// The warning SQL expression.
         /// </value>
         public string WarningSqlExpression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text for the "Warning" workflow link.
+        /// </summary>
+        public string WarningWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type's warning.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        public int? WarningWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the created date time.

@@ -20,6 +20,8 @@ using Rock.Model;
 using Rock.Personalization;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Rock.Web.Cache
@@ -93,6 +95,44 @@ namespace Rock.Web.Cache
                 SiteId = requestFilter.SiteId;
                 FilterJson = requestFilter.FilterJson;
             }
+        }
+
+        /// <summary>
+        /// Gets the active filters having keys matching those in the specified list.
+        /// </summary>
+        /// <param name="filterKeys">A delimited list of filter keys.</param>
+        /// <param name="delimiter">The delimiter used to separate the keys in the list.</param>
+        /// <returns></returns>
+        public static List<RequestFilterCache> GetByKeys( string filterKeys, string delimiter = "," )
+        {
+            var results = new List<RequestFilterCache>();
+
+            if ( string.IsNullOrWhiteSpace( filterKeys ) )
+            {
+                return results;
+            }
+
+            var filters = RequestFilterCache.All()
+                .Where( rf => rf.IsActive );
+
+            var filterKeyList = filterKeys.SplitDelimitedValues( delimiter, StringSplitOptions.RemoveEmptyEntries );
+            foreach ( var filterKey in filterKeyList )
+            {
+                if ( string.IsNullOrWhiteSpace( filterKey ) )
+                {
+                    continue;
+                }
+
+                // Retrieve the filter by matching key, ignoring leading/trailing whitespace and case.
+                var matchedFilters = filters.Where( s => s.RequestFilterKey.Equals( filterKey.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    .ToList();
+                if ( matchedFilters.Any() )
+                {
+                    results.AddRange( matchedFilters );
+                }
+            }
+
+            return results;
         }
 
         /// <summary>
