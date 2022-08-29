@@ -608,6 +608,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionDeviceTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionSessionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionSessionLocationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceAnswerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleCampusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\lavaShortcodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\layoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\locationBag.d.ts" />

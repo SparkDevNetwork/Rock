@@ -79,6 +79,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AssessmentRequestStatus
     {
         Pending = 0x0,
@@ -708,6 +717,12 @@ namespace Rock.Client.Enums
         ManualUpdateRequired = 0x2,
         ManualUpdateRequiredOrNotProcessed = 0x3,
         All = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PushNotificationType
+    {
     }
 
     /// <summary>
