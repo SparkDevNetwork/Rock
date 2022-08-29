@@ -1331,6 +1331,46 @@ namespace Rock.Data
         public DbSet<SmsPipeline> SmsPipelines { get; set; }
 
         /// <summary>
+        /// Gets or sets the Interactive Experiences.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experiences.
+        /// </value>
+        public DbSet<InteractiveExperience> InteractiveExperiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interactive Experience Actions.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Actions.
+        /// </value>
+        public DbSet<InteractiveExperienceAction> InteractiveExperienceActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interactive Experience Answers.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Answers.
+        /// </value>
+        public DbSet<InteractiveExperienceAnswer> InteractiveExperienceAnswers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interactive Experience Schedules.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Schedules.
+        /// </value>
+        public DbSet<InteractiveExperienceSchedule> InteractiveExperienceSchedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interactive Experience Campuses.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Campuses.
+        /// </value>
+        public DbSet<InteractiveExperienceScheduleCampus> InteractiveExperienceScheduleCampuses { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interactions.
         /// </summary>
         /// <value>
