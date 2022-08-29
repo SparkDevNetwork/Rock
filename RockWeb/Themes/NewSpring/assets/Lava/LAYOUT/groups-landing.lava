@@ -1,0 +1,255 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign personId = CurrentPerson.Id %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare' %}
+{% assign groupTypes = 'Global' | Attribute:'GroupToolboxGroupTypes','RawValue' | Split:',' %}
+{% capture groupTypeGuids %}{% for type in groupTypes %}'{{ type }}'{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
+
+{% comment %}
+  Group Leader View
+{% endcomment %}
+{% sql return:'groups' %}
+SELECT
+    g.Id 'GroupId',
+    gt.Name 'GroupType'
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN GroupType gt
+ON g.GroupTypeId = gt.Id
+JOIN GroupTypeRole gtr
+ON gtr.Id = gm.GroupRoleId
+WHERE gm.PersonId = {{ personId }}
+AND gt.Guid IN ({{ groupTypeGuids }})
+AND gtr.IsLeader = 1
+AND gtr.Name != 'Coach'
+AND g.IsActive = 1
+AND g.IsArchived = 0
+AND gm.GroupMemberStatus = 1
+AND gm.IsArchived = 0
+{% endsql %}
+
+{% if groups and groups != empty %}
+  <h2 class="h3 xs-h5 text-uppercase strongest push-top">Groups I Lead</h2>
+
+  <div class="row">
+    {% for row in groups %}<div class="col-md-4 col-sm-6 col-xs-12">
+
+      {% assign group = row.GroupId | GroupById %}
+      {% assign groupName = group.Name | Replace:"'","’" %}
+      {% assign linkurl = '/groups/' | Append:row.GroupId | Append:'/toolbox' %}
+      {% assign groupTypeImage = group.GroupType | Attribute:'ImageSquare' %}
+      {% assign groupImageUrl = group | Attribute:'ImageSquare' | WithFallback:'',groupTypeImage %}
+
+      {[ cardAction title:'{{ groupName }}' imageurl:'{{ groupImageUrl }}' linkurl:linkurl ]}
+          <p class="sans-serif letter-spacing-condensed strong text-gray-light flush-bottom"><small>{{ row.GroupType }}</small></p>
+      {[ endcardAction ]}
+
+    </div>{% endfor %}
+  </div>
+
+{% else %}
+
+  <div class="push-bottom xs-push-half-bottom">
+  {[ section ]}
+    <div class="text-constrained mx-auto text-center">
+      <h1 class="h2">Lead a Group</h1>
+      <p>Every family has at least one relative who loves bringing people together. <b>In our NewSpring family, Group Leaders are those people.</b></p>
+      <p><a href="/workflows/93/?Interest=Group%20Leader" class="btn btn-primary">Lead a Group</a></p>
+    </div>
+  {[ endsection ]}
+  </div>
+{% endif %}
+
+{% comment %}
+  Group Coach View
+{% endcomment %}
+{% sql return:'leaders' %}
+SELECT
+    p.Id 'PersonId',
+    gm2.Id 'GroupMemberId',
+    g2.Id 'GroupId',
+    gtr.Name 'RoleName'
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN [Group] g2
+ON g2.ParentGroupId = g.Id
+JOIN GroupMember gm2
+ON gm2.GroupId = g2.Id
+JOIN GroupTypeRole gtr
+ON gm2.GroupRoleId = gtr.Id
+JOIN Person p
+ON gm2.PersonId = p.Id
+WHERE gm.PersonId = {{ personId }}
+AND gm.IsArchived = 0
+AND gm2.PersonId != {{ personId }} -- Omit Self From List
+AND g.GroupTypeId = 156 -- Coaching Group
+AND gm.GroupRoleId = 436 -- Is Coach
+AND g.IsArchived = 0
+AND g.IsActive = 1
+AND gm2.GroupRoleId != 382
+AND gm2.IsArchived = 0
+AND gtr.IsLeader = 1
+AND g2.IsActive = 1
+AND g2.IsArchived = 0
+ORDER BY g2.Name, p.LastName, p.NickName
+{% endsql %}
+
+{% if leaders and leaders != empty %}
+<h2 class="h3 xs-h5 text-uppercase strongest push-top">Leaders I Coach</h2>
+<div class="row">
+  {% for leader in leaders %}<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+
+    {% assign linkurl = '/groups/' | Append:leader.GroupId | Append:'/toolbox/' | Append:leader.PersonId %}
+    {% assign person = leader.PersonId | PersonById %}
+    {% assign groupTypeId = group.GroupTypeId | AsString %}
+    {% assign mobile = person | PhoneNumber:'Mobile', true %}
+    {% assign home = person | PhoneNumber:'Home', true %}
+    {% assign work = person | PhoneNumber:'Work', true %}
+    {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+    {% assign sms = person.PhoneNumbers | Where:'IsMessagingEnabled',true | First | Property:'NumberFormattedWithCountryCode' %}
+
+    {% assign cardtype = '' %}
+    {% assign texttype = '' %}
+    {% assign note = leader.RoleName %}
+
+    {% capture actionsString %}[
+      {
+        "IconCSSClass": "fal fa-lg fa-user",
+        "Url": {{ linkurl | ToJSON }},
+        "OnClick": "",
+        "Title": "",
+        "NewWindow": false
+      },
+      {
+        "IconCSSClass": "fal fa-lg fa-envelope",
+        "Url": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}mailto:{{ person.Email }}{% endif %}",
+        "OnClick": "",
+        "Title": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+        "NewWindow": false
+      },
+      {
+        "IconCSSClass": "fal fa-lg fa-phone",
+        "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
+        "OnClick": "",
+        "Title": "{% if phone and phone != empty %}{% else %}Person has no phone number.{% endif %}",
+        "NewWindow": false
+      },
+      {
+        "IconCSSClass": "fal fa-lg fa-comments",
+        "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
+        "OnClick": "",
+        "Title": "{% if sms == empty %}Person has no SMS-enabled number.{% endif %}",
+        "NewWindow": false
+      }
+    ]{% endcapture %}
+    {% assign cardactions = actionsString | FromJSON %}
+
+    {[ cardAction cardtype:'{{ cardtype }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' imageurl:'{{ person.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
+      {% if note and note != empty %}
+        <p class="sans-serif letter-spacing-condensed strong text-{{ texttype | Default:'gray-light' }} flush-bottom"><small>{{ note }}</small></p>
+      {% endif %}
+    {[ endcardAction ]}
+
+  </div>{% endfor %}
+</div>
+{% endif %}
+
+{% comment %}
+  Hub Leader View
+{% endcomment %}
+{% sql return:'coaches' %}
+DECLARE @PersonId int = {{ personId }};
+
+SELECT
+    p.Id 'PersonId',
+    gm2.Id 'GroupMemberId',
+    g2.Id 'GroupId',
+    gtr.Name 'RoleName'
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN [Group] g2
+ON g2.ParentGroupId = g.Id
+JOIN GroupMember gm2
+ON gm2.GroupId = g2.Id
+JOIN GroupTypeRole gtr
+ON gm2.GroupRoleId = gtr.Id
+JOIN Person p
+ON gm2.PersonId = p.Id
+WHERE gm.PersonId = @PersonId
+AND g.GroupTypeId = 157 -- Hub Group
+AND gm.GroupRoleId = 438 -- Is Leader
+AND g.IsArchived = 0
+AND g.IsActive = 1
+AND gm2.GroupRoleId != 382
+AND gm2.IsArchived = 0
+AND gtr.IsLeader = 1
+AND g2.IsActive = 1
+AND g2.IsArchived = 0
+AND g2.GroupTypeId = 156 -- Only Coaching Groups
+AND gm2.PersonId != @PersonId
+ORDER BY g2.Name, p.LastName, p.NickName
+{% endsql %}
+
+{% if coaches and coaches != empty %}
+
+  <h2 class="h3 xs-h5 text-uppercase strongest push-top">Coaches I Lead</h2>
+
+  <div class="row">
+    {% for leader in coaches %}<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+
+      {% assign linkurl = '/groups/' | Append:leader.GroupId | Append:'/toolbox/' | Append:leader.PersonId %}
+      {% assign person = leader.PersonId | PersonById %}
+      {% assign groupTypeId = group.GroupTypeId | AsString %}
+      {% assign mobile = person | PhoneNumber:'Mobile', true %}
+      {% assign home = person | PhoneNumber:'Home', true %}
+      {% assign work = person | PhoneNumber:'Work', true %}
+      {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+      {% assign sms = person.PhoneNumbers | Where:'IsMessagingEnabled',true | First | Property:'NumberFormattedWithCountryCode' %}
+
+      {% assign cardtype = '' %}
+      {% assign texttype = '' %}
+      {% assign note = leader.RoleName %}
+
+      {% capture actionsString %}[
+        {
+          "IconCSSClass": "fal fa-lg fa-user",
+          "Url": {{ linkurl | ToJSON }},
+          "OnClick": "",
+          "Title": "",
+          "NewWindow": false
+        },
+        {
+          "IconCSSClass": "fal fa-lg fa-envelope",
+          "Url": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}mailto:{{ person.Email }}{% endif %}",
+          "OnClick": "",
+          "Title": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+          "NewWindow": false
+        },
+        {
+          "IconCSSClass": "fal fa-lg fa-phone",
+          "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
+          "OnClick": "",
+          "Title": "{% if phone and phone != empty %}{% else %}Person has no phone number.{% endif %}",
+          "NewWindow": false
+        },
+        {
+          "IconCSSClass": "fal fa-lg fa-comments",
+          "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
+          "OnClick": "",
+          "Title": "{% if sms == empty %}Person has no SMS-enabled number.{% endif %}",
+          "NewWindow": false
+        }
+      ]{% endcapture %}
+      {% assign cardactions = actionsString | FromJSON %}
+
+      {[ cardAction cardtype:'{{ cardtype }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' imageurl:'{{ person.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
+        {% if note and note != empty %}
+          <p class="sans-serif letter-spacing-condensed strong text-{{ texttype | Default:'gray-light' }} flush-bottom"><small>{{ note }}</small></p>
+        {% endif %}
+      {[ endcardAction ]}
+
+    </div>{% endfor %}
+  </div>
+{% endif %}

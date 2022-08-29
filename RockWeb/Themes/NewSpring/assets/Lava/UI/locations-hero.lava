@@ -1,0 +1,72 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+
+{% if campus == null %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
+
+{% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}{% if campus.Name != 'Eastlan' %} in {{ campus.Name }}, SC{% else %} - {{ campus.Name }}{% endif %} | Locations{% if servicetype == 'Fuse' %} | Fuse{% endif %} | {{ 'Global' | Attribute:'OrganizationName' }}{% endcapture %}
+{{ title | SetPageTitle }}
+
+{% assign fuseImageUrl = campus.FuseLandscapeImage %}
+{% assign nsImageUrl = campus.LandscapeImage %}
+
+{% capture id %}{% endcapture %}
+{% capture title %}{{ campus.Name }}{% endcapture %}
+{% capture titlesize %}display-2 uppercase{% endcapture %}
+{% capture content %}{% endcapture %}
+{% capture textalignment %}left{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}.8{% endcapture %}
+{% capture imageflip %}{% endcapture %}
+{% capture imageblur %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{% endcapture %}
+{% capture ratio %}landscape{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}#1c1c1c{% endcapture %}
+{% assign linkurl = "" %}
+{% assign linktext = "" %}
+{% capture hideforegroundelements %}{% endcapture %}
+
+<div data-column="none">
+  <section class="bg-black ratio-landscape sm-ratio-shuare xs-ratio-square push-bottom overflow-hidden">
+    <div class="full-screen background-cover" style="background-image: url('{{ imageurl }}'); background-position: bottom center; opacity: 1;" data-0="transform: scale(1);" data-900="transform: scale(1.5);"></div>
+    <div class="ratio-item bring-forward">
+      <div class="position-absolute width-full bottom-zero">
+        <div class="hero-text page-constrained mx-auto soft-sides">
+          <h1 class="display-2 text-white flush">NewSpring {{ campus.Name }}</h1>
+        </div>
+      </div>
+    </div>
+    <div class="full-screen gradient-overlay" style="top: 50%; opacity: 1;">
+    </div>
+    <img src="/Content/BottomTriangle.svg" class="position-absolute bottom-zero left-zero right-zero width-full" style="" />
+  </section>
+
+  <style>
+    .hero-text {
+      margin-bottom: 200px;
+    }
+    @media only screen and (max-width: 668px) {
+      .hero-text {
+        margin-bottom: 100px;
+      }
+    }
+    .gradient-overlay {
+      /* Created with https://www.css-gradient.com */
+      background: #010101;
+      background: -webkit-linear-gradient(bottom, #010101, #01010100);
+      background: -moz-linear-gradient(bottom, #010101, #01010100);
+      background: linear-gradient(to top, #010101, #01010100);
+    }
+  </style>
+
+</div>

@@ -1,0 +1,18 @@
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign groupId = group.Id | AsString %}
+{% assign startDate = group | Attribute:'OpportunityDateRange','RawValue' | Split:',' | First %}
+{% assign endDate = group | Attribute:'OpportunityDateRange','RawValue' | Split:',' | Last %}
+
+<section class="bg-white soft xs-soft-half hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+  <h2 class="push-half-bottom">{{ group.Name }}</h2>
+  <div class="row">
+    <div class="col-md-9 col-xs-12">
+      <p class="lead flush">{{ group | Attribute:'OpportunityLocation' }}</p>
+      <p>{[ formatDate date:'{{ startDate }}' ]} - {[ formatDate date:'{{ endDate }}' ]}</p>
+    </div><div class="col-md-3 col-xs-12">
+      <p>
+        <a href="/missions/{{ groupId }}" class="btn btn-block btn-primary">Trip Page</a>
+      </p>
+    </div>
+  </div>
+</section>
