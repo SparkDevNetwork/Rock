@@ -119,7 +119,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return GetAttributeValue( "MaxParallelization" ).AsIntegerOrNull() ?? 10;
+                return GetAttributeValue( "MaxParallelization" ).AsIntegerOrNull() ?? 1;
             }
         }
 

@@ -51,7 +51,7 @@ export default defineComponent({
             required: false
         },
 
-        labelPlaceholder: {
+        valuePlaceholder: {
             type: String as PropType<string>,
             required: false
         },

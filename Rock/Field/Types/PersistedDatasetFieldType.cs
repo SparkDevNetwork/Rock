@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -30,9 +33,27 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "392865C4-F17B-4832-AB59-20F72BB1C9F6")]
-    public class PersistedDatasetFieldType : FieldType, ICachedEntitiesFieldType
+    public class PersistedDatasetFieldType : FieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        /// <summary>
+        /// Gets the text value.
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>System.String.</returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var persistedDatasetGuid = privateValue.AsGuidOrNull();
+            if ( persistedDatasetGuid.HasValue )
+            {
+                return PersistedDatasetCache.Get( persistedDatasetGuid.Value )?.Name ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -42,15 +63,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var persistedDatasetGuid = value.AsGuidOrNull();
-            if ( persistedDatasetGuid.HasValue )
-            {
-                return PersistedDatasetCache.Get( persistedDatasetGuid.Value )?.Name;
-            }
-
-            return null;
+            return !condensed
+               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -155,6 +172,44 @@ namespace Rock.Field.Types
             result.AddRange( list );
 
             return result;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+            
+            var persistedDatasetCacheId = PersistedDatasetCache.GetId( guid.Value );
+
+            if ( !persistedDatasetCacheId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<PersistedDataset>().Value, persistedDatasetCacheId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a PersistedDataset and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<PersistedDataset>().Value, nameof( PersistedDataset.Name ) )
+            };
         }
 
         #endregion

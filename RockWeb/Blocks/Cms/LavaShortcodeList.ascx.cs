@@ -29,6 +29,7 @@ using Rock.Lava;
 using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
@@ -178,16 +179,10 @@ namespace RockWeb.Blocks.Cms
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                if ( !canAddEditDelete )
-                {
-                    e.Item.FindControl( "btnEdit" ).Visible = false;
-                    e.Item.FindControl( "btnDelete" ).Visible = false;
-                }
-
                 LavaShortcode dataItem = ( LavaShortcode ) e.Item.DataItem;
-
-                e.Item.FindControl( "divEditPanel" ).Visible = !dataItem.IsSystem;
-                e.Item.FindControl( "divViewPanel" ).Visible = dataItem.IsSystem;
+                e.Item.FindControl( "btnEdit" ).Visible = canAddEditDelete;
+                e.Item.FindControl( "btnDelete" ).Visible = canAddEditDelete && !dataItem.IsSystem;
+                e.Item.FindControl( "divViewPanel" ).Visible = !canAddEditDelete;
 
                 var shortcode = e.Item.DataItem as LavaShortcode;
 
@@ -205,6 +200,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     // This is a shortcode from a c# assembly
                     e.Item.FindControl( "btnView" ).Visible = false;
+                    e.Item.FindControl( "divEditPanel" ).Visible = false;
                     var lMessages = ( Literal ) e.Item.FindControl( "lMessages" );
 
                     if ( lMessages != null )
@@ -342,17 +338,12 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadShortcodeCategories()
         {
-            var rockContext = new RockContext();
-            var categoryService = new CategoryService( rockContext );
-            var entityService = new EntityTypeService( rockContext );
-
-            var entityType = entityService.Get( Rock.SystemGuid.EntityType.LAVA_SHORTCODE_CATEGORY.AsGuid() );
-
             ddlCategoryFilter.Items.Add( new ListItem { Text = "All Shortcodes", Value = "0" } );
 
-            var lavaShortcodeCategories = categoryService.GetByEntityTypeId( entityType.Id )?
-                .OrderBy( v => v.Name )?
-                .ToList();
+            var lavaShortcodeCategories = CategoryCache.All()
+                .Where( t => t.EntityTypeId == EntityTypeCache.GetId<Rock.Model.LavaShortcode>() )
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name );
 
             if ( lavaShortcodeCategories != null )
             {

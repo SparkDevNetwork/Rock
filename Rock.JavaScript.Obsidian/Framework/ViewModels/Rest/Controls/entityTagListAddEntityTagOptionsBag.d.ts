@@ -24,7 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the AddNamedTag API action of
+ * The options that can be passed to the AddEntityTag API action of
  * the EntityTagList control.
  */
 export type EntityTagListAddEntityTagOptionsBag = {

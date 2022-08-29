@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,7 +38,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M5.38,7.67A.32.32,0,0,0,5.7,8H6.8a.32.32,0,0,0,.32-.33V6.58a.32.32,0,0,0-.32-.33H5.7a.32.32,0,0,0-.32.33ZM7.12,10.3V9.2a.32.32,0,0,0-.32-.32H5.7a.32.32,0,0,0-.32.32v1.1a.32.32,0,0,0,.32.32H6.8A.32.32,0,0,0,7.12,10.3ZM5.7,5.38H6.8a.32.32,0,0,0,.32-.33V4a.32.32,0,0,0-.32-.33H5.7A.32.32,0,0,0,5.38,4v1.1A.32.32,0,0,0,5.7,5.38ZM11.5,1h-7A1.75,1.75,0,0,0,2.75,2.75V14.34a.66.66,0,1,0,1.31,0V2.75a.44.44,0,0,1,.44-.44h7a.44.44,0,0,1,.44.44V14.34a.66.66,0,1,0,1.31,0V2.75A1.75,1.75,0,0,0,11.5,1ZM10.3,3.62H9.2A.32.32,0,0,0,8.88,4v1.1a.32.32,0,0,0,.32.33h1.1a.32.32,0,0,0,.32-.33V4A.32.32,0,0,0,10.3,3.62Zm0,2.63H9.2a.32.32,0,0,0-.32.33V7.67A.32.32,0,0,0,9.2,8h1.1a.32.32,0,0,0,.32-.33V6.58A.32.32,0,0,0,10.3,6.25Zm0,2.63H9.2a.32.32,0,0,0-.32.32v1.1a.32.32,0,0,0,.32.32h1.1a.32.32,0,0,0,.32-.32V9.2A.32.32,0,0,0,10.3,8.88ZM8,11.5a1.35,1.35,0,0,0-1.29,1.37v1.47a.65.65,0,0,0,.65.66H8.66a.65.65,0,0,0,.65-.66V12.85A1.35,1.35,0,0,0,8,11.5Z""/></g></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAMPUS )]
-    public class CampusFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType
+    public class CampusFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -435,7 +435,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+            // Never use the condensed value for webforms blocks.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -796,6 +797,46 @@ namespace Rock.Field.Types
             result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
 
             return result;
+        }
+
+        #endregion
+
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var campusId = CampusCache.GetId( guid.Value );
+
+            if ( !campusId.HasValue )
+            {
+                return null;
+            }
+
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Campus>().Value, campusId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Campus and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
+            };
         }
 
         #endregion

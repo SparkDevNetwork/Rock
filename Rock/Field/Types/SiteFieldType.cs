@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -23,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +35,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SITE )]
-    public class SiteFieldType : FieldType, IEntityFieldType
+    public class SiteFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -121,10 +123,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            int id = 0;
-            if ( int.TryParse( value, out id ) )
+            if ( int.TryParse( privateValue, out int id ) )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -136,7 +145,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -286,5 +295,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var id = privateValue.AsIntegerOrNull();
+
+            if ( !id.HasValue )
+            {
+                return null;
+            }
+
+            // Query the cache to make sure the id is valid.
+            var siteId = SiteCache.Get( id.Value )?.Id;
+
+            if ( !siteId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Site>().Value, siteId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Site and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Site>().Value, nameof( Site.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

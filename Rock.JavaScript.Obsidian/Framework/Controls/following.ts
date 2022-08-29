@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
@@ -52,6 +52,7 @@ export default defineComponent({
     setup(props) {
         // #region Values
 
+        const http = useHttp();
         const isEntityFollowed = ref<boolean | null>(null);
 
         // #endregion
@@ -102,7 +103,7 @@ export default defineComponent({
                 entityKey: props.entityKey
             };
 
-            const response = await post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
+            const response = await http.post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
 
             isEntityFollowed.value = response.isSuccess && response.data && response.data.isFollowing;
         };
@@ -132,7 +133,7 @@ export default defineComponent({
                 isFollowing: !isEntityFollowed.value
             };
 
-            const response = await post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
+            const response = await http.post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
 
             // If we got a 200 OK response then we can toggle our internal state.
             if (response.isSuccess) {

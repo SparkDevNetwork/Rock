@@ -333,7 +333,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns><c>true</c> if the type is non-nullable; otherwise, <c>false</c>.</returns>
         private static bool IsNonNullType( Type type )
         {
-            return type.IsPrimitive || type.IsEnum;
+            return type.IsPrimitive || type.IsEnum || type == typeof( decimal );
         }
 
         /// <summary>

@@ -20,8 +20,8 @@ import Alert from "@Obsidian/Controls/alert";
 import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
-import EditPanel from "./CampusDetail/editPanel";
-import ViewPanel from "./CampusDetail/viewPanel";
+import EditPanel from "./CampusDetail/editPanel.partial";
+import ViewPanel from "./CampusDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { NavigationUrlKey } from "./CampusDetail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -145,12 +145,12 @@ export default defineComponent({
          * Event handler for the Cancel button being clicked while in Edit mode.
          * Handles redirect to parent page if creating a new entity.
          *
-         * @returns true if the panel should leave edit mode; otherwise false.
+         * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
          */
-        const onCancelEdit = async (): Promise<boolean> => {
+        const onCancelEdit = async (): Promise<boolean | string> => {
             if (!campusEditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                    window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
+                    return config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
 
                 return false;
@@ -162,8 +162,10 @@ export default defineComponent({
         /**
          * Event handler for the Delete button being clicked. Sends the
          * delete request to the server and then redirects to the target page.
+         *
+         * @returns false if it should stay on the page; or a string containing a redirect URL.
          */
-        const onDelete = async (): Promise<void> => {
+        const onDelete = async (): Promise<false | string> => {
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
@@ -171,10 +173,12 @@ export default defineComponent({
             });
 
             if (result.isSuccess && result.data) {
-                window.location.href = result.data;
+                return result.data;
             }
             else {
                 errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete campus.";
+
+                return false;
             }
         };
 
@@ -220,9 +224,9 @@ export default defineComponent({
          * Event handler for the panel's Save event. Send the data to the server
          * to be saved and then leave edit mode or redirect to target page.
          *
-         * @returns true if the panel should leave edit mode; otherwise false.
+         * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
          */
-        const onSave = async (): Promise<boolean> => {
+        const onSave = async (): Promise<boolean | string> => {
             errorMessage.value = "";
 
             const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
@@ -242,9 +246,7 @@ export default defineComponent({
                     return true;
                 }
                 else if (result.statusCode === 201 && typeof result.data === "string") {
-                    window.location.href = result.data;
-
-                    return false;
+                    return result.data;
                 }
             }
 
@@ -290,9 +292,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<Alert v-if="blockError" alertType="warning">{{ blockError }}</Alert>
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<Alert v-if="errorMessage" alertType="danger">{{ errorMessage }}</Alert>
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

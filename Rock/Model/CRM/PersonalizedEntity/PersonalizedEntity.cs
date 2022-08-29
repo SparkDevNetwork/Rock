@@ -75,7 +75,7 @@ namespace Rock.Model
         [DataMember]
         [Key]
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
-        public int PersonalizationTypeId { get; set; }
+        public int PersonalizationEntityId { get; set; }
 
         #region Entity Configuration
 
@@ -98,7 +98,7 @@ namespace Rock.Model
             /// </summary>
             public PersonalizedEntityConfiguration()
             {
-                HasKey( a => new { a.EntityTypeId, a.EntityId, a.PersonalizationType, a.PersonalizationTypeId } );
+                HasKey( a => new { a.EntityTypeId, a.EntityId, a.PersonalizationType, a.PersonalizationEntityId } );
                 this.HasRequired( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
             }
         }

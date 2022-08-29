@@ -34,6 +34,43 @@ namespace Rock.ViewModels.Entities
     public partial class GroupRequirementBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets whether leaders are allowed to mark requirements as met manually.
+        /// </summary>
+        public bool AllowLeadersToOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Applies To" Age Classification.
+        /// </summary>
+        /// <value>
+        /// The Age Classification.
+        /// </value>
+        public int AppliesToAgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Applies To" Rock.Model.DataView identifier.
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        public int? AppliesToDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Due Date" attribute identifier for when the Rock.Model.GroupRequirementType.DueDateType is <see cref="F:Rock.Model.DueDateType.GroupAttribute" />.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        public int? DueDateAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configured date for when the Rock.Model.GroupRequirementType.DueDateType is <see cref="F:Rock.Model.DueDateType.ConfiguredDate" />.
+        /// </summary>
+        /// <value>
+        /// The due date time.
+        /// </value>
+        public DateTime? DueDateStaticDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.Group identifier.
         /// </summary>
         /// <value>

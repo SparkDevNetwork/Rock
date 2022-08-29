@@ -19,7 +19,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Email Templates
+    /// Guids for EntityTypes
     /// </summary>
     public static class EntityType
     {
@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         /// The achievement type prerequisite
         /// </summary>
         public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
+
+        /// <summary>
+        /// The  guid for the Rock.Model.AssessmentType entity.
+        /// </summary>
+        public const string ASSESSMENT_TYPE = "D17A28AC-F529-4AB0-A790-C21F9E74AC89";
 
         /// <summary>
         /// The guid for the Rock.Model.Attendance entity.
@@ -174,6 +179,16 @@ namespace Rock.SystemGuid
         public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
 
         /// <summary>
+        /// The guid for the Rock.Model.ContentCollection entity
+        /// </summary>
+        public const string CONTENT_COLLECTION = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentCollectionSource entity
+        /// </summary>
+        public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
@@ -192,6 +207,11 @@ namespace Rock.SystemGuid
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
+
+        /// <summary>
+        /// The guid for Rock.Model.EventCalendar entity.
+        /// </summary>
+        public const string EVENT_CALENDAR = "E67D8D6D-4FE6-48D5-A940-A39213047314";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
@@ -242,6 +262,26 @@ namespace Rock.SystemGuid
         /// The guid for <see cref="Rock.Model.Interaction"/>
         /// </summary>
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
+        /// </summary>
+        public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
+
+        /// <summary>
+        /// The EntityType Guid for LavaShortcodeCategory 'joiner' table <see cref="Rock.Model.LavaShortcodeConfiguration"/>
+        /// </summary>
+        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Layout"/>
+        /// </summary>
+        public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
+
+        /// <summary>
+        /// The guid for the Rock.Model.MediaAccount entity
+        /// </summary>
+        public const string MEDIA_ACCOUNT = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70";
 
         /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
@@ -701,8 +741,23 @@ namespace Rock.SystemGuid
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
 
         /// <summary>
-        /// The lava shortcode category
+        /// The EntityType Guid for <see cref="Rock.Model.MediaFolder"/> 
         /// </summary>
-        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+        public const string MEDIA_FOLDER = "B28FC79F-9FEE-4BE4-801D-96B9246E6043";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersistedDataset"/> 
+        /// </summary>
+        public const string PERSISTED_DATASET = "9C3064C0-CF9C-4549-9A80-022514B7FF83";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersonalLinkSection"/> 
+        /// </summary>
+        public const string PERSONAL_LINK_SECTION = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
+        /// </summary>
+        public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
     }
 }

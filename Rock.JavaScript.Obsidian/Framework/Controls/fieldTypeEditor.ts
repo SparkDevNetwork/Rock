@@ -21,7 +21,7 @@ import Alert from "./alert";
 import DropDownList from "./dropDownList";
 import StaticFormControl from "./staticFormControl";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-import { get, post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -57,6 +57,7 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
+        const http = useHttp();
         const internalValue = ref(props.modelValue);
 
         /** The selected field type in the drop down list. */
@@ -198,7 +199,7 @@ export default defineComponent({
                 defaultValue: currentDefaultValue
             };
 
-            post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
+            http.post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
                     console.debug("got configuration", result.data);
@@ -271,7 +272,7 @@ export default defineComponent({
         });
 
         // Get all the available field types that the user is allowed to edit.
-        post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
+        http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
             .then(result => {
                 if (result.isSuccess && result.data) {
                     fieldTypeOptions.value = result.data;

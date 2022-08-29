@@ -326,11 +326,11 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             // ensure that btn-group and data-toggle get rendered
-
-            writer.AddAttribute("class", "btn-group js-buttongroup");
-            writer.AddAttribute("data-toggle", "buttons");
-            writer.AddAttribute("data-selecteditemclass", this.SelectedItemClass);
-            writer.AddAttribute("data-unselecteditemclass", this.UnselectedItemClass);
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
+            writer.AddAttribute( "class", "btn-group js-buttongroup" );
+            writer.AddAttribute( "data-toggle", "buttons" );
+            writer.AddAttribute( "data-selecteditemclass", this.SelectedItemClass );
+            writer.AddAttribute( "data-unselecteditemclass", this.UnselectedItemClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             base.RenderControl( writer );
             writer.RenderEndTag();

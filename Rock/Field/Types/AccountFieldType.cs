@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,12 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNT )]
-    public class AccountFieldType : FieldType, IEntityFieldType
+    public class AccountFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -185,9 +187,49 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc />
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+            var newDisplayPublicName = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+
+            return oldDisplayPublicName != newDisplayPublicName;
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="privateValue"></param>
+        /// <param name="privateConfigurationValues"></param>
+        /// <returns></returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                var displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
+                var account = FinancialAccountCache.Get( guid.Value );
+
+                if ( account != null )
+                {
+                    return displayPublicName ? account.PublicName : account.Name;
+                }
+            }
+
+            return privateValue;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -199,33 +241,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                bool displayPublicName = true;
-
-                if ( configurationValues != null &&
-                     configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
-                {
-                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
-                }
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new FinancialAccountService( rockContext );
-                    var account = service.GetNoTracking( guid.Value );
-
-                    if ( account != null )
-                    {
-                        formattedValue = displayPublicName ? account.PublicName : account.Name;
-
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -294,14 +312,11 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var account = new FinancialAccountService( rockContext ).GetNoTracking( id.Value );
+                    var account = FinancialAccountCache.Get( id.Value );
 
-                        if ( account != null )
-                        {
-                            return account.Guid.ToString();
-                        }
+                    if ( account != null )
+                    {
+                        return account.Guid.ToString();
                     }
                 }
                 else
@@ -329,8 +344,8 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var account = new FinancialAccountService( new RockContext() ).Get( guid );
-                picker.SetValue( account );
+                var account = FinancialAccountCache.Get( guid );
+                picker.SetValueFromCache( account );
             }
         }
 
@@ -347,7 +362,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialAccountService( new RockContext() ).Get( guid );
+            var item = FinancialAccountCache.Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -359,7 +374,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
+            var item = FinancialAccountCache.Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
@@ -394,5 +409,42 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var accountId = FinancialAccountCache.GetId( guid.Value );
+
+            if ( !accountId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId.Value )
+            };
+
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

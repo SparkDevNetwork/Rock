@@ -349,6 +349,12 @@ namespace Rock.Data
         public DbSet<Rock.Model.AttributeMatrixTemplate> AttributeMatrixTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the attribute referenced entities.
+        /// </summary>
+        /// <value>The attribute referenced entities.</value>
+        public DbSet<Rock.Model.AttributeReferencedEntity> AttributeReferencedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -379,6 +385,12 @@ namespace Rock.Data
         /// The attribute value historicals.
         /// </value>
         public DbSet<AttributeValueHistorical> AttributeValueHistoricals { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the attribute value referenced entities.
+        /// </summary>
+        /// <value>The attribute value referenced entities.</value>
+        public DbSet<Rock.Model.AttributeValueReferencedEntity> AttributeValueReferencedEntities { get; set; }
 
         /// <summary>
         /// Gets or sets the Attribute Values.
@@ -749,6 +761,22 @@ namespace Rock.Data
         /// The content channel types.
         /// </value>
         public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content collections.
+        /// </summary>
+        /// <value>
+        /// The ccontent collections.
+        /// </value>
+        public DbSet<ContentCollection> ContentCollections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content collection sources.
+        /// </summary>
+        /// <value>
+        /// The content collection sources.
+        /// </value>
+        public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
         /// Gets or sets the data views.

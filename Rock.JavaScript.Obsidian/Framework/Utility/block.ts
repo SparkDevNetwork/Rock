@@ -15,35 +15,15 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { BlockEvent, InvokeBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
 import { ExtendedRef } from "@Obsidian/Types/Utility/component";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { HttpBodyData, HttpResult, HttpUrlParams } from "./http";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
+import { Guid } from "@Obsidian/Types";
 
-export type ConfigurationValues = Record<string, unknown>;
-
-export type BlockConfig = {
-    blockFileUrl: string;
-    rootElement: Element;
-    blockGuid: Guid;
-    configurationValues: ConfigurationValues;
-};
-
-export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
-
-export type BlockHttpGet = <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
-
-export type BlockHttpPost = <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
-
-export type BlockHttp = {
-    get: BlockHttpGet;
-    post: BlockHttpPost;
-};
-
-
+const blockReloadSymbol = Symbol();
+const configurationValuesChangedSymbol = Symbol();
 
 // TODO: Change these to use symbols
 
@@ -53,13 +33,13 @@ export type BlockHttp = {
  * @returns The configuration values for the block.
  */
 export function useConfigurationValues<T>(): T {
-    const result = inject<T>("configurationValues");
+    const result = inject<Ref<T>>("configurationValues");
 
     if (result === undefined) {
         throw "Attempted to access block configuration outside of a RockBlock.";
     }
 
-    return result;
+    return result.value;
 }
 
 /**
@@ -76,6 +56,137 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
 
     return result;
 }
+
+/**
+ * Provides the reload block callback function for a block. This is an internal
+ * method and should not be used by plugins.
+ * 
+ * @param callback The callback that will be called when a block wants to reload itself.
+ */
+export function provideReloadBlock(callback: () => void): void {
+    provide(blockReloadSymbol, callback);
+}
+
+/**
+ * Gets a function that can be called when a block wants to reload itself.
+ *
+ * @returns A function that will cause the block component to be reloaded.
+ */
+export function useReloadBlock(): () => void {
+    return inject<() => void>(blockReloadSymbol, () => {
+        // Intentionally blank, do nothing by default.
+    });
+}
+
+/**
+ * Provides the data for a block to be notified when its configuration values
+ * have changed. This is an internal method and should not be used by plugins.
+ *
+ * @returns An object with an invoke and reset function.
+ */
+export function provideConfigurationValuesChanged(): { invoke: () => void, reset: () => void } {
+    const callbacks: (() => void)[] = [];
+
+    provide(configurationValuesChangedSymbol, callbacks);
+
+    return {
+        invoke: (): void => {
+            for (const c of callbacks) {
+                c();
+            }
+        },
+
+        reset: (): void => {
+            callbacks.splice(0, callbacks.length);
+        }
+    };
+}
+
+/**
+ * Registered a function to be called when the block configuration values have
+ * changed.
+ * 
+ * @param callback The function to be called when the configuration values have changed.
+ */
+export function onConfigurationValuesChanged(callback: () => void): void {
+    const callbacks = inject<(() => void)[]>(configurationValuesChangedSymbol);
+
+    if (callbacks !== undefined) {
+        callbacks.push(callback);
+    }
+}
+
+
+/**
+ * A type that returns the keys of a child property.
+ */
+type ChildKeys<T extends Record<string, unknown>, PropertyName extends string> = keyof NonNullable<T[PropertyName]> & string;
+
+/**
+ * A valid properties box that uses the specified name for the content bag.
+ */
+type ValidPropertiesBox<PropertyName extends string> = {
+    validProperties?: string[] | null;
+} & {
+    [P in PropertyName]?: Record<string, unknown> | null;
+};
+
+/**
+ * Sets the a value for a custom settings box. This will set the value and then
+ * add the property name to the list of valid properties.
+ *
+ * @param box The box whose custom setting value will be set.
+ * @param propertyName The name of the custom setting property to set.
+ * @param value The new value of the custom setting.
+ */
+export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings">, S extends NonNullable<T["settings"]>, K extends ChildKeys<T, "settings">>(box: T, propertyName: K, value: S[K]): void {
+    if (!box.settings) {
+        box.settings = {} as Record<string, unknown>;
+    }
+
+    box.settings[propertyName] = value;
+
+    if (!box.validProperties) {
+        box.validProperties = [];
+    }
+
+    if (!box.validProperties.includes(propertyName)) {
+        box.validProperties.push(propertyName);
+    }
+}
+
+/**
+ * Dispatches a block event to the document.
+ * 
+ * @param eventName The name of the event to be dispatched.
+ * @param eventData The custom data to be attached to the event.
+ *
+ * @returns true if preventDefault() was called on the event, otherwise false.
+ */
+export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData?: unknown): boolean {
+    const ev = new CustomEvent(eventName, {
+        cancelable: true,
+        detail: {
+            guid: blockGuid,
+            data: eventData
+        }
+    });
+
+    return document.dispatchEvent(ev);
+}
+
+/**
+ * Tests if the given event is a custom block event. This does not ensure
+ * that the event data is the correct type, only the event itself.
+ * 
+ * @param event The event to be tested.
+ *
+ * @returns true if the event is a block event.
+ */
+export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
+    return "guid" in event && "data" in event;
+}
+
 
 // #region Security Grants
 
@@ -95,6 +206,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
     // Use || so that an empty string gets converted to null.
     const tokenRef = ref(token || null);
     const invokeBlockAction = useInvokeBlockAction();
+    let renewalTimeout: NodeJS.Timeout | null = null;
 
     // Internal function to renew the token and re-schedule renewal.
     const renewToken = async (): Promise<void> => {
@@ -110,6 +222,12 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
     // Internal function to schedule renewal based on the expiration date in
     // the existing token. Renewal happens 15 minutes before expiration.
     const scheduleRenewal = (): void => {
+        // Cancel any existing renewal timer.
+        if (renewalTimeout !== null) {
+            clearTimeout(renewalTimeout);
+            renewalTimeout = null;
+        }
+
         // No token, nothing to do.
         if (tokenRef.value === null) {
             return;
@@ -137,13 +255,17 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
         }
 
         // Schedule the renewal task to happen 15 minutes before expiration.
-        setTimeout(renewToken, renewTimeout);
+        renewalTimeout = setTimeout(renewToken, renewTimeout);
     };
 
     scheduleRenewal();
 
     return {
-        token: tokenRef
+        token: tokenRef,
+        updateToken(newToken) {
+            tokenRef.value = newToken || null;
+            scheduleRenewal();
+        }
     };
 }
 
@@ -229,3 +351,28 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, 
 }
 
 // #endregion Extended Refs
+
+// #region Block Guid
+
+const blockGuidSymbol = Symbol("block-guid");
+
+/**
+ * Provides the block unique identifier to all child components.
+ * This is an internal method and should not be used by plugins.
+ * 
+ * @param blockGuid The unique identifier of the block.
+ */
+export function provideBlockGuid(blockGuid: string): void {
+    provide(blockGuidSymbol, blockGuid);
+}
+
+/**
+ * Gets the unique identifier of the current block in this component chain.
+ *
+ * @returns The unique identifier of the block.
+ */
+export function useBlockGuid(): Guid | undefined {
+    return inject<Guid>(blockGuidSymbol);
+}
+
+// #endregion

@@ -170,24 +170,23 @@ namespace Rock.CheckIn
         /// <param name="campusId">The campus identifier.</param>
         public static void SetSelectedSchedule( RockBlock rockBlock, SchedulePicker spSchedule, int? scheduleId, int campusId )
         {
-            if ( scheduleId.HasValue && scheduleId > 0 )
+            spSchedule.SetValue( scheduleId );
+            CheckinManagerHelper.SaveCampusScheduleConfigurationToCookie( campusId, scheduleId );
+            var pageParameterScheduleId = rockBlock.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+            if ( pageParameterScheduleId.ToIntSafe() != scheduleId.ToIntSafe() )
             {
-                CheckinManagerHelper.SaveCampusScheduleConfigurationToCookie( campusId, scheduleId );
-                var pageParameterScheduleId = rockBlock.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
-                if ( !pageParameterScheduleId.HasValue || pageParameterScheduleId.Value != scheduleId )
+                if ( scheduleId.ToIntSafe() != default( int ) )
                 {
                     var additionalQueryParameters = new Dictionary<string, string>();
                     additionalQueryParameters.Add( PageParameterKey.ScheduleId, scheduleId.ToString() );
                     rockBlock.NavigateToCurrentPageReference( additionalQueryParameters );
-                    return;
+                }
+                else
+                {
+                    rockBlock.NavigateToCurrentPageReferenceWithRemove( new List<string>() { PageParameterKey.ScheduleId } );
                 }
 
-                spSchedule.SetValue( scheduleId );
-            }
-            else
-            {
-                spSchedule.SetValue( null );
-                CheckinManagerHelper.SaveCampusLocationConfigurationToCookie( campusId, null );
+                return;
             }
         }
 
@@ -232,7 +231,7 @@ namespace Rock.CheckIn
             {
                 // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
-                
+
                 if ( locationId > 0 )
                 {
                     // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)

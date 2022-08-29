@@ -297,8 +297,8 @@ export default defineComponent({
                         v-model="selectedSavedAccount" />
                     <span class="label-text payment-method-account">
                         <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
-                        <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
-                        <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
+                        <span class="payment-method-name">{{ getAccountName(savedAccount) }}</span>
+                        <span class="payment-method-description text-muted">{{ getAccountDescription(savedAccount) }}</span>
                     </span>
                 </label>
             </div>

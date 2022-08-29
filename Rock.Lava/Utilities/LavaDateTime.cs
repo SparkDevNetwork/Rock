@@ -154,25 +154,22 @@ namespace Rock.Lava
         public static DateTimeOffset ConvertToDateTimeOffset( DateTime dateTime )
         {
             DateTimeOffset dateTimeOffset;
-
             if ( dateTime.Kind == DateTimeKind.Utc )
             {
                 // Convert UTC time to Rock time.
                 dateTimeOffset = new DateTimeOffset( dateTime, TimeSpan.Zero );
-
                 dateTimeOffset = TimeZoneInfo.ConvertTime( dateTimeOffset, RockDateTime.OrgTimeZoneInfo );
             }
             else if ( dateTime.Kind == DateTimeKind.Local )
             {
                 // Convert local system time to Rock time.
                 var rockDateTime = TimeZoneInfo.ConvertTime( dateTime, RockDateTime.OrgTimeZoneInfo );
-
-                dateTimeOffset = new DateTimeOffset( rockDateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                dateTimeOffset = new DateTimeOffset( rockDateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( rockDateTime ) );
             }
             else
             {
                 // Assume the value is specified in Rock time.
-                dateTimeOffset = new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                dateTimeOffset = new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dateTime ) );
             }
 
             return dateTimeOffset;

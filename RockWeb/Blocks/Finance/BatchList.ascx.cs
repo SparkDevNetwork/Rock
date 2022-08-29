@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,9 +77,7 @@ namespace RockWeb.Blocks.Finance
 
         private RockDropDownList ddlAction;
         public List<AttributeCache> AvailableAttributes { get; set; }
-
-        // Dictionaries to cache values for performance
-        private static Dictionary<int, FinancialAccount> _financialAccountLookup;
+        
 
         #endregion
 
@@ -755,7 +753,6 @@ namespace RockWeb.Blocks.Finance
             try
             {
                 var rockContext = new RockContext();
-                _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
 
                 var financialBatchQry = GetQuery( rockContext ).AsNoTracking();
 
@@ -965,7 +962,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return _financialAccountLookup[this.AccountId].Order;
+                    return FinancialAccountCache.Get(this.AccountId).Order;
                 }
             }
 
@@ -973,7 +970,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return _financialAccountLookup[this.AccountId].Name;
+                    return FinancialAccountCache.Get( this.AccountId ).Name;
                 }
             }
 

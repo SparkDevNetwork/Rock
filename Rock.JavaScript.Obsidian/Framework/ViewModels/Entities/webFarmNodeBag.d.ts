@@ -32,7 +32,7 @@ export type WebFarmNodeBag = {
     configuredLeadershipPollingIntervalSeconds?: number | null;
 
     /** Gets or sets the current leadership polling interval seconds. */
-    currentLeadershipPollingIntervalSeconds?: number;
+    currentLeadershipPollingIntervalSeconds: number;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;

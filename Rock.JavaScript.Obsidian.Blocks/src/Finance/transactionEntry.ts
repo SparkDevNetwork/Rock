@@ -18,14 +18,14 @@
 import { Guid } from "@Obsidian/Types";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import { defineComponent, inject } from "vue";
+import { defineComponent } from "vue";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import Alert from "@Obsidian/Controls/alert";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValues, InvokeBlockActionFunc, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Toggle from "@Obsidian/Controls/toggle";
 import { useStore } from "@Obsidian/PageState";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -85,12 +85,12 @@ export default defineComponent({
         return {
             submitPayment,
             invokeBlockAction: useInvokeBlockAction(),
-            configurationValues: useConfigurationValues<ConfigurationValues>()
+            configurationValues: useConfigurationValues<Record<string, unknown>>()
         };
     },
 
     data() {
-        const configurationValues = useConfigurationValues<ConfigurationValues>();
+        const configurationValues = useConfigurationValues<Record<string, unknown>>();
         const campuses = configurationValues["campuses"] as ListItemBag[] || [];
         const frequencies = configurationValues["frequencies"] as ListItemBag[] || [];
 

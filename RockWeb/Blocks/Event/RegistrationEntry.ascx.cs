@@ -1178,7 +1178,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
+                pnlRegistrationAttributesEndProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                 lRegistrationAttributesEndTitle.Text = this.RegistrationAttributeTitleEnd;
                 avcRegistrationAttributesEnd.ShowCategoryLabel = false;
@@ -2408,6 +2408,19 @@ namespace RockWeb.Blocks.Event
                 return null;
             }
 
+            var registrationInstance = FindMatchingRegistrationInstance();
+            if (registrationInstance.EndDateTime < RockDateTime.Now)
+            {
+                ShowWarning("Sorry", string.Format("{0} closed on {1}.", registrationInstance.Name, registrationInstance.EndDateTime.ToString()));
+                return null;
+            }
+
+            if (!registrationInstance.IsActive)
+            {
+                ShowWarning("Sorry", string.Format("{0} is no longer active.", registrationInstance.Name));
+                return null;
+            }
+
             Registration registration = null;
 
             if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
@@ -2615,7 +2628,7 @@ namespace RockWeb.Blocks.Event
                             var parameters = new Dictionary<string, string>();
                             parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                             parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                            item.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                         }
 
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
@@ -5502,19 +5515,28 @@ namespace RockWeb.Blocks.Event
                 var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
                 if ( familyOptions.Any() )
                 {
-                    // previous family selections are always null after postback, so default to anyone in the same family
+                    // Previous family selections are always null after postback, so default to anyone in the same family.
                     var selectedGuid = CurrentPerson != null ? CurrentPerson.GetFamily().Guid : rblRegistrarFamilyOptions.SelectedValueAsGuid();
+
+                    // Set selected to nothing before we repopulate rblRegistrarFamilyOptions,
+                    // then we'll set it back.
+                    rblRegistrarFamilyOptions.SetValue( ( Guid? ) null );
 
                     familyOptions.Add(
                         familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
                         Guid.NewGuid() :
                         RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
                         "None" );
-                    rblRegistrarFamilyOptions.DataSource = familyOptions;
-                    rblRegistrarFamilyOptions.DataBind();
+
+                    rblRegistrarFamilyOptions.Items.Clear();
+                    foreach ( var option in familyOptions )
+                    {
+                        rblRegistrarFamilyOptions.Items.Add( new ListItem( option.Value, option.Key.ToString() ) );
+                    }
 
                     if ( selectedGuid.HasValue )
                     {
+                        // Note that SetValue internally checks to see if the specified value is a valid to set.
                         rblRegistrarFamilyOptions.SetValue( selectedGuid );
                     }
 

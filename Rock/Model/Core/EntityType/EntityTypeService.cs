@@ -110,7 +110,7 @@ namespace Rock.Model
 
             entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
 
-            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
             if ( entityTypeGuidAttributeValue.HasValue )
             {
                 entityType.Guid = entityTypeGuidAttributeValue.Value;
@@ -324,6 +324,21 @@ namespace Rock.Model
                 var entityTypeService = new EntityTypeService( rockContext );
 
                 var reflectedTypeNames = reflectedTypes.Select( a => a.FullName ).ToArray();
+                var reflectedTypeGuids = entityTypesFromReflection.Values.Select( a => a.Guid ).ToArray();
+
+                var duplicateGuids = reflectedTypeGuids
+                    .GroupBy( g => g )
+                    .Where( g => g.Count() > 1 )
+                    .Select( g => g.Key.ToString() )
+                    .ToList();
+
+                // Throw an error if duplicate guids were detected in the code.
+                // This will intentionally prevent Rock from starting so the
+                // developer can quickly find and fix the error.
+                if ( duplicateGuids.Any() )
+                {
+                    throw new Exception( $"Duplicate EntityType system guids detected: {duplicateGuids.JoinStrings( ", " )}" );
+                }
 
                 // Get all the EntityType records from the Database without filtering them (we'll have to deal with them all)
                 // Then we'll split them into a list of ones that don't exist and ones that still exist
@@ -334,7 +349,7 @@ namespace Rock.Model
                 var reflectedEntityTypesThatNoLongerExist = entityTypeInDatabaseList
                     .Where( e => !string.IsNullOrEmpty( e.AssemblyName ) )
                     .ToList()
-                    .Where( e => !reflectedTypeNames.Contains( e.Name ) )
+                    .Where( e => !reflectedTypeNames.Contains( e.Name ) && !reflectedTypeGuids.Contains( e.Guid ) )
                     .OrderBy( a => a.Name )
                     .ToList();
 
@@ -382,7 +397,7 @@ namespace Rock.Model
                 // Now get the entityType records that are still in the list of types we found thru reflection
                 // but we'll have C# narrow it down to ones that aren't in the reflectedTypeNames list
                 var reflectedEntityTypesThatStillExist = entityTypeInDatabaseList
-                    .Where( e => reflectedTypeNames.Contains( e.Name ) )
+                    .Where( e => reflectedTypeNames.Contains( e.Name ) || reflectedTypeGuids.Contains( e.Guid ) )
                     .ToList();
 
                 // Update any existing entities
@@ -391,7 +406,14 @@ namespace Rock.Model
                     var entityTypeFromReflection = entityTypesFromReflection.GetValueOrNull( existingEntityType.Name );
                     if ( entityTypeFromReflection == null )
                     {
-                        continue;
+                        // Check if the entity type had its class name change by
+                        // seeing if we already have one with the same guid.
+                        entityTypeFromReflection = entityTypesFromReflection.Values.FirstOrDefault( e => e.Guid == existingEntityType.Guid );
+
+                        if ( entityTypeFromReflection == null )
+                        {
+                            continue;
+                        }
                     }
 
                     if ( existingEntityType.Name != entityTypeFromReflection.Name ||
@@ -408,7 +430,7 @@ namespace Rock.Model
                     }
 
                     var reflectedType = reflectedTypeLookupByName.GetValueOrNull( existingEntityType.Name );
-                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
                     if ( reflectedTypeGuid != null && reflectedTypeGuid.Value != existingEntityType.Guid )
                     {
                         /*
@@ -426,18 +448,26 @@ namespace Rock.Model
                             var entityTypeFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.ENTITYTYPE ).Id;
                             var componentFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENT ).Id;
                             var componentsFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENTS ).Id;
+                            var existingEntityTypeString = existingEntityType.Guid.ToString().ToLower();
+                            var reflectedTypeGuidString = reflectedTypeGuid.Value.ToString().ToLower();
 
                             var attributeIdsUsingFieldType = attributeService.Queryable()
                                 .Where( a => a.FieldTypeId == entityTypeFieldTypeId
                                     || a.FieldTypeId == componentFieldTypeId
                                     || a.FieldTypeId == componentsFieldTypeId )
-                                .Select( a => a.Id );
+                                .Select( a => a.Id )
+                                .ToList();
 
-                            var attributeValues = attributeValueService.Queryable().Where( av => attributeIdsUsingFieldType.Contains( av.AttributeId ) && av.Value.Contains( existingEntityType.Guid.ToString() ) );
+                            rockContext.Database.CommandTimeout = 150;
 
-                            foreach ( var attributeValue in attributeValues )
+                            foreach ( var attributeIdUsingFieldType in attributeIdsUsingFieldType )
                             {
-                                attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityType.Guid.ToString().ToLower(), reflectedTypeGuid.Value.ToString().ToLower() );
+                                var attributeValues = attributeValueService.Queryable().Where( av => av.AttributeId == attributeIdUsingFieldType && av.Value.Contains( existingEntityTypeString ) ).ToList();
+
+                                foreach ( var attributeValue in attributeValues )
+                                {
+                                    attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityTypeString, reflectedTypeGuidString );
+                                }
                             }
                         }
 
@@ -455,7 +485,11 @@ namespace Rock.Model
                     // added by the audit on a previous save in this method.
                     if ( entityType.Name != "Rock.Model.EntityType" )
                     {
-                        entityTypeService.Add( entityType );
+                        // double check that another thread didn't add this EntityType.
+                        if ( !entityTypeService.AlreadyExists( entityType.Name ) )
+                        {
+                            entityTypeService.Add( entityType );
+                        }
                     }
                 }
 
@@ -501,5 +535,16 @@ namespace Rock.Model
             return null;
 
         }
+
+        /// <summary>
+        /// Returns true if an EntityType with the same Name already exists in the database.
+        /// This can be used this to help prevent duplicates.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        private bool AlreadyExists( string name )
+        {
+            return this.Queryable().Where( a => a.Name == name ).Any();
+        }
+
     }
 }

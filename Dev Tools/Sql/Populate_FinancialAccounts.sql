@@ -64,7 +64,7 @@ BEGIN
 
         SELECT @financialAccountDescription = 'Description of ' + @financialAccountName;
 
-        INSERT INTO [RockRMS_develop].[dbo].[FinancialAccount] (
+        INSERT INTO [FinancialAccount] (
             [ParentAccountId]
             , [CampusId]
             , [Name]

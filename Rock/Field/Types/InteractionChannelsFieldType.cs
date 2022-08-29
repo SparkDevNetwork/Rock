@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -28,8 +30,10 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.INTERACTION_CHANNELS )]
-    public class InteractionChannelsFieldType : SelectFromListFieldType
+    public class InteractionChannelsFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
+        #region Methods
+
         /// <summary>
         /// Gets the list source.
         /// </summary>
@@ -40,5 +44,44 @@ namespace Rock.Field.Types
         {
             return new InteractionChannelService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            var ids = valueGuidList
+                .Select( guid => InteractionChannelCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .ToList();
+
+            var interactionChannelEntityTypeId = EntityTypeCache.GetId<InteractionChannel>().Value;
+
+            return ids
+                .Select( id => new ReferencedEntity( interactionChannelEntityTypeId, id.Value ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a InteractionChannel and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<InteractionChannel>().Value, nameof( InteractionChannel.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

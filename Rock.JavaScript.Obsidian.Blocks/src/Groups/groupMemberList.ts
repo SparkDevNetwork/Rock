@@ -15,14 +15,14 @@
 // </copyright>
 //
 import Block from "@Obsidian/Templates/block";
-import { defineComponent, inject } from "vue";
+import { defineComponent } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import Grid, { FilterOptions, RowContext, SortDirection, SortProperty } from "@Obsidian/Controls/grid";
 import GridRow from "@Obsidian/Controls/gridRow";
 import GridColumn from "@Obsidian/Controls/gridColumn";
 import GridSelectColumn from "@Obsidian/Controls/gridSelectColumn";
 import GridProfileLinkColumn from "@Obsidian/Controls/gridProfileLinkColumn";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Alert from "@Obsidian/Controls/alert";
 
 type GroupMemberViewModel = {
@@ -53,7 +53,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction: useInvokeBlockAction()
         };
     },
     data() {

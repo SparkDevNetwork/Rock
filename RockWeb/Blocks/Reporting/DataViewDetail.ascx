@@ -83,10 +83,9 @@
                             <div class="clearfix">
                                 <div class="pull-right ml-1 mb-1">
                                     <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+                                    <Rock:HighlightLabel runat="server" ID="hlRunSince" CustomClass="" />
 
-                                    <span class="label-group">
-                                        <Rock:HighlightLabel runat="server" ID="hlRunSince" CustomClass="rounded-right-0" /><Rock:BootstrapButton CssClass="label btn-label rounded-left-0" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
-                                    </span>
+                                    <Rock:BootstrapButton CssClass="btn btn-default btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
 
                                     <Rock:HighlightLabel runat="server" ID="hlLastRun" />
                                 </div>

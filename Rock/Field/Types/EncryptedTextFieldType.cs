@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -33,9 +34,9 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENCRYPTED_TEXT )]
     public class EncryptedTextFieldType : TextFieldType
     {
-
         #region Configuration
 
+        private const string IS_PASSWORD_KEY = "ispassword";
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string ALLOW_HTML = "allowhtml";
 
@@ -100,11 +101,11 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[3] ).Text;
+                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[3] ).Text;
                 }
                 if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
                 {
-                    configurationValues[ALLOW_HTML].Value = ( (RockCheckBox)controls[4] ).Checked.ToString();
+                    configurationValues[ALLOW_HTML].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
                 }
             }
 
@@ -120,17 +121,17 @@ namespace Rock.Field.Types
         {
             // Process TextFieldType first.
             base.SetConfigurationValues( controls, configurationValues );
-            
+
             if ( controls != null && configurationValues != null )
             {
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
                 {
-                    ( (NumberBox)controls[3] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                    ( ( NumberBox ) controls[3] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
                 }
 
                 if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
                 {
-                    ( (RockCheckBox)controls[4] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
 
             }
@@ -140,17 +141,25 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return base.FormatValue( parentControl, Encryption.DecryptString( value ), configurationValues, condensed );
+            if ( privateConfigurationValues != null &&
+                privateConfigurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                privateConfigurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return Encryption.DecryptString( privateValue );
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -253,6 +262,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool HasFilterControl()
         {
+            return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Persisted values store the unencrypted value in the database, which is bad.
             return false;
         }
 

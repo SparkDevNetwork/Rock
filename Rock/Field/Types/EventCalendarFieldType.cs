@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.EVENT_CALENDAR )]
-    public class EventCalendarFieldType : FieldType, IEntityFieldType
+    public class EventCalendarFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -51,19 +51,27 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
+
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var guids = value.SplitDelimitedValues();
+                var guids = privateValue.SplitDelimitedValues();
                 var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
                 if ( eventCalendars.Any() )
                 {
-                    formattedValue = string.Join( ", ", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
+                    formattedValue = string.Join( ", ", from eventCalendar in eventCalendars select eventCalendar.Name );
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -104,10 +112,10 @@ namespace Rock.Field.Types
             if ( eventCalendarPicker != null )
             {
                 int? eventCalendarId = eventCalendarPicker.SelectedEventCalendarId;
-                if (eventCalendarId.HasValue)
+                if ( eventCalendarId.HasValue )
                 {
                     var eventCalendar = EventCalendarCache.Get( eventCalendarId.Value );
-                    if (eventCalendar != null )
+                    if ( eventCalendar != null )
                     {
                         return eventCalendar.Guid.ToString();
                     }
@@ -159,7 +167,7 @@ namespace Rock.Field.Types
 
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 
@@ -225,7 +233,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -259,7 +267,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -339,7 +347,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = EventCalendarCache.Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>
@@ -385,6 +393,41 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var eventCalenderId = new EventCalendarService( rockContext ).GetId( guid.Value );
+
+                if ( !eventCalenderId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<EventCalendar>().Value, eventCalenderId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<EventCalendar>().Value, nameof( EventCalendar.Name ) )
+            };
         }
 
         #endregion

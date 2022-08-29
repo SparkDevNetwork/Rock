@@ -84,7 +84,12 @@ namespace Rock.Model
                 IdKey = model.IdKey,
                 AttributeId = model.AttributeId,
                 EntityId = model.EntityId,
+                IsPersistedValueDirty = model.IsPersistedValueDirty,
                 IsSystem = model.IsSystem,
+                PersistedCondensedHtmlValue = model.PersistedCondensedHtmlValue,
+                PersistedCondensedTextValue = model.PersistedCondensedTextValue,
+                PersistedHtmlValue = model.PersistedHtmlValue,
+                PersistedTextValue = model.PersistedTextValue,
                 Value = model.Value,
                 ValueAsNumeric = model.ValueAsNumeric,
                 CreatedDateTime = model.CreatedDateTime,
@@ -160,7 +165,12 @@ namespace Rock.Model
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsPersistedValueDirty = source.IsPersistedValueDirty;
             target.IsSystem = source.IsSystem;
+            target.PersistedCondensedHtmlValue = source.PersistedCondensedHtmlValue;
+            target.PersistedCondensedTextValue = source.PersistedCondensedTextValue;
+            target.PersistedHtmlValue = source.PersistedHtmlValue;
+            target.PersistedTextValue = source.PersistedTextValue;
             target.Value = source.Value;
             target.ValueAsNumeric = source.ValueAsNumeric;
             target.CreatedDateTime = source.CreatedDateTime;

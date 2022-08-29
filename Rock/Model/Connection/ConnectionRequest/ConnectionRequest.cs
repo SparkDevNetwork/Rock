@@ -292,7 +292,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            if ( PersonAlias != null )
+            {
+                return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            }
+            else
+            {
+                return $"{ ConnectionOpportunity } Connection Request";
+            }
+
         }
 
         #endregion

@@ -51,7 +51,7 @@ export default defineComponent({
             default: "button"
         },
         disabled: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             default: false
         },
         btnType: {

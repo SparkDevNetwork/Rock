@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 using Rock.Security.Options;
@@ -88,13 +89,13 @@ namespace Rock.Security
 
             // Create a random number generator and a place to store the password
             // while it is being generated.
-            var rng = new Random();
+            var rng = RandomNumberGenerator.Create();
             var bytes = new byte[options.MinimumLength];
             var password = new StringBuilder();
 
             // Fill the buffer with random bytes and then use that buffer to
             // fill in the password characters.
-            rng.NextBytes( bytes );
+            rng.GetBytes( bytes );
             for ( int i = 0; i < bytes.Length; i++ )
             {
                 var character = PasswordGenerationCharacters[bytes[i] % PasswordGenerationCharacters.Length];
@@ -125,25 +126,49 @@ namespace Rock.Security
             // requirements.
             if ( needLowercase )
             {
-                password.Append( ( char ) rng.Next( 97, 123 ) );
+                password.Append( ( char ) GetRandomInteger( rng, 97, 123 ) );
             }
 
             if ( needUppercase )
             {
-                password.Append( ( char ) rng.Next( 65, 91 ) );
+                password.Append( ( char ) GetRandomInteger( rng, 65, 91 ) );
             }
 
             if ( needDigit )
             {
-                password.Append( ( char ) rng.Next( 48, 58 ) );
+                password.Append( ( char ) GetRandomInteger( rng, 48, 58 ) );
             }
 
             if ( needNonAlphaNumeric )
             {
-                password.Append( PasswordGenerationNonAlphaNumericCharacters[rng.Next( PasswordGenerationNonAlphaNumericCharacters.Length )] );
+                password.Append( PasswordGenerationNonAlphaNumericCharacters[GetRandomInteger( rng, 0, PasswordGenerationNonAlphaNumericCharacters.Length )] );
             }
 
             return password.ToString();
+        }
+
+        /// <summary>
+        /// Gets a random 32-bit signed integer that is greater than or equal to minimumValue and less than exclusiveUpperBound
+        /// using the <see cref="RandomNumberGenerator" /> class.
+        /// </summary>
+        /// <param name="rng">The RNG.</param>
+        /// <param name="minimumValue">The minimum value of the random number.</param>
+        /// <param name="exclusiveUpperBound">The exclusive upper bound of the random number (must be greater than minimumValue).</param>
+        /// <returns>System.Int32.</returns>
+        private static int GetRandomInteger( RandomNumberGenerator rng, int minimumValue, int exclusiveUpperBound )
+        {
+            if ( exclusiveUpperBound <= minimumValue )
+            {
+                exclusiveUpperBound = minimumValue + 1;
+            }
+
+            // Generate four random bytes to convert into a 32-bit integer.
+            var bytes = new byte[4];
+            rng.GetBytes( bytes );
+            var random = BitConverter.ToUInt32( bytes, 0 );
+
+            // Convert our random value to a signed integer >= minimumValue and < exclusiveUpperBound.
+            return ( int ) ( minimumValue + ( exclusiveUpperBound - minimumValue ) * ( random / ( uint.MaxValue + 1.0 ) ) );
         }
 
         #endregion

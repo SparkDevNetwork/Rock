@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,10 +33,29 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BENEVOLENCE_REQUEST )]
-    public class BenevolenceRequestFieldType : FieldType, IEntityFieldType
+    public class BenevolenceRequestFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var benevolenceRequest = new BenevolenceRequestService( rockContext ).GetNoTracking( guid.Value );
+                    if ( benevolenceRequest != null )
+                    {
+                        return $"{benevolenceRequest.FirstName} {benevolenceRequest.LastName} on {benevolenceRequest.RequestDateTime.ToShortDateString()}";
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -46,22 +67,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
-
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var benevolenceRequest = new BenevolenceRequestService( rockContext ).GetNoTracking( guid.Value );
-                    if ( benevolenceRequest != null )
-                    {
-                        formattedValue = $"{benevolenceRequest.FirstName} {benevolenceRequest.LastName} on {benevolenceRequest.RequestDateTime.ToShortDateString()}";
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -175,5 +183,45 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var benevolenceRequestId = new BenevolenceRequestService( rockContext ).GetId( guid.Value );
+
+                if ( !benevolenceRequestId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<BenevolenceRequest>().Value, benevolenceRequestId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.FirstName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.RequestDateTime ) ),
+            };
+        }
+
+        #endregion
     }
 }

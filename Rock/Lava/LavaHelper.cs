@@ -173,7 +173,7 @@ namespace Rock.Lava
 
             if ( options.GetCurrentVisitor && rockPage != null )
             {
-                var currentVisitor = rockPage.CurrentVisitor;
+                var currentVisitor = rockPage.CurrentVisitor ?? rockPage.CurrentPersonAlias;
                 mergeFields.Add( "CurrentVisitor", currentVisitor );
             }
 
@@ -332,6 +332,78 @@ namespace Rock.Lava
             {
                 return new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Guid );
             }
+        }
+
+        /// <summary>
+        /// Gets a Person object from a Lava input parameter containing a person reference.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static Person GetPersonFromInputParameter( object input, ILavaRenderContext context )
+        {
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            // Parse the input object for a Person.
+            if ( input is Person p )
+            {
+                return p;
+            }
+            else if ( input is PersonAlias pa )
+            {
+                return pa?.Person;
+            }
+            else if ( input is string s )
+            {
+                var inputAsGuid = s.AsGuidOrNull();
+                if ( inputAsGuid != null )
+                {
+                    // If the input is a Guid, retrieve the corresponding Person.
+                    var personService = new PersonService( rockContext );
+                    var person = personService.Get( inputAsGuid.Value );
+                    return person;
+                }
+
+                var inputAsInt = s.AsIntegerOrNull();
+                if ( inputAsInt != null )
+                {
+                    // If the input is an integer, retrieve the corresponding Person.
+                    var personService = new PersonService( rockContext );
+                    var person = personService.Get( inputAsInt.Value );
+                    return person;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a PersonAlias representing the current visitor for whom a request is being processed.
+        /// </summary>
+        /// <param name="context">The Lava context.</param>
+        /// <returns></returns>
+        public static PersonAlias GetCurrentVisitorInContext( ILavaRenderContext context )
+        {
+            // If an override value is available in the Lava context, use it.
+            var currentVisitor = context.GetMergeField( "CurrentVisitor", null ) as PersonAlias;
+
+            // ... or try to get a value from the current HttpRequest.
+            if ( currentVisitor == null )
+            {
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentVisitor" ) )
+                {
+                    currentVisitor = httpContext.Items["CurrentVisitor"] as PersonAlias;
+                }
+            }
+
+            // ... or use the primary alias of the current person.
+            if ( currentVisitor == null )
+            {
+                var person = GetCurrentPerson( context );
+                currentVisitor = person?.PrimaryAlias;
+            }
+
+            return currentVisitor;
         }
 
         /// <summary>

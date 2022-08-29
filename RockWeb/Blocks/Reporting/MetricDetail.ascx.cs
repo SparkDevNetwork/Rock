@@ -1286,12 +1286,25 @@ The Lava can include Lava merge fields:";
             pnlActivityChart.Visible = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             // Add client script to construct the chart.
+            string formatString;
+            if ( metric.UnitType == Rock.Model.UnitType.Currency )
+            {
+                formatString = "currency";
+            }
+            else if( metric.UnitType == Rock.Model.UnitType.Percentage )
+            {
+                formatString = "percentage";
+            }
+            else
+            {
+                formatString = "numeric";
+            }
             var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
             {
                 SizeToFitContainerWidth = true,
                 MaintainAspectRatio = false,
                 LineTension = 0m,
-                UnitType = metric.UnitType
+                YValueFormatString = formatString
             } );
 
             string script = string.Format(

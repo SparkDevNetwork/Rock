@@ -141,6 +141,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="key">The key that identifies the item.</param>
+        /// <param name="item">On return will contain the item.</param>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        internal protected static bool TryGet( string key, out T item )
+        {
+            string qualifiedKey = QualifiedKey( key );
+
+            item = RockCacheManager<T>.Instance.Get( qualifiedKey );
+
+            return item != null;
+        }
+
+        /// <summary>
         /// Updates the cache item.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -333,17 +349,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            // Calling the clear on the instance when using redis will clear all of the cache items for evert type, which is bad.
-            // So instead we need to loop through all of the keys for the type and flush them individually
-            if ( RockCache.IsCacheSerialized )
-            {
-                FlushAllItems();
-            }
-            else
-            {
-                RockCacheManager<T>.Instance.Clear();
-            }
-            
+            RockCacheManager<T>.Instance.Clear();
             RockCacheManager<List<string>>.Instance.Remove( AllKey, _AllRegion );
         }
 

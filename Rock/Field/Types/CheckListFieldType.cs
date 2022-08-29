@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
 
 using Rock.Attribute;
@@ -139,6 +138,67 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            if ( oldValues != newValues )
+            {
+                return true;
+            }
+
+            var oldRepeatColumns = oldPrivateConfigurationValues.GetValueOrNull( REPEAT_COLUMNS ) ?? string.Empty;
+            var newRepeatColumns = newPrivateConfigurationValues.GetValueOrNull( REPEAT_COLUMNS ) ?? string.Empty;
+
+            if ( oldRepeatColumns != newRepeatColumns )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetSelectedValues( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetSelectedValues( privateValue, privateConfigurationValues ).EncodeHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                if ( string.IsNullOrEmpty( privateConfigurationValues[VALUES_KEY] ) || string.IsNullOrEmpty( privateValue ) )
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( privateConfigurationValues[VALUES_KEY] );
+                    var values = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                    string formattedValue = string.Empty;
+                    foreach ( var keyValuePair in keyValuePairs )
+                    {
+                        formattedValue += string.Format( @"<div>
+                                <i class='far fa{1}-square'></i> {0}
+                               </div>", keyValuePair.Value, values.Any( a => a == keyValuePair.Key ) ? "-check" : "" );
+                    }
+                    return formattedValue;
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -149,38 +209,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
-            {
-                if ( string.IsNullOrEmpty( configurationValues[VALUES_KEY].Value ) || string.IsNullOrEmpty( value ) )
-                {
-                    return string.Empty;
-                }
-                else
-                {
-                    var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
-                    if ( condensed )
-                    {
-                        return GetUrlDecodedValues( keyValuePairs, value );
-
-
-                    }
-                    else
-                    {
-                        var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                        string formattedValue = string.Empty;
-                        foreach ( var keyValuePair in keyValuePairs )
-                        {
-                            formattedValue += string.Format( @"<div>
-                                <i class='far fa{1}-square'></i> {0}
-                               </div>", keyValuePair.Value, values.Any( a => a == keyValuePair.Key ) ? "-check" : "" );
-                        }
-                        return formattedValue;
-                    }
-
-                }
-            }
-
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -392,6 +423,30 @@ namespace Rock.Field.Types
         #endregion
 
         #region Private
+
+        /// <summary>
+        /// Gets the selected values.
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns></returns>
+        private string GetSelectedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                if ( string.IsNullOrEmpty( privateConfigurationValues[VALUES_KEY] ) || string.IsNullOrEmpty( privateValue ) )
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( privateConfigurationValues[VALUES_KEY] );
+                    return GetUrlDecodedValues( keyValuePairs, privateValue );
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the URL decoded values.

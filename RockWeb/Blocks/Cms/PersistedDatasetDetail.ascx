@@ -24,7 +24,7 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.PersistedDataset, Rock" PropertyName="Name" />
 
                         <Rock:NotificationBox ID="nbAccessKeyWarning" runat="server" NotificationBoxType="Warning" />
-                        <Rock:DataTextBox ID="tbAccessKey" runat="server" SourceTypeName="Rock.Model.PersistedDataset, Rock" Required="true" PropertyName="AccessKey" Help="The key to use to uniquely identity this dataset. This will be the key to use when using the PersistedDataset lava filter." />
+                        <Rock:DataTextBox ID="tbAccessKey" runat="server" SourceTypeName="Rock.Model.PersistedDataset, Rock" Required="true" PropertyName="AccessKey" Help="The key to use to uniquely identify this dataset. This will be the key to use when using the PersistedDataset lava filter." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" Help="Set this to false to have the PersistedDataset lava filter return null for this dataset, and to exclude this dataset when rebuilding." />

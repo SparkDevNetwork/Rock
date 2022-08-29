@@ -778,11 +778,9 @@ namespace Rock.Web.UI.Controls
 
             this.GetValues( editedLocation );
 
-            var locationService = new LocationService( new RockContext() );
-
             string validationMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( editedLocation, out validationMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
 
             if ( !isValid )
             {

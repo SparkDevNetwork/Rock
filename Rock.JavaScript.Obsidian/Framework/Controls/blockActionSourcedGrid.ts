@@ -15,9 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from "vue";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { defineComponent, PropType } from "vue";
 import Grid, { FilterOptions, RowData, SortDirection, SortProperty } from "./grid";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
 
 type BlockActionGridResponse = {
     totalCount: number,
@@ -39,9 +39,11 @@ export default defineComponent({
             required: true
         }
     },
-    setup () {
+    setup() {
+        const invokeBlockAction = useInvokeBlockAction();
+
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction
         };
     },
     data () {

@@ -20,7 +20,7 @@ import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
 import "@Obsidian/FieldTypes/index";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
-import { BlockConfig } from "@Obsidian/Utility/block";
+import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
@@ -51,10 +51,21 @@ const developerStyle = defineComponent({
 * @param config
 * @param blockComponent
 */
-export async function initializeBlock(config: BlockConfig): Promise<App> {
+export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<App> {
     const blockPath = `${config.blockFileUrl}.js`;
     let blockComponent: Component | null = null;
     let errorMessage = "";
+
+    if (!config || !config.blockFileUrl || !config.blockGuid || !config.rootElementId) {
+        console.error("Invalid block configuration:", config);
+        throw "Could not initialize Obsidian block because the configuration is invalid.";
+    }
+
+    const rootElement = document.getElementById(config.rootElementId);
+
+    if (!rootElement) {
+        throw "Could not initialize Obsidian block because the root element was not found.";
+    }
 
     try {
         const blockComponentModule = await import(blockPath);
@@ -147,7 +158,7 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
     });
 
     app.component("v-style", developerStyle);
-    app.mount(config.rootElement);
+    app.mount(rootElement);
 
     return app;
 }

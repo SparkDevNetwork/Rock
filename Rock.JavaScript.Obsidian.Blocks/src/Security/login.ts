@@ -17,8 +17,8 @@
 import TextBox from "@Obsidian/Controls/textBox";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { defineComponent, inject } from "vue";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { defineComponent } from "vue";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Alert from "@Obsidian/Controls/alert";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
@@ -43,7 +43,7 @@ export default defineComponent({
     },
     setup () {
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction: useInvokeBlockAction()
         };
     },
     data () {

@@ -32,8 +32,9 @@ using System.Collections.Generic;
 using System.Web;
 using Rock.Lava;
 using DotLiquid;
+using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Lava Shortcode Detail" )]
     [Category( "CMS" )]
@@ -56,24 +57,12 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 ShowDetail( lavaShortcodeId );
-                LoadCategories( lavaShortcodeId );
             }
         }
 
         #endregion
 
         #region Edit Events
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
-        {
-            var lavaShortcode = new LavaShortcodeService( new RockContext() ).Get( hfLavaShortcodeId.ValueAsInt() );
-            ShowEditDetails( lavaShortcode );
-        }
 
         /// <summary>
         /// Handles the Click event of the btnCancel control.
@@ -117,18 +106,22 @@ namespace RockWeb.Blocks.Core
 
             var oldTagName = hfOriginalTagName.Value;
 
-            lavaShortcode.Name = tbLavaShortcodeName.Text;
-            lavaShortcode.IsActive = cbIsActive.Checked;
-            lavaShortcode.Description = tbDescription.Text;
-            lavaShortcode.Documentation = htmlDocumentation.Text;
-            lavaShortcode.TagType = rblTagType.SelectedValueAsEnum<TagType>();
-            lavaShortcode.TagName = tbTagName.Text.Trim();
-            lavaShortcode.Markup = ceMarkup.Text;
-            lavaShortcode.Parameters = kvlParameters.Value;
-            lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
+            if ( !lavaShortcode.IsSystem )
+            {
+                lavaShortcode.Name = tbLavaShortcodeName.Text;
+                lavaShortcode.IsActive = cbIsActive.Checked;
+                lavaShortcode.Description = tbDescription.Text;
+                lavaShortcode.Documentation = htmlDocumentation.Text;
+                lavaShortcode.TagType = rblTagType.SelectedValueAsEnum<TagType>();
+                lavaShortcode.TagName = tbTagName.Text.Trim();
+                lavaShortcode.Markup = ceMarkup.Text;
+                lavaShortcode.Parameters = kvlParameters.Value;
+                lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
+            }
 
             lavaShortcode.Categories.Clear();
-            foreach ( var categoryId in cpShortCodeCat.SelectedValuesAsInt() )
+            var categoryPicker = lavaShortcode.IsSystem ? cpViewCategories : cpShortCodeCat;
+            foreach ( var categoryId in categoryPicker.SelectedValuesAsInt() )
             {
                 lavaShortcode.Categories.Add( categoryService.Get( categoryId ) );
             }
@@ -209,7 +202,8 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            var isUserAuthorized = IsUserAuthorized( Authorization.EDIT );
+            if ( !isUserAuthorized )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( LavaShortcode.FriendlyTypeName );
@@ -218,12 +212,13 @@ namespace RockWeb.Blocks.Core
             if ( lavaShortcode.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = string.Format( "<strong>Note</strong> This is a system {0} and is not able to be edited.", LavaShortcode.FriendlyTypeName.ToLower() );
+                nbEditModeMessage.Text = string.Format( "<strong>Note</strong> This is a system {0} so editing is limited.", LavaShortcode.FriendlyTypeName.ToLower() );
             }
 
             if ( readOnly )
             {
-                ShowReadonlyDetails( lavaShortcode );
+                var allowlimitedEditing = lavaShortcode.IsSystem && isUserAuthorized;
+                ShowReadonlyDetails( lavaShortcode, allowlimitedEditing );
             }
             else
             {
@@ -235,7 +230,8 @@ namespace RockWeb.Blocks.Core
         /// Shows the readonly details.
         /// </summary>
         /// <param name="LavaShortcode">The lavaShortcode.</param>
-        private void ShowReadonlyDetails( LavaShortcode lavaShortcode )
+        /// <param name="allowlimitedEditing">if set to <c>true</c> [allow limited editing].</param>
+        private void ShowReadonlyDetails( LavaShortcode lavaShortcode, bool allowlimitedEditing )
         {
             SetEditMode( false );
 
@@ -251,6 +247,12 @@ namespace RockWeb.Blocks.Core
             headerMarkup.Add( "Tag Type", lavaShortcode.TagType );
 
             lblHeaderFields.Text = headerMarkup.Html;
+            cpViewCategories.Visible = allowlimitedEditing;
+            divActions.Visible = allowlimitedEditing;
+            if ( allowlimitedEditing )
+            {
+                LoadCategories( cpViewCategories, lavaShortcode.Id );
+            }
 
             ceView.Text = lavaShortcode.Markup;
 
@@ -299,6 +301,7 @@ namespace RockWeb.Blocks.Core
 
             SetEditMode( true );
 
+            divActions.Visible = true;
             hlInactive.Visible = !lavaShortcode.IsActive;
             tbLavaShortcodeName.Text = lavaShortcode.Name;
             cbIsActive.Checked = lavaShortcode.IsActive;
@@ -308,6 +311,7 @@ namespace RockWeb.Blocks.Core
             tbTagName.Text = lavaShortcode.TagName;
             kvlParameters.Value = lavaShortcode.Parameters;
             hfOriginalTagName.Value = lavaShortcode.TagName;
+            LoadCategories( cpShortCodeCat, lavaShortcode.Id );
 
             if ( lavaShortcode.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
             {
@@ -333,7 +337,7 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Loads the categories.
         /// </summary>
-        private void LoadCategories( int lavaShortcodeId )
+        private void LoadCategories( CategoryPicker categoryPicker, int lavaShortcodeId )
         {
             var rockContext = new RockContext();
             var lavaShortcodeService = new LavaShortcodeService( rockContext );
@@ -343,7 +347,7 @@ namespace RockWeb.Blocks.Core
                 var categories = lavaShortcodeService.Queryable().SingleOrDefault( v => v.Id == lavaShortcodeId )?.Categories;
                 if ( categories?.Count > 0 )
                 {
-                    cpShortCodeCat.SetValues( categories.Select(v=>v.Id) );
+                    categoryPicker.SetValues( categories.Select(v=>v.Id) );
                 }
             }
         }

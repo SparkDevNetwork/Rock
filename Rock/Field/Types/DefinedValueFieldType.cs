@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,7 +39,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
-    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType
+    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -605,8 +605,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -1287,6 +1287,59 @@ namespace Rock.Field.Types
 
             return definedValues;
         }
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+
+            if ( oldDisplayDescription != newDisplayDescription )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
+
+            return privateValue
+                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Value and Description properties of
+            // a DefinedValue and should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
+            };
+        }
+
         #endregion
 
         private class PublicValue

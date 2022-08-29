@@ -43,8 +43,6 @@ namespace Rock.Tasks
     /// <summary>
     /// Uses the bus to send payment receipts for scheduled transaction payments that got downloaded from the Financial Gateway.
     /// </summary>
-    [Obsolete( "The bus shouldn't be used for this. Use SendPaymentReceipts Transaction instead." )]
-    [RockObsolete( "1.13" )]
     public sealed class ProcessSendPaymentReceiptEmails : BusStartedTask<ProcessSendPaymentReceiptEmails.Message>
     {
         /// <summary>

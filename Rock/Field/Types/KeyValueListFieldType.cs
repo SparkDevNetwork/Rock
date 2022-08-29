@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.25,1.88H2.75A1.74,1.74,0,0,0,1,3.62v8.76a1.74,1.74,0,0,0,1.75,1.74h10.5A1.74,1.74,0,0,0,15,12.38V3.62A1.74,1.74,0,0,0,13.25,1.88Zm.44,1.74v2H6V3.19h7.22A.44.44,0,0,1,13.69,3.62ZM6,6.91h7.66V9.09H6ZM4.72,9.09H2.31V6.91H4.72Zm-2-5.9h2v2.4H2.31v-2A.44.44,0,0,1,2.75,3.19Zm-.44,9.19v-2H4.72v2.4h-2A.44.44,0,0,1,2.31,12.38Zm10.94.43H6v-2.4h7.66v2A.44.44,0,0,1,13.25,12.81Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.KEY_VALUE_LIST )]
-    public class KeyValueListFieldType : ValueListFieldType
+    public class KeyValueListFieldType : ValueListFieldType, IEntityReferenceFieldType
     {
         private const string VALUES_KEY = "values";
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
@@ -331,7 +332,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+            // Never use condensed format for webforms.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -478,6 +480,8 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Methods
+
         /// <summary>
         /// Gets the values from string.
         /// </summary>
@@ -527,6 +531,95 @@ namespace Rock.Field.Types
 
             return values;
         }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDefinedType = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var newDefinedType = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var oldCustomValues = oldPrivateConfigurationValues.GetValueOrNull( "customvalues" ) ?? string.Empty;
+            var newCustomValues = newPrivateConfigurationValues.GetValueOrNull( "customvalues" ) ?? string.Empty;
+
+            if ( oldDefinedType != newDefinedType )
+            {
+                return true;
+            }
+
+            if ( oldCustomValues != newCustomValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var isDefinedType = privateConfigurationValues.GetValueOrDefault( "definedtype", "" ).AsIntegerOrNull().HasValue;
+
+            if ( !isDefinedType )
+            {
+                return null;
+            }
+
+            var entityReferences = new List<ReferencedEntity>();
+            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
+            var nameValues = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+
+            foreach ( var nameValue in nameValues )
+            {
+                var nameAndValue = nameValue.Split( new char[] { '^' } );
+
+                // Url decode array items just in case they were UrlEncoded (in the KeyValueList controls).
+                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+                if ( nameAndValue.Length == 2 )
+                {
+                    var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
+
+                    if ( definedValue != null )
+                    {
+                        entityReferences.Add( new ReferencedEntity( definedValueEntityTypeId, definedValue.Id ) );
+                    }
+                }
+            }
+
+            return entityReferences;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var isDefinedType = privateConfigurationValues.GetValueOrDefault( "definedtype", "" ).AsIntegerOrNull().HasValue;
+
+            if ( !isDefinedType )
+            {
+                return new List<ReferencedProperty>();
+            }
+
+            // This field type references the Value property of a DefinedValue and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
+        }
+
+        #endregion
 
         /// <summary>
         /// Represents a single element value (presented as a row when editing)

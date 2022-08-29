@@ -554,7 +554,7 @@ namespace Rock.Web.UI.Controls
 
             string validationMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( editedLocation, out validationMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
 
             if ( !isValid )
             {

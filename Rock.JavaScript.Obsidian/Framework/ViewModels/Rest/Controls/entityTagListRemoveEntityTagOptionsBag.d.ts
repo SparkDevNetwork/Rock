@@ -24,7 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the RemoveNamedTag API action of
+ * The options that can be passed to the RemoveEntityTag API action of
  * the EntityTagList control.
  */
 export type EntityTagListRemoveEntityTagOptionsBag = {
