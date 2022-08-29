@@ -71,19 +71,14 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( this.BaseUrl ) )
             {
-                // Display the default BaseURL as a prefix to the text entry field.
-                this.PrependText = this.BaseUrl;
+                // Display the default BaseURL as a tooltip for the text entry field.
+                this.PrependText = $"<i class='fa fa-link' data-toggle='tooltip' title=\"{ this.BaseUrl }...\"'></i>";
 
                 _baseUrls.Add( this.BaseUrl );
             }
-
-            if ( string.IsNullOrWhiteSpace( this.PrependText ) )
+            else
             {
-                var globalAttributes = GlobalAttributesCache.Get();
-                if ( globalAttributes != null )
-                {
-                    this.PrependText = "<i class='fa fa-link'></i>";
-                }
+                this.PrependText = "<i class='fa fa-link'></i>";
             }
         }
 

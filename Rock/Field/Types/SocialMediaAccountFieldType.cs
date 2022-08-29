@@ -205,7 +205,6 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-
             if ( string.IsNullOrWhiteSpace( value ) )
             {
                 return string.Empty;
@@ -220,6 +219,11 @@ namespace Rock.Field.Types
                     if ( configurationValues.ContainsKey( TEXT_TEMPLATE ) )
                     {
                         template = configurationValues[TEXT_TEMPLATE].Value;
+                    }
+                    if ( string.IsNullOrWhiteSpace( template ) )
+                    {
+                        // If an output template is not specified, use a default.
+                        template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
                     }
                     if ( configurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                     {
