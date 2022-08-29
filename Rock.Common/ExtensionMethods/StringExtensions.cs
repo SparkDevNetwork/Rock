@@ -50,6 +50,7 @@ namespace Rock
                     // Can be "x2" if you want lowercase
                     sb.Append( b.ToString( "x2" ) );
                 }
+
                 return sb.ToString();
             }
         }
@@ -93,6 +94,7 @@ namespace Rock
                     // Can be "x2" if you want lowercase
                     sb.Append( b.ToString( "x2" ) );
                 }
+
                 return sb.ToString();
             }
         }
@@ -256,7 +258,7 @@ namespace Rock
 
             if ( maxLength.HasValue && output.Length > maxLength.Value )
             {
-                output = output.Substring( 0, 36 ) + truncation;
+                output = output.Substring( 0, maxLength.Value ) + truncation;
             }
 
             return output;
@@ -481,7 +483,6 @@ namespace Rock
         public static IEnumerable<int> StringToIntList( this string str )
         {
             // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
-
             if ( String.IsNullOrEmpty( str ) )
             {
                 yield break;
@@ -1472,4 +1473,3 @@ namespace Rock
         #endregion String Extensions
     }
 }
-
