@@ -163,6 +163,7 @@ import PagePicker from "@Obsidian/Controls/pagePicker";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
 
 // #region Gallery Support
 
@@ -5523,6 +5524,42 @@ const mergeTemplatePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates metric category picker */
+const metricCategoryPickerGallery = defineComponent({
+    name: "MetricCategoryPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        MetricCategoryPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("metricCategoryPicker"),
+            exampleCode: `<MetricCategoryPicker label="Metric Category" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <MetricCategoryPicker label="Metric Category"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5626,7 +5663,8 @@ const controlGalleryComponents: Record<string, Component> = [
     pagePickerGallery,
     connectionRequestPickerGallery,
     groupPickerGallery,
-    mergeTemplatePickerGallery
+    mergeTemplatePickerGallery,
+    metricCategoryPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

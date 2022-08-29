@@ -1876,7 +1876,7 @@ namespace Rock.Rest.v2
         /// This endpoint returns items formatted for use in a tree view control.
         /// </summary>
         /// <param name="options">The options that describe which merge templates to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of merge templates.</returns>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of merge templates.</returns>
         [HttpPost]
         [System.Web.Http.Route( "MergeTemplatePickerGetMergeTemplates" )]
         [Authenticate]
@@ -1897,7 +1897,6 @@ namespace Rock.Rest.v2
                 include.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
             }
 
-            //MergeTemplateOwnership
             using ( var rockContext = new RockContext() )
             {
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
@@ -1911,6 +1910,46 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = false,
                     IncludeCategoryGuids = include,
                     ExcludeCategoryGuids = exclude,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Metric Category Picker
+
+        /// <summary>
+        /// Gets the metric categories and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric categories to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric categories.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricCategoryPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "92a11376-6bcd-4299-a54d-946cbde7566b" )]
+        public IHttpActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
                     DefaultIconCssClass = options.DefaultIconCssClass,
                     ItemFilterPropertyName = null,
                     ItemFilterPropertyValue = "",
