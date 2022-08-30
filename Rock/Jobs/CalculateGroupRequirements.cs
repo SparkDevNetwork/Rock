@@ -125,7 +125,6 @@ namespace Rock.Jobs
                             break;
                         }
 
-                        var myGroupMemberQry = groupMemberQry.ToList();
                         var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
                         var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, group.Id, groupRequirement.GroupRoleId ).ToList();
