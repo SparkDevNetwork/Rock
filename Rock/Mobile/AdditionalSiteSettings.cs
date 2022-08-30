@@ -340,5 +340,13 @@ namespace Rock.Mobile
         /// The deep link routes.
         /// </value>
         public List<DeepLinkRoute> DeepLinkRoutes { get; set; } = new List<DeepLinkRoute>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this application site will
+        /// compress the update packages with GZip. This provides a 95% size
+        /// reduction but is not supported on shell v1.
+        /// </summary>
+        /// <value><c>true</c> if this application site will compress update packages, <c>false</c>.</value>
+        public bool IsPackageCompressionEnabled { get; set; }
     }
 }
