@@ -1965,6 +1965,95 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Metric Item Picker
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricItemPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c8e8f26e-a7cd-445a-8d72-6d4484a8ee59" )]
+        public IHttpActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = GetMetricItemPickerChildren( options, rockContext );
+
+                if (items == null || items.Count == 0)
+                {
+                    return NotFound();
+                }
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options given.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <param name="rockContext">Context for performing DB queries.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        private List<TreeItemBag> GetMetricItemPickerChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options, RockContext rockContext )
+        {
+            var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var queryOptions = new CategoryItemTreeOptions
+            {
+                ParentGuid = options.ParentGuid,
+                GetCategorizedItems = options.ParentGuid.HasValue,
+                EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                IncludeUnnamedEntityItems = true,
+                IncludeCategoriesWithoutChildren = false,
+                DefaultIconCssClass = options.DefaultIconCssClass,
+                LazyLoad = true,
+                SecurityGrant = grant,
+                IncludeCategoryGuids = options.IncludeCategoryGuids
+            };
+
+            var metricCategories = clientService.GetCategorizedTreeItems( queryOptions );
+            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var convertedMetrics = new List<TreeItemBag>();
+
+            // Translate from MetricCategory to Metric.
+            foreach ( var categoryItem in metricCategories )
+            {
+                if ( !categoryItem.IsFolder )
+                {
+                    // Load the MetricCategory.
+                    var metricCategory = metricCategoryService.Get( categoryItem.Value.AsGuid() );
+                    if ( metricCategory != null )
+                    {
+                        // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
+                        categoryItem.Value = metricCategory.Guid.ToString();
+                    }
+                }
+
+                if (categoryItem.HasChildren)
+                {
+                    categoryItem.Children = new List<TreeItemBag>();
+                    categoryItem.Children.AddRange( GetMetricItemPickerChildren( new MetricItemPickerGetChildrenOptionsBag
+                    {
+                        ParentGuid = categoryItem.Value.AsGuid(),
+                        DefaultIconCssClass = options.DefaultIconCssClass,
+                        SecurityGrantToken = options.SecurityGrantToken,
+                        IncludeCategoryGuids = options.IncludeCategoryGuids
+                    }, rockContext ) );
+                }
+
+
+                convertedMetrics.Add( categoryItem );
+            }
+
+            return convertedMetrics;
+        }
+
+        #endregion
+
         #region Page Picker
 
         /// <summary>

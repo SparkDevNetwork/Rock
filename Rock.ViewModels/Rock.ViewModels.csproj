@@ -368,6 +368,7 @@
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MetricItemPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\MetricCategoryPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PagePickerGetPageRoutesOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageRouteValueBag.cs" />

@@ -30,7 +30,9 @@ import { GroupPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Cont
 import { MergeTemplatePickerGetMergeTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeTemplatePickerGetMergeTemplatesOptionsBag";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import { MetricCategoryPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricCategoryPickerGetChildrenOptionsBag";
+import { MetricItemPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricItemPickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
+import G from "glob";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -622,6 +624,57 @@ export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/MetricCategoryPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving merge templates from the server and displaying
+ * them inside a tree list.
+ */
+export class MetricItemTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** A list of category GUIDs to filter the results */
+    public includeCategoryGuids: Guid[] | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<MetricItemPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeCategoryGuids: this.includeCategoryGuids,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/MetricItemPickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
