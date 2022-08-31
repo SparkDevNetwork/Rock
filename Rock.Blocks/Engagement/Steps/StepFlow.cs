@@ -156,7 +156,7 @@ namespace Rock.Blocks.Engagement.Steps
                     Id = step.Id,
                     Order = ++order,
                     Name = step.Name,
-                    Color = step.HighlightColor ?? GetNextDefaultColor()
+                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
                 } );
             }
 

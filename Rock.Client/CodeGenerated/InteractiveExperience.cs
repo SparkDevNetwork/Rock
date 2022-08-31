@@ -115,7 +115,7 @@ namespace Rock.Client
         public string PublicLabel { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.PushNotificationType PushNotificationType { get; set; }
+        public Rock.Client.Enums.Event.InteractiveExperiencePushNotificationType PushNotificationType { get; set; }
 
         /// <summary />
         public int? WelcomeHeaderImageBinaryFileId { get; set; }

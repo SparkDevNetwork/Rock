@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.ApprovalStatus ApprovalStatus { get; set; }
+        public Rock.Client.Enums.Event.InteractiveExperienceApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary />
         public int? CampusId { get; set; }

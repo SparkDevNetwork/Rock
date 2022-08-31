@@ -23,13 +23,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Event;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a Interactive Experience.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Event" )]
     [Table( "InteractiveExperience" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "3D90E693-476E-4DFC-B958-A28D1DD370BF" )]
@@ -93,7 +94,7 @@ namespace Rock.Model
         /// The push notification type.
         /// </value>
         [DataMember]
-        public PushNotificationType PushNotificationType { get; set; }
+        public InteractiveExperiencePushNotificationType PushNotificationType { get; set; }
 
         /// <summary>
         /// Gets or sets the welcome title.

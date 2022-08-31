@@ -15,12 +15,26 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Event
 {
     /// <summary>
-    /// Represents the type of push notification
+    /// Represents the approval status for the Interactive Experience system.
     /// </summary>
-    public enum PushNotificationType
+    public enum InteractiveExperienceApprovalStatus
     {
+        /// <summary>
+        /// Answer is pending and has not been reviewed by a moderator.
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// Answer has been approved by a moderator.
+        /// </summary>
+        Approved = 1,
+
+        /// <summary>
+        /// Answer has been rejected by a moderator.
+        /// </summary>
+        Rejected = 2,
     }
 }

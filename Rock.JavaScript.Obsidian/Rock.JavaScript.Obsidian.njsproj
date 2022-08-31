@@ -73,6 +73,7 @@
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\Crm\" />
+    <Folder Include="Framework\Enums\Event\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Core\" />
@@ -219,6 +220,8 @@
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\gender.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\slidingDateRangeType.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceApprovalStatus.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperiencePushNotificationType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\fieldFilterSourceType.d.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\fileField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\fileFieldComponents.ts" />
