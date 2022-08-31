@@ -241,14 +241,11 @@ namespace RockWeb.Blocks.Fundraising
                             var listItem = new ListItem();
                             listItem.Value = sortedFamilyMembers.First().Id.ToString();
 
-                            // If there is only one person in the fundraising group from the current family, just use that person's full name...
-                            listItem.Text = sortedFamilyMembers.Count() == 1 ? sortedFamilyMembers.First().Person.FullName :
-
+                            // If there is only one person in the fundraising group from the current family, just use that person's full name,
                             // Otherwise, use all the family members in the group to generate a list of their names.
-                            string.Format(
-                                "{0} ({1})",
-                                familyGroup.Name,
-                                sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
+                            listItem.Text = sortedFamilyMembers.Count() == 1
+                                ? sortedFamilyMembers.First().Person.FullName :
+                                $"{familyGroup.Name} ({sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 )})";
 
                             ddlParticipant.Items.Add( listItem );
                         }
