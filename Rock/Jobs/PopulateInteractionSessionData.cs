@@ -21,13 +21,15 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.SystemKey;
 
 namespace Rock.Jobs
 {
@@ -144,20 +146,24 @@ namespace Rock.Jobs
             // Get the configured timeout, or default to 20 minutes if it is blank
             _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
+            var settings = Rock.Web.SystemSettings
+                .GetValue( SystemSetting.POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS )
+                .FromJsonOrNull<PopulateInteractionSessionDataJobSettings>() ?? new PopulateInteractionSessionDataJobSettings();
+
             // STEP 1: Process IP location lookups
             var result = ProcessInteractionSessionForIP( context );
             if ( result.IsNotNullOrWhiteSpace() )
             {
                 results.AppendLine( result );
             }
-            
+
             // STEP 2: Update Interaction Counts and Durations for Session
-            result = ProcessInteractionCountAndDuration( context );
+            result = ProcessInteractionCountAndDuration( context, settings );
             if ( result.IsNotNullOrWhiteSpace() )
             {
                 results.AppendLine( result );
             }
-            
+
             // Print error messages
             foreach ( var error in _errors )
             {
@@ -177,11 +183,12 @@ namespace Rock.Jobs
         /// Processes the sessions counts and durations.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private string ProcessInteractionCountAndDuration( IJobExecutionContext context )
+        /// <param name="settings">The settings.</param>
+        /// <returns>System.String.</returns>
+        private string ProcessInteractionCountAndDuration( IJobExecutionContext context, PopulateInteractionSessionDataJobSettings settings )
         {
             // This portion of the job looks for interaction sessions that need to have their interaction count and
-            // duration properties updated. This denormalization occurs to increase performance of the analytics.
+            // duration properties updated. This de-normalization occurs to increase performance of the analytics.
             // We'll be looking for sessions that have not been processed yet OR what have interactions written
             // since their last update.
 
@@ -189,74 +196,165 @@ namespace Rock.Jobs
 
             var batchSize = 500;
             var totalRecordsProcessed = 0;
-            
-            while ( true )
+            var interactionCalculationDateTime = RockDateTime.Now;
+            var oneDayAgo = RockDateTime.Now.AddDays( -1 );
+
+            // We'll limit our process to sessions that started in the last 24 hours, or ones that haven't been calculated.
+            var startDate = oneDayAgo;
+
+            var lastSuccessfulJobRunDateTime = settings.LastSuccessfulJobRunDateTime;
+            DateTime? cutoffStartDateTime;
+            if ( lastSuccessfulJobRunDateTime.HasValue )
             {
-                var rockContext = new RockContext();
-                rockContext.Database.CommandTimeout = _commandTimeout;
-
-                // We'll limit our process to sessions that started in the last 24 hours
-                var startDate = RockDateTime.Now.AddDays( -1 );
-
-                // Get recent sessions there is a new interaction since it was last processed
-                // and all sessions that have not been proccessed yet (on first run this could be a lot)
-                var interactionSessions = new InteractionSessionService( rockContext )
-                    .Queryable( "Interactions" )
-                    .Where( s => s.DurationLastCalculatedDateTime == null ||
-                                    ( s.CreatedDateTime >= startDate 
-                                        && ( s.DurationLastCalculatedDateTime != null && s.Interactions.Any( i => i.CreatedDateTime > s.DurationLastCalculatedDateTime ) ) ) )
-                    .Take( batchSize )
-                    .ToList();
-
-                context.UpdateLastStatusMessage( $"Processing Interaction Count And Session Duration : {batchSize} sessions are being processed currently. Total {totalRecordsProcessed} Interaction Session{( totalRecordsProcessed < 2 ? "" : "s" )} are processed till now." );
-
-                foreach ( var interactionSession in interactionSessions )
+                if ( lastSuccessfulJobRunDateTime.Value > oneDayAgo )
                 {
-                    interactionSession.InteractionCount = interactionSession.Interactions.Count();
-
-                    // Calculate the session duration depending on the number of interactions. Note that we won't know the
-                    // duration of time spend on the last page so we'll assume 60 seconds as the average amount of time
-                    // spent on a page is 52 seconds https://www.klipfolio.com/metrics/marketing/average-time-on-page
-                    switch ( interactionSession.InteractionCount )
-                    {
-                        case int x when x > 1:
-                            {
-                                // When there is 2 or more interactions calculate the time between the interaction dates
-                                interactionSession.DurationSeconds = ( int ) ( interactionSession.Interactions.Max( i => i.InteractionDateTime ) - interactionSession.Interactions.Min( i => i.InteractionDateTime ) ).TotalSeconds + 60;
-                                break;
-                            }
-                        case 1:
-                            {
-                                // Only one page view so we'll assume 60 seconds
-                                interactionSession.DurationSeconds = 60;
-                                break;
-                            }
-                        default:
-                            {
-                                // Not sure how a session was created without an interaction but we give that a zero
-                                interactionSession.DurationSeconds = 0;
-                                break;
-                            }
-                    } 
-
-                    interactionSession.DurationLastCalculatedDateTime = RockDateTime.Now;
-
-                    totalRecordsProcessed += 1;
+                    // Have the cutoffStartDateTime be at least 1 day ago
+                    cutoffStartDateTime = oneDayAgo;
                 }
-
-                rockContext.SaveChanges();
-
-                // Stop looping if we're out of sessions to process
-                if ( interactionSessions.Count() < batchSize )
+                else
                 {
-                    break;
+                    // If it has been more than a day since the job ran, have cutoffStartDateTime be an hour before that
+                    cutoffStartDateTime = lastSuccessfulJobRunDateTime.Value.AddHours( -1 );
                 }
             }
+            else
+            {
+                cutoffStartDateTime = null;
+            }
+
+            while ( true )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = _commandTimeout;
+
+                    // Get recent sessions there is a new interaction since it was last processed
+                    // and then also look for sessions that have not been processed yet (on first run this could be a lot)
+
+                    /* 2022-08-30 MDP
+
+                      If the Job has successfully run before, only look for sessions that have had interactions since the job successfully ran (or at least one day ago if it was run more recently).
+                      This will help avoid an expensive full table scan on the InteractionSession table and/or Interactions Table.
+
+                    */
+
+                    var outOfDateInteractionSessionIdsQuery = new InteractionService( rockContext ).Queryable()
+                        .Where( a => a.InteractionSessionId != null
+                            && a.InteractionSession.DurationLastCalculatedDateTime.HasValue
+                            && a.InteractionDateTime > startDate
+                            && a.InteractionDateTime > a.InteractionSession.DurationLastCalculatedDateTime ).Select( a => a.InteractionSessionId.Value ).Distinct();
+
+                    List<InteractionSession> interactionSessionsWithOutOfDate;
+
+                    /* 2022-08-31 MP
+
+                     Add an OPTION (RECOMPILE) to these queries to help keep consistent performance. We
+                     are thinking that since the Interaction Table is heavily modified, this gives
+                     SQL Server a chance to make sure the query plan is still optimal. This
+                     seems to fix situations where the query would sometimes take several minutes, instead of
+                     just few seconds or less.
+                     
+                     */
+                    using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+                    {
+                        interactionSessionsWithOutOfDate = new InteractionSessionService( rockContext )
+                            .Queryable()
+                            .Where( s => outOfDateInteractionSessionIdsQuery.Contains( s.Id ) )
+                            .Take( batchSize ).ToList();
+                    }
+
+                    var remainingBatchSize = batchSize - interactionSessionsWithOutOfDate.Count();
+
+                    IQueryable<InteractionSession> interactionSessionsWithNullDurationLastCalculatedDateTimeQuery;
+
+                    if ( cutoffStartDateTime.HasValue )
+                    {
+                        var recentInteractionSessionIdsQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionDateTime > cutoffStartDateTime && a.InteractionSessionId.HasValue ).Select( a => a.InteractionSessionId.Value ).Distinct();
+                        interactionSessionsWithNullDurationLastCalculatedDateTimeQuery = new InteractionSessionService( rockContext )
+                            .Queryable().Where( s => s.DurationLastCalculatedDateTime == null && recentInteractionSessionIdsQuery.Contains( s.Id ) );
+                    }
+                    else
+                    {
+                        interactionSessionsWithNullDurationLastCalculatedDateTimeQuery = new InteractionSessionService( rockContext )
+                            .Queryable().Where( s => s.DurationLastCalculatedDateTime == null );
+                    }
+
+                    List<InteractionSession> interactionSessionsWithNullDurationLastCalculatedDateTime;
+
+                    using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+                    {
+                        interactionSessionsWithNullDurationLastCalculatedDateTime = interactionSessionsWithNullDurationLastCalculatedDateTimeQuery
+                        .OrderByDescending( a => a.Id )
+                        .Take( remainingBatchSize ).ToList();
+                    }
+
+                    var interactionSessions = interactionSessionsWithNullDurationLastCalculatedDateTime.Union( interactionSessionsWithOutOfDate ).ToList();
+
+                    context.UpdateLastStatusMessage( $"Processing Interaction Count And Session Duration : {batchSize} sessions are being processed currently. Total {totalRecordsProcessed} Interaction Session{( totalRecordsProcessed < 2 ? "" : "s" )} are processed till now." );
+
+                    foreach ( var interactionSession in interactionSessions )
+                    {
+                        // Special Query to only get what we need to know.
+                        // This could cause a lot of database calls, but it is consistently just a few milliseconds.
+                        // This seems to increase overall performance vs Eager loading all the interactions of the session
+                        var interactionStats = new InteractionSessionService( rockContext ).Queryable().Where( a => a.Id == interactionSession.Id ).Select( s => new
+                        {
+                            Count = s.Interactions.Count(),
+                            MaxDateTime = s.Interactions.Max( i => ( DateTime? ) i.InteractionDateTime ),
+                            MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime )
+                        } ).FirstOrDefault();
+
+                        interactionSession.InteractionCount = interactionStats?.Count ?? 0;
+
+                        // Calculate the session duration depending on the number of interactions. Note that we won't know the
+                        // duration of time spend on the last page so we'll assume 60 seconds as the average amount of time
+                        // spent on a page is 52 seconds https://www.klipfolio.com/metrics/marketing/average-time-on-page
+                        switch ( interactionSession.InteractionCount )
+                        {
+                            case int x when x > 1:
+                                {
+                                    // When there is 2 or more interactions calculate the time between the interaction dates
+                                    interactionSession.DurationSeconds = ( int ) ( ( interactionStats.MaxDateTime - interactionStats.MinDateTime )?.TotalSeconds ?? 0 ) + 60;
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    // Only one page view so we'll assume 60 seconds
+                                    interactionSession.DurationSeconds = 60;
+                                    break;
+                                }
+                            default:
+                                {
+                                    // Not sure how a session was created without an interaction but we give that a zero
+                                    interactionSession.DurationSeconds = 0;
+                                    break;
+                                }
+                        }
+
+                        interactionSession.DurationLastCalculatedDateTime = interactionCalculationDateTime;
+
+                        totalRecordsProcessed += 1;
+                    }
+
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                    // Stop looping if we're out of sessions to process
+                    if ( interactionSessions.Count() < batchSize )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            settings.LastSuccessfulJobRunDateTime = interactionCalculationDateTime;
+            settings.LastNullDurationLastCalculatedDateTimeUpdateDateTime = interactionCalculationDateTime;
 
             stopwatch.Stop();
             RockLogger.Log.Debug( RockLogDomains.Jobs, "{0} ({1}): Completed in {2} seconds.", nameof( PopulateInteractionSessionData ), "Process Interaction Count And Duration", stopwatch.Elapsed.TotalSeconds );
 
-            return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} in {stopwatch.Elapsed.TotalSeconds} secs.";
+            Rock.Web.SystemSettings.SetValue( SystemSetting.POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS, settings.ToJson() );
+
+            return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} in {Math.Round( stopwatch.Elapsed.TotalSeconds, 2 )} secs.";
         }
 
         /// <summary>
@@ -348,7 +446,7 @@ namespace Rock.Jobs
                         // In some rare cases the IP address of the session can have two address (comma separated). This can
                         // happen with CDNs and other web proxies. There is logic in Rock to handle this, but some older sessions
                         // might still have them. We'll clean this up here.
-                        if( interactionSession.IpAddress.Contains( "," ) )
+                        if ( interactionSession.IpAddress.Contains( "," ) )
                         {
                             interactionSession.IpAddress = interactionSession.IpAddress.Split( ',' ).FirstOrDefault().Trim();
                         }
@@ -474,7 +572,7 @@ namespace Rock.Jobs
                     !s.InteractionSessionLocationId.HasValue
                     && s.IpAddress != null
                     && s.IpAddress != string.Empty && s.IpAddress != "::1" && !s.IpAddress.StartsWith( "192.168" )
-                        && !s.IpAddress.StartsWith( "10.") && s.IpAddress != "127.0.0.1"
+                        && !s.IpAddress.StartsWith( "10." ) && s.IpAddress != "127.0.0.1"
                     && s.Interactions.Any( i => interactionQry.Contains( i.Id ) )
                     && s.Id > minId )
                 .OrderBy( s => s.Id )
@@ -505,7 +603,7 @@ namespace Rock.Jobs
                 }
 
                 // Return the number sessions that we're updated
-                return ipAddressSessionKeyValue.Values.Sum( v => v.Count());
+                return ipAddressSessionKeyValue.Values.Sum( v => v.Count() );
             }
             catch ( Exception ex )
             {
@@ -519,6 +617,12 @@ namespace Rock.Jobs
 
                 return -1;
             }
+        }
+
+        private class PopulateInteractionSessionDataJobSettings
+        {
+            public DateTime? LastSuccessfulJobRunDateTime { get; set; }
+            public DateTime? LastNullDurationLastCalculatedDateTimeUpdateDateTime { get; set; }
         }
     }
 }
