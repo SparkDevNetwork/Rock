@@ -88,11 +88,7 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the card's title." )
         ]
-        public string Title
-        {
-            get { return ViewState["Title"] as string ?? string.Empty; }
-            set { ViewState["Title"] = value; }
-        }
+        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier for this group requirement.
@@ -133,11 +129,7 @@ namespace Rock.Web.UI.Controls
         /// The card icon class.
         /// </value>
         [Bindable( true ), Category( "Appearance" ), Description( "The CSS class to add to the card div." )]
-        public string TypeIconCssClass
-        {
-            get { return ViewState["TypeIconCssClass"] as string; }
-            set { ViewState["TypeIconCssClass"] = value; }
-        }
+        public string TypeIconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.MeetsGroupRequirement"/> for the requirement card.
@@ -599,59 +591,61 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDoesNotMeetWorkflow_Click( object sender, EventArgs e )
         {
-            // Trigger the workflow.
-            if ( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+            if ( !_groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
             {
-                var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
-                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                return;
+            }
+
+            // Begin the workflow.
+            var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                var rockContext = new RockContext();
+                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+
+                // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                Rock.Model.Workflow workflow;
+                if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                    var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+                    workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                    var qryParms = new Dictionary<string, string>();
+                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                    qryParms.Add( "WorkflowId", workflow.Id.ToString() );
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
 
-                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
-                    Rock.Model.Workflow workflow;
-                    if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
+                    this.RockBlock().NavigateToPage( workflowLink );
+                }
+                else
+                {
+                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+
+                    List<string> workflowErrors;
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+
+                    if ( processed )
                     {
-                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
-                        var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                        qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
-
-                        this.RockBlock().NavigateToPage( workflowLink );
-                    }
-                    else
-                    {
-                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-
-                        List<string> workflowErrors;
-                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
-
-                        if ( processed )
+                        // Update the group member requirement with the workflow ID.
+                        if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
                         {
-                            // Update the group member requirement with the workflow ID.
-                            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = GroupRequirementId.Value,
-                                    GroupMemberId = GroupMemberId
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
-
-                            // Could potentially overwrite an existing workflow ID, but that is expected.
-                            groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
-                            groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
-                            rockContext.SaveChanges();
-
-                            // Reload the page to make sure that the current status is reflected in the card styling.
-                            var currentPageReference = this.RockBlock().CurrentPageReference;
-                            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-                            this.RockBlock().NavigateToPage( pageRef );
+                                GroupRequirementId = GroupRequirementId.Value,
+                                GroupMemberId = GroupMemberId
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
+
+                        // Could potentially overwrite an existing workflow ID, but that is expected.
+                        groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+                        groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
+                        rockContext.SaveChanges();
+
+                        // Reload the page to make sure that the current status is reflected in the card styling.
+                        var currentPageReference = this.RockBlock().CurrentPageReference;
+                        Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+                        var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
+                        this.RockBlock().NavigateToPage( pageRef );
                     }
                 }
             }
@@ -664,59 +658,61 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbWarningWorkflow_Click( object sender, EventArgs e )
         {
-            // Trigger the workflow.
-            if ( _groupMemberRequirementType.WarningWorkflowTypeId.HasValue )
+            if ( !_groupMemberRequirementType.WarningWorkflowTypeId.HasValue )
             {
-                var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
-                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                return;
+            }
+
+            // Begin the workflow.
+            var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                var rockContext = new RockContext();
+                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+
+                // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                Rock.Model.Workflow workflow;
+                if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                    var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+                    workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                    var qryParms = new Dictionary<string, string>();
+                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                    qryParms.Add( "WorkflowId", workflow.Id.ToString() );
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
 
-                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
-                    Rock.Model.Workflow workflow;
-                    if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
+                    this.RockBlock().NavigateToPage( workflowLink );
+                }
+                else
+                {
+                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+
+                    List<string> workflowErrors;
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+
+                    if ( processed )
                     {
-                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
-                        var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                        qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
-
-                        this.RockBlock().NavigateToPage( workflowLink );
-                    }
-                    else
-                    {
-                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-
-                        List<string> workflowErrors;
-                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
-
-                        if ( processed )
+                        // Update the group member requirement with the workflow ID.
+                        if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
                         {
-                            // Update the group member requirement with the workflow ID.
-                            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = GroupRequirementId.Value,
-                                    GroupMemberId = GroupMemberId
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
-
-                            // Could potentially overwrite an existing workflow ID, but that is expected.
-                            groupMemberRequirement.WarningWorkflowId = workflow.Id;
-                            groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
-                            rockContext.SaveChanges();
-
-                            // Reload the page to make sure that the current status is reflected in the card styling.
-                            var currentPageReference = this.RockBlock().CurrentPageReference;
-                            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-                            this.RockBlock().NavigateToPage( pageRef );
+                                GroupRequirementId = GroupRequirementId.Value,
+                                GroupMemberId = GroupMemberId
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
+
+                        // Could potentially overwrite an existing workflow ID, but that is expected.
+                        groupMemberRequirement.WarningWorkflowId = workflow.Id;
+                        groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
+                        rockContext.SaveChanges();
+
+                        // Reload the page to make sure that the current status is reflected in the card styling.
+                        var currentPageReference = this.RockBlock().CurrentPageReference;
+                        Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+                        var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
+                        this.RockBlock().NavigateToPage( pageRef );
                     }
                 }
             }

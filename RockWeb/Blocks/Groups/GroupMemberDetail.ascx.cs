@@ -1771,46 +1771,46 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            if ( groupMember != null )
+            if ( groupMember == null )
             {
-                // Send to either SMS or Email.
-                if ( communicationType == CommunicationType.Email )
-                {
-                    string emailMessage = tbCommunicationMessage.Text;
-                    RockEmailMessageRecipient rockEmailMessageRecipient = new RockEmailMessageRecipient( groupMember.Person, new Dictionary<string, object>() );
-
-                    bool appendHeaderFooter = this.GetAttributeValue( AttributeKey.AppendHeaderFooter ).AsBooleanOrNull() ?? true;
-                    if ( appendHeaderFooter )
-                    {
-                        var globalAttributes = GlobalAttributesCache.Get();
-                        string emailHeader = globalAttributes.GetValue( "EmailHeader" );
-                        string emailFooter = globalAttributes.GetValue( "EmailFooter" );
-                        emailMessage = $"{emailHeader} {emailMessage} {emailFooter}";
-                    }
-
-                    SendEmail( rockEmailMessageRecipient, groupMember.Person.Email, groupMember.Person.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
-                    return true;
-                }
-                else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
-                {
-                    var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-                    hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                    var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && v.Id == hfFromSMSNumber.Value.AsInteger() ).ToList();
-
-                    if ( !smsDefinedValues.Any() )
-                    {
-                        // If there aren't any available SMS numbers to send from, set warning and return false.
-                        nbSendGroupMemberCommunication.Text = string.Format( "Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send." );
-                        return false;
-                    }
-
-                    var selectedSMSFrom = smsDefinedValues.First();
-                    RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfToSMSNumber.Value, new Dictionary<string, object>() );
-                    SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
-                    return true;
-                }
-
                 return false;
+            }
+
+            // Send to either SMS or Email.
+            if ( communicationType == CommunicationType.Email )
+            {
+                string emailMessage = tbCommunicationMessage.Text;
+                RockEmailMessageRecipient rockEmailMessageRecipient = new RockEmailMessageRecipient( groupMember.Person, new Dictionary<string, object>() );
+
+                bool appendHeaderFooter = this.GetAttributeValue( AttributeKey.AppendHeaderFooter ).AsBooleanOrNull() ?? true;
+                if ( appendHeaderFooter )
+                {
+                    var globalAttributes = GlobalAttributesCache.Get();
+                    string emailHeader = globalAttributes.GetValue( "EmailHeader" );
+                    string emailFooter = globalAttributes.GetValue( "EmailFooter" );
+                    emailMessage = $"{emailHeader} {emailMessage} {emailFooter}";
+                }
+
+                SendEmail( rockEmailMessageRecipient, groupMember.Person.Email, groupMember.Person.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
+                return true;
+            }
+            else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
+            {
+                var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+                hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
+                var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && v.Id == hfFromSMSNumber.Value.AsInteger() ).ToList();
+
+                if ( !smsDefinedValues.Any() )
+                {
+                    // If there aren't any available SMS numbers to send from, set warning and return false.
+                    nbSendGroupMemberCommunication.Text = string.Format( "Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send." );
+                    return false;
+                }
+
+                var selectedSMSFrom = smsDefinedValues.First();
+                RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfToSMSNumber.Value, new Dictionary<string, object>() );
+                SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
+                return true;
             }
 
             return false;
