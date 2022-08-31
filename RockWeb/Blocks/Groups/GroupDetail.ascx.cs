@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupRequirement> GroupRequirementsState { get; set; }
 
-        private List<Attribute> GroupAttributesState { get; set; }
+        private List<InheritedAttribute> GroupAttributesInheritedState { get; set; }
 
         private bool AllowMultipleLocations { get; set; }
 
@@ -332,14 +332,14 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
-            json = ViewState["GroupAttributesState"] as string;
+            json = ViewState["GroupAttributesInheritedState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                GroupAttributesState = new List<Attribute>();
+                GroupAttributesInheritedState = new List<InheritedAttribute>();
             }
             else
             {
-                GroupAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+                GroupAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
             }
 
             json = ViewState["GroupRequirementsState"] as string;
@@ -2690,7 +2690,6 @@ namespace RockWeb.Blocks.Groups
                 if ( inheritedGroupType != null )
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
-
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId, false ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
@@ -3484,7 +3483,13 @@ namespace RockWeb.Blocks.Groups
             fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE.AsGuid() ).Value );
             fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ).Value );
 
-            ddlDueDateGroupAttribute.DataSource = GroupAttributesState.Where( a => fieldTypeIds.Contains( a.FieldType.Id ) );
+            Group group = GetGroup( hfGroupId.Value.AsInteger() );
+            group.LoadAttributes();
+            foreach ( var attribute in group.Attributes.Select( a => a.Value ).Where( a => fieldTypeIds.Contains( a.FieldTypeId ) ).ToList() )
+            {
+                ddlDueDateGroupAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+            }
+
             ddlDueDateGroupAttribute.DataBind();
 
             // Make sure that the Due Date controls are not visible unless the requirement has a due date.
@@ -3517,12 +3522,12 @@ namespace RockWeb.Blocks.Groups
                     ddlDueDateGroupAttribute.Visible = true;
                     ddlDueDateGroupAttribute.SetValue( selectedGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
                 }
+
                 if ( groupRequirementType.DueDateType == DueDateType.ConfiguredDate )
                 {
                     dpDueDate.Visible = true;
                     dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate.Value;
                 }
-
             }
             else
             {
@@ -3582,7 +3587,7 @@ namespace RockWeb.Blocks.Groups
             if ( groupRequirement.GroupRequirementType.DueDateType == DueDateType.GroupAttribute )
             {
                 // Set this due date attribute if it exists.
-                var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Key == ddlDueDateGroupAttribute.SelectedValue );
+                var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Id == ddlDueDateGroupAttribute.SelectedValue.AsIntegerOrNull() );
                 if ( groupDueDateAttributes.Any() )
                 {
                     groupRequirement.DueDateAttributeId = groupDueDateAttributes.First().Id;
