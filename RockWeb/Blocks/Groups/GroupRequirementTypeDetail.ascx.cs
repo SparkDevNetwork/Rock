@@ -229,11 +229,11 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             groupRequirementType.CategoryId = cpCategory.SelectedValueAsInt();
             groupRequirementType.Summary = tbSummary.Text;
 
-            groupRequirementType.DoesNotMeetWorkflowTypeId = wtpDoesNotMeetWorkflowType.SelectedValueAsInt();
+            groupRequirementType.DoesNotMeetWorkflowTypeId = wtpDoesNotMeetWorkflowType.SelectedValueAsId();
             groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow = cbAutoInitiateDoesNotMeetRequirementWorkflow.Checked;
             groupRequirementType.DoesNotMeetWorkflowLinkText = tbDoesNotMeetRequirementWorkflowTypeLinkText.Text;
 
-            groupRequirementType.WarningWorkflowTypeId = wtpWarningWorkflowType.SelectedValueAsInt();
+            groupRequirementType.WarningWorkflowTypeId = wtpWarningWorkflowType.SelectedValueAsId();
             groupRequirementType.ShouldAutoInitiateWarningWorkflow = cbAutoInitiateWarningRequirementWorkflow.Checked;
             groupRequirementType.WarningWorkflowLinkText = tbWarningRequirementWorkflowTypeLinkText.Text;
 

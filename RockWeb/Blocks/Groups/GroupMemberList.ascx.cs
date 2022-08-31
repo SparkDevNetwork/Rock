@@ -1829,7 +1829,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Filter by Registration
-            var instanceId = ddlRegistration.SelectedValueAsInt();
+            var instanceId = ddlRegistration.SelectedValueAsId();
             if ( instanceId.HasValue )
             {
                 var registrants = new RegistrationRegistrantService( rockContext )
