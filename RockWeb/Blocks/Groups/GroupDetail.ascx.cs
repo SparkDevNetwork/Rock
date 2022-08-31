@@ -3545,6 +3545,21 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the DataBound event of the lAppliesToDataViewId control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void lAppliesToDataViewId_OnDataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            Literal lAppliesToDataViewId = sender as Literal;
+            GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
+            if ( requirement != null )
+            {
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdGroupRequirement control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
