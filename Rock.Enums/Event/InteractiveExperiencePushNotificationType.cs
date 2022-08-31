@@ -15,26 +15,28 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Event
 {
     /// <summary>
-    /// Represents the approval status
+    /// Represents the type of push notification to use for the Interactive
+    /// Experience system when posting questions.
     /// </summary>
-    public enum ApprovalStatus
+    public enum InteractiveExperiencePushNotificationType
     {
         /// <summary>
-        /// Pending
+        /// A push notification is never sent when a question is posted.
         /// </summary>
-        Pending = 0,
+        Never = 0,
 
         /// <summary>
-        /// Approved
+        /// A push notification is always sent when a question is posted.
         /// </summary>
-        Approved = 1,
+        EveryAction = 1,
 
         /// <summary>
-        /// Rejected
+        /// The moderator decides if the push notification should be sent
+        /// when they post a question.
         /// </summary>
-        Rejected = 2,
+        SpecificActions = 2
     }
 }
