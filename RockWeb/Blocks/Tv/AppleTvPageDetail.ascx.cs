@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Tv
         private static class PageParameterKey
         {
             public const string SiteId = "SiteId";
-            public const string PageId = "PageId";
+            public const string SitePageId = "SitePageId";
         }
 
         #endregion PageParameterKeys
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Tv
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? pageId = PageParameter( pageReference, PageParameterKey.PageId ).AsIntegerOrNull();
+            int? pageId = PageParameter( pageReference, PageParameterKey.SitePageId ).AsIntegerOrNull();
 
             if ( pageId != null )
             {
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Tv
         private void SavePage()
         {
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-            var pageId = PageParameter( PageParameterKey.PageId ).AsInteger();
+            var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
 
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Tv
         private void ShowEdit()
         {
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-            var pageId = PageParameter( PageParameterKey.PageId ).AsInteger();
+            var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
 
             if ( pageId != 0 )
             {
