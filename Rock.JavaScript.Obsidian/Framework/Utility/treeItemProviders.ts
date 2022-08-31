@@ -32,7 +32,6 @@ import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOw
 import { MetricCategoryPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricCategoryPickerGetChildrenOptionsBag";
 import { MetricItemPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricItemPickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
-import G from "glob";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
