@@ -80,11 +80,8 @@ namespace Rock.Workflow.Action
                 var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Queryable()
                         .Where( g => g.Guid == groupMemberRequirementGuid.Value )
                         .FirstOrDefault();
-                //string value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
 
-                //SetWorkflowAttributeValue( action, attribute.Guid, value );
-                action.AddLogEntry( string.Format( "Set '{0}' group member requirement to 'Met'.", groupMemberRequirementGuid ) );
-
+                action.AddLogEntry( $"Set '{groupMemberRequirementGuid}' group member requirement to 'Met'." );
 
                 if ( groupMemberRequirement != null )
                 {
@@ -97,8 +94,10 @@ namespace Rock.Workflow.Action
                     rockContext.SaveChanges();
                     return true;
                 }
+
                 return false;
             }
+
             return false;
         }
     }
