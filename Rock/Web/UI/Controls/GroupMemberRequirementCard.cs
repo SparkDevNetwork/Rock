@@ -120,9 +120,11 @@ namespace Rock.Web.UI.Controls
         public DateTime? GroupMemberRequirementDueDate { get; set; }
 
         /// <summary>
-        /// The workflow entry page for running workflows (set in <see cref="GroupMemberRequirementsContainer"/>).
+        /// The workflow entry page Guid (as a string) for running workflows.
+        /// As in <see cref="PageReference.PageReference(string, Dictionary{string, string}, System.Collections.Specialized.NameValueCollection)">PageReference(...)</see>,
+        /// LinkedPageValue is in format "Page.Guid,PageRoute.Guid".
         /// </summary>
-        public string WorkflowEntryPage { get; set; }
+        public string WorkflowEntryLinkedPageValue { get; set; }
 
         /// <summary>
         /// Gets or sets the CSS Class to use for the title icon of the requirement card.
@@ -257,7 +259,7 @@ namespace Rock.Web.UI.Controls
             {
                 var qryParms = new Dictionary<string, string>();
                 qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
                 if ( workflowLink.PageId > 0 )
                 {
                     // If the link text has a value, use it, otherwise use the default label key value.
@@ -278,7 +280,7 @@ namespace Rock.Web.UI.Controls
             {
                 var qryParms = new Dictionary<string, string>();
                 qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
                 if ( workflowLink.PageId > 0 )
                 {
                     // If the link text has a value, use it, otherwise use the default label key value.
@@ -615,7 +617,7 @@ namespace Rock.Web.UI.Controls
                         var qryParms = new Dictionary<string, string>();
                         qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
                         qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                        var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
 
                         this.RockBlock().NavigateToPage( workflowLink );
                     }
@@ -680,7 +682,7 @@ namespace Rock.Web.UI.Controls
                         var qryParms = new Dictionary<string, string>();
                         qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
                         qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                        var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
 
                         this.RockBlock().NavigateToPage( workflowLink );
                     }

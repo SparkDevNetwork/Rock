@@ -60,9 +60,11 @@ namespace Rock.Web.UI.Controls
         public IEnumerable<GroupMemberRequirement> Requirements { get; set; }
 
         /// <summary>
-        /// The workflow entry page for running workflows.
+        /// The workflow entry page Guid (as a string) for running workflows.
+        /// As in <see cref="PageReference.PageReference(string, Dictionary{string, string}, System.Collections.Specialized.NameValueCollection)">PageReference(...)</see>,
+        /// LinkedPageValue is in format "Page.Guid,PageRoute.Guid".
         /// </summary>
-        public string WorkflowEntryPage { get; set; }
+        public string WorkflowEntryLinkedPageValue { get; set; }
 
         /// <summary>
         /// A boolean to set whether the requirement summary is displayed on cards.
@@ -160,7 +162,6 @@ namespace Rock.Web.UI.Controls
                 this.Controls.Add( nbRequirementErrors );
             }
 
-            int index = 1;
             foreach ( var requirementCategory in requirementCategories )
             {
                 HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
@@ -197,12 +198,11 @@ namespace Rock.Web.UI.Controls
                         GroupRequirementId = requirementStatus.GroupRequirement.Id,
                         GroupMemberId = GroupMemberId,
                         GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
-                        WorkflowEntryPage = WorkflowEntryPage,
+                        WorkflowEntryLinkedPageValue = WorkflowEntryLinkedPageValue,
                         IsSummaryHidden = IsSummaryHidden
                     };
 
                     columnControl.Controls.Add( card );
-                    index++;
                 }
 
                 categoryControl.Controls.Add( columnControl );

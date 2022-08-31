@@ -573,7 +573,7 @@ namespace RockWeb.Blocks.Fundraising
                 if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
                 {
                     gmrcRequirements.GroupMemberId = groupMemberId;
-                    gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                    gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
                     gmrcRequirements.Visible = true;
                     gmrcRequirements.DataBind();
                     var participantLavaTemplate = this.GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate );

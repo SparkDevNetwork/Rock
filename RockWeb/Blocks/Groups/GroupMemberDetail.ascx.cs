@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
             gmrcRequirements.GroupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
-            gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+            gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
             gmrcRequirements.IsSummaryHidden = this.GetAttributeValue( AttributeKey.IsSummaryHidden ).AsBoolean();
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it.
