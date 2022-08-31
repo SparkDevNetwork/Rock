@@ -1832,7 +1832,7 @@ namespace RockWeb.Blocks.Groups
             var instanceId = ddlRegistration.SelectedValueAsId();
             if ( instanceId.HasValue )
             {
-                var registrants = new RegistrationRegistrantService( rockContext )
+                var registrantPersonIdQuery = new RegistrationRegistrantService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( r =>
                         r.Registration != null &&
@@ -1840,7 +1840,7 @@ namespace RockWeb.Blocks.Groups
                         r.PersonAlias != null )
                     .Select( r => r.PersonAlias.PersonId );
 
-                qry = qry.Where( m => registrants.Contains( m.PersonId ) );
+                qry = qry.Where( m => registrantPersonIdQuery.Contains( m.PersonId ) );
             }
 
             // Filter by signed documents
@@ -1868,7 +1868,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( dateRange.End.HasValue )
             {
-                var end = dateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var end = dateRange.End.Value.AddDays( 1 ).AddSeconds( -1 );
                 qry = qry.Where( m =>
                     m.DateTimeAdded.HasValue &&
                     m.DateTimeAdded.Value < end );
