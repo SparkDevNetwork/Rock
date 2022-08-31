@@ -52,7 +52,7 @@
                     </div>
 
                     <h4 class="margin-t-md">Requirement Criteria</h4>
-                    <span class="text-muted">The configuration below determines the how we'll know if an individual mets the requirement or not.</span>
+                    <span class="text-muted">The configuration below determines the how we'll know if an individual meets the requirement or not.</span>
                     <hr class="margin-t-sm" >
                     <Rock:RockControlWrapper ID="rcwRequirementCheckType" runat="server" Label="Check Type">
                         <div class="controls">

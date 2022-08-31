@@ -70,7 +70,7 @@ namespace Rock.Workflow.Action
             personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
             if ( personAlias == null )
             {
-                errorMessages.Add( "Invalid Person Attribute or Value!" );
+                errorMessages.Add( "Invalid Person Attribute or Value." );
                 return false;
             }
 
