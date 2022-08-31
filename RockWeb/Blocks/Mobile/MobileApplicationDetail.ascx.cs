@@ -17,10 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
@@ -28,11 +25,9 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
-using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -445,7 +440,10 @@ namespace RockWeb.Blocks.Mobile
                 site = new Site
                 {
                     IsActive = true,
-                    AdditionalSettings = new AdditionalSiteSettings().ToJson()
+                    AdditionalSettings = new AdditionalSiteSettings()
+                    {
+                        IsPackageCompressionEnabled = true
+                    }.ToJson()
                 };
             }
 
@@ -490,7 +488,7 @@ namespace RockWeb.Blocks.Mobile
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             ceToastXaml.Text = additionalSettings.ToastXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
-
+            cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
 
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
@@ -735,29 +733,6 @@ namespace RockWeb.Blocks.Mobile
         }
 
         /// <summary>
-        /// Gets the file path.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns></returns>
-        private string GetFilePath( BinaryFile file )
-        {
-            string url = file.Url;
-
-            //
-            // FileSystem provider currently returns a bad URL.
-            //
-            if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
-            {
-                url = System.Web.VirtualPathUtility.ToAbsolute( string.Format( "~/GetFile.ashx?Id={0}", file.Id ) );
-                var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
-
-                url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
-            }
-
-            return url;
-        }
-
-        /// <summary>
         /// Gets the mobile page title.
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
@@ -952,6 +927,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;
             additionalSettings.ToastXaml = ceToastXaml.Text;
             additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
+            additionalSettings.IsPackageCompressionEnabled = cbCompressUpdatePackages.Checked;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
@@ -1167,121 +1143,12 @@ namespace RockWeb.Blocks.Mobile
         protected void lbDeploy_Click( object sender, EventArgs e )
         {
             var applicationId = PageParameter( "SiteId" ).AsInteger();
-            var deploymentDateTime = RockDateTime.Now;
-            var versionId = ( int ) ( deploymentDateTime.ToJavascriptMilliseconds() / 1000 );
-
-            //
-            // Generate the packages and then encode to JSON.
-            //
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone, versionId );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet, versionId );
-            var phoneJson = phonePackage.ToJson();
-            var tabletJson = tabletPackage.ToJson();
 
             using ( var rockContext = new RockContext() )
             {
-                var binaryFileService = new BinaryFileService( rockContext );
-                var site = new SiteService( rockContext ).Get( applicationId );
-                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
+                var siteService = new SiteService( rockContext );
 
-                // Enable this once the shell updates have been installed.
-                var enableCompression = false;
-                var mimeType = enableCompression ? "application/gzip" : "application/json";
-                var filenameExtension = enableCompression ? "json.gz" : "json";
-
-                //
-                // Prepare the phone configuration file.
-                //
-                Stream phoneJsonStream;
-                if ( enableCompression )
-                {
-                    phoneJsonStream = new MemoryStream();
-                    using ( var gzipStream = new GZipStream( phoneJsonStream, CompressionMode.Compress, true ) )
-                    {
-                        var bytes = Encoding.UTF8.GetBytes( phoneJson );
-                        gzipStream.Write( bytes, 0, bytes.Length );
-                    }
-                    phoneJsonStream.Position = 0;
-                }
-                else
-                {
-                    phoneJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) );
-                }
-
-                var phoneFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = mimeType,
-                    FileSize = phoneJson.Length,
-                    FileName = "phone." + filenameExtension,
-                    ContentStream = phoneJsonStream
-                };
-                binaryFileService.Add( phoneFile );
-
-                //
-                // Prepare the tablet configuration file.
-                //
-                Stream tabletJsonStream;
-                if ( enableCompression )
-                {
-                    tabletJsonStream = new MemoryStream();
-                    using ( var gzipStream = new GZipStream( tabletJsonStream, CompressionMode.Compress, true ) )
-                    {
-                        var bytes = Encoding.UTF8.GetBytes( tabletJson );
-                        gzipStream.Write( bytes, 0, bytes.Length );
-                    }
-                    tabletJsonStream.Position = 0;
-                }
-                else
-                {
-                    tabletJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) );
-                }
-
-                var tabletFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = mimeType,
-                    FileSize = tabletJson.Length,
-                    FileName = "tablet." + filenameExtension,
-                    ContentStream = tabletJsonStream
-                };
-                binaryFileService.Add( tabletFile );
-
-                rockContext.SaveChanges();
-
-                //
-                // Remove old configuration files.
-                //
-                if ( site.ConfigurationMobilePhoneBinaryFile != null )
-                {
-                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
-                }
-
-                if ( site.ConfigurationMobileTabletBinaryFile != null )
-                {
-                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
-                }
-
-                //
-                // Set new configuration file references.
-                //
-                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
-                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
-
-                //
-                // Update the last deployment date.
-                //
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
-                additionalSettings.LastDeploymentDate = deploymentDateTime;
-                additionalSettings.LastDeploymentVersionId = versionId;
-                additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
-                additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
-                site.AdditionalSettings = additionalSettings.ToJson();
-                site.LatestVersionDateTime = RockDateTime.Now;
-
-                rockContext.SaveChanges();
+                siteService.BuildMobileApplication( applicationId );
 
                 ShowDetail( applicationId );
             }

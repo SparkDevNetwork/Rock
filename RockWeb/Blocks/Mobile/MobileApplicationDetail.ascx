@@ -317,6 +317,10 @@
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbEditPushTokenUpdateValue" runat="server" Label="Force Push Token Update" Help="Setting or changing this value will force all clients to update their push token. Use with caution." />
                             </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbCompressUpdatePackages" runat="server" Label="Compress Update Packages" Help="Compresses update packages to reduce their size by up to 95%. Not supported with mobile shell v1." />
+                            </div>
                         </div>
 
                         <Rock:CodeEditor ID="ceToastXaml" runat="server" Label="Toast XAML" Help="The XAML template to use for when a Toast is displayed." EditorMode="Xml" Required="false" />

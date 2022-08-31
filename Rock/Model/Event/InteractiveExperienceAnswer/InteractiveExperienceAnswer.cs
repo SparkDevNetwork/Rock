@@ -21,13 +21,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Event;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a Interactive Experience Answer.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Event" )]
     [Table( "InteractiveExperienceAnswer" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "D11DA9D4-8887-4EC2-B396-78556926DE89" )]
@@ -107,7 +108,7 @@ namespace Rock.Model
         /// The approval status.
         /// </value>
         [DataMember]
-        public ApprovalStatus ApprovalStatus { get; set; }
+        public InteractiveExperienceApprovalStatus ApprovalStatus { get; set; }
 
         #endregion
 

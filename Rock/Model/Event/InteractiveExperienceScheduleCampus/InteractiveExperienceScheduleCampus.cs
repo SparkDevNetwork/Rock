@@ -26,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Interactive Schedule Campus.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Event" )]
     [Table( "InteractiveExperienceScheduleCampus" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11" )]
