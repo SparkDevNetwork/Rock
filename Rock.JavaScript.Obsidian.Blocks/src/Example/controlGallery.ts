@@ -44,6 +44,7 @@
  */
 
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
+import { ObjectUtils } from "@Obsidian/Utility";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -291,7 +292,8 @@ export const GalleryAndResult = defineComponent({
                 return JSON.stringify(props.value, null, 4);
             }
             else {
-                return Object.fromEntries(
+                // Convert each property's value to a JSON string.
+                return ObjectUtils.fromEntries(
                     Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
                         return [
                             key,
