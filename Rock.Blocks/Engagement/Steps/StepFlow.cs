@@ -72,6 +72,18 @@ namespace Rock.Blocks.Engagement.Steps
         DefaultValue = "900",
         Order = 4 )]
 
+    [LavaField(
+        "Chart Footer Lava Template",
+        Key = AttributeKey.FooterLavaTemplate,
+        Description = "Format the labels for each legend item at the foot of the chart using Lava.",
+        DefaultValue = "{% for stepItem in Steps %}\n" +
+            "    <span style=\"margin-right:1em; white-space:nowrap;\">\n" +
+            "        <span style=\"display:inline-block; width:1em; height:1em; background-color:{{stepItem.Color}}; transform:translateY(.15em);\"></span>\n" +
+            "        {{forloop.index}}:&nbsp;{{stepItem.StepName}}\n" +
+            "    </span>\n" +
+            "{% endfor %}",
+        Order = 5 )]
+
     #endregion Block Attributes
 
     public class StepFlow : RockObsidianBlockType
@@ -84,6 +96,7 @@ namespace Rock.Blocks.Engagement.Steps
             public const string NodeVerticalSpacing = "NodeVerticalSpacing";
             public const string ChartWidth = "ChartWidth";
             public const string ChartHeight = "ChartHeight";
+            public const string FooterLavaTemplate = "FooterLavaTemplate";
         }
 
         #endregion Attribute Keys
@@ -119,6 +132,25 @@ namespace Rock.Blocks.Engagement.Steps
             var ProgramName = Program?.Name ?? "";
             var StepTypeCount = Program?.StepTypes?.Count;
 
+            List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() ).StepTypes;
+            var lavaNodes = new List<Object>();
+            int order = 0;
+
+            foreach ( StepTypeCache step in stepTypes )
+            {
+                lavaNodes.Add( new
+                {
+                    Key = ++order,
+                    StepName = step.Name,
+                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
+                } );
+            }
+
+            string lavaTemplate = GetAttributeValue( AttributeKey.FooterLavaTemplate );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Steps", lavaNodes );
+            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
+
             return new StepFlowInitializationBox
             {
                 Campuses = Campuses,
@@ -127,7 +159,8 @@ namespace Rock.Blocks.Engagement.Steps
                 ChartWidth = GetAttributeValue( AttributeKey.ChartWidth ).AsInteger(),
                 ChartHeight = GetAttributeValue( AttributeKey.ChartHeight ).AsInteger(),
                 ProgramName = ProgramName,
-                StepTypeCount = StepTypeCount
+                StepTypeCount = StepTypeCount,
+                LegendHtml = legendHtml
             };
         }
 
