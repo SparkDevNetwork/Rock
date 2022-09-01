@@ -58,7 +58,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Family Role {familyRoleString} is invalid; defaulting to {person.FamilyRole}" );
+                    parserErrors.Add( $"Family Role {familyRoleString} is invalid defaulting to {person.FamilyRole}" );
                 }
             }
 
@@ -113,7 +113,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Gender {genderString} is invalid; defaulting to {person.Gender}" );
+                    parserErrors.Add( $"Gender {genderString} is invalid defaulting to {person.Gender}" );
                 }
             }
 
@@ -128,7 +128,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Email Preference {emailPreferenceString} is invalid; defaulting to {person.EmailPreference}" );
+                    parserErrors.Add( $"Email Preference {emailPreferenceString} is invalid defaulting to {person.EmailPreference}" );
                 }
             }
 
@@ -150,7 +150,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Marital Status {martialStatusString} is invalid; defaulting to {person.MaritalStatus}" );
+                    parserErrors.Add( $"Marital Status {martialStatusString} is invalid defaulting to {person.MaritalStatus}" );
                 }
             }
 
@@ -164,7 +164,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Birthdate {birthdateString} could not be read" );
+                    parserErrors.Add( $"Birthdate {birthdateString} is invalid" );
                 }
             }
 
@@ -178,7 +178,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Anniversary Date {anniversaryDateString} could not be read" );
+                    parserErrors.Add( $"Anniversary Date {anniversaryDateString} is invalid" );
                 }
             }
 
@@ -193,7 +193,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Record Status {recordStatusString} is invalid; defaulting to {person.RecordStatus}" );
+                    parserErrors.Add( $"Record Status {recordStatusString} is invalid defaulting to {person.RecordStatus}" );
                 }
             }
 
@@ -213,7 +213,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Could not set Is Deceased to {isDeceasedString}; defaulting to \'{person.IsDeceased}\'" );
+                    parserErrors.Add( $"Could not set Is Deceased to {isDeceasedString} defaulting to \'{person.IsDeceased}\'" );
                 }
             }
 
@@ -251,7 +251,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Could not set Give Individually to {givingIndividuallyString}; defaulting to \'{person.GiveIndividually}\'" );
+                    parserErrors.Add( $"Could not set Give Individually to {givingIndividuallyString} defaulting to \'{person.GiveIndividually}\'" );
                 }
             }
 
@@ -265,7 +265,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Created Date Time {createdDateTimeString} could not be read" );
+                    parserErrors.Add( $"Created Date Time {createdDateTimeString} is invalid." );
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Modified Date Time {modifiedDateTimeString} could not be read" );
+                    parserErrors.Add( $"Modified Date Time {modifiedDateTimeString} is invalid." );
                 }
             }
 
