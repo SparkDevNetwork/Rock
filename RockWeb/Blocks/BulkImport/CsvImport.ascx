@@ -86,6 +86,12 @@
                 </h1>
             </div>
 
+            <Rock:NotificationBox ID="nbPageError"
+                                runat="server"
+                                CssClass="mt-4"
+                                NotificationBoxType="Danger"
+                                Visible="false" />
+
             <div class="panel-body">
 
                 <%-- The very first page which accepts the csv file as the input ---%>
@@ -137,7 +143,7 @@
                                 Visible="false"
                                 CausesValidation="false" />
 
-                            <Rock:NotificationBox ID="nbDuplicateHeadersInFile"
+                            <Rock:NotificationBox ID="nbErrorsInFile"
                                 runat="server"
                                 CssClass="mt-4"
                                 NotificationBoxType="Danger"
@@ -196,7 +202,7 @@
                                     <li>Mobile Phone - The individuals's mobile phone number.
                                     <br />
                                         (480-555-1234)</li>
-                                    <li>Is SMS Enabled - Whether the individual allows SMS messages to be sent to them.</li>
+                                    <li>Is SMS Enabled - Whether the individual allows SMS messages to be sent to them. (True,False)</li>
                                     <li>Email - The individual's email address.</li>
                                     <li>Email Preference - The permissions you have been granted to email the individual. 
                                     <br />
@@ -274,9 +280,6 @@
 
                     <Rock:TermDescription ID="tdRecordCount" runat="server" Term="Record Count" />
 
-                    <br />
-                    <br />
-
                     <Rock:NotificationBox ID="nbRequiredFieldsNotPresentWarning"
                         runat="server"
                         NotificationBoxType="Validation"
@@ -311,7 +314,6 @@
                 <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Visible="false">
                     <h2>Import</h2>
                     We'll now start the import process with the data and mappings you have provided.
-
                 <hr>
                     <div>
                         <span id="upload-csv-invalid-exception-notification"
@@ -348,7 +350,7 @@
                         <Rock:NotificationBox ID="nbImportError"
                             runat="server"
                             NotificationBoxType="Warning"
-                            Text="Some records could not be imported.  Click the button to download a .csv file that includes a new “CSV Import Errors” column.  You can correct those rows and retry importing. " />
+                            Text="There were a few failures while importing. Some records could be imported only partially or could not be imported at all. Click the button to download a new csv file that has all the records that has failures. The csv includes a new 'CSV Import Errors' column that details out the errors. You may correct those records and retry importing. There is another column 'CSV Import Success'. If a record could not be imported to Rock at all, it would be marked as FALSE under the 'CSV Import Success' column" />
                         <asp:LinkButton ID="btnDownloadErrorCSV"
                             runat="server"
                             CssClass="btn btn-primary"
