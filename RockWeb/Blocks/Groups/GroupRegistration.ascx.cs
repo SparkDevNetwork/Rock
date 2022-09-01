@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Groups
                 // Save the registrations ( and launch workflows )
                 var newGroupMembers = new List<GroupMember>();
                 // Save the person/spouse and change history 
-                var isSucceed = rockContext.WrapTransactionIf( () =>
+                var isAddingPeopleToGroupSuccessful = rockContext.WrapTransactionIf( () =>
                 {
                     rockContext.SaveChanges();
 
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Groups
                     return true;
                 } );
 
-                if ( isSucceed )
+                if ( isAddingPeopleToGroupSuccessful )
                 {
                     // Show the results
                     pnlView.Visible = false;
@@ -545,23 +545,50 @@ namespace RockWeb.Blocks.Groups
         private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
         {
             errorMessage = string.Empty;
-            if (person != null )
+            if (person == null )
             {
-                GroupMember groupMember = null;
-                if ( !_group.Members
-                    .Any( m => 
-                        m.PersonId == person.Id &&
-                        m.GroupRoleId == _defaultGroupRole.Id))
+                errorMessage = "Not able to find the correct person.";
+                return false;
+            }
+
+            GroupMember groupMember = null;
+            if ( !_group.Members
+                .Any( m => 
+                    m.PersonId == person.Id &&
+                    m.GroupRoleId == _defaultGroupRole.Id))
+            {
+                var groupMemberService = new GroupMemberService(rockContext);
+                groupMember = new GroupMember();
+                groupMember.PersonId = person.Id;
+                groupMember.GroupRoleId = _defaultGroupRole.Id;
+                groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
+                groupMember.GroupId = _group.Id;
+                if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    var groupMemberService = new GroupMemberService(rockContext);
-                    groupMember = new GroupMember();
-                    groupMember.PersonId = person.Id;
-                    groupMember.GroupRoleId = _defaultGroupRole.Id;
-                    groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
-                    groupMember.GroupId = _group.Id;
+                    groupMemberService.Add( groupMember );
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    return false;
+                }
+            }
+            else
+            {
+                GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                groupMember = _group.Members.Where( m =>
+                    m.PersonId == person.Id &&
+                    m.GroupRoleId == _defaultGroupRole.Id ).FirstOrDefault();
+                if (groupMember.GroupMemberStatus != status)
+                {
+                    var groupMemberService = new GroupMemberService( rockContext );
+
+                    // reload this group member in the current context
+                    groupMember = groupMemberService.Get( groupMember.Id );
+                    groupMember.GroupMemberStatus = status;
                     if ( groupMember.IsValidGroupMember( rockContext ) )
                     {
-                        groupMemberService.Add( groupMember );
                         rockContext.SaveChanges();
                     }
                     else
@@ -570,46 +597,23 @@ namespace RockWeb.Blocks.Groups
                         return false;
                     }
                 }
-                else
+
+            }
+
+            if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                try
                 {
-                    GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
-                    groupMember = _group.Members.Where( m =>
-                       m.PersonId == person.Id &&
-                       m.GroupRoleId == _defaultGroupRole.Id ).FirstOrDefault();
-                    if (groupMember.GroupMemberStatus != status)
-                    {
-                        var groupMemberService = new GroupMemberService( rockContext );
-
-                        // reload this group member in the current context
-                        groupMember = groupMemberService.Get( groupMember.Id );
-                        groupMember.GroupMemberStatus = status;
-                        if ( groupMember.IsValidGroupMember( rockContext ) )
-                        {
-                            rockContext.SaveChanges();
-                        }
-                        else
-                        {
-                            errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                            return false;
-                        }
-                    }
-
+                    List<string> workflowErrors;
+                    var workflow = Workflow.Activate( workflowType, person.FullName );
+                    new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
                 }
-
-                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+                catch ( Exception ex )
                 {
-                    try
-                    {
-                        List<string> workflowErrors;
-                        var workflow = Workflow.Activate( workflowType, person.FullName );
-                        new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, this.Context );
-                    }
+                    ExceptionLogService.LogException( ex, this.Context );
                 }
             }
+            
 
             return true;
         }
