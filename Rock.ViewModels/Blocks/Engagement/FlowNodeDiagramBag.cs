@@ -143,5 +143,13 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         /// The number of pixels high the chart should be
         /// </value>
         public int? ChartHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the legend HTML
+        /// </summary>
+        /// <value>
+        /// The generated HTML string for the chart legend
+        /// </value>
+        public string LegendHtml { get; set; }
     }
 }

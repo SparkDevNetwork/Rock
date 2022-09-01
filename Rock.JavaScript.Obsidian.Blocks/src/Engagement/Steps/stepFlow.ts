@@ -72,8 +72,8 @@ export default defineComponent({
         const configurationValues = useConfigurationValues<StepFlowInitializationBox>();
 
         const flowNodes = ref<FlowNodeDiagramNodeBag[]>([]);
-
         const flowEdges = ref<FlowNodeDiagramEdgeBag[]>([]);
+        const legendHtml = ref<string>("");
 
         const isLoading = ref(false);
 
@@ -96,7 +96,8 @@ export default defineComponent({
             nodeWidth: configurationValues.nodeWidth,
             nodeVerticalSpacing: configurationValues.nodeVerticalSpacing,
             chartWidth: configurationValues.chartWidth,
-            chartHeight: configurationValues.chartHeight
+            chartHeight: configurationValues.chartHeight,
+            legendHtml: configurationValues.legendHtml
         });
 
         // #endregion
@@ -150,6 +151,7 @@ export default defineComponent({
         return {
             flowNodes,
             flowEdges,
+            legendHtml,
             isLoading,
             dateRange,
             maxLevels,
