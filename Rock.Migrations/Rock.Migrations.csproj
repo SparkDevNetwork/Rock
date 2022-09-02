@@ -64,9 +64,13 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202208281854246_AddInteractiveExperience.cs" />
-    <Compile Include="Migrations\202208281854246_AddInteractiveExperience.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.designer.cs">
       <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209011611216_Rollup_20220901.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209011611216_Rollup_20220901.designer.cs">
+      <DependentUpon>202209011611216_Rollup_20220901.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.designer.cs">
@@ -1310,8 +1314,11 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202208281854246_AddInteractiveExperience.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.resx">
       <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209011611216_Rollup_20220901.resx">
+      <DependentUpon>202209011611216_Rollup_20220901.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.resx">
       <DependentUpon>202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs</DependentUpon>
