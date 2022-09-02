@@ -156,16 +156,16 @@ class LoginHandler {
     async checkCondition() {
         var currentTime = Number(new Date());
         this.interationCount++;
-        console.log("RBF: Point 1");
+
         // Check that the end time is not zero. This can be the case if the page has been unloaded and there is
         // one more tick of the clock
         if (this.endTime == 0) {
             return;
         }
-        console.log("RBF: Point 2", this.authCode);
+
         // Check the server to see if the authenication has occurred
         var isAuthComplete = await appCommands.checkForAuthentication(this.authCode);
-        console.log("RBF: Point 3", isAuthComplete);
+
         if (isAuthComplete) {
             console.log('[INFO] Login Success');
 
@@ -217,112 +217,122 @@ class TvEventHandler {
         this.handleEvent = this.handleEvent.bind(this);
         this._loadingTemplate = null;
         this._lastMediaReportedTime = null;
+        this.isProcessing = false;
     }
 
-    handleEvent(event) {
-        var element = event.target;
+    async handleEvent(event) {
+        if (this.isProcessing) {
+            return;
+        }
 
-        // Get command type
-        var commandType = element.getAttribute("rockCommand");
+        this.isProcessing = true;
+        try {
+            var element = event.target;
 
-        // Several commands can be specified as a comma separated string.
-        var commands = commandType.split(",").map(function (item) {
-            return item.trim();
-        });
+            // Get command type
+            var commandType = element.getAttribute("rockCommand");
 
-        console.log("[INFO] Processing Command", commands, element);
+            // Several commands can be specified as a comma separated string.
+            var commands = commandType.split(",").map(function (item) {
+                return item.trim();
+            });
 
-        // Process each command
-        for (const command of commands) {
+            console.log("[INFO] Processing Command", commands, element);
 
-            switch (command) {
+            // Process each command
+            for (const command of commands) {
+                switch (command) {
 
-                case "pushPage":
-                case "replacePage":
-                case "presentModal":
-                    {
-                        this.processNavigationEvent(command, element);
-                        break;
-                    }
-                case "popPage":
-                    {
-                        RockTvApp.NavigationStack.popDocument();
-                        break;
-                    }
-                case "clearNavigationStack":
-                    {
-                        RockTvApp.NavigationStack.clear();
-                        break;
-                    }
-                case "dismissModal":
-                    {
-                        RockTvApp.NavigationStack.dismissModal();
-                        break;
-                    }
-                case "playVideo":
-                    {
-                        this.processPlayVideo(element);
-                        break;
-                    }
-                case "playAudio":
-                    {
-                        this.processPlayAudio(element);
-                        break;
-                    }
-                case "setContext":
-                    {
-                        let key = element.getAttribute("rockContextKey");
-                        let value = element.getAttribute("rockContextValue");
-
-                        appCommands.setContextValue(key, value);
-                        break;
-                    }
-                case "clearContext":
-                    {
-                        let key = element.getAttribute("rockContextKey");
-
-                        appCommands.clearContext(key);
-                        break;
-                    }
-                case "showDemo":
-                    {
-                        if (RockTvApp.AppState.DemoModeEnabled) {
-                            var demoDocument = RockTvApp.createDemoDocument();
-                            RockTvApp.NavigationStack.pushDocument(demoDocument);
+                    case "pushPage":
+                    case "replacePage":
+                    case "presentModal":
+                        {
+                            await this.processNavigationEvent(command, element);
+                            break;
                         }
-                        else {
-                            var alert = RockTvApp.createAlertDocument("Demo Mode", "Demo is not supported on this application.");
-                            RockTvApp.NavigationStack.pushDocument(alert);
+                    case "popPage":
+                        {
+                            RockTvApp.NavigationStack.popDocument();
+                            break;
                         }
+                    case "clearNavigationStack":
+                        {
+                            RockTvApp.NavigationStack.clear();
+                            break;
+                        }
+                    case "dismissModal":
+                        {
+                            RockTvApp.NavigationStack.dismissModal();
+                            break;
+                        }
+                    case "playVideo":
+                        {
+                            this.processPlayVideo(element);
+                            break;
+                        }
+                    case "playAudio":
+                        {
+                            this.processPlayAudio(element);
+                            break;
+                        }
+                    case "setContext":
+                        {
+                            let key = element.getAttribute("rockContextKey");
+                            let value = element.getAttribute("rockContextValue");
 
-                        break;
-                    }
-                case "updateDemo":
-                    {
-                        this.updateDemoSettings();
-                        break;
-                    }
-                case "clearDemo":
-                    {
-                        this.clearDemoSettings();
-                        break;
-                    }
-                case "login":
-                    {
-                        this.processLogin(element);
-                        break;
-                    }
-                case "logout":
-                    {
-                        this.processLogout(element);
-                        break;
-                    }
-                default:
-                    {
-                        console.log(`[WARNING] Unrecognized command encountered. The command "${commandType}" was not found.`, event);
-                        break;
-                    }
+                            appCommands.setContextValue(key, value);
+                            break;
+                        }
+                    case "clearContext":
+                        {
+                            let key = element.getAttribute("rockContextKey");
+
+                            appCommands.clearContext(key);
+                            break;
+                        }
+                    case "showDemo":
+                        {
+                            if (RockTvApp.AppState.DemoModeEnabled) {
+                                var demoDocument = RockTvApp.createDemoDocument();
+                                RockTvApp.NavigationStack.pushDocument(demoDocument);
+                            }
+                            else {
+                                var alert = RockTvApp.createAlertDocument("Demo Mode", "Demo is not supported on this application.");
+                                RockTvApp.NavigationStack.pushDocument(alert);
+                            }
+
+                            break;
+                        }
+                    case "updateDemo":
+                        {
+                            this.updateDemoSettings();
+                            break;
+                        }
+                    case "clearDemo":
+                        {
+                            this.clearDemoSettings();
+                            break;
+                        }
+                    case "login":
+                        {
+                            await this.processLogin(element);
+                            break;
+                        }
+                    case "logout":
+                        {
+                            await this.processLogout(element);
+                            break;
+                        }
+                    default:
+                        {
+                            console.log(`[WARNING] Unrecognized command encountered. The command "${commandType}" was not found.`, event);
+                            break;
+                        }
+                }
             }
+        }
+        finally {
+            this.isProcessing = false;
         }
     }
 
@@ -344,7 +354,6 @@ class TvEventHandler {
 
         // start long polling
         RockTvApp.LoginHandler = new LoginHandler(loginTimeoutDuration, loginCheckDuration, authResponse.authCode, loginTimeoutPageGuid, loginSuccessPageGuid, loginClearNavigationStack);
-        RockTvApp.LoginHandler.startPolling();
 
         // Add spaces bettwen letters for better readability
         authResponse.authCode = authResponse.authCode.split('').join(' ');
@@ -352,18 +361,15 @@ class TvEventHandler {
         // Show login screen
         var doc = await RockTvApp.NavigationStack.getDocumentFromUrl(loginPageGuid, authResponse, "Private");
 
-        // Add a call back on unload so we can stop the polling if needed
-        doc.addEventListener("unload", this.cancelLogin);
+        doc.addEventListener("disappear", function (_) {
+            RockTvApp.LoginHandler.stopPolling();
+            RockTvApp.LoginHandler = null;
+            console.log("[INFO] Canceling the login process: individual has unloaded the page.");
+        });
 
         RockTvApp.NavigationStack.pushDocument(doc);
-    }
 
-    // Cancels the login polling process
-    cancelLogin() {
-        RockTvApp.LoginHandler.stopPolling();
-        RockTvApp.LoginHandler = null;
-
-        console.log("[INFO] Canceling the login process has the individual has unload the page.");
+        RockTvApp.LoginHandler.startPolling();
     }
 
     // Logs the individual out
