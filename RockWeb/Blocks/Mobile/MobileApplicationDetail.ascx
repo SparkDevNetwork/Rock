@@ -4,13 +4,15 @@
     .mobile-app-preview {
         padding: 20px;
     }
-    .mobile-app-preview img {
-        width: 100%;
-        height: auto;
-        display: block;
-        min-height: 50px;
-        background-color: #ddd;
-    }
+
+        .mobile-app-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 50px;
+            background-color: #ddd;
+        }
+
     .mobile-app-icon {
         width: 100%;
         height: auto;
@@ -216,6 +218,10 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlDeepLinks" runat="server">
+                                <asp:Panel ID="pnlDeepLinkDomains" runat="server" class="alert alert-info" Width="40%">
+                                    <asp:Label runat="server" Font-Bold="true" Text="Enabled domains:" />
+                                    <asp:Label ID="lblDeepLinkDomains" runat="server" />
+                                </asp:Panel>
                                 <Rock:Grid ID="gDeepLinks" runat="server" RowItemText="Deep Link" DisplayType="Light" OnGridRebind="gDeepLinks_GridRebind" OnRowSelected="gDeepLinks_RowSelected" OnGridReorder="gDeepLinks_GridReorder">
                                     <Columns>
                                         <Rock:ReorderField />
@@ -328,18 +334,20 @@
 
                     <Rock:PanelWidget ID="pwEditDeepLinkSettings" runat="server" Title="Deep Link Settings">
                         <Rock:RockCheckBox ID="cbEnableDeepLinking" OnCheckedChanged="cbEnableDeepLinking_CheckedChanged" runat="server" Label="Enable Deep Linking" Help="Determines if specific web links should open in the app if it’s installed on the individual’s phone." AutoPostBack="true" />
-                        <asp:Panel runat="server" class="alert alert-danger" Width="40%">
-                            Please note that these settings should be configured once your app is nearing completion. Once configured, it is very difficult to change these settings and requires an app update.
+                        <asp:Panel runat="server" class="info alert-info" Width="40%">
+                            
                         </asp:Panel>
                         <asp:Panel ID="pnlDeepLinkSettings" runat="server">
                             <Rock:NotificationBox ID="nbDeepLinks" runat="server" Visible="false" NotificationBoxType="Danger" />
-                            <Rock:RockTextBox ID="tbDeepLinkPathPrefix" runat="server" Label="Deep Link Path Prefix" Required="true" Width="30%" Help="The URL path prefix that flags that a URL should be opened in the application. A value of ‘m’ would mean that all URLs like https://server.com/m/<route> will be routed to the mobile app if it’s installed on the individual’s phone." />
+                            <Rock:RockTextBox ID="tbDeepLinkPathPrefix" runat="server" Label="Deep Link Path Prefix" Required="true" Help="The URL path prefix that flags that a URL should be opened in the application. A value of ‘m’ would mean that all URLs like https://server.com/m/<route> will be routed to the mobile app if it’s installed on the individual’s phone." />
+                            <Rock:ValueList ID="vlDeepLinkingDomain" runat="server" Label="Deep Linking Domains"
+                                Help="The domains that you plan to accept deep links from. To accept all subdomains, use '*.<domain>'." />
                             <h4>iOS Settings</h4>
-                                <Rock:RockTextBox ID="tbTeamId" runat="server" Label="Team Id" Required="true" Width="40%" />
-                                <Rock:RockTextBox ID="tbBundleId" runat="server" Label="Bundle Id" Required="true" Help="The iOS bundle id. You will get this value from your shell hosting service." Width="40%" />
+                            <Rock:RockTextBox ID="tbTeamId" runat="server" Label="Team Id" Required="true" Width="40%" />
+                            <Rock:RockTextBox ID="tbBundleId" runat="server" Label="Bundle Id" Required="true" Help="The iOS bundle id. You will get this value from your shell hosting service." Width="40%" />
                             <h4>Android Settings</h4>
-                                <Rock:RockTextBox ID="tbPackageName" runat="server" Label="Package Name" Required="true" Help="The Android package name. You will get this value from your shell hosting service." Width="40%" />
-                                <Rock:RockTextBox ID="tbCertificateFingerprint" runat="server" Label="Certificate Fingerprint" Required="true" Help="The application’s certificate fingerprint. You will get this value from your shell hosting service." Width="40%" />
+                            <Rock:RockTextBox ID="tbPackageName" runat="server" Label="Package Name" Required="true" Help="The Android package name. You will get this value from your shell hosting service." Width="40%" />
+                            <Rock:RockTextBox ID="tbCertificateFingerprint" runat="server" Label="Certificate Fingerprint" Required="true" Help="The application’s certificate fingerprint. You will get this value from your shell hosting service." Width="40%" />
                         </asp:Panel>
                     </Rock:PanelWidget>
 
