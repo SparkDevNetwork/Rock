@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";

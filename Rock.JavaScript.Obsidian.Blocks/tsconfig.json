@@ -16,6 +16,7 @@
     "esModuleInterop": true,
     "strict": true,
     "importHelpers": true,
+    "jsx": "preserve",
     "lib": [
       "DOM",
       "ES2016",
@@ -49,7 +50,8 @@
     { "path": "../Rock.JavaScript.Obsidian/Framework/ValidationRules" }
   ],
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/*.vue"
   ],
   "exclude": [
     "./Tests/**/*"

@@ -139,7 +139,8 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
-import Alert, { AlertType } from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
+import { AlertType } from "@Obsidian/Types/Controls/alert";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
@@ -4438,7 +4439,7 @@ const alertGallery = defineComponent({
         CheckBox
     },
     setup() {
-        const options: ListItemBag[] = Object.keys(AlertType).map(key => ({ text: key, value: AlertType[key] }));
+        const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: key, value: key }));
         return {
             isDismissible: ref(false),
             onDismiss: () => alert('"dismiss" event fired.'),

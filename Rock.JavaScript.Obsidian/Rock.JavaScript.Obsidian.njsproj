@@ -33,7 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
-    <Content Include="Framework\Controls\alert.ts" />
+    <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
@@ -131,6 +131,15 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
+    <TypeScriptCompile Include="Build\obsidian-tsc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\sfc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\typescript.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\Controls\achievementTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assessmentTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
@@ -153,6 +162,7 @@
     <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepStatusPicker.ts" />
@@ -237,6 +247,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\followingEventType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\signatureDocumentTemplate.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\alert.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
@@ -352,6 +363,7 @@
     <TypeScriptCompile Include="Framework\Types\Utility\block.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\component.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\http.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Utility\support.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\fullscreen.ts" />
@@ -368,7 +380,6 @@
     <TypeScriptCompile Include="Framework\Utility\numberUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\stringUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\url.ts" />
-    <TypeScriptCompile Include="Framework\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\PageState\index.ts" />
     <TypeScriptCompile Include="Framework\PageState\state.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\achievementType.d.ts" />
