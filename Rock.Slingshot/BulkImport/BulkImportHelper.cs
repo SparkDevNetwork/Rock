@@ -1814,7 +1814,7 @@ WHERE gta.GroupTypeId IS NULL" );
             foreach ( var personImport in personImports )
             {
                 progress++;
-                if ( progress % 100 == 0 && personUpdatesMS > 0 )
+                if ( progress % 100 == 0 )
                 {
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
