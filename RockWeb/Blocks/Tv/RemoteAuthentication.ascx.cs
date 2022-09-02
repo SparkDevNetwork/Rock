@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,12 +48,12 @@ namespace RockWeb.Blocks.Tv
         CodeEditorTheme.Rock,
         300,
         false,
-        "default",
         @"<div class=""mb-4"">
     <h1>Hello
     {{ CurrentPerson.NickName }}</h1>
-    <span>Enter your security code below to authenicate to your application.</span>
+    <span>Enter your security code below to authenticate your application.</span>
 </div>",
+        "default",
         1,
         AttributeKey.HeaderContent)]
 
@@ -63,10 +63,8 @@ namespace RockWeb.Blocks.Tv
         CodeEditorTheme.Rock,
         300,
         false,
-        "",@"<div>
-    <h1>Success!</h1>
-    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
-</div>",
+        "",
+        "default",
         2,
         AttributeKey.FooterContent )]
 
@@ -76,8 +74,11 @@ namespace RockWeb.Blocks.Tv
         CodeEditorTheme.Rock,
         300,
         false,
+        @"<div>
+    <h1>Success!</h1>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+</div>",
         "default",
-        "",
         3,
         AttributeKey.SuccessMessage )]
 
@@ -274,7 +275,5 @@ namespace RockWeb.Blocks.Tv
         }
 
         #endregion
-
-
     }
 }
