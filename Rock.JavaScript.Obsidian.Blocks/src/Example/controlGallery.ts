@@ -166,6 +166,7 @@ import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
 import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
+import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
 
 // #region Gallery Support
 
@@ -5599,6 +5600,44 @@ const metricItemPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates registration template picker */
+const registrationTemplatePickerGallery = defineComponent({
+    name: "RegistrationTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        RegistrationTemplatePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("registrationTemplatePicker"),
+            exampleCode: `<RegistrationTemplatePicker label="Registration Template" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RegistrationTemplatePicker label="Registration Template"
+        v-model="value"
+        :multiple="multiple"
+        :mergeTemplateOwnership="ownership" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5704,7 +5743,8 @@ const controlGalleryComponents: Record<string, Component> = [
     groupPickerGallery,
     mergeTemplatePickerGallery,
     metricCategoryPickerGallery,
-    metricItemPickerGallery
+    metricItemPickerGallery,
+    registrationTemplatePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

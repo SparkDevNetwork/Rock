@@ -16,15 +16,14 @@
 //
 
 using System;
-using Rock.Enums.Controls;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetMergeTemplates API action of
-    /// the MergeTemplatePicker control.
+    /// The options that can be passed to the GetChildren API action of
+    /// the RegistrationTemplatePicker control.
     /// </summary>
-    public class MergeTemplatePickerGetMergeTemplatesOptionsBag
+    public class RegistrationTemplatePickerGetChildrenOptionsBag
     {
         /// <summary>
         /// Gets or sets the parent unique identifier whose children are to
@@ -32,18 +31,6 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value>The parent unique identifier.</value>
         public Guid? ParentGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default icon CSS class to use for items that do not
-        /// specify their own IconCssClass value.
-        /// </summary>
-        /// <value>The default icon CSS class.</value>
-        public string DefaultIconCssClass { get; set; } = "fa fa-list-ol";
-
-        /// <summary>
-        /// Gets or sets a filter for which merge templates to include in results: Global, Public, or Both
-        /// </summary>
-        public MergeTemplateOwnership MergeTemplateOwnership { get; set; } = MergeTemplateOwnership.Global;
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing

@@ -81,7 +81,7 @@ export default defineComponent({
     template: `
 <TreeItemPicker v-model="internalValue"
     formGroupClasses="location-item-picker"
-    iconCssClass="fa fa-bar-chart-o fa-fw"
+    iconCssClass="fa fa-bar-chart-o"
     :provider="itemProvider"
     :multiple="multiple"
     disableFolderSelection

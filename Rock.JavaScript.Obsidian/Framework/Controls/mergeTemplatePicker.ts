@@ -15,9 +15,8 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-import { standardAsyncPickerProps, updateRefValue } from "@Obsidian/Utility/component";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { MergeTemplateTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";

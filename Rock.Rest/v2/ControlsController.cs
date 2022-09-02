@@ -2256,6 +2256,44 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Registration Template Picker
+
+        /// <summary>
+        /// Gets the registration templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which registration templates to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of registration templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationTemplatePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "41eac873-20f3-4456-9fb4-746a1363807e" )]
+        public IHttpActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<RegistrationTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Remote Auths Picker
 
         /// <summary>
