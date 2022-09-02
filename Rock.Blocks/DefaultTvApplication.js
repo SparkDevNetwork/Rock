@@ -163,7 +163,7 @@ class LoginHandler {
             return;
         }
 
-        // Check the server to see if the authenication has occurred
+        // Check the server to see if the authentication has occurred
         var isAuthComplete = await appCommands.checkForAuthentication(this.authCode);
 
         if (isAuthComplete) {
@@ -350,7 +350,7 @@ class TvEventHandler {
 
         // Make call to get accessToken
         var authResponse = await appCommands.getLoginAuthCode();
-        console.log("[INFO] Authenication Session Started", authResponse);
+        console.log("[INFO] Authentication Session Started", authResponse);
 
         // start long polling
         RockTvApp.LoginHandler = new LoginHandler(loginTimeoutDuration, loginCheckDuration, authResponse.authCode, loginTimeoutPageGuid, loginSuccessPageGuid, loginClearNavigationStack);

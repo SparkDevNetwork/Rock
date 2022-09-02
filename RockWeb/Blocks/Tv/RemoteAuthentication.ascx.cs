@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Tv
                 siteId = site.Id;
             }
 
-            // Get matching remote authenication record
+            // Get matching remote authentication record
             var rockContext = new RockContext();
             var remoteAuthenticationService = new RemoteAuthenticationSessionService( rockContext );
 
