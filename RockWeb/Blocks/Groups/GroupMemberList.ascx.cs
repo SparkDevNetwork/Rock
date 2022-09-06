@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,9 +54,16 @@ namespace RockWeb.Blocks.Groups
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Constants
+
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
         private const string SHOW_DATE_ADDED_KEY = "ShowDateAdded";
         private const string DATE_ADDED_FILTER_KEY = "Date Added";
+
+        private const string GROUP_MEMBERS_TAB_TITLE = "Group Members";
+        private const string REQUIREMENTS_TAB_TITLE = "Requirements";
+
+        #endregion
 
         #region Private Variables
 
@@ -70,6 +77,7 @@ namespace RockWeb.Blocks.Groups
 
         private bool _allowInactiveGroupMembers = false;
         private bool _hasInactiveGroupMembersSelected = false;
+        private bool _hasInactiveGroupMemberRequirementsSelected = false;
 
         private class GroupMemberRegistrationItem
         {
@@ -98,6 +106,8 @@ namespace RockWeb.Blocks.Groups
         private RockLiteralField _exportLatitudeField = null;
         private RockLiteralField _exportLongitude = null;
 
+        private RockLiteralField _requirementFullNameField = null;
+        private RockLiteralField _requirementStatesField = null;
         #endregion
 
         #region Properties
@@ -110,6 +120,11 @@ namespace RockWeb.Blocks.Groups
         /// </value>
         public List<AttributeCache> AvailableAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the active tab when group or group type has requirements.
+        /// </summary>
+        private string MemberRequirementsTab { get; set; }
+
         #endregion
 
         #region Control Methods
@@ -121,7 +136,7 @@ namespace RockWeb.Blocks.Groups
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-
+            MemberRequirementsTab = ViewState["MemberRequirementsTab"] as string ?? GROUP_MEMBERS_TAB_TITLE;
             if ( ViewState["AvailableAttributeIds"] != null )
             {
                 AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
@@ -235,6 +250,46 @@ namespace RockWeb.Blocks.Groups
                         .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
                         .Contains( r.Id ) )
                         .Any();
+
+                    filterRequirements.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
+                    filterRequirements.ApplyFilterClick += filterRequirements_ApplyFilterClick;
+                    gGroupMemberRequirements.DataKeyNames = new string[] { "Id" };
+                    gGroupMemberRequirements.PersonIdField = "PersonId";
+                    gGroupMemberRequirements.GetRecipientMergeFields += gGroupMemberRequirements_GetRecipientMergeFields;
+                    gGroupMemberRequirements.Actions.AddClick += gGroupMemberRequirements_AddClick;
+                    gGroupMemberRequirements.GridRebind += gGroupMemberRequirements_GridRebind;
+
+                    // Add a custom button with an EventHandler that is only in this block.
+                    var customActionConfigRequirementEventButton = new CustomActionConfigEvent
+                    {
+                        IconCssClass = "fa fa-comment",
+                        HelpText = "Communicate",
+                        EventHandler = gGroupMemberRequirements_CommunicateClick
+                    };
+                    gGroupMemberRequirements.Actions.AddCustomActionBlockButton( customActionConfigRequirementEventButton );
+                    gGroupMemberRequirements.Actions.ShowCommunicate = false;
+
+                    gGroupMemberRequirements.RowItemText = _groupTypeCache.GroupTerm + " " + _groupTypeCache.GroupMemberTerm;
+                    gGroupMemberRequirements.ExportFilename = _group.Name;
+                    gGroupMemberRequirements.ExportSource = ExcelExportSource.DataSource;
+
+                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead
+                    gGroupMemberRequirements.ShowConfirmDeleteDialog = false;
+
+                    gGroupMemberRequirements.Actions.ShowAdd = canEditBlock;
+                    gGroupMemberRequirements.IsDeleteEnabled = canEditBlock;
+
+                    // If all of the roles in a group are sync'd then don't show the add button
+                    gGroupMemberRequirements.Actions.ShowAdd = _groupTypeCache.Roles
+                        .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
+                        .Contains( r.Id ) )
+                        .Any();
+
+                    // If there are any group requirements, display the group member and requirements tabs.
+                    if ( _group.GroupRequirements.Any() || _group.GroupType.GroupRequirements.Any() )
+                    {
+                        phPills.Visible = true;
+                    }
                 }
             }
 
@@ -266,7 +321,9 @@ namespace RockWeb.Blocks.Groups
         public void GroupMemberList_BlockUpdated( object sender, EventArgs e )
         {
             SetFilter();
+            SetRequirementsFilter();
             BindGroupMembersGrid();
+            BindGroupMemberRequirementsGrid();
         }
 
         /// <summary>
@@ -283,7 +340,9 @@ namespace RockWeb.Blocks.Groups
                 if ( _canView )
                 {
                     SetFilter();
+                    SetRequirementsFilter();
                     BindGroupMembersGrid();
+                    BindGroupMemberRequirementsGrid();
                 }
             }
         }
@@ -297,6 +356,7 @@ namespace RockWeb.Blocks.Groups
         protected override object SaveViewState()
         {
             ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
+            ViewState["MemberRequirementsTab"] = MemberRequirementsTab;
             return base.SaveViewState();
         }
 
@@ -313,6 +373,7 @@ namespace RockWeb.Blocks.Groups
         private HashSet<int> _groupMemberIdsThatLackGroupRequirements = new HashSet<int>();
         private List<int> _groupMemberIdsWithWarnings = new List<int>();
         private List<int> _groupMemberIdsPersonInMultipleRoles = new List<int>();
+        private Dictionary<int, List<GroupRequirementStatus>> _memberRequirements = new Dictionary<int, List<GroupRequirementStatus>>();
         private bool _showDateAdded = false;
         private bool _showNoteColumn = false;
 
@@ -738,6 +799,280 @@ namespace RockWeb.Blocks.Groups
             SetFilter();
         }
 
+        protected void gGroupMemberRequirements_RowCreated( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            GroupMember groupMember = e.Row.DataItem as GroupMember;
+            if ( groupMember != null )
+            {
+                // We already have the Group fetched, so set the Group here so it doesn't have to be loaded from the database for each row (this helps when loading attributes)
+                groupMember.Group = _group;
+            }
+        }
+
+        protected void gGroupMemberRequirements_RowSelected( object sender, RowEventArgs e )
+        {
+            var campusId = hfCampusId.Value.AsIntegerOrNull();
+
+            if ( campusId.HasValue )
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId, "CampusId", campusId.Value );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
+            }
+        }
+
+        protected void gGroupMemberRequirements_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            GroupMember groupMember = e.Row.DataItem as GroupMember;
+            if ( groupMember == null )
+            {
+                return;
+            }
+
+            int groupMemberId = groupMember.Id;
+
+            var lFullName = e.Row.FindControl( _requirementFullNameField.ID ) as Literal;
+            if ( lFullName != null )
+            {
+                lFullName.Text = groupMember.Person.FullNameReversed;
+            }
+
+            if ( _isExporting )
+            {
+                var personPhoneNumbers = _personIdPhoneNumberTypePhoneNumberLookup.GetValueOrNull( groupMember.PersonId );
+
+                if ( personPhoneNumbers != null )
+                {
+                    var lExportHomePhone = e.Row.FindControl( _exportHomePhoneField.ID ) as Literal;
+                    var lExportCellPhone = e.Row.FindControl( _exportCellPhoneField.ID ) as Literal;
+
+                    if ( _homePhoneTypeId.HasValue )
+                    {
+                        lExportHomePhone.Text = personPhoneNumbers.GetValueOrNull( _homePhoneTypeId.Value );
+                    }
+
+                    if ( _cellPhoneTypeId.HasValue )
+                    {
+                        lExportCellPhone.Text = personPhoneNumbers.GetValueOrNull( _cellPhoneTypeId.Value );
+                    }
+                }
+
+                var homeLocation = _personIdHomeLocationLookup.GetValueOrNull( groupMember.PersonId );
+                if ( homeLocation != null )
+                {
+                    var lExportHomeAddress = e.Row.FindControl( _exportHomeAddressField.ID ) as Literal;
+                    var lExportLatitude = e.Row.FindControl( _exportLatitudeField.ID ) as Literal;
+                    var lExportLongitude = e.Row.FindControl( _exportLongitude.ID ) as Literal;
+
+                    lExportHomeAddress.Text = homeLocation.FormattedAddress;
+                    lExportLatitude.Text = homeLocation.Latitude.ToString();
+                    lExportLongitude.Text = homeLocation.Longitude.ToString();
+                }
+            }
+
+            var lNameWithHtml = e.Row.FindControl( _nameWithHtmlField.ID ) as Literal;
+            if ( lNameWithHtml != null )
+            {
+                StringBuilder sbNameHtml = new StringBuilder();
+                sbNameHtml.AppendFormat( _photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                sbNameHtml.Append( groupMember.Person.FullName );
+                if ( groupMember.Person.TopSignalColor.IsNotNullOrWhiteSpace() )
+                {
+                    sbNameHtml.Append( " " + groupMember.Person.GetSignalMarkup() );
+                }
+
+                if ( _allowGroupScheduling )
+                {
+                    if ( _groupMemberIdsPersonInMultipleRoles.Contains( groupMember.Id ) )
+                    {
+                        sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title=" +
+                            "'This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
+                            "<i class='fa fa-exclamation-circle text-warning'></i>" +
+                            "</span>" );
+                    }
+                }
+
+                if ( !_showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
+                {
+                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
+                }
+
+                // If there is a required signed document that member has not signed, show an icon in the grid
+                if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
+                {
+                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
+                }
+
+                lNameWithHtml.Text = sbNameHtml.ToString();
+            }
+
+            var lRequirementStates = e.Row.FindControl( _requirementStatesField.ID ) as Literal;
+            if ( _hasGroupRequirements )
+            {
+                StringBuilder sbRequirements = new StringBuilder();
+                if ( _groupMemberIdsThatLackGroupRequirements.Contains( groupMember.Id ) )
+                {
+                    foreach ( var requirementStatus in _memberRequirements.Where( k => k.Key == groupMember.Id ).SelectMany( v => v.Value ) )
+                    {
+                        sbRequirements.Append( "<span class='label label-" + RequirementStatusClass( requirementStatus.MeetsGroupRequirement ) + "'>" + requirementStatus.GroupRequirement.GroupRequirementType.Name + "</span> " );
+                    }
+                }
+
+                lRequirementStates.Text = sbRequirements.ToString();
+            }
+
+            if ( groupMember.Person.IsDeceased )
+            {
+                e.Row.AddCssClass( "is-deceased" );
+            }
+
+            if ( _inactiveStatus != null && groupMember.Person.RecordStatusValueId == _inactiveStatus.Id )
+            {
+                e.Row.AddCssClass( "is-inactive-person" );
+            }
+
+            if ( _inactiveStatus != null && groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
+            {
+                e.Row.AddCssClass( "is-inactive" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the GetRecipientMergeFields event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        protected void gGroupMemberRequirements_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
+        {
+            GroupMember groupMember = e.DataItem as GroupMember;
+
+            if ( groupMember == null )
+            {
+                return;
+            }
+
+            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>(
+                new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] {
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupTypeId", _groupTypeCache.Id.ToString() ),
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupId", groupMember.GroupId.ToString() ),
+                } );
+
+            e.MergeValues.Add( entityTypeMergeField, groupMember.Id );
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void filterRequirements_ApplyFilterClick( object sender, EventArgs e )
+        {
+            filterRequirements.SaveUserPreference( "RequirementRole", "Requirement Role", cblRequirementsRole.SelectedValues.AsDelimited( ";" ) );
+            filterRequirements.SaveUserPreference( "RequirementType", "Requirement Type", ddlRequirementType.SelectedValue );
+            filterRequirements.SaveUserPreference( "RequirementState", "Requirement State", cblRequirementState.SelectedValues.AsDelimited( ";" ) );
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phRequirementsAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            filterRequirements.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                    else
+                    {
+                        // no filter control, so clear out the user preference
+                        filterRequirements.SaveUserPreference( attribute.Key, attribute.Name, null );
+                    }
+                }
+            }
+
+            BindGroupMemberRequirementsGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void filterRequirements_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( AvailableAttributes != null )
+            {
+                var attribute = AvailableAttributes.FirstOrDefault( a => a.Key == e.Key );
+                if ( attribute != null )
+                {
+                    try
+                    {
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
+                    }
+                    catch
+                    {
+                        // intentionally ignore
+                    }
+                }
+            }
+
+            if ( e.Key == "RequirementRole" )
+            {
+                e.Value = ResolveValues( e.Value, cblRole );
+            }
+            else if ( e.Key == "RequirementState" )
+            {
+                e.Value = ResolveValues( e.Value, cblRequirementState );
+            }
+            else if ( e.Key == "RequirementType" )
+            {
+                var typeId = e.Value.AsIntegerOrNull();
+                if ( typeId.HasValue )
+                {
+                    e.Value = ddlRequirementType.SelectedItem.Text;
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void filterRequirements_ClearFilterClick( object sender, EventArgs e )
+        {
+            filterRequirements.DeleteUserPreferences();
+            SetRequirementsFilter();
+        }
+
         /// <summary>
         /// Handles the Click event of the delete/archive button in the grid
         /// </summary>
@@ -811,6 +1146,30 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the AddClick event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupMemberRequirements_AddClick( object sender, EventArgs e )
+        {
+            if ( hfCampusId.Value.AsIntegerOrNull().HasValue )
+            {
+                var qryString = new Dictionary<string, string>()
+                {
+                    { "GroupMemberId", "0" },
+                    { "GroupId", _group.Id.ToString() },
+                    { "CampusId", hfCampusId.Value }
+                };
+
+                NavigateToLinkedPage( "DetailPage", qryString );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
+            }
+        }
+
+        /// <summary>
         /// Handles the Edit event of the gGroupMembers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -839,6 +1198,16 @@ namespace RockWeb.Blocks.Groups
             BindGroupMembersGrid( e.IsExporting, e.IsCommunication );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupMemberRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs" /> instance containing the event data.</param>
+        protected void gGroupMemberRequirements_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindGroupMemberRequirementsGrid( e.IsExporting, e.IsCommunication );
+        }
+
         protected void gGroupMembers_CommunicateClick( object sender, EventArgs e )
         {
             BindGroupMembersGrid();
@@ -853,6 +1222,19 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        protected void gGroupMemberRequirements_CommunicateClick( object sender, EventArgs e )
+        {
+            BindGroupMemberRequirementsGrid();
+            if ( _hasInactiveGroupMemberRequirementsSelected )
+            {
+                mdActiveRecords.Visible = true;
+                mdActiveRecords.Show();
+            }
+            else
+            {
+                gGroupMemberRequirements.Actions.InvokeCommunicateClick( sender, e );
+            }
+        }
         #endregion
 
         #region Internal Methods
@@ -920,6 +1302,60 @@ namespace RockWeb.Blocks.Groups
 
             drpDateAdded.DelimitedValues = rFilter.GetUserPreference( DATE_ADDED_FILTER_KEY );
             drpDateAdded.Visible = GetAttributeValue( SHOW_DATE_ADDED_KEY ).AsBoolean();
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void SetRequirementsFilter()
+        {
+            if ( _group != null )
+            {
+                cblRequirementsRole.DataSource = _group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
+                cblRequirementsRole.DataBind();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    // We need to get group requirements as well as group type requirements into one datasource here.
+                    var groupMemberService = new GroupMemberService( rockContext ).Queryable().AsNoTracking();
+                    var groupService = new GroupService( rockContext ).Queryable().AsNoTracking();
+                    var groupTypeService = new GroupTypeService( rockContext ).Queryable().AsNoTracking();
+                    var groupReqs = groupService.Where( g => g.Id == _group.Id ).SelectMany( g => g.GroupRequirements );
+
+                    // Get all the requirements from both group and group type, regardless of if any are in the group member requirements yet.
+                    var requirementsFromGroup = groupMemberService.Where( r => r.GroupId == _group.Id )
+                        .SelectMany( r => r.Group.GroupRequirements )
+                        .Distinct().ToList();
+                    var requirementsFromGroupType = groupMemberService
+                       .Where( r => r.GroupId == _group.Id )
+                       .SelectMany( r => r.Group.GroupType.GroupRequirements ).Distinct().ToList();
+                    requirementsFromGroup.AddRange( requirementsFromGroupType );
+
+                    ddlRequirementType.DataSource = requirementsFromGroup.Distinct().Select( r => new { Id = r.GroupRequirementTypeId, Name = r.GroupRequirementType.Name } );
+                    ddlRequirementType.DataBind();
+                    ddlRequirementType.Items.Insert( 0, new ListItem() );
+                }
+            }
+
+            cblRequirementState.BindToEnum<MeetsGroupRequirement>();
+
+            string requirementRoleValue = filterRequirements.GetUserPreference( "RequirementRole" );
+            if ( !string.IsNullOrWhiteSpace( requirementRoleValue ) )
+            {
+                cblRequirementsRole.SetValues( requirementRoleValue.Split( ';' ).ToList() );
+            }
+
+            string requirementTypeValue = filterRequirements.GetUserPreference( "RequirementType" );
+            if ( !string.IsNullOrWhiteSpace( requirementTypeValue ) )
+            {
+                ddlRequirementType.SelectedValue = requirementTypeValue;
+            }
+
+            string requirementStateValue = filterRequirements.GetUserPreference( "RequirementState" );
+            if ( !string.IsNullOrWhiteSpace( requirementStateValue ) )
+            {
+                cblRequirementState.SetValues( requirementStateValue.Split( ';' ).ToList() );
+            }
         }
 
         /// <summary>
@@ -1393,10 +1829,10 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Filter by Registration
-            var instanceId = ddlRegistration.SelectedValueAsInt();
+            var instanceId = ddlRegistration.SelectedValueAsId();
             if ( instanceId.HasValue )
             {
-                var registrants = new RegistrationRegistrantService( rockContext )
+                var registrantPersonIdQuery = new RegistrationRegistrantService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( r =>
                         r.Registration != null &&
@@ -1404,7 +1840,7 @@ namespace RockWeb.Blocks.Groups
                         r.PersonAlias != null )
                     .Select( r => r.PersonAlias.PersonId );
 
-                qry = qry.Where( m => registrants.Contains( m.PersonId ) );
+                qry = qry.Where( m => registrantPersonIdQuery.Contains( m.PersonId ) );
             }
 
             // Filter by signed documents
@@ -1432,7 +1868,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( dateRange.End.HasValue )
             {
-                var end = dateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var end = dateRange.End.Value.AddDays( 1 ).AddSeconds( -1 );
                 qry = qry.Where( m =>
                     m.DateTimeAdded.HasValue &&
                     m.DateTimeAdded.Value < end );
@@ -1615,6 +2051,315 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Binds the group members grid.
+        /// </summary>
+        protected void BindGroupMemberRequirementsGrid( bool isExporting = false, bool isCommunication = false )
+        {
+            _isExporting = isExporting;
+            if ( _group == null )
+            {
+                pnlGroupMembers.Visible = false;
+                return;
+            }
+
+            if ( !_groupTypeCache.Roles.Any() )
+            {
+                nbRoleWarning.Text = string.Format(
+                       "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
+                       _groupTypeCache.GroupMemberTerm.Pluralize(),
+                       _groupTypeCache.GroupTerm,
+                       _groupTypeCache.Name );
+
+                nbRoleWarning.Visible = true;
+                filterRequirements.Visible = false;
+
+                gGroupMemberRequirements.Visible = false;
+            }
+
+            int groupId = _group.Id;
+            _memberRequirements.Clear();
+
+            pnlGroupMembers.Visible = true;
+            nbRoleWarning.Visible = false;
+            filterRequirements.Visible = true;
+            gGroupMemberRequirements.Visible = true;
+
+            string blockTitle = GetAttributeValue( "BlockTitle" );
+            lHeading.Text = !string.IsNullOrWhiteSpace( blockTitle )
+                ? blockTitle
+                : string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
+
+            _requirementFullNameField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportFullName" ).FirstOrDefault();
+            _nameWithHtmlField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementNameWithHtml" ).FirstOrDefault();
+            _requirementStatesField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementStates" ).FirstOrDefault();
+
+            _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
+
+            var rockContext = new RockContext();
+
+            if ( _group != null &&
+                _group.RequiredSignatureDocumentTemplateId.HasValue )
+            {
+                _showPersonsThatHaventSigned = true;
+                _personIdsThatHaveSigned = new HashSet<int>( new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null )
+                    .OrderByDescending( d => d.LastStatusDate )
+                    .Select( d => d.AppliesToPersonAlias.PersonId )
+                    .Distinct()
+                    .ToList() );
+            }
+            else
+            {
+                _personIdsThatHaveSigned = new HashSet<int>();
+                _showPersonsThatHaventSigned = false;
+            }
+
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            var qry = groupMemberService.Queryable( true )
+                .Include( a => a.GroupRole )
+                .Include( a => a.Person )
+                .AsNoTracking()
+                .Where( m => m.GroupId == _group.Id );
+
+            if ( isCommunication && !_allowInactiveGroupMembers )
+            {
+                qry = qry.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive );
+            }
+
+            // Filter by role
+            var validGroupTypeRoles = _groupTypeCache.Roles.Select( r => r.Id ).ToList();
+            var roles = new List<int>();
+            foreach ( var roleId in cblRequirementsRole.SelectedValues.AsIntegerList() )
+            {
+                if ( validGroupTypeRoles.Contains( roleId ) )
+                {
+                    roles.Add( roleId );
+                }
+            }
+
+            if ( roles.Any() )
+            {
+                qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
+            }
+
+            // Filter by Requirement state
+            var meetsRequirementStates = new List<MeetsGroupRequirement>();
+            foreach ( string state in cblRequirementState.SelectedValues )
+            {
+                if ( !string.IsNullOrWhiteSpace( state ) )
+                {
+                    meetsRequirementStates.Add( state.ConvertToEnum<MeetsGroupRequirement>() );
+                }
+            }
+
+            foreach ( var member in _group.Members )
+            {
+                _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+            }
+
+            // Set the selected requirement type to filter states as well as types.
+            var requirementTypeId = ddlRequirementType.SelectedValueAsInt();
+
+            if ( meetsRequirementStates.Any() )
+            {
+                // Select all the MeetsGroupRequirements that are in the list MemberRequirements where the Key values are in the qry.
+                HashSet<int> matchingMemberIds = new HashSet<int>();
+                foreach ( var requirement in _memberRequirements )
+                {
+                    if ( requirementTypeId.HasValue )
+                    {
+                        if ( requirement.Value.Where( r => meetsRequirementStates.Contains( r.MeetsGroupRequirement ) && r.GroupRequirement.GroupRequirementTypeId == requirementTypeId ).Any() )
+                        {
+                            matchingMemberIds.Add( requirement.Key );
+                        }
+                    }
+                    else
+                    {
+                        if ( requirement.Value.Where( r => meetsRequirementStates.Contains( r.MeetsGroupRequirement ) ).Any() )
+                        {
+                            matchingMemberIds.Add( requirement.Key );
+                        }
+                    }
+                }
+
+                qry = qry.Where( m => matchingMemberIds.Contains( m.Id ) );
+            }
+
+            if ( requirementTypeId.HasValue )
+            {
+                HashSet<int> matchingMemberIds = new HashSet<int>();
+                foreach ( var requirement in _memberRequirements )
+                {
+                    if ( requirement.Value.Where( r => r.GroupRequirement.GroupRequirementTypeId == requirementTypeId ).Any() )
+                    {
+                        matchingMemberIds.Add( requirement.Key );
+                    }
+                }
+
+                qry = qry.Where( m => matchingMemberIds.Contains( m.Id ) );
+            }
+
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phRequirementsAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                }
+            }
+
+            _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
+            _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
+
+            // If there are group requirements that a member doesn't meet, show an icon in the grid
+            var groupService = new GroupService( rockContext );
+
+            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
+
+            _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
+
+            // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
+            if ( _allowGroupScheduling )
+            {
+                _groupMemberIdsPersonInMultipleRoles = _group.Members
+                    .Where( gm => _group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).GroupBy( m => m.PersonId ).Where( g => g.Count() > 1 ).Select( g => g.Key ).Contains( gm.PersonId ) )
+                    .Select( m => m.Id ).ToList();
+            }
+
+            gGroupMemberRequirements.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
+
+            if ( isExporting )
+            {
+                var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                var personFamily = new GroupMemberService( rockContext ).Queryable()
+                    .Where( a => qry.Any( m => m.PersonId == a.PersonId ) )
+                    .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
+                    .Select( m => new
+                    {
+                        m.PersonId,
+                        m.Group
+                    } );
+
+                // preload all phonenumbers for the person in the qry in one query so that we don't have to fetch them individually
+                _personIdPhoneNumberTypePhoneNumberLookup = new PhoneNumberService( rockContext ).Queryable()
+                    .Where( n => personFamily.Any( x => x.PersonId == n.PersonId ) && n.NumberTypeValueId.HasValue )
+                    .GroupBy( a => new { a.PersonId, a.NumberTypeValueId } )
+                    .Select( a => new
+                    {
+                        a.Key.PersonId,
+                        a.Key.NumberTypeValueId,
+                        NumberFormatted = a.Select( x => x.NumberFormatted ).FirstOrDefault()
+                    } )
+                    .GroupBy( a => a.PersonId )
+                    .ToDictionary( k => k.Key, v => v.ToDictionary( xk => xk.NumberTypeValueId.Value, xv => xv.NumberFormatted ) );
+
+                // preload all mapped home locations for the person in the qry in one query so that we don't have to fetch them individually
+                Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                if ( homeAddressGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    if ( homeAddressDv != null )
+                    {
+                        var locationsQry = personFamily
+                            .Select( pf => new
+                            {
+                                HomeLocation = pf.Group.GroupLocations.Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id && l.IsMappedLocation ).Select( l => l.Location ).FirstOrDefault(),
+                                GroupOrder = pf.Group.Order,
+                                PersonId = pf.PersonId
+                            } );
+
+                        _personIdHomeLocationLookup = locationsQry.GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.OrderBy( a => a.GroupOrder ).Select( x => x.HomeLocation ).FirstOrDefault() );
+                    }
+                }
+            }
+
+            SortProperty sortProperty = gGroupMemberRequirements.SortProperty;
+            if ( sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName );
+            }
+
+            var groupMemberIdQuery = qry.Select( m => m.Id );
+
+            _groupMembersWithGroupMemberHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => a.GroupId == groupId ).Select( a => a.GroupMemberId ).ToList() );
+
+            // Get all the group members with any associated registrations
+            _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( r =>
+                    r.Registration != null &&
+                    r.Registration.RegistrationInstance != null &&
+                    r.GroupMemberId.HasValue &&
+                    groupMemberIdQuery.Contains( r.GroupMemberId.Value ) )
+                .ToList()
+                .GroupBy( r => r.GroupMemberId.Value )
+                .Select( g => new
+                {
+                    GroupMemberId = g.Key,
+                    Registrations = g.ToList()
+                        .Select( r => new
+                        {
+                            Id = r.Registration.Id,
+                            Name = r.Registration.RegistrationInstance.Name
+                        } ).Distinct()
+                        .Select( r => new GroupMemberRegistrationItem { RegistrationId = r.Id, RegistrationName = r.Name } ).ToList()
+                } )
+                .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
+
+            if ( _registrationField != null )
+            {
+                _registrationField.Visible = _groupMembersWithRegistrations.Any();
+            }
+
+            _connectionStatusField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lConnectionStatusValue" );
+            if ( _connectionStatusField != null )
+            {
+                _connectionStatusField.Visible = _groupTypeCache.ShowConnectionStatus;
+            }
+
+            _maritalStatusField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lMaritalStatusValue" );
+            if ( _maritalStatusField != null )
+            {
+                _maritalStatusField.Visible = _groupTypeCache.ShowMaritalStatus;
+            }
+
+            _personIdAttendanceFirstLastLookup = new Dictionary<int, DateRange>();
+
+            _showDateAdded = GetAttributeValue( "ShowDateAdded" ).AsBoolean();
+            gGroupMemberRequirements.ColumnsOfType<DateField>().First( a => a.DataField == "DateTimeAdded" ).Visible = _showDateAdded;
+
+            _showNoteColumn = GetAttributeValue( "ShowNoteColumn" ).AsBoolean();
+            gGroupMemberRequirements.ColumnsOfType<RockBoundField>().First( a => a.DataField == "Note" ).Visible = _showNoteColumn;
+
+            List<int> selectedGroupMemberIds = new List<int>();
+
+            // If any row is selected, use those selected, otherwise choose all of them.
+            selectedGroupMemberIds = !gGroupMemberRequirements.SelectedKeys.Any() ? qry.Select( gm => gm.Id ).ToList() : gGroupMemberRequirements.SelectedKeys.OfType<int>().ToList();
+
+            var hasInactiveGroupMembers = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
+
+            if ( selectedGroupMemberIds.Count > 0 && hasInactiveGroupMembers )
+            {
+                // Determine if the current query has inactive group members selected.
+                _hasInactiveGroupMemberRequirementsSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+            }
+
+            gGroupMemberRequirements.SetLinqDataSource( qry );
+            gGroupMemberRequirements.DataBind();
+        }
+
+        /// <summary>
         /// Resolves the values.
         /// </summary>
         /// <param name="values">The values.</param>
@@ -1665,6 +2410,52 @@ namespace RockWeb.Blocks.Groups
             _allowInactiveGroupMembers = false;
             mdActiveRecords.Hide();
             gGroupMembers.Actions.InvokeCommunicateClick( sender, e );
+        }
+
+        private string RequirementStatusClass( MeetsGroupRequirement meetsGroupRequirement )
+        {
+            switch ( meetsGroupRequirement )
+            {
+                case MeetsGroupRequirement.Meets:
+                    return "success";
+
+                case MeetsGroupRequirement.NotMet:
+                    return "danger";
+
+                case MeetsGroupRequirement.MeetsWithWarning:
+                    return "warning";
+
+                default:
+                    return "info";
+            }
+        }
+
+        protected void lbRequirementsTab_Click( object sender, EventArgs e )
+        {
+            // Hide and un-select Group Members.
+            divGroupMembers.Visible = false;
+            divGroupMembers.RemoveCssClass( "active" );
+            liGroupMembers.RemoveCssClass( "active" );
+
+            // Show and select Requirements
+            divRequirements.Visible = true;
+            divRequirements.AddCssClass( "active" );
+            liRequirements.AddCssClass( "active" );
+            MemberRequirementsTab = REQUIREMENTS_TAB_TITLE;
+        }
+
+        protected void lbGroupMembersTab_Click( object sender, EventArgs e )
+        {
+            // Show and select Group Members.
+            divGroupMembers.Visible = true;
+            divGroupMembers.AddCssClass( "active" );
+            liGroupMembers.AddCssClass( "active" );
+
+            // Hide and un-select Requirements
+            divRequirements.Visible = false;
+            divRequirements.RemoveCssClass( "active" );
+            liRequirements.RemoveCssClass( "active" );
+            MemberRequirementsTab = GROUP_MEMBERS_TAB_TITLE;
         }
     }
 }

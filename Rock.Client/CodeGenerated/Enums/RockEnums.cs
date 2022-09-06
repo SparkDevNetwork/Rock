@@ -655,6 +655,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ParticipationType
+    {
+        Individual = 0x1,
+        Family = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,
