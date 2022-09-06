@@ -444,6 +444,29 @@ export default defineComponent({
 .step-flow-svg .edge:hover {
     fill: rgba(170, 170, 170, 0.8);
 }
+
+.flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto 0;
+    gap: 12px;
+    width: 500px;
+    max-width: 100%;
+}
+.flow-key {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.1;
+}
+.flow-key .color {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    border-radius: 3px;
+    box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.08);
+}
 </v-style>
 
 <div class="flow-node-diagram-container">
@@ -466,6 +489,10 @@ export default defineComponent({
             <h3>Loading...</h3>
         </div>
     </transition>
+</div>
+<div class="flow-legend">
+    <div class="flow-key"><span class="color" style="background:#BCE17C"></span><span>1. Key Name</span></div>
+    <div class="flow-key"><span class="color" style="background:#F89487"></span><span>2. Key Name</span></div>
 </div>
 `
 });
