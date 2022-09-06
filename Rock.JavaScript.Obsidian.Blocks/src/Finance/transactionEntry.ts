@@ -23,7 +23,7 @@ import DatePicker from "@Obsidian/Controls/datePicker";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Toggle from "@Obsidian/Controls/toggle";

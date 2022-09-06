@@ -139,6 +139,9 @@
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
     <TypeScriptCompile Include="src\Groups\groupMemberList.ts" />
     <TypeScriptCompile Include="src\Security\login.ts" />
+    <TypeScriptCompile Include="src\shims-vue.d.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.partial.ts" />

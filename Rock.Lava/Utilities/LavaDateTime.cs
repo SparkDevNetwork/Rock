@@ -99,6 +99,29 @@ namespace Rock.Lava
 
         /// <summary>
         /// Creates a new datetime for the Rock timezone.
+        /// The Kind property is set to Unspecified to indicate the Rock application timezone setting.
+        /// This is important because it may differ from a Local time if the system is operating in a different timezone to the Rock organization.
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <param name="day"></param>
+        /// <param name="hour"></param>
+        /// <param name="minute"></param>
+        /// <param name="second"></param>
+        /// <param name="kind"></param>
+        /// <returns></returns>
+        public static DateTime NewDateTime( int year, int month, int day, int hour, int minute, int second )
+        {
+            var dto = NewDateTimeOffset( year, month, day, hour, minute, second );
+
+            var dateTime = dto.DateTime;
+            dateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
+
+            return dateTime;
+        }
+
+        /// <summary>
+        /// Creates a new datetime for the Rock timezone.
         /// </summary>
         /// <param name="year"></param>
         /// <param name="month"></param>

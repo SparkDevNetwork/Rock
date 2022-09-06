@@ -44,6 +44,7 @@
  */
 
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
+import { ObjectUtils } from "@Obsidian/Utility";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -138,7 +139,8 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
-import Alert, { AlertType } from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
+import { AlertType } from "@Obsidian/Types/Controls/alert";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
@@ -195,10 +197,10 @@ function convertComponentName(name: string | undefined | null): string {
  * Takes an element name and a collection of attribute keys and values and
  * constructs the example code. This can be used inside a computed call to
  * have the example code dynamically match the selected settings.
- * 
+ *
  * @param elementName The name of the element to use in the example code.
  * @param attributes The attribute names and values to append to the element name.
- * 
+ *
  * @returns A string of valid HTML content for how to use the component.
  */
 function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
@@ -284,7 +286,8 @@ export const GalleryAndResult = defineComponent({
                 return JSON.stringify(props.value, null, 4);
             }
             else {
-                return Object.fromEntries(
+                // Convert each property's value to a JSON string.
+                return ObjectUtils.fromEntries(
                     Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
                         return [
                             key,
@@ -4436,7 +4439,7 @@ const alertGallery = defineComponent({
         CheckBox
     },
     setup() {
-        const options: ListItemBag[] = Object.keys(AlertType).map(key => ({ text: key, value: AlertType[key] }));
+        const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: key, value: key }));
         return {
             isDismissible: ref(false),
             onDismiss: () => alert('"dismiss" event fired.'),

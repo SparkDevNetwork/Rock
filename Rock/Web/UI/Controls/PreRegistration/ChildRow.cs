@@ -539,7 +539,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlGradePicker.SelectedValueAsInt();
+                return _ddlGradePicker.SelectedValueAsInt( false );
             }
 
             set
