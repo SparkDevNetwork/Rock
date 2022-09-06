@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";

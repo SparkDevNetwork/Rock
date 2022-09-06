@@ -469,6 +469,7 @@ namespace RockWeb.Blocks.Mobile
                 tbCertificateFingerprint.Text = additionalSettings.CertificateFingerprint;
                 tbDeepLinkPathPrefix.Text = $"/{additionalSettings.DeepLinkPathPrefix}/";
                 tbDeepLinkPathPrefix.Enabled = false;
+                vlDeepLinkingDomain.Value = additionalSettings.DeepLinkDomains;
             }
 
             pnlDeepLinkSettings.Visible = isDeepLinkingEnabled;
@@ -718,6 +719,10 @@ namespace RockWeb.Blocks.Mobile
         {
             var site = new SiteService( new RockContext() ).Get( siteId );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            var domainsText = additionalSettings.DeepLinkDomains.ReplaceLastOccurrence( "|", "" );
+            domainsText = domainsText.Replace( "|", ", " );
+            lblDeepLinkDomains.Text = domainsText;
             var routes = additionalSettings.DeepLinkRoutes
                 .Select( r => new
                 {
@@ -892,7 +897,7 @@ namespace RockWeb.Blocks.Mobile
                     .Where( s => s.AdditionalSettings != null && s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>().DeepLinkPathPrefix == deepLinkPrefix )
                     .Any();
 
-                if ( conflictingRoute || conflictingDeepLinkPathPrefix )
+                if ( conflictingRoute || conflictingDeepLinkPathPrefix && tbDeepLinkPathPrefix.Enabled )
                 {
                     nbDeepLinks.Text = $"Your 'Deep Link Path Prefix ('{tbDeepLinkPathPrefix.Text}') is currently conflicting with another route or path prefix. Please check 'Settings > CMS Configuration > Routes' or pick a unique deep link path prefix.";
                     nbDeepLinks.Visible = true;
@@ -904,6 +909,7 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.PackageName = tbPackageName.Text;
                 additionalSettings.CertificateFingerprint = tbCertificateFingerprint.Text;
                 additionalSettings.DeepLinkPathPrefix = deepLinkPrefix;
+                additionalSettings.DeepLinkDomains = vlDeepLinkingDomain.Value;
             }
 
             // Ensure that the Downhill CSS platform is mobile

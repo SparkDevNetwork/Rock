@@ -93,26 +93,25 @@
 
                 </asp:Panel>
 
-                <asp:Panel ID="pnlConfirm" runat="server" Visible="false" CssClass="js-panel-confirm">
-
-                    <asp:PlaceHolder ID="phConfirmation" runat="server" />
-
-                    <div class="actions">
-                        <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="btnBack_Click" />
-                        <asp:LinkButton ID="btnConfirm" runat="server" Text="Confirm" CssClass="btn btn-primary" OnClick="btnConfirm_Click" />
-                    </div>
-
-                </asp:Panel>
-
-                <asp:Panel ID="pnlStatusUpdate" runat="server" Visible="false">
-
-                    <Rock:NotificationBox ID="nbStatusUpdate" runat="server" NotificationBoxType="Success"></Rock:NotificationBox>
-
-                </asp:Panel>
-
             </div>
 
         </div>
+
+        <Rock:ModalDialog ID="mdConfirmUpdateRequests" runat="server" Title="Confirm Update" SaveButtonText="Confirm" CancelLinkVisible="true" OnSaveClick="btnConfirm_Click" SaveButtonCausesValidation="false">
+            <Content>
+                <asp:Panel ID="pnlConfirm" runat="server" CssClass="js-panel-confirm">
+
+                      <asp:PlaceHolder ID="phConfirmation" runat="server" />
+
+                  </asp:Panel>
+
+                  <asp:Panel ID="pnlStatusUpdate" runat="server" Visible="true">
+
+                      <Rock:NotificationBox ID="nbStatusUpdate" runat="server" NotificationBoxType="Success"></Rock:NotificationBox>
+
+                </asp:Panel>
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

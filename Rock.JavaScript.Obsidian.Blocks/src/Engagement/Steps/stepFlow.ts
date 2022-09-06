@@ -17,7 +17,7 @@
 
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
