@@ -1124,23 +1124,17 @@ namespace Rock.Client.Enums.Event
 
 }
 
-namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
+namespace Rock.Client.Enums.Controls
 {
     /// <summary>
     /// </summary>
-    public enum SearchOrder
+    public enum MergeTemplateOwnership
     {
-        Relevance = 0x0,
-        Newest = 0x1,
-        Oldest = 0x2,
-        Trending = 0x3,
-        Alphabetical = 0x4,
+        Global = 0x0,
+        Personal = 0x1,
+        PersonalAndGlobal = 0x2,
     }
 
-}
-
-namespace Rock.Client.Enums.Controls
-{
     /// <summary>
     /// </summary>
     [Flags]
@@ -1164,6 +1158,21 @@ namespace Rock.Client.Enums.Controls
         Week = 0x2,
         Month = 0x3,
         Year = 0x4,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
+{
+    /// <summary>
+    /// </summary>
+    public enum SearchOrder
+    {
+        Relevance = 0x0,
+        Newest = 0x1,
+        Oldest = 0x2,
+        Trending = 0x3,
+        Alphabetical = 0x4,
     }
 
 }

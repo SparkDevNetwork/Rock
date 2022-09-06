@@ -24,8 +24,8 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the GetDataViews API action of
- * the DataViewPicker control.
+ * The options that can be passed to the GetChildren API action of
+ * the MetricCategoryPicker control.
  */
 export type MetricCategoryPickerGetChildrenOptionsBag = {
     /**

@@ -1709,5 +1709,30 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowTrigger"/> 
         /// </summary>
         public const string WORKFLOW_TRIGGER = "3781C82A-7F40-4D88-B3DB-1B9589D73D3D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAction"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ACTION = "8635E7E7-3576-47FF-92DE-30A69EB5D011";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAnswer"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ANSWER = "D11DA9D4-8887-4EC2-B396-78556926DE89";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceSchedule"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceScheduleCampus"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE_CAMPUS = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11";
     }
 }
