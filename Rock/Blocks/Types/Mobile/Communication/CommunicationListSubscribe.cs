@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,10 +55,22 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.ShowDescription,
         Order = 1 )]
 
+    [BooleanField( "Show Medium Preference",
+        Description = "If enabled then the medium preference will be shown.",
+        IsRequired = false,
+        Key = AttributeKeys.ShowMediumPreference,
+        Order = 2 )]
+
+    [BooleanField( "Show Push Notification As Medium Preference",
+        Description = "If enabled then the push notification medium preference will be shown. Irrelevant if Show Medium Preference is disabled.",
+        IsRequired = false,
+        Key = AttributeKeys.ShowPushNotificationsAsMediumPreference,
+        Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "D0C51784-71ED-46F3-86AB-972148B78BE8")]
+    [Rock.SystemGuid.BlockTypeGuid( "D0C51784-71ED-46F3-86AB-972148B78BE8" )]
     public class CommunicationListSubscribe : RockMobileBlockType
     {
         #region Block Attributes
@@ -77,6 +89,16 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The show description key.
             /// </summary>
             public const string ShowDescription = "ShowDescription";
+
+            /// <summary>
+            /// An attribute key defining whether or not to show the medium preference.
+            /// </summary>
+            public const string ShowMediumPreference = "ShowMediumPreference";
+
+            /// <summary>
+            /// The show push notifications as medium preference.
+            /// </summary>
+            public const string ShowPushNotificationsAsMediumPreference = "ShowPushNotificationsAsMediumPreference";
         }
 
         /// <summary>
@@ -126,9 +148,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new Rock.Common.Mobile.Blocks.Content.Configuration
+            return new
             {
-                DynamicContent = true
+                DynamicContent = true,
+                ShowMediumPreference = GetAttributeValue( AttributeKeys.ShowMediumPreference ).AsBoolean(),
+                ShowPushNotificationsAsMediumPreference = GetAttributeValue( AttributeKeys.ShowPushNotificationsAsMediumPreference ).AsBoolean(),
             };
         }
 
@@ -312,12 +336,14 @@ namespace Rock.Blocks.Types.Mobile.Events
                 .Select( a =>
                 {
                     var publicName = a.GetAttributeValue( "PublicName" );
-
+                    var member = communicationListsMember.GetValueOrDefault( a.Id, null );
                     return new Subscription
                     {
                         DisplayName = publicName.IsNotNullOrWhiteSpace() ? publicName : a.Name,
+                        CommunicationListGuid = a.Guid,
                         CommunicationList = a,
-                        Member = communicationListsMember.GetValueOrDefault( a.Id, null )
+                        Member = member,
+                        CommunicationPreference = member?.CommunicationPreference ?? CommunicationType.Email
                     };
                 } )
                 .OrderBy( a => a.DisplayName )
@@ -416,6 +442,46 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
         }
 
+        /// <summary>
+        /// Gets the subscriptions data.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetSubscriptionsData()
+        { 
+            return ActionOk( GetSubscriptions() );
+        }
+
+        /// <summary>
+        /// Updates the communication preference.
+        /// </summary>
+        /// <param name="communicationListGuid">The communication list unique identifier.</param>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns>BlockActionResult.</returns>
+        [BlockAction]
+        public BlockActionResult UpdateCommunicationPreference( Guid communicationListGuid, CommunicationType communicationType)
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var group = new GroupService( rockContext ).Get( communicationListGuid );
+                var groupMemberRecordsForPerson = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == group.Id && a.PersonId == RequestContext.CurrentPerson.Id )
+                    .ToList();
+
+                if ( groupMemberRecordsForPerson.Any() )
+                {
+                    // normally there would be at most 1 group member record for the person, but just in case, mark them all
+                    foreach ( var groupMember in groupMemberRecordsForPerson )
+                    {
+                        groupMember.CommunicationPreference = communicationType;
+                    }
+                }
+
+                rockContext.SaveChanges();
+                return ActionOk();
+            }
+        }
+
         #endregion
 
         #region Support Classes
@@ -442,12 +508,24 @@ namespace Rock.Blocks.Types.Mobile.Events
             public Group CommunicationList { get; set; }
 
             /// <summary>
+            /// Gets or sets the communication list unique identifier.
+            /// </summary>
+            /// <value>The communication list unique identifier.</value>
+            public Guid CommunicationListGuid { get; set; }
+
+            /// <summary>
             /// Gets or sets the current member record.
             /// </summary>
             /// <value>
             /// The current member record.
             /// </value>
             public GroupMember Member { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication preference.
+            /// </summary>
+            /// <value>The communication preference.</value>
+            public CommunicationType CommunicationPreference { get; set; }
 
             /// <summary>
             /// Gets a value indicating whether the person is subscribed.
