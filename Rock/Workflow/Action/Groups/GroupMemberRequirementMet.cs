@@ -22,7 +22,6 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -34,11 +33,25 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Requirement Met" )]
 
-    [WorkflowAttribute( "PersonAttribute", "The attribute that contains the person to mark the requirement met.", true, "", "", 0, AttributeKey.PersonAttribute,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Group Member Requirement", "Attribute Value", "The group member requirement to mark as met. This can be either the GUID of the requirement or a workflow attribute with the requirement. <span class='tip tip-lava'></span>",
-        false, "", "", 1, AttributeKey.GroupMemberRequirement, new string[] { "Rock.Field.Types.GroupMemberRequirementFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "The attribute that contains the person to mark the requirement met.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = AttributeKey.PersonAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
+    [WorkflowTextOrAttribute(
+        "Group Member Requirement",
+        "Attribute Value",
+        Description = "The group member requirement to mark as met. This can be either the GUID of the requirement or a workflow attribute with the requirement. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.GroupMemberRequirement,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupMemberRequirementFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "8BE862EE-B540-4CAC-92F1-36FC067C7D3C" )]
     public class GroupMemberRequirementMet : ActionComponent
     {
