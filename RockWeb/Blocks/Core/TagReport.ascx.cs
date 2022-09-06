@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Core
                         if ( TagEntityType.Name == "Rock.Model.Person" )
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
+                            gReport.DataKeyNames = new string[] { "EntityId" };
                             gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 
@@ -317,7 +318,7 @@ namespace RockWeb.Blocks.Core
                             EntityGuid = t.EntityGuid,
                             CreatedDateTime = t.CreatedDateTime,
                             EntityId = e.Id,
-                        } ); ;
+                        } );
 
                 // Tell the grid that it has a list of the EntityType for the Tag (Person, Group, etc).
                 // Also tell it to get the Entities (Group, Person, etc) using EntityId (instead of Id)

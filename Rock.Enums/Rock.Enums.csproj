@@ -48,9 +48,12 @@
     </Compile>
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
+    <Compile Include="Controls\MergeTemplateOwnership.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
     <Compile Include="Crm\Gender.cs" />
     <Compile Include="EnumDomainAttribute.cs" />
+    <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
+    <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
   </ItemGroup>

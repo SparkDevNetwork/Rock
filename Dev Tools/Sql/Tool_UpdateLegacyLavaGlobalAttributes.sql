@@ -51,11 +51,6 @@ BEGIN
         SET [Subject] = REPLACE([Subject], @origValue, @newValue)
         WHERE [Subject] LIKE @likeValue
 
-        /* CommunicationTemplate MediumDataJson OrganizationName*/
-        UPDATE CommunicationTemplate
-        SET MediumDataJson = REPLACE(MediumDataJson, @origValue, @newValue)
-        WHERE MediumDataJson LIKE @likeValue
-
         /* SystemEmail Body */
         UPDATE SystemEmail
         SET [Body] = REPLACE([Body], @origValue, @newValue)

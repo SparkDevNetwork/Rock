@@ -17,7 +17,7 @@
 
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import Panel from "@Obsidian/Controls/panel";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { FieldType } from "@Obsidian/SystemGuids";

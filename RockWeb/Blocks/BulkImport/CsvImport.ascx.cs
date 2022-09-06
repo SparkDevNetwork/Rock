@@ -131,8 +131,21 @@ namespace RockWeb.Blocks.BulkImport
             if ( !Page.IsPostBack )
             {
                 // delete all the csv files in the root directory on start up to ensure that no residual files are present before the upload
-                Directory.EnumerateFiles( Request.MapPath( fupCSVFile.RootFolder ), "*.csv" ).ToList()
-                    .ForEach( f => File.Delete( f ) );
+                string directoryPath = Request.MapPath( fupCSVFile.RootFolder );
+                try
+                {
+                    if ( Directory.Exists( directoryPath ) )
+                    {
+                        Directory.EnumerateFiles( directoryPath, "*.csv" ).ToList()
+                            .ForEach( f => File.Delete( f ) );
+                    }
+                }
+                catch ( Exception )
+                {
+                    nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
+                    nbPageError.Visible = true;
+                    pnlLandingPage.Visible = false;
+                }
             }
             RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
@@ -192,6 +205,7 @@ namespace RockWeb.Blocks.BulkImport
         protected void fupCSVFile_FileUploaded( object sender, EventArgs e )
         {
             hfCSVFileName.Value = fupCSVFile.UploadedContentFilePath;
+            nbErrorsInFile.Visible = false; // hide any error messages from the previous file upload if any.
         }
 
         protected void fupCSVFile_FileRemoved( object sender, EventArgs e )
@@ -209,47 +223,65 @@ namespace RockWeb.Blocks.BulkImport
 
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            if ( hfCSVFileName.Value.IsNullOrWhiteSpace() )
+            {
+                nbErrorsInFile.Text = $"A CSV file must be selected first.";
+                nbErrorsInFile.Visible = true;
+                return;
+            }
+
             string csvFileName = this.Request.MapPath( hfCSVFileName.Value );
 
             this.propertiesDropDownList = CreateListItemsDropDown();
 
-            // get the headers -- this needs to be moved to CSVReader class
-            using ( StreamReader csvFileStream = File.OpenText( csvFileName ) )
+            try
             {
-                CsvReader csvReader = new CsvReader( csvFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                csvReader.Read();
-                string[] fieldHeaders = csvReader.FieldHeaders;
-                string duplicateHeadersList = fieldHeaders.GroupBy( fh => fh )
-                    .Where( g => g.Count() > 1 )
-                    .Select( y => y.Key )
-                    .ToList()
-                    .AsDelimited( ", ", " and " );
-                bool headerContainsDuplicate = !string.IsNullOrEmpty( duplicateHeadersList );
-                if ( headerContainsDuplicate )
+                // get the headers -- this needs to be moved to CSVReader class
+                using ( StreamReader csvFileStream = File.OpenText( csvFileName ) )
                 {
-                    nbDuplicateHeadersInFile.Text = $"The File has the duplicated headers: {duplicateHeadersList}. Please fix it and upload again.";
-                    nbDuplicateHeadersInFile.Visible = true;
-                    return;
+                    CsvReader csvReader = new CsvReader( csvFileStream );
+                    csvReader.Configuration.HasHeaderRecord = true;
+                    csvReader.Read();
+                    string[] fieldHeaders = csvReader.FieldHeaders;
+                    string duplicateHeadersList = fieldHeaders.GroupBy( fh => fh )
+                        .Where( g => g.Count() > 1 )
+                        .Select( y => y.Key )
+                        .ToList()
+                        .AsDelimited( ", ", " and " );
+                    bool headerContainsDuplicate = !string.IsNullOrEmpty( duplicateHeadersList );
+                    if ( headerContainsDuplicate )
+                    {
+                        nbErrorsInFile.Text = $"The file has duplicated headers: {duplicateHeadersList}. Please fix it and upload again.";
+                        nbErrorsInFile.Visible = true;
+                        return;
+                    }
+                    rptCSVHeaders.DataSource = fieldHeaders;
+                    rptCSVHeaders.DataBind();
                 }
-                rptCSVHeaders.DataSource = fieldHeaders;
-                rptCSVHeaders.DataBind();
-            }
 
-            // get the number of records in the csv file -- this needs to be moved to CSVReader class
-            using ( StreamReader csvFileStream = File.OpenText( csvFileName ) )
+                // get the number of records in the csv file -- this needs to be moved to CSVReader class
+                using ( StreamReader csvFileStream = File.OpenText( csvFileName ) )
+                {
+                    int recordsCount = 0;
+                    while ( csvFileStream.ReadLine() != null )
+                    {
+                        ++recordsCount;
+                    }
+                    if ( recordsCount > 0 )
+                    {
+                        recordsCount--;
+                    }
+                    ViewState[ViewStateKey.RecordCount] = recordsCount.ToString();
+                    tdRecordCount.Description = recordsCount.ToString();
+                }
+            }
+            catch ( Exception )
             {
-                int recordsCount = 0;
-                while ( csvFileStream.ReadLine() != null )
-                {
-                    ++recordsCount;
-                }
-                if ( recordsCount > 0 )
-                {
-                    recordsCount--;
-                }
-                ViewState[ViewStateKey.RecordCount] = recordsCount.ToString();
-                tdRecordCount.Description = recordsCount.ToString();
+                nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
+                nbPageError.Visible = true;
+                pnlLandingPage.Visible = false;
+                pnlFieldMappingPage.Visible = false;
+                return;
             }
 
             pnlFieldMappingPage.Visible = true;

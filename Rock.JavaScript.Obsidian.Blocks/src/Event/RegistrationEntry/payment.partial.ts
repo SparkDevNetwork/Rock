@@ -19,7 +19,7 @@ import { defineComponent, inject, ref } from "vue";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";

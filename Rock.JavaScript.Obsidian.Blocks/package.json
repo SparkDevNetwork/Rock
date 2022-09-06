@@ -3,7 +3,7 @@
   "description": "Project for all core blocks in Rock.",
   "scripts": {
     "build-fast": "node build/build-fast.js",
-    "build": "tsc --build . && rollup --config rollup.config.js && npm run copy && echo '' > dist/.buildstamp && echo DONE",
+    "build": "ts-node ../Rock.JavaScript.Obsidian/Build/obsidian-tsc.ts . && rollup --config rollup.config.js && npm run copy && echo '' > dist/.buildstamp && echo DONE",
     "copy": "copyfiles -u 2 \"dist/BlocksBundled/**/*\" \"../RockWeb/Obsidian/Blocks\"",
     "watch": "echo \"Watch mode does not currently work.\" && exit 1 && rollup --config rollup.config.js --watch",
     "clean": "rimraf dist",
@@ -13,6 +13,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.3",
     "@rollup/plugin-node-resolve": "^13.1.3",
+    "@types/node": "^14.14.7",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",
     "copyfiles": "^2.4.1",

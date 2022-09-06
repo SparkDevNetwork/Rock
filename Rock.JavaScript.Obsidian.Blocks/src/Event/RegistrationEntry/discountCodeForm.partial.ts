@@ -17,7 +17,7 @@
 
 import { defineComponent, inject } from "vue";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";

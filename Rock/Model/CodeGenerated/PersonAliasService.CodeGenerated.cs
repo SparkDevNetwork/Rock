@@ -1850,6 +1850,72 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAction>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceAction.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAction>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceAction.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceSchedule>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceSchedule.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceSchedule>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceSchedule.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceScheduleCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceScheduleCampus.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceScheduleCampus>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceScheduleCampus.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<LavaShortcode>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, LavaShortcode.FriendlyTypeName );

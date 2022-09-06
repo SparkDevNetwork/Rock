@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
         private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, PhoneNumber> _workPhoneNumbers = new Dictionary<int, PhoneNumber>();
         private List<int> _waitListOrder = null;
 
         #endregion
@@ -740,7 +741,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Set the campus
-                var lCampus = e.Row.FindControl( "lWaitlistCampus" ) as Literal;
+                var lCampus = e.Row.FindControl( CAMPUS_GRID_COLUMN_ID ) as Literal;
                 if ( lCampus != null && PersonCampusIds != null )
                 {
                     if ( registrant.PersonAlias != null )
@@ -766,14 +767,14 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
+                var lAddress = e.Row.FindControl( ADDRESS_GRID_COLUMN_ID ) as Literal;
                 if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
 
-                var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
+                var mobileField = e.Row.FindControl( MOBILE_PHONE_GRID_COLUMN_ID ) as Literal;
                 if ( mobileField != null )
                 {
                     var mobilePhoneNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
@@ -787,7 +788,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                var homePhoneField = e.Row.FindControl( "lWaitlistHomePhone" ) as Literal;
+                var homePhoneField = e.Row.FindControl( HOME_PHONE_GRID_COLUMN_ID ) as Literal;
                 if ( homePhoneField != null )
                 {
                     var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
@@ -798,6 +799,20 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                    }
+                }
+
+                var workPhoneField = e.Row.FindControl( WORK_PHONE_GRID_COLUMN_ID ) as Literal;
+                if ( workPhoneField != null )
+                {
+                    var workPhoneNumber = _workPhoneNumbers[registrant.PersonId.Value];
+                    if ( workPhoneNumber == null || workPhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        workPhoneField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        workPhoneField.Text = workPhoneNumber.IsUnlisted ? "Unlisted" : workPhoneNumber.NumberFormatted;
                     }
                 }
             }
@@ -924,6 +939,7 @@ namespace RockWeb.Blocks.Event
 
                     _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _workPhoneNumbers = GetPersonWorkPhoneLookup( rockContext, this.RegistrantFields, personIds );
 
                     bool preloadCampusValues = false;
                     var registrantAttributes = new List<AttributeCache>();

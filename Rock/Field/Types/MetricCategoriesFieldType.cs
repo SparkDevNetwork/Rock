@@ -56,25 +56,29 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( string.IsNullOrWhiteSpace( value ) )
             {
-                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+                return string.Empty;
+            }
 
-                var metricGuids = guidPairs.Select( a => a.MetricGuid );
+            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+            if ( !guidPairs.Any() )
+            {
+                return string.Empty;
+            }
 
-                using ( var rockContext = new RockContext() )
+            var metricGuids = guidPairs.Select( a => a.MetricGuid );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
+                if ( metrics.Any() )
                 {
-                    var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
-                    if ( metrics.Any() )
-                    {
-                        formattedValue = string.Join( ", ", from metric in metrics select metric.Title );
-                    }
+                    return string.Join( ", ", metrics.Select( m => m.Title ) );
                 }
             }
 
-            return formattedValue;
+            return string.Empty;
         }
 
         #endregion

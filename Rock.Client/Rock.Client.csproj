@@ -225,6 +225,11 @@
     <Compile Include="CodeGenerated\InteractionSession.cs" />
     <Compile Include="CodeGenerated\InteractionSessionLocation.cs" />
     <Compile Include="CodeGenerated\InteractionsImport.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperience.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperienceAction.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperienceAnswer.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperienceSchedule.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />

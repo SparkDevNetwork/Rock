@@ -33,7 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
-    <Content Include="Framework\Controls\alert.ts" />
+    <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
@@ -73,6 +73,7 @@
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\Crm\" />
+    <Folder Include="Framework\Enums\Event\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Core\" />
@@ -130,6 +131,15 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
+    <TypeScriptCompile Include="Build\obsidian-tsc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\sfc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\typescript.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\Controls\achievementTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assessmentTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
@@ -153,7 +163,13 @@
     <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\groupPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\mergeTemplatePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\metricCategoryPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\metricItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\pagePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\registrationTemplatePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepStatusPicker.ts" />
@@ -221,6 +237,8 @@
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\gender.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\slidingDateRangeType.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceApprovalStatus.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperiencePushNotificationType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\fieldFilterSourceType.d.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\fileField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\fileFieldComponents.ts" />
@@ -236,6 +254,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\followingEventType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\signatureDocumentTemplate.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\alert.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
@@ -351,6 +370,7 @@
     <TypeScriptCompile Include="Framework\Types\Utility\block.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\component.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\http.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Utility\support.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\fullscreen.ts" />
@@ -367,7 +387,6 @@
     <TypeScriptCompile Include="Framework\Utility\numberUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\stringUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\url.ts" />
-    <TypeScriptCompile Include="Framework\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\PageState\index.ts" />
     <TypeScriptCompile Include="Framework\PageState\state.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\achievementType.d.ts" />
@@ -610,6 +629,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionDeviceTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionSessionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactionSessionLocationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceAnswerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleCampusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\lavaShortcodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\layoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\locationBag.d.ts" />
@@ -721,7 +745,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\connectionRequestPickerGetChildrenOptionsBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewsPickerGetDataViewsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListAddEntityTagOptionsBag.d.ts" />
@@ -738,14 +762,19 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingSetFollowingOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricCategoryPickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricItemPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetPageNameOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetPageRoutesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetSelectedPageHierarchyOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationTemplatePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepStatusPickerGetStepStatusesOptionsBag.d.ts" />

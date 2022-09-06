@@ -254,6 +254,11 @@
     <Compile Include="Entities\InteractionDeviceTypeBag.cs" />
     <Compile Include="Entities\InteractionSessionBag.cs" />
     <Compile Include="Entities\InteractionSessionLocationBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceActionBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceAnswerBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceScheduleBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceScheduleCampusBag.cs" />
     <Compile Include="Entities\LavaShortcodeBag.cs" />
     <Compile Include="Entities\LayoutBag.cs" />
     <Compile Include="Entities\LocationBag.cs" />
@@ -359,8 +364,13 @@
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationTemplatePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MergeTemplatePickerGetMergeTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MetricItemPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MetricCategoryPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PagePickerGetPageRoutesOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageRouteValueBag.cs" />
     <Compile Include="Rest\Controls\PagePickerGetPageNameOptionsBag.cs" />

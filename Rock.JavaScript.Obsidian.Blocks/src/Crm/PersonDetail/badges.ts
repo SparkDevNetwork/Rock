@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, nextTick, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";

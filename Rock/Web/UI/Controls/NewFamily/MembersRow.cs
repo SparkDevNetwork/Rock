@@ -519,6 +519,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
                 writer.AddAttribute( "data-label", "Role" );
+                writer.AddAttribute( "class", "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblRole.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -535,6 +536,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.AddAttribute( "data-label", "Name" );
+                writer.AddAttribute( "class", "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbFirstName.IsValid ? "" : " has-error" ) );
@@ -574,11 +576,13 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.AddAttribute( "data-label", "Connection Status" );
+                writer.AddAttribute( "class", "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _dvpConnectionStatus.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( "data-label", "Gender" );
+                writer.AddAttribute( "class", "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblGender.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

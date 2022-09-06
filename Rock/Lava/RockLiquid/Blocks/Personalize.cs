@@ -82,7 +82,7 @@ namespace Rock.Lava.RockLiquid.Blocks
         private string _attributesMarkup;
         private bool _renderErrors = true;
         private StringBuilder _matchContent = new StringBuilder();
-        private StringBuilder _elseContent = new StringBuilder();
+        private StringBuilder _otherwiseContent = new StringBuilder();
         LavaElementAttributes _settings = new LavaElementAttributes();
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.Lava.RockLiquid.Blocks
         {
             _attributesMarkup = markup;
             var endTagFound = false;
-            var elseFound = false;
+            var otherwiseFound = false;
 
             var startTag = $@"{{\%\s*{ TagSourceName }\s*\%}}";
             var endTag = $@"{{\%\s*end{ TagSourceName }\s*\%}}";
@@ -104,7 +104,7 @@ namespace Rock.Lava.RockLiquid.Blocks
 
             Regex regExStart = new Regex( startTag );
             Regex regExEnd = new Regex( endTag );
-            Regex regExElse = new Regex( $@"{{\%\s*else\s*\%}}" );
+            Regex regExOtherwise = new Regex( $@"{{\%\s*otherwise\s*\%}}" );
 
             NodeList = NodeList ?? new List<object>();
             NodeList.Clear();
@@ -114,12 +114,12 @@ namespace Rock.Lava.RockLiquid.Blocks
             while ( ( token = tokens.Shift() ) != null )
             {
                 appendToken = false;
-                var elseTagMatch = regExElse.Match( token );
-                if ( elseTagMatch.Success )
+                var otherwiseTagMatch = regExOtherwise.Match( token );
+                if ( otherwiseTagMatch.Success )
                 {
                     if ( childTags == 0 )
                     {
-                        elseFound = true;
+                        otherwiseFound = true;
                     }
                     else
                     {
@@ -159,9 +159,9 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
                 if ( appendToken )
                 {
-                    if ( elseFound )
+                    if ( otherwiseFound )
                     {
-                        _elseContent.Append( token );
+                        _otherwiseContent.Append( token );
                     }
                     else
                     {
@@ -190,7 +190,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 var lavaContext = new RockLiquidRenderContext( context );
                 var showContent = ShowContentForCurrentRequest( lavaContext );
 
-                var content = showContent ? _matchContent.ToString() : _elseContent.ToString();
+                var content = showContent ? _matchContent.ToString() : _otherwiseContent.ToString();
                 if ( !string.IsNullOrEmpty( content ) )
                 {
                     var render = LavaService.RenderTemplate( content );
@@ -292,7 +292,13 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
                 else
                 {
-                    person = LavaHelper.GetCurrentPerson( context );
+                    // If the Lava context contains a Person variable, prefer it to the CurrentPerson.
+                    // This allows the block to be used in processes where there is no active user.
+                    person = context.GetMergeField( "Person" ) as Person;
+                    if ( person == null )
+                    {
+                        person = LavaHelper.GetCurrentPerson( context );
+                    }
                 }
 
                 List<int> personSegmentIdList;
