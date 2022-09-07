@@ -141,6 +141,11 @@
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractiveExperienceScheduleCampusController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractiveExperienceSchedulesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractiveExperiencesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RequestFiltersController.CodeGenerated.cs" />

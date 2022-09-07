@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1337,7 +1337,7 @@ namespace Rock.MyWell
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = transactionId;
+                transaction.TransactionCode = response.Data.Id;
                 errorMessage = string.Empty;
                 return transaction;
             }

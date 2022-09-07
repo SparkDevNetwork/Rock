@@ -202,6 +202,36 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        public void PersonalizeBlock_WithPersonInContext_UsesContextPersonNotCurrentVisitor()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Hi Ted!
+{% endpersonalize %}
+";
+
+            var expectedOutputBill = "";
+            var expectedOutputTed = "Hi Ted!";
+
+            // Verify that if Bill is the current user, the content is not rendered.
+            // Bill does not match the filter "IN_SMALL_GROUP".
+            AssertOutputForPersonAndRequest( input, expectedOutputBill, TestGuids.TestPeople.BillMarble );
+
+            var mergeValues = new LavaDataDictionary();
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var person = personService.GetByGuids( new List<Guid> { TestGuids.TestPeople.TedDecker.AsGuid() } ).FirstOrDefault();
+
+            mergeValues["Person"] = person;
+
+            var options = new LavaTestRenderOptions() { MergeFields = mergeValues, IgnoreWhiteSpace = true };
+
+            // Verify that if Bill is the current user, the content is rendered when Ted is the context Person.
+            // Bill does not match the filter "IN_SMALL_GROUP", but Ted does.
+            AssertOutputForPersonAndRequest( input, expectedOutputTed, TestGuids.TestPeople.BillMarble, string.Empty, options );
+        }
+
+        [TestMethod]
         public void PersonalizeBlock_WithNoParameters_IsHidden()
         {
             var input = @"
@@ -514,12 +544,12 @@ Segment Matches=ALL_MEN, Filter Matches=QUERY_2, Visible=True.
         }
 
         [TestMethod]
-        public void PersonalizeBlock_WithElseClauseAndPositiveMatch_ShowsContentForMatch()
+        public void PersonalizeBlock_WithOtherwiseClauseAndPositiveMatch_ShowsContentForMatch()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -531,12 +561,12 @@ No match!
         }
 
         [TestMethod]
-        public void PersonalizeBlock_WithElseClauseAndNegativeMatch_ShowsContentForNoMatch()
+        public void PersonalizeBlock_WithOtherwiseClauseAndNegativeMatch_ShowsContentForNoMatch()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -553,10 +583,10 @@ No match!
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
     {% assign isTrue = true %}
-    {% if isTrue %}Lava template rendered.{% endif %}
+    {% if isTrue %}Visible content.{% else %}Hidden content.{% endif %}
 {% endpersonalize %}
 ";
-            var expectedOutput = @"Lava template rendered.";
+            var expectedOutput = @"Visible content.";
 
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
@@ -564,24 +594,33 @@ No match!
         }
 
         [TestMethod]
-        [Ignore("This extended use-case is not yet implemented.")]
-        public void PersonalizeBlock_WithElseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
+        public void PersonalizeBlock_WithOtherwiseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
-    {% assign isTrue = true %}
+    {% assign isTrue = false %}
     {% if isTrue %}
-Match!
+       Hidden content.
+    {% else %}
+        Query 1 Matched!
     {% endif %}
-{% else %}
-No match!
+{% otherwise %}
+    {% assign isTrue = false %}
+    {% if isTrue %}
+       Hidden content.
+    {% else %}
+        Query 1 Not Matched!
+    {% endif %}
 {% endpersonalize %}
 ";
-            var expectedOutput = @"Match!";
 
             AssertOutputForPersonAndRequest( input,
-                expectedOutput,
+                "Query 1 Matched!",
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true" );
+
+            AssertOutputForPersonAndRequest( input,
+                "Query 1 Not Matched!",
+                inputUrl: "http://rock.rocksolidchurchdemo.com" );
         }
 
         #endregion
@@ -716,12 +755,22 @@ No match!
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true&parameter2=true"
                 );
         }
+
         #endregion
 
-        private void AssertOutputForPersonAndRequest( string inputTemplate, string expectedOutput, string personGuid = "", string inputUrl = "" )
+        private void AssertOutputForPersonAndRequest( string inputTemplate, string expectedOutput, string personGuid = "", string inputUrl = "", LavaTestRenderOptions options = null )
         {
-            var mergeValues = new LavaDataDictionary();
+            if ( options == null )
+            {
+                options = new LavaTestRenderOptions();
+            }
 
+            if ( options.MergeFields == null )
+            {
+                options.MergeFields = new LavaDataDictionary();
+            }
+
+            var mergeValues = options.MergeFields;
             if ( !string.IsNullOrWhiteSpace( personGuid ) )
             {
                 var rockContext = new RockContext();
@@ -732,7 +781,7 @@ No match!
                 mergeValues["CurrentPerson"] = person;
             }
 
-            var options = new LavaTestRenderOptions() { MergeFields = mergeValues, IgnoreWhiteSpace = true };
+            options = new LavaTestRenderOptions() { MergeFields = mergeValues, IgnoreWhiteSpace = true };
 
             if ( !string.IsNullOrWhiteSpace( inputUrl ) )
             {

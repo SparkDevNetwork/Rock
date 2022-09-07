@@ -15,6 +15,7 @@ export * as Guid from "./guid";
 export * as Http from "./http";
 export * as Linq from "./linq";
 export * as NumberUtils from "./numberUtils";
+export * as ObjectUtils from "./objectUtils";
 export * as Page from "./page";
 export * as Popover from "./popover";
 export * as PromiseUtils from "./promiseUtils";

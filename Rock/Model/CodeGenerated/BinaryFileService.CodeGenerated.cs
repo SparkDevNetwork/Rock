@@ -146,6 +146,36 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.ActionBackgroundImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.AudienceBackgroundImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.NoActionHeaderImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.PhotoBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperience>( Context ).Queryable().Any( a => a.WelcomeHeaderImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, InteractiveExperience.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );

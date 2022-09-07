@@ -59,19 +59,24 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string formattedValue = privateValue;
-
-            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            if ( privateValue.IsNullOrWhiteSpace() )
             {
-                var guids = privateValue.SplitDelimitedValues();
-                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
-                if ( eventCalendars.Any() )
-                {
-                    formattedValue = string.Join( ", ", from eventCalendar in eventCalendars select eventCalendar.Name );
-                }
+                return privateValue;
             }
 
-            return formattedValue;
+            var guids = privateValue.SplitDelimitedValues() ?? new string[0];
+            if ( !guids.Any())
+            {
+                return privateValue;
+            }
+
+            var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) ).Where( g => g != null ).ToList();
+            if ( eventCalendars.Any() )
+            {
+                return string.Join( ", ", eventCalendars.Select( ec => ec.Name ) );
+            }
+
+            return privateValue;
         }
 
         #endregion

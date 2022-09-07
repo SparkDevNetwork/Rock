@@ -44,9 +44,9 @@ namespace Rock.Jobs
     [Description( "General job to clean up various areas of Rock." )]
 
     [IntegerField( "Days to Keep Exceptions in Log",
-        Description = "The number of days to keep exceptions in the exception log (default is 14 days.)",
+        Description = "The number of days to keep exceptions in the exception log (default is 30 days.)",
         IsRequired = false,
-        DefaultIntegerValue = 14,
+        DefaultIntegerValue = 30,
         Category = "General",
         Order = 1,
         Key = AttributeKey.DaysKeepExceptions )]

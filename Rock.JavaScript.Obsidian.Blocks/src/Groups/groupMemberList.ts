@@ -23,7 +23,7 @@ import GridColumn from "@Obsidian/Controls/gridColumn";
 import GridSelectColumn from "@Obsidian/Controls/gridSelectColumn";
 import GridProfileLinkColumn from "@Obsidian/Controls/gridProfileLinkColumn";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 
 type GroupMemberViewModel = {
     fullName: string;

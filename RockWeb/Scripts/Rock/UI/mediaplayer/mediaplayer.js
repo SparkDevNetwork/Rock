@@ -364,7 +364,8 @@ var Rock;
                     RelatedEntityTypeId: this.options.relatedEntityTypeId,
                     RelatedEntityId: this.options.relatedEntityId,
                     SessionGuid: this.options.sessionGuid,
-                    OriginalUrl: window.location.href
+                    OriginalUrl: window.location.href,
+                    PageId: Rock.settings.get("pageId")
                 };
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;

@@ -97,7 +97,7 @@ namespace Rock.Slingshot
                 bool isEmailValid = EmailAddressFieldValidator.Validate( person.Email, allowMultipleAddresses: false, allowLava: false ) == EmailFieldValidationResultSpecifier.Valid;
                 if ( !isEmailValid )
                 {
-                    parserErrors.Add( $"Email Address {person.Email} could not be read" );
+                    parserErrors.Add( $"Email Address {person.Email} is invalid" );
                     person.Email = string.Empty;
                 }
             }
@@ -164,7 +164,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Birthdate {birthdateString} could not be read" );
+                    parserErrors.Add( $"Birthdate {birthdateString} is invalid" );
                 }
             }
 
@@ -178,7 +178,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Anniversary Date {anniversaryDateString} could not be read" );
+                    parserErrors.Add( $"Anniversary Date {anniversaryDateString} is invalid" );
                 }
             }
 
@@ -265,7 +265,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Created Date Time {createdDateTimeString} could not be read" );
+                    parserErrors.Add( $"Created Date Time {createdDateTimeString} is invalid." );
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Modified Date Time {modifiedDateTimeString} could not be read" );
+                    parserErrors.Add( $"Modified Date Time {modifiedDateTimeString} is invalid." );
                 }
             }
 

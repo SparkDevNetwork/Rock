@@ -161,6 +161,19 @@ namespace Rock.Model
                     {
                         registrationSession = createSession();
 
+                        // If the session didn't exist then oldRegistrationCount
+                        // was not set. If there is an existing registration tied
+                        // to the new session, then get the count of registered
+                        // previously people from that.
+                        if ( registrationSession.RegistrationId.HasValue )
+                        {
+                            oldRegistrationCount = new RegistrationRegistrantService( rockContext )
+                                .Queryable()
+                                .Where( a => a.RegistrationId == registrationSession.RegistrationId.Value
+                                    && !a.Registration.IsTemporary )
+                                .Count();
+                        }
+
                         registrationSessionService.Add( registrationSession );
                     }
                     else

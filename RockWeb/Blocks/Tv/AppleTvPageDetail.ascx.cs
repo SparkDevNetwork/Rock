@@ -267,7 +267,18 @@ namespace RockWeb.Blocks.Tv
 
                     ceTvml.Text = pageResponse.Content;
                     tbPageName.Text = page.InternalName;
-                    hlblPageGuid.Text = page.Guid.ToString();
+                    //
+                    // Configure Copy Page Guid
+                    //
+                    RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+                    string script = string.Format( @"
+    new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+                    ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+
+                    btnCopyToClipboard.Attributes["data-clipboard-text"] = page.Guid.ToString();
+                    btnCopyToClipboard.Attributes["title"] = string.Format( "Copy the Guid {0} to the clipboard.", page.Guid.ToString() );
 
                     cbShowInMenu.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
                 }

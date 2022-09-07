@@ -32,7 +32,7 @@ namespace Rock.Slingshot
             int personId = csvEntryLookup[csvHeaderMapper[CSVHeaders.Id]].ToIntSafe();
 
             IEnumerable<string> rockPersonAttributeKeys = AttributeCache.GetPersonAttributes()
-                .Select( a => a.Name );
+                .Select( a => a.Key );
 
             foreach ( var rockPersonAttributeKey in rockPersonAttributeKeys )
             {
@@ -44,6 +44,12 @@ namespace Rock.Slingshot
                 string attributeValue = csvEntryLookup
                     .GetValueOrNull( csvColumnRockAttributeKey )
                     .ToStringSafe();
+
+                // Skip empty values (otherwise it will overwrite existing values with empty string).
+                if ( attributeValue.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
 
                 var personAttributeValue = new SlingshotCore.Model.PersonAttributeValue
                 {

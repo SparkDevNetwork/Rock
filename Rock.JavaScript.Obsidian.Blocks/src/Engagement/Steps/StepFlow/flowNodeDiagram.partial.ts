@@ -42,7 +42,8 @@ const defaultSettings: FlowNodeDiagramSettingsFull = {
     nodeWidth: 12,
     nodeVerticalSpacing: 12,
     chartWidth: 1200,
-    chartHeight: 900
+    chartHeight: 900,
+    legendHtml: ""
 };
 
 function round(num: number): number {
@@ -132,8 +133,8 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
 
     template: `
 <g v-if="levelNumber == 1">
-    <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" dx="-3" font-size="12" text-anchor="end">
-        {{ node.name }}
+    <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" font-size="12" text-anchor="end">
+        {{ node.order }}
     </text>
 </g>
 <g v-if="levelNumber > 1">
@@ -185,6 +186,12 @@ export default defineComponent({
         flowEdges: {
             type: Array as PropType<FlowNodeDiagramEdgeBag[]>,
             default: () => []
+        },
+
+        // Generated HTML string for the chart legend
+        legendHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         // Settings that control the sizes of different items in the diagram.
@@ -437,6 +444,28 @@ export default defineComponent({
 .step-flow-svg .edge:hover {
     fill: rgba(170, 170, 170, 0.8);
 }
+.flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto 0;
+    gap: 12px;
+    width: 500px;
+    max-width: 100%;
+}
+.flow-key {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.1;
+}
+.flow-key .color {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
 </v-style>
 
 <div class="flow-node-diagram-container">
@@ -451,6 +480,8 @@ export default defineComponent({
             @showTooltip="showTooltip"
         />
     </svg>
+
+    <div class="step-flow-legend" v-html="settings.legendHtml" />
 
     <transition name="fade" appear>
         <div v-if="isLoading" class="loadingContainer">

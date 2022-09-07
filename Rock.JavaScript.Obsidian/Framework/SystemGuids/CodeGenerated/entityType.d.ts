@@ -697,4 +697,14 @@ export const enum EntityType {
     WorkflowActivityType = "E5FBDBA2-9539-4679-B948-2E06C1BB1E3F",
     /** The EntityType Guid for Rock.Model.WorkflowTrigger  */
     WorkflowTrigger = "3781C82A-7F40-4D88-B3DB-1B9589D73D3D",
+    /** The EntityType Guid for Rock.Model.InteractiveExperience  */
+    InteractiveExperience = "3D90E693-476E-4DFC-B958-A28D1DD370BF",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceAction  */
+    InteractiveExperienceAction = "8635E7E7-3576-47FF-92DE-30A69EB5D011",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceAnswer  */
+    InteractiveExperienceAnswer = "D11DA9D4-8887-4EC2-B396-78556926DE89",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceSchedule  */
+    InteractiveExperienceSchedule = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus  */
+    InteractiveExperienceScheduleCampus = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
 }

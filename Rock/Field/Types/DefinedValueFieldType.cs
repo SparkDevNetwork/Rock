@@ -419,8 +419,11 @@ namespace Rock.Field.Types
                 if ( cblSelectableValues != null )
                 {
                     var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
 
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where(v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
                     cblSelectableValues.Visible = definedValues?.Any() ?? false;
@@ -495,7 +498,11 @@ namespace Rock.Field.Types
 
                 if ( cblSelectableValues != null )
                 {
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
+
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
 

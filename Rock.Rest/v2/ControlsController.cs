@@ -26,6 +26,7 @@ using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Extension;
 using Rock.Financial;
 using Rock.Model;
@@ -488,6 +489,146 @@ namespace Rock.Rest.v2
             var componentsList = GetComponentListItems( options.ContainerType );
 
             return Ok( componentsList );
+        }
+
+        #endregion
+
+        #region Connection Request Picker
+
+        /// <summary>
+        /// Gets the data views and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of data views.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5316914b-cf47-4dac-9e10-71767fdf1eb9" )]
+        public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                string service = null;
+
+                /*
+                 * Determine what type of resource the GUID we received is so we know what types of 
+                 * children to query for.
+                 */
+                if (options.ParentGuid == null)
+                {
+                    // Get the root Connection Types
+                    service = "type";
+                }
+                else
+                {
+                    var conOpp = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.Guid == options.ParentGuid )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    if (conOpp.Any())
+                    {
+                        // Get the Connection Requests
+                        service = "request";
+                    }
+                    else
+                    {
+                        var conType = new ConnectionTypeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => t.Guid == options.ParentGuid )
+                            .ToList()
+                            .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true );
+
+                        if (conType.Any() )
+                        {
+                            // Get the Connection Opportunities
+                            service = "opportunity";
+                        }
+                    }
+                }
+
+                /*
+                 * Fetch the children
+                 */
+                var list = new List<TreeItemBag>();
+
+                if (service == "type")
+                {
+                    // Get the Connection Types
+                    var connectionTypes = new ConnectionTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .OrderBy( ct => ct.Name )
+                        .ToList()
+                        .Where( ct => ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true );
+
+                    foreach ( var connectionType in connectionTypes)
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = connectionType.Guid.ToString();
+                        item.Text = connectionType.Name;
+                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
+                        item.IconCssClass = connectionType.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if (service == "opportunity")
+                {
+                    // Get the Connection Opportunities
+                    var opportunities = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
+                        .OrderBy( op => op.Name )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var opportunity in opportunities )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = opportunity.Guid.ToString();
+                        item.Text = opportunity.Name;
+                        item.HasChildren = opportunity.ConnectionRequests
+                            .Any( r =>
+                                r.ConnectionState == ConnectionState.Active ||
+                                r.ConnectionState == ConnectionState.FutureFollowUp );
+                        item.IconCssClass = opportunity.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if ( service == "request" )
+                {
+                    var requests = new ConnectionRequestService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
+                            r.PersonAlias != null &&
+                            r.PersonAlias.Person != null )
+                        .OrderBy( r => r.PersonAlias.Person.LastName )
+                        .ThenBy( r => r.PersonAlias.Person.NickName )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var request in requests )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = request.Guid.ToString();
+                        item.Text = request.PersonAlias.Person.FullName;
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-user";
+                        list.Add( item );
+                    }
+                }
+                else
+                {
+                    // service type wasn't set, so we don't know where to look
+                    return NotFound();
+                }
+
+                return Ok( list );
+            }
         }
 
         #endregion
@@ -1350,6 +1491,189 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
+        public IHttpActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService(rockContext);
+
+                List<int> includedGroupTypeIds = options.IncludedGroupTypeGuids
+                    .Select( ( guid ) =>
+                    {
+                        var gt = GroupTypeCache.Get( guid );
+
+                        if (gt != null)
+                        {
+                            return gt.Id;
+                        }
+
+                        return 0;
+                    } )
+                    .ToList();
+
+                // if specific group types are specified, show the groups regardless of ShowInNavigation
+                bool limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+                Rock.Model.Group parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
+                int id = parentGroup == null ? 0 : parentGroup.Id;
+
+                Rock.Model.Group rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
+                int rootGroupId = rootGroup == null ? 0 : rootGroup.Id;
+
+                var qry = groupService
+                    .GetChildren( id, rootGroupId, false, includedGroupTypeIds, new List<int>(), options.IncludeInactiveGroups, limitToShowInNavigation, 0, false, false )
+                    .AsNoTracking();
+
+                List<Rock.Model.Group> groupList = new List<Rock.Model.Group>();
+                List<TreeItemBag> groupNameList = new List<TreeItemBag>();
+
+                var person = GetPerson();
+
+                if (parentGroup == null)
+                {
+                    parentGroup = rootGroup;
+                }
+
+                List<int> groupIdsWithSchedulingEnabledWithAncestors = null;
+                List<int> groupIdsWithRSVPEnabledWithAncestors = null;
+
+                var listOfChildGroups = qry.ToList().OrderBy( g => g.Order ).ThenBy( g => g.Name ).ToList();
+                if ( listOfChildGroups.Any() )
+                {
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        groupIdsWithSchedulingEnabledWithAncestors = groupService.GetGroupIdsWithSchedulingEnabledWithAncestors();
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        groupIdsWithRSVPEnabledWithAncestors = groupService.GetGroupIdsWithRSVPEnabledWithAncestors();
+                    }
+                }
+
+                foreach ( var group in listOfChildGroups )
+                {
+                    // we already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth
+                    group.ParentGroup = parentGroup;
+
+                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+                    //// Before checking Auth, filter based on the limitToSchedulingEnabled and limitToRSVPEnabled option.
+                    //// Auth takes longer to check, so if we can rule the group out sooner, that will save a bunch of time
+
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.IsSchedulingEnabled == true )
+                        {
+                            // if this group's group type has scheduling enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            // if this group's group type does not have scheduling enabled, we will need to include it if any of its children
+                            // have scheduling enabled
+
+                            if ( groupIdsWithSchedulingEnabledWithAncestors != null )
+                            {
+                                bool hasChildScheduledEnabledGroups = groupIdsWithSchedulingEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildScheduledEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.EnableRSVP == true )
+                        {
+                            // if this group's group type has RSVP enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            if ( groupIdsWithRSVPEnabledWithAncestors != null )
+                            {
+                                bool hasChildRSVPEnabledGroups = groupIdsWithRSVPEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildRSVPEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    bool groupIsAuthorized = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+                    if ( !groupIsAuthorized )
+                    {
+                        continue;
+                    }
+
+                    groupList.Add( group );
+                    var treeViewItem = new TreeItemBag();
+                    treeViewItem.Value = group.Guid.ToString();
+                    treeViewItem.Text = group.Name;
+                    treeViewItem.IsActive = group.IsActive;
+
+                    // if there a IconCssClass is assigned, use that as the Icon.
+                    treeViewItem.IconCssClass = groupType?.IconCssClass;
+
+                    groupNameList.Add( treeViewItem );
+                }
+
+                // try to quickly figure out which items have Children
+                List<int> resultIds = groupList.Select( a => a.Id ).ToList();
+                var qryHasChildren = groupService.Queryable().AsNoTracking()
+                    .Where( g =>
+                        g.ParentGroupId.HasValue &&
+                        resultIds.Contains( g.ParentGroupId.Value ) );
+
+                if ( includedGroupTypeIds.Any() )
+                {
+                    qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIds.Contains( a.GroupTypeId ) );
+                }
+
+                var qryHasChildrenList = qryHasChildren
+                    .Select( g => g.ParentGroup.Guid )
+                    .Distinct()
+                    .ToList();
+
+                foreach ( var g in groupNameList )
+                {
+                    Guid groupGuid = g.Value.AsGuid();
+                    g.HasChildren = qryHasChildrenList.Any( a => a == groupGuid );
+                }
+
+                return Ok( groupNameList );
+            }
+        }
+
+        #endregion
+
         #region Interaction Channel Picker
 
         /// <summary>
@@ -1541,6 +1865,191 @@ namespace Rock.Rest.v2
 
                 return Ok( locationNameList );
             }
+        }
+
+        #endregion
+
+        #region Merge Template Picker
+
+        /// <summary>
+        /// Gets the merge templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which merge templates to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of merge templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeTemplatePickerGetMergeTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2e486da8-927f-4474-8ba8-00a68d261403" )]
+        public IHttpActionResult MergeTemplatePickerGetMergeTemplates( [FromBody] MergeTemplatePickerGetMergeTemplatesOptionsBag options )
+        {
+            List<Guid> include = null;
+            List<Guid> exclude = null;
+
+            if (options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Global)
+            {
+                exclude = new List<Guid>();
+                exclude.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+            else if ( options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal )
+            {
+                include = new List<Guid>();
+                include.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MergeTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = include,
+                    ExcludeCategoryGuids = exclude,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Metric Category Picker
+
+        /// <summary>
+        /// Gets the metric categories and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric categories to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric categories.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricCategoryPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "92a11376-6bcd-4299-a54d-946cbde7566b" )]
+        public IHttpActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Metric Item Picker
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricItemPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c8e8f26e-a7cd-445a-8d72-6d4484a8ee59" )]
+        public IHttpActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = GetMetricItemPickerChildren( options, rockContext );
+
+                if (items == null || items.Count == 0)
+                {
+                    return NotFound();
+                }
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options given.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <param name="rockContext">Context for performing DB queries.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        private List<TreeItemBag> GetMetricItemPickerChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options, RockContext rockContext )
+        {
+            var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var queryOptions = new CategoryItemTreeOptions
+            {
+                ParentGuid = options.ParentGuid,
+                GetCategorizedItems = options.ParentGuid.HasValue,
+                EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                IncludeUnnamedEntityItems = true,
+                IncludeCategoriesWithoutChildren = false,
+                DefaultIconCssClass = options.DefaultIconCssClass,
+                LazyLoad = true,
+                SecurityGrant = grant,
+                IncludeCategoryGuids = options.IncludeCategoryGuids
+            };
+
+            var metricCategories = clientService.GetCategorizedTreeItems( queryOptions );
+            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var convertedMetrics = new List<TreeItemBag>();
+
+            // Translate from MetricCategory to Metric.
+            foreach ( var categoryItem in metricCategories )
+            {
+                if ( !categoryItem.IsFolder )
+                {
+                    // Load the MetricCategory.
+                    var metricCategory = metricCategoryService.Get( categoryItem.Value.AsGuid() );
+                    if ( metricCategory != null )
+                    {
+                        // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
+                        categoryItem.Value = metricCategory.Guid.ToString();
+                    }
+                }
+
+                if (categoryItem.HasChildren)
+                {
+                    categoryItem.Children = new List<TreeItemBag>();
+                    categoryItem.Children.AddRange( GetMetricItemPickerChildren( new MetricItemPickerGetChildrenOptionsBag
+                    {
+                        ParentGuid = categoryItem.Value.AsGuid(),
+                        DefaultIconCssClass = options.DefaultIconCssClass,
+                        SecurityGrantToken = options.SecurityGrantToken,
+                        IncludeCategoryGuids = options.IncludeCategoryGuids
+                    }, rockContext ) );
+                }
+
+
+                convertedMetrics.Add( categoryItem );
+            }
+
+            return convertedMetrics;
         }
 
         #endregion
@@ -1747,6 +2256,44 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Registration Template Picker
+
+        /// <summary>
+        /// Gets the registration templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which registration templates to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of registration templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationTemplatePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "41eac873-20f3-4456-9fb4-746a1363807e" )]
+        public IHttpActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<RegistrationTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Remote Auths Picker
 
         /// <summary>
@@ -1776,6 +2323,47 @@ namespace Rock.Rest.v2
             }
 
             return Ok( items );
+        }
+
+        #endregion
+
+        #region Report Picker
+
+        /// <summary>
+        /// Gets the reports and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which reports to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of reports.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReportPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
+        public IHttpActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Report>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
+                    ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
+                    ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get(options.EntityTypeGuid.Value).Id.ToString() : "",
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
         }
 
         #endregion
@@ -1943,6 +2531,45 @@ namespace Rock.Rest.v2
                     Detail = "The account has been saved for future use",
                     IsSuccess = true
                 };
+            }
+        }
+
+        #endregion
+
+        #region Schedule Picker
+
+        /// <summary>
+        /// Gets the schedules and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which schedules to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of schedules.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SchedulePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
+        public IHttpActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Schedule>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeInactiveItems = options.IncludeInactiveItems,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
             }
         }
 

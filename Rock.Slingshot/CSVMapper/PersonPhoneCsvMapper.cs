@@ -49,7 +49,10 @@ namespace Rock.Slingshot
                 var isSMSEnabledColumn = csvHeaderMapper.GetValueOrNull( CSVHeaders.IsSMSEnabled );
                 if ( isSMSEnabledColumn != null)
                 {
-                    Boolean.TryParse( csvEntryLookup[isSMSEnabledColumn].ToStringSafe(), out isSMSEnabled );
+                    if( !Boolean.TryParse( csvEntryLookup[isSMSEnabledColumn].ToStringSafe(), out isSMSEnabled ) )
+                    {
+                        parserErrors.Add( $"Is SMS Enabled {csvEntryLookup[isSMSEnabledColumn]} is invalid defaulting to {isSMSEnabled}" );
+                    }
                 }
 
                 var personMobilePhone = new SlingshotCore.Model.PersonPhone

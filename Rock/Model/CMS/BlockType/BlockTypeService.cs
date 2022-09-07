@@ -181,7 +181,7 @@ namespace Rock.Model
                             // Update Name, Category, and Description based on block's attribute definitions
                             blockType.Name = Reflection.GetDisplayName( type ) ?? string.Empty;
 
-                            var blockTypeGuidFromAttribute = type.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>()?.Guid;
+                            var blockTypeGuidFromAttribute = type.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>( inherit: false )?.Guid;
                             if ( blockTypeGuidFromAttribute != null && blockType.Guid != blockTypeGuidFromAttribute.Value )
                             {
                                 blockType.Guid = blockTypeGuidFromAttribute.Value;
@@ -330,7 +330,7 @@ namespace Rock.Model
                             blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
                             blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
 
-                            var blockTypeGuidFromAttribute = blockCompiledType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>()?.Guid;
+                            var blockTypeGuidFromAttribute = blockCompiledType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>( inherit: false )?.Guid;
                             if ( blockTypeGuidFromAttribute != null && blockType.Guid != blockTypeGuidFromAttribute.Value )
                             {
                                 blockType.Guid = blockTypeGuidFromAttribute.Value;

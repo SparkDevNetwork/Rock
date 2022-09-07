@@ -61,7 +61,7 @@ namespace Rock.Tests.UnitTests.Lava
         public static void Initialize( TestContext context )
         {
             // Set the test timezone.
-            LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+            LavaTestHelper.SetRockDateTimeToUtcPositiveTimezone();
 
             // Initialize the test calendar data.
             _tzId = RockDateTime.OrgTimeZoneInfo.Id;
@@ -397,7 +397,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Date_WithDateTimeLocalKindAsInput_IsProcessedAsRockTime()
         {
-            LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+            LavaTestHelper.SetRockDateTimeToUtcPositiveTimezone();
 
             // Get a time of 10:00am in the Rock timezone.
             var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
@@ -686,7 +686,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.SetRockDateTimeToDaylightSavingTimezone();
 
-            // Get a date that occurs within daylight saving time for the Central Standard Time timezone.
+            // Get a date that occurs within daylight saving time for this timezone.
             var testDate = new DateTime( 2022, 9, 1, 10, 0, 0 );
             try
             {
@@ -749,25 +749,104 @@ namespace Rock.Tests.UnitTests.Lava
             } );
         }
 
+        private void VerifyDailyScheduleNextOccurrenceFromStartDate( DateTime firstEventStartDateTime, TimeSpan eventDuration, DateTime asAtDateTime, DateTime expectedNextDateTime )
+        {
+            // Verify that all dates are expressed as Kind=Unspecified. This is to ensure that the caller has intentionally expressed these parameters as calendar dates,
+            // rather than specific points in time. 
+            Assert.That.IsTrue( asAtDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+            Assert.That.IsTrue( expectedNextDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+
+            // Create a schedule with the specified parameters and verify the DatesFromICal filter output.
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( firstEventStartDateTime,
+                eventDuration: eventDuration );
+
+            VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
+                new List<DateTimeOffset> { expectedNextDateTime },
+                $"1,'startdatetime','{asAtDateTime}'" );
+        }
+
         /// <summary>
         /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
         /// </summary>
         [TestMethod]
         public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
         {
-            // Create a new schedule starting at 11am today Rock time.
-            var now = RockDateTime.Now;
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                // Create a new schedule starting at 11am today Rock time.
+                var now = RockDateTime.Now;
+            var startDateTime = LavaDateTime.NewDateTime( now.Year, now.Month, now.Day, 22, 0, 0 );
 
-            var startDateTime = LavaDateTime.NewDateTimeOffset( now.Year, now.Month, now.Day, 11, 0, 0 );
+                var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
+                    eventDuration: new TimeSpan( 1, 0, 0 ) );
 
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
-                endDate: null,
-                eventDuration: new TimeSpan( 1, 0, 0 ),
-                null );
+                VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
+                    new List<DateTimeOffset> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
+                    $"3,'','{startDateTime.Date:u}'" );
+            } );
+        }
 
-            VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
-                new List<DateTimeOffset> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
-                $"3,'','{startDateTime.Date:u}'" );
+        [TestMethod]
+        public void DatesFromICal_DailyEventWithPastOccurrenceOnSameDay_ReturnsNextDayAsFirstDate()
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                var eventDuration = new TimeSpan( 1, 0, 0 );
+
+            // Create a schedule starting on 2020-06-01 04:00am for the current Rock timezone.
+            // The scheduled event has a duration of 1 hour.
+            // If we retrieve the occurrences for the schedule at an effective date of 2020-06-01 07:00am,
+            // the event scheduled for the current day has already passed so the first entry
+            // in the sequence of future occurrences should be 2020-06-02 04:00am.
+            // This should be true for any Rock timezone, regardless of UTC offset.
+            var firstEventStartDate = LavaDateTime.NewDateTime( 2020, 6, 1, 4, 0, 0 );
+                var asAtDate = firstEventStartDate.AddHours( 3 );
+                var expectedNextDate = firstEventStartDate.AddDays( 1 );
+
+                VerifyDailyScheduleNextOccurrenceFromStartDate( firstEventStartDate, eventDuration, asAtDate, expectedNextDate );
+            } );
+        }
+
+        [TestMethod]
+        public void DatesFromICal_DailyEventWithFutureOccurrenceOnSameDay_ReturnsSameDayAsFirstDate()
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                var eventDuration = new TimeSpan( 1, 0, 0 );
+
+                // Create a schedule starting on 2020-06-01 04:00am for the current Rock timezone.
+                // The scheduled event has a duration of 1 hour.
+                // If we retrieve the occurrences for the schedule at an effective date of 2020-06-01 02:00am,
+                // the event scheduled for the current day is pending so the first entry
+                // in the sequence of future occurrences should be 2020-06-01 04:00am.
+                // This should be true for any Rock timezone, regardless of UTC offset.
+                var firstEventStartDate = LavaDateTime.NewDateTime( 2020, 6, 1, 4, 0, 0 );
+                var asAtDate = firstEventStartDate.AddHours( -2 );
+                var expectedNextDate = firstEventStartDate;
+
+                VerifyDailyScheduleNextOccurrenceFromStartDate( firstEventStartDate, eventDuration, asAtDate, expectedNextDate );
+            } );
+        }
+
+        [TestMethod]
+        public void DatesFromICal_DailyEventWithActiveOccurrenceOnSameDay_ReturnsSameDayAsFirstDate()
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                var eventDuration = new TimeSpan( 2, 0, 0 );
+
+                // Create a schedule starting on 2020-06-01 04:00am for the current Rock timezone.
+                // The scheduled event has a duration of 2 hours.
+                // If we retrieve the occurrences for the schedule at an effective date of 2020-06-01 05:00am,
+                // the event scheduled for the current day is in progress so the first entry
+                // in the sequence of future occurrences should be 2020-06-01 04:00am.
+                // This should be true for any Rock timezone, regardless of UTC offset.
+                var firstEventStartDate = LavaDateTime.NewDateTime( 2020, 6, 1, 4, 0, 0 );
+                var asAtDate = firstEventStartDate.AddHours( 1 );
+                var expectedNextDate = firstEventStartDate;
+
+                VerifyDailyScheduleNextOccurrenceFromStartDate( firstEventStartDate, eventDuration, asAtDate, expectedNextDate );
+            } );
         }
 
         /// <summary>
@@ -776,18 +855,19 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DatesFromICal_Saturday430ServiceScheduleNextDate_ReturnsNextSaturday()
         {
-            var now = RockDateTime.Now;
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                var now = RockDateTime.Now;
+                int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) now.DayOfWeek + 7 ) % 7;
+                var nextSaturday = now.AddDays( daysUntilSaturday );
 
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) now.DayOfWeek + 7 ) % 7;
+                // Get a Rock time of 4:30PM for next Saturday.
+                var expectedDateTime = LavaDateTime.NewDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 );
 
-            var nextSaturday = now.AddDays( daysUntilSaturday );
-
-            // Get a Rock time of 4:30PM for next Saturday, expressed in UTC.
-            var expectedDateTime = LavaDateTime.NewUtcDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 );
-
-            VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
-                new List<DateTime> { expectedDateTime },
-                $"1,'','{expectedDateTime.Date:u}'" );
+                VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
+                    new List<DateTime> { expectedDateTime },
+                    $"1,'','{expectedDateTime.Date:u}'" );
+            } );
         }
 
         /// <summary>
@@ -796,16 +876,19 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent()
         {
-            DateTime today = DateTime.UtcNow.Date;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            var nextSaturday = today.AddDays( daysUntilSaturday );
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                var today = RockDateTime.Today;
+                int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+                var nextSaturday = today.AddDays( daysUntilSaturday );
 
-            // Get a Rock time of 5:30PM for next Saturday, expressed in UTC.
-            var expectedDateTime = LavaDateTime.NewUtcDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 );
+                // Get a Rock time of 5:30PM for next Saturday.
+                var expectedDateTime = LavaDateTime.NewDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 );
 
-            VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
-                new List<DateTime> { expectedDateTime },
-                $"1,'enddatetime','{expectedDateTime.Date:u}'" );
+                VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
+                    new List<DateTime> { expectedDateTime },
+                    $"1,'enddatetime','{expectedDateTime.Date:u}'" );
+            } );
         }
 
         /// <summary>
@@ -814,23 +897,26 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DatesFromICal_Saturday430ServiceScheduleNextYearDate_ReturnsSaturdayNextYear()
         {
-            // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month.
-            // So 12 months from now would be the previous month next year.
-            // The event ends at 10:00am.
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month.
+                // So 12 months from now would be the previous month next year.
+                // The event ends at 10:00am.
 
-            // Get a Rock datetime for 10am on the first Saturday 11 months from now.
-            // The GetDatesFromiCal filter can only retrieve 12 months of data, including the current month.
-            var expectedDateTime = RockDateTime.Now
-                .AddMonths( -1 )
-                .StartOfMonth()
-                .AddYears( 1 )
-                .GetNextWeekday( DayOfWeek.Saturday );
+                // Get a Rock datetime for 10am on the first Saturday 11 months from now.
+                // The GetDatesFromiCal filter can only retrieve 12 months of data, including the current month.
+                var expectedDateTime = RockDateTime.Now
+                    .AddMonths( -1 )
+                    .StartOfMonth()
+                    .AddYears( 1 )
+                    .GetNextWeekday( DayOfWeek.Saturday );
 
-            expectedDateTime = LavaDateTime.NewUtcDateTime( expectedDateTime.Year, expectedDateTime.Month, expectedDateTime.Day, 10, 0, 0 );
+                expectedDateTime = LavaDateTime.NewDateTime( expectedDateTime.Year, expectedDateTime.Month, expectedDateTime.Day, 10, 0, 0 );
 
-            VerifyDatesExistInDatesFromICalResult( _iCalStringFirstSaturdayOfMonth,
-             new List<DateTime> { expectedDateTime },
-             "12,'enddatetime'" );
+                VerifyDatesExistInDatesFromICalResult( _iCalStringFirstSaturdayOfMonth,
+                    new List<DateTime> { expectedDateTime },
+                    "12,'enddatetime'" );
+            } );
         }
 
         /// <summary>
@@ -850,18 +936,23 @@ namespace Rock.Tests.UnitTests.Lava
                 RockDateTime.Initialize( tzDst );
 
                 // Create a schedule that spans the DST boundary date.
-                var startDateTime = LavaDateTime.NewDateTimeOffset( 2022, 03, 12, 11, 0, 0 );
+                var startDateTime = LavaDateTime.NewDateTime( 2022, 03, 12, 11, 0, 0 );
+
+                var isNotDstDate = startDateTime;
+                var isDstDate = startDateTime.AddDays( 1 );
+
+                Assert.That.IsFalse( tzDst.IsDaylightSavingTime( isNotDstDate ), "Input date is adjusted for DST." );
+                Assert.That.IsTrue( tzDst.IsDaylightSavingTime( isDstDate ), "Input date is not adjusted for DST." );
 
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
-                    endDate: null,
-                    eventDuration: new TimeSpan( 1, 0, 0 ),
-                    null );
+                    eventDuration: new TimeSpan( 1, 0, 0 ) );
 
+                // Get the first 2 dates of the schedule, which will span the DST boundary.
                 // The time expressed in the schedule is nominal rather than absolute - it should not be adjusted for DST,
                 // because all future event in the schedule should have the same start time.
                 VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
-                    new List<DateTimeOffset> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
-                    $"3,'','{startDateTime.Date:u}'" );
+                    new List<DateTimeOffset> { isNotDstDate, isDstDate },
+                    $"2,'','{startDateTime.Date:u}'" );
             }
             finally
             {

@@ -256,6 +256,8 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupRequirement> GroupRequirementsState { get; set; }
 
+        private List<InheritedAttribute> GroupAttributesInheritedState { get; set; }
+
         private bool AllowMultipleLocations { get; set; }
 
         private List<GroupSyncViewModel> GroupSyncState { get; set; }
@@ -328,6 +330,16 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["GroupAttributesInheritedState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupAttributesInheritedState = new List<InheritedAttribute>();
+            }
+            else
+            {
+                GroupAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
             }
 
             json = ViewState["GroupRequirementsState"] as string;
@@ -2678,7 +2690,6 @@ namespace RockWeb.Blocks.Groups
                 if ( inheritedGroupType != null )
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
-
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId, false ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
@@ -3466,17 +3477,64 @@ namespace RockWeb.Blocks.Groups
 
             var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
             grpGroupRequirementGroupRole.GroupTypeId = this.CurrentGroupTypeId;
+
+            // Get a list of Field Types that are for dates.
+            HashSet<int> fieldTypeIds = new HashSet<int>();
+            fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE.AsGuid() ).Value );
+            fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ).Value );
+
+            Group group = GetGroup( hfGroupId.Value.AsInteger() );
+            group.LoadAttributes();
+            foreach ( var attribute in group.Attributes.Select( a => a.Value ).Where( a => fieldTypeIds.Contains( a.FieldTypeId ) ).ToList() )
+            {
+                ddlDueDateGroupAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+            }
+
+            ddlDueDateGroupAttribute.DataBind();
+
+            // Make sure that the Due Date controls are not visible unless the requirement has a due date.
+            ddlDueDateGroupAttribute.Visible = false;
+            dpDueDate.Visible = false;
+
+            rblAppliesToAgeClassification.Items.Clear();
+
+            foreach ( var ageClassification in Enum.GetValues( typeof( AppliesToAgeClassification ) ).Cast<AppliesToAgeClassification>() )
+            {
+                rblAppliesToAgeClassification.Items.Add( new ListItem( ageClassification.ConvertToString( true ), ageClassification.ConvertToString( false ) ) );
+            }
+
+            rblAppliesToAgeClassification.DataBind();
+
             if ( selectedGroupRequirement != null )
             {
                 ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();
                 grpGroupRequirementGroupRole.GroupRoleId = selectedGroupRequirement.GroupRoleId;
                 cbMembersMustMeetRequirementOnAdd.Checked = selectedGroupRequirement.MustMeetRequirementToAddMember;
+
+                var groupRequirementType = list.Where( r => r.Id == selectedGroupRequirement.GroupRequirementTypeId ).First();
+
+                ShowDueDateQualifierControls();
+                rblAppliesToAgeClassification.SelectedValue = selectedGroupRequirement.AppliesToAgeClassification.ToString();
+                dvpAppliesToDataView.SetValue( selectedGroupRequirement.AppliesToDataViewId );
+                cbAllowLeadersToOverride.Checked = selectedGroupRequirement.AllowLeadersToOverride;
+                if ( groupRequirementType.DueDateType == DueDateType.GroupAttribute )
+                {
+                    ddlDueDateGroupAttribute.Visible = true;
+                    ddlDueDateGroupAttribute.SetValue( selectedGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
+                }
+
+                if ( groupRequirementType.DueDateType == DueDateType.ConfiguredDate )
+                {
+                    dpDueDate.Visible = true;
+                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate.Value;
+                }
             }
             else
             {
                 ddlGroupRequirementType.SelectedIndex = 0;
                 grpGroupRequirementGroupRole.GroupRoleId = null;
                 cbMembersMustMeetRequirementOnAdd.Checked = false;
+                rblAppliesToAgeClassification.SetValue( AppliesToAgeClassification.All.ToString() );
             }
 
             nbDuplicateGroupRequirement.Visible = false;
@@ -3484,6 +3542,21 @@ namespace RockWeb.Blocks.Groups
             hfGroupRequirementGuid.Value = groupRequirementGuid.ToString();
 
             ShowDialog( "GroupRequirements", true );
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lAppliesToDataViewId control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void lAppliesToDataViewId_OnDataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            Literal lAppliesToDataViewId = sender as Literal;
+            GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
+            if ( requirement != null )
+            {
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+            }
         }
 
         /// <summary>
@@ -3515,6 +3588,25 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 groupRequirement.GroupRole = null;
+            }
+
+            groupRequirement.AppliesToAgeClassification = rblAppliesToAgeClassification.SelectedValue.ConvertToEnum<AppliesToAgeClassification>();
+            groupRequirement.AppliesToDataViewId = dvpAppliesToDataView.SelectedValueAsId();
+            groupRequirement.AllowLeadersToOverride = cbAllowLeadersToOverride.Checked;
+
+            if ( groupRequirement.GroupRequirementType.DueDateType == DueDateType.ConfiguredDate )
+            {
+                groupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
+            }
+
+            if ( groupRequirement.GroupRequirementType.DueDateType == DueDateType.GroupAttribute )
+            {
+                // Set this due date attribute if it exists.
+                var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Id == ddlDueDateGroupAttribute.SelectedValue.AsIntegerOrNull() );
+                if ( groupDueDateAttributes.Any() )
+                {
+                    groupRequirement.DueDateAttributeId = groupDueDateAttributes.First().Id;
+                }
             }
 
             // Make sure we aren't adding a duplicate group requirement (same group requirement type and role)
@@ -4433,6 +4525,53 @@ namespace RockWeb.Blocks.Groups
 
                 ShowGroupTypeEditDetails( groupType, group, true );
             }
+        }
+
+        /// <summary>
+        /// Shows the Due Date qualifier controls.
+        /// </summary>
+        protected void ShowDueDateQualifierControls()
+        {
+            int groupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
+            var rockContext = new RockContext();
+            var groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
+            var groupRequirementTypes = groupRequirementTypeService.Queryable().Where( grt => grt.Id == groupRequirementTypeId );
+            if ( !groupRequirementTypes.Any() )
+            {
+                return;
+            }
+
+            var groupRequirementType = groupRequirementTypes.First();
+
+            switch ( groupRequirementType.DueDateType )
+            {
+                case DueDateType.Immediate:
+                case DueDateType.DaysAfterJoining:
+                    {
+                        ddlDueDateGroupAttribute.Visible = false;
+                        dpDueDate.Visible = false;
+                        break;
+                    }
+
+                case DueDateType.ConfiguredDate:
+                    {
+                        ddlDueDateGroupAttribute.Visible = false;
+                        dpDueDate.Visible = true;
+                        break;
+                    }
+
+                case DueDateType.GroupAttribute:
+                    {
+                        ddlDueDateGroupAttribute.Visible = true;
+                        dpDueDate.Visible = false;
+                        break;
+                    }
+            }
+        }
+
+        protected void ddlGroupRequirementType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowDueDateQualifierControls();
         }
     }
 
