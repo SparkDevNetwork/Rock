@@ -248,7 +248,11 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskDevice Get( int id, List<int> configuredGroupTypes )
         {
-            return GetOrAddExisting( id, () => Create( id ), () => GetAllIds() );
+            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
+            var temp = GetOrAddExisting( id, () => Create( id ), () => GetAllIds() );
+            stopWatch.Stop();
+            System.Diagnostics.Debug.WriteLine( $"Create KioskDevice for ID {id} took {stopWatch.ElapsedMilliseconds}ms" );
+            return temp;
         }
 
         /// <summary>
@@ -281,7 +285,10 @@ namespace Rock.CheckIn
                     var device = new KioskDevice( deviceModel );
                     foreach ( Location location in deviceModel.Locations )
                     {
+                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                         LoadKioskLocations( device, location, campusLocations, rockContext );
+                        stopwatch.Stop();
+                        System.Diagnostics.Debug.WriteLine( $"LoadKioskLocations for device {device.Device.Name} and Location {location.Name} took {stopwatch.ElapsedMilliseconds}ms" );
                     }
 
                     return device;

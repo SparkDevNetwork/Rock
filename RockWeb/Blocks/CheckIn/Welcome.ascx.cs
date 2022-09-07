@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1053,6 +1053,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rLocations_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
         {
+            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
             int? locationId = ( e.CommandArgument as string ).AsIntegerOrNull();
 
             if ( locationId.HasValue )
@@ -1077,6 +1078,8 @@ namespace RockWeb.Blocks.CheckIn
 
                 BindManagerLocationsGrid();
             }
+            stopWatch.Stop();
+            System.Diagnostics.Debug.WriteLine( $"Locations Command {e.CommandName} took {stopWatch.ElapsedMilliseconds}ms" );
         }
 
         /// <summary>

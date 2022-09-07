@@ -349,6 +349,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
+            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
             // Calling the clear on the instance when using redis will clear all of the cache items for evert type, which is bad.
             // So instead we need to loop through all of the keys for the type and flush them individually
             if ( RockCache.IsCacheSerialized )
@@ -361,6 +362,8 @@ namespace Rock.Web.Cache
             }
             
             RockCacheManager<List<string>>.Instance.Remove( AllKey, _AllRegion );
+            stopWatch.Stop();
+            System.Diagnostics.Debug.WriteLine( $"Cache clear for {typeof(T)} took {stopWatch.ElapsedMilliseconds}ms" );
         }
 
 
