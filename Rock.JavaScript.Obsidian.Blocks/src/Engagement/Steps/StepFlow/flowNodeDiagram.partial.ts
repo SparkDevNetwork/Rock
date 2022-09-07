@@ -444,6 +444,28 @@ export default defineComponent({
 .step-flow-svg .edge:hover {
     fill: rgba(170, 170, 170, 0.8);
 }
+.flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto 0;
+    gap: 12px;
+    width: 500px;
+    max-width: 100%;
+}
+.flow-key {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.1;
+}
+.flow-key .color {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
 </v-style>
 
 <div class="flow-node-diagram-container">

@@ -76,12 +76,14 @@ namespace Rock.Blocks.Engagement.Steps
         "Chart Footer Lava Template",
         Key = AttributeKey.FooterLavaTemplate,
         Description = "Format the labels for each legend item at the foot of the chart using Lava.",
-        DefaultValue = "{% for stepItem in Steps %}\n" +
-            "    <span style=\"margin-right:1em; white-space:nowrap;\">\n" +
-            "        <span style=\"display:inline-block; width:1em; height:1em; background-color:{{stepItem.Color}}; transform:translateY(.15em);\"></span>\n" +
-            "        {{forloop.index}}:&nbsp;{{stepItem.StepName}}\n" +
-            "    </span>\n" +
-            "{% endfor %}",
+        DefaultValue = "<div class=\"flow-legend\">\n" +
+            "{% for stepItem in Steps %}\n" +
+            "    <div class=\"flow-key\">\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
+            "        <span>{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
+            "    </div>\n" +
+            "{% endfor %}\n" +
+            "</div>",
         Order = 5 )]
 
     #endregion Block Attributes
