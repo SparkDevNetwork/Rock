@@ -20,7 +20,7 @@
 
                         <asp:Literal ID="lGroupHeader" runat="server" />
 
-                        <div class="card-section pb-0">
+                        <asp:Panel class="card-section pb-0" ID="pnlMembersDiv" runat="server">
                             <div class="d-flex flex-wrap">
                                 <asp:Repeater ID="rptrMembers" runat="server" OnItemDataBound="rptrMembers_ItemDataBound">
                                     <ItemTemplate>
@@ -28,7 +28,7 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </div>
-                        </div>
+                        </asp:Panel>
 
                         <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section js-group-attribute-section">
                             <div class="pull-right">

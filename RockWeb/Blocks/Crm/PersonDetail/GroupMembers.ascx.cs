@@ -304,6 +304,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .ToList();
                 }
 
+                if ( orderedMembers.Count == 0 )
+                {
+                    var pnlMembersDiv = e.Item.FindControl( "pnlMembersDiv" ) as Control;
+                    pnlMembersDiv.Visible = false;
+                }
+
                 rptrMembers.DataSource = orderedMembers;
                 rptrMembers.DataBind();
             }
