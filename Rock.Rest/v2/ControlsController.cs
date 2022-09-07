@@ -2327,6 +2327,47 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Report Picker
+
+        /// <summary>
+        /// Gets the reports and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which reports to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of reports.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReportPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
+        public IHttpActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Report>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
+                    ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
+                    ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get(options.EntityTypeGuid.Value).Id.ToString() : "",
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Save Financial Account Form
 
         /// <summary>

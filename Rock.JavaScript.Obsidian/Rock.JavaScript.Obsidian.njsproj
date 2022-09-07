@@ -169,6 +169,7 @@
     <TypeScriptCompile Include="Framework\Controls\metricItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\pagePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\registrationTemplatePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\reportPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
@@ -775,6 +776,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationTemplatePickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\reportPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepStatusPickerGetStepStatusesOptionsBag.d.ts" />
