@@ -145,8 +145,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             _IsFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
-            rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
-
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             _showCounty = GetAttributeValue( AttributeKey.ShowCounty ).AsBoolean();
         }
