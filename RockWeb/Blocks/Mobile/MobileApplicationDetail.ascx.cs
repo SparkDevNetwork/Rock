@@ -720,9 +720,13 @@ namespace RockWeb.Blocks.Mobile
             var site = new SiteService( new RockContext() ).Get( siteId );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-            var domainsText = additionalSettings.DeepLinkDomains.ReplaceLastOccurrence( "|", "" );
-            domainsText = domainsText.Replace( "|", ", " );
-            lblDeepLinkDomains.Text = domainsText;
+            if( additionalSettings.DeepLinkDomains != null && additionalSettings.DeepLinkDomains.Contains("|") )
+            {
+                var domainsText = additionalSettings.DeepLinkDomains.ReplaceLastOccurrence( "|", "" );
+                domainsText = domainsText.Replace( "|", ", " );
+                lblDeepLinkDomains.Text = domainsText;
+            }
+
             var routes = additionalSettings.DeepLinkRoutes
                 .Select( r => new
                 {
