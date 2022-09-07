@@ -61,6 +61,8 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
         #endregion Keys
 
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+
         #region Methods
 
         /// <inheritdoc/>
