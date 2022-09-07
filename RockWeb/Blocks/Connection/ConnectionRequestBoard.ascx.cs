@@ -1876,10 +1876,14 @@ namespace RockWeb.Blocks.Connection
             ddlRequestModalAddEditModePlacementStatus.Visible = ddlRequestModalAddEditModePlacementStatus.Items.Count > 1;
 
             CheckRequestModalAddEditModeGroupRequirements();
-            avcRequestModalAddEditModeGroupMember.Visible = request.ConnectionState != ConnectionState.Connected;
-            if ( request.ConnectionState != ConnectionState.Connected )
+
+            if ( request != null )
             {
-                BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                avcRequestModalAddEditModeGroupMember.Visible = request.ConnectionState != ConnectionState.Connected;
+                if ( request.ConnectionState != ConnectionState.Connected )
+                {
+                    BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                }
             }
         }
 
