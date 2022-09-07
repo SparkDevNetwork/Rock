@@ -273,7 +273,7 @@
 							    gp.[GivingGroupId] = i.[GivingGroupId]
 							    AND ft.TransactionTypeValueId = @ContributionTypeId
 							    AND ft.TransactionDateTime >= @SundayGivingDurationShort
-							    AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationShort]
+							    AND ft.SundayDate <= @SundayDateStart) AS [GiftCountDurationShort]
 			    , 0 AS [IsSystem]
 			    , newid() AS [Guid]
 			    , getdate() AS [CreateDate]
@@ -320,7 +320,7 @@
 							    gp.[Id] = i.[PersonId] -- match by person id
 							    AND ft.TransactionTypeValueId = @ContributionTypeId
 							    AND ft.TransactionDateTime >= @SundayGivingDurationShort
-							    AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationShort]
+							    AND ft.SundayDate <= @SundayDateStart) AS [GiftCountDurationShort]
 			    , 0 AS [IsSystem]
 			    , newid() AS [Guid]
 			    , getdate() AS [CreateDate]
@@ -370,7 +370,7 @@
 							    gp.[GivingGroupId] = i.[GivingGroupId]
 							    AND ft.TransactionTypeValueId = @ContributionTypeId
 							    AND ft.TransactionDateTime >= @SundayGivingDurationLong
-							    AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationLong]
+							    AND ft.SundayDate <= @SundayDateStart) AS [GiftCountDurationLong]
 			    , 0 AS [IsSystem]
 			    , newid() AS [Guid]
 			    , getdate() AS [CreateDate]
@@ -417,7 +417,7 @@
 							    gp.[Id] = i.[PersonId] -- match by person id
 							    AND ft.TransactionTypeValueId = @ContributionTypeId
 							    AND ft.TransactionDateTime >= @SundayGivingDurationLong
-							    AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationLong]
+							    AND ft.SundayDate <= @SundayDateStart) AS [GiftCountDurationLong]
 			    , 0 AS [IsSystem]
 			    , newid() AS [Guid]
 			    , getdate() AS [CreateDate]
