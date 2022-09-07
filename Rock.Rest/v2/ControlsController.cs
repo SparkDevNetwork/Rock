@@ -2536,6 +2536,45 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Schedule Picker
+
+        /// <summary>
+        /// Gets the schedules and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which schedules to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of schedules.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SchedulePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
+        public IHttpActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Schedule>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeInactiveItems = options.IncludeInactiveItems,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Step Program Picker
 
         /// <summary>
