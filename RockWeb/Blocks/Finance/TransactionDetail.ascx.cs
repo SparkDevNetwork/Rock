@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1015,12 +1015,9 @@ namespace RockWeb.Blocks.Finance
 
                 BindAccounts();
 
-                if ( nbTransactionDetailValidationMessage.Visible )
-                {
-                    // If a message about no amounts is showing, hide it now that they have added one.
-                    // It'll get re-checked when saved.
-                    nbTransactionDetailValidationMessage.Visible = false;
-                }
+                // If a message about no amounts is showing, hide it now that they have added one.
+                // It'll get re-checked when saved.
+                nbTransactionDetailValidationMessage.Visible = false;
             }
 
             HideDialog();
