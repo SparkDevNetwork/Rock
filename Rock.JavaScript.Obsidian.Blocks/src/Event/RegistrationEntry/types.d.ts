@@ -100,6 +100,7 @@ export type RegistrationEntryBlockViewModel = {
     loginRequiredToRegister: boolean;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     allowRegistrationUpdates: boolean;
+    isExistingRegistration: boolean;
     startAtBeginning: boolean;
     gatewayGuid: Guid | null;
     campuses: ListItemBag[];
