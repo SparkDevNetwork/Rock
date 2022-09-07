@@ -21,7 +21,7 @@
                         <asp:Literal ID="lGroupHeader" runat="server" />
 
                         <asp:Panel class="card-section pb-0" ID="pnlMembersDiv" runat="server">
-                            <div class="d-flex flex-wrap">
+                            <div class="family-grid">
                                 <asp:Repeater ID="rptrMembers" runat="server" OnItemDataBound="rptrMembers_ItemDataBound">
                                     <ItemTemplate>
                                         <asp:Literal ID="litGroupMemberInfo" runat="server"></asp:Literal>
