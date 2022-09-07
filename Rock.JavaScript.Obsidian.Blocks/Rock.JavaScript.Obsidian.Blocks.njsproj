@@ -40,6 +40,7 @@
     <Folder Include="build\" />
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LayoutDetail\" />
@@ -73,6 +74,10 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\Cms\blockTypeDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />

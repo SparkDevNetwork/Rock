@@ -45,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\BlockBox.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeDetail\BlockTypeBag.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeDetail\BlockTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AttributeFilterBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AvailableContentSourceBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\ContentCollectionBag.cs" />

@@ -89,6 +89,11 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The Block Type entity type
+        /// </summary>
+        public const string BLOCK_TYPE = "04768EDF-C0CD-4950-B629-4D2370B57C99";
+
+        /// <summary>
         /// The campus
         /// </summary>
         public const string CAMPUS = "00096BED-9587-415E-8AD4-4E076AE8FBF0";

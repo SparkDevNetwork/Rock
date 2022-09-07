@@ -49,6 +49,8 @@ export const enum EntityType {
     BenevolenceType = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46",
     /** The Block entity type */
     Block = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65",
+    /** The Block Type entity type */
+    BlockType = "04768EDF-C0CD-4950-B629-4D2370B57C99",
     /** The campus */
     Campus = "00096BED-9587-415E-8AD4-4E076AE8FBF0",
     /** The checkr provider */

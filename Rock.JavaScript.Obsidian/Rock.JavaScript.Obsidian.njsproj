@@ -92,6 +92,7 @@
     <Folder Include="Framework\ViewModels\" />
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\" />
@@ -423,6 +424,8 @@
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\filterExpressionType.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\availableContentSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentCollectionBag.d.ts" />
