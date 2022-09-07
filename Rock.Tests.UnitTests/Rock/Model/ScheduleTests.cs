@@ -322,6 +322,29 @@ namespace Rock.Tests.Rock.Model
             Assert.That.AreEqualDate( specificEndDate, schedule.EffectiveEndDate );
         }
 
+        [TestMethod]
+        public void Schedule_UpdatedFromCustomToWeekly_EffectiveEndDateAndEffectiveStartDateIsNull()
+        {
+            // Create a daily recurring calendar that has an end date of today +3 months.
+            var scheduleEndDate = RockDateTime.Now.AddMonths( 3 );
+
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( GetRockNowDateTimeAsUnspecifiedKind(),
+                endDateTime: scheduleEndDate );
+
+            Assert.That.IsNotNull( schedule.EffectiveStartDate );
+            Assert.That.IsNotNull( schedule.EffectiveEndDate );
+
+            // Modify schedule to a weekly scheduleType
+            schedule.iCalendarContent = null;
+            schedule.WeeklyDayOfWeek = DayOfWeek.Friday;
+            schedule.WeeklyTimeOfDay = new TimeSpan( 19, 0, 0 );
+
+            schedule.EnsureEffectiveStartEndDates();
+
+            Assert.That.IsNull( schedule.EffectiveStartDate );
+            Assert.That.IsNull( schedule.EffectiveEndDate );
+        }
+
         /// <summary>
         /// Get the current Rock date and time as an Unspecified DateTime type.
         /// </summary>
