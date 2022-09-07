@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1643,7 +1643,7 @@ btnCopyToClipboard.ClientID );
                 lSingleGroupModeColumnHeadingOccurrenceDate.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show time in '10:30 AM' format
-                lSingleGroupModeColumnHeadingOccurrenceTime.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lSingleGroupModeColumnHeadingOccurrenceTime.Text = occurrenceColumnItem.Schedule.Name ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
             }
             else
             {

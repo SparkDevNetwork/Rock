@@ -403,7 +403,7 @@
                                                     <asp:Panel ID="pnlSingleGroupModeColumnHeading" runat="server" CssClass="board-heading mt-3">
                                                         <div class="d-flex justify-content-between">
                                                             <span class="board-column-title"><asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceDate" runat="server" /></span>
-                                                            <asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceTime" runat="server" />
+                                                            <span class="board-column-schedule-name"><asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceTime" runat="server" /></span>
                                                         </div>
                                                         <div class="board-heading-pill mt-2 mb-3" style="background:#C8C8C8"></div>
                                                     </asp:Panel>
