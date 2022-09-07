@@ -1643,7 +1643,7 @@ btnCopyToClipboard.ClientID );
                 lSingleGroupModeColumnHeadingOccurrenceDate.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show time in '10:30 AM' format
-                lSingleGroupModeColumnHeadingOccurrenceScheduleName.Text = occurrenceColumnItem.Schedule.Name ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lSingleGroupModeColumnHeadingOccurrenceScheduleName.Text = occurrenceColumnItem.Schedule?.Name ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
             }
             else
             {
@@ -1712,7 +1712,7 @@ btnCopyToClipboard.ClientID );
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show schedule name if null show time in '10:30 AM' format
-                lMultiGroupModeOccurrenceScheduleName.Text = attendanceOccurrenceRowItem.Schedule.Name ?? attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lMultiGroupModeOccurrenceScheduleName.Text = attendanceOccurrenceRowItem.Schedule?.Name ?? attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
                 pnlScheduledOccurrence.Attributes["data-attendanceoccurrence-date"] = attendanceOccurrenceRowItem.ScheduledDateTime.Value.Date.ToISO8601DateString();
             }
 
