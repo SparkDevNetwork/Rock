@@ -2567,6 +2567,7 @@ namespace Rock.Blocks.Event
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
+                IsExistingRegistration = isExistingRegistration,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
                 Campuses = campusClientService.GetCampusesAsListItems(),
