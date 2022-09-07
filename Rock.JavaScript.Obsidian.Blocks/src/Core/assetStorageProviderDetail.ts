@@ -256,7 +256,7 @@ export default defineComponent({
             blockError,
             blockLabels,
             entityKey,
-            entityTypeGuid: EntityType.AssetstorageProvider,
+            entityTypeGuid: EntityType.AssetStorageProvider,
             errorMessage,
             isEditable,
             onCancelEdit,
