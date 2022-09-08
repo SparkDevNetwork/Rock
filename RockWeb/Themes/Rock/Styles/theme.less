@@ -245,8 +245,8 @@ textarea,
 }
 
 .btn-label {
-  margin-top: -1px;
   padding: 5px 5px 4px;
+  margin-top: -1px;
   font-size: 12px;
   line-height: 1;
 }
@@ -583,8 +583,7 @@ textarea,
 // -------------------------
 
 
-// .panel-actions,
-.panel-body .actions:last-of-type { // unknown if .panel-body > is doing anything
+.panel-body .actions:last-of-type {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -596,6 +595,11 @@ textarea,
   > * {
     margin: 4px 8px 4px 0;
   }
+}
+
+// Temporary Fix for Obsidian
+.footer-actions .btn {
+  margin-right: 8px;
 }
 
 .panel-body .actions:last-of-type,
@@ -1898,8 +1902,8 @@ body.navbar-side-open {
 
 .container-in-block {
   max-width: 1020px;
-  margin: 0 auto;
   padding: 24px 0;
+  margin: 0 auto;
   @media (min-width: @screen-md-min) {
     padding: 48px 30px;
   }
@@ -1913,12 +1917,12 @@ body.navbar-side-open {
     .navbar-link {
       display: inline-flex;
       align-items: center;
-      border-radius: @input-border-radius;
-      background: @body-background;
-      color: #737475;
-      padding: @input-padding-y @input-padding-x;
       width: 100%;
       max-width: 100%;
+      padding: @input-padding-y @input-padding-x;
+      color: #737475;
+      background: @body-background;
+      border-radius: @input-border-radius;
 
       b {
         margin-left: auto;
@@ -1927,8 +1931,8 @@ body.navbar-side-open {
 
     .open {
       > .navbar-link {
-        background: mix(@body-background, @white, 65%);
         color: @input-color;
+        background: mix(@body-background, @white, 65%);
       }
     }
   }
