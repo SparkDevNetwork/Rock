@@ -583,8 +583,7 @@ textarea,
 // -------------------------
 
 
-// .panel-actions,
-.panel-body .actions:last-of-type { // unknown if .panel-body > is doing anything
+.panel-body .actions:last-of-type {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -596,6 +595,11 @@ textarea,
   > * {
     margin: 4px 8px 4px 0;
   }
+}
+
+// Temporary Fix for Obsidian
+.footer-actions .btn {
+  margin-right: 8px;
 }
 
 .panel-body .actions:last-of-type,
