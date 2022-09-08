@@ -255,12 +255,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var sb = new StringBuilder(
-                $@"<div class=""dropdown"">
-                <a href=""#"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""true"">
-                    {personNameHtml}
-                    <i class=""fa fa-chevron-down ml-2""></i>
-                </a>
-                <ul class=""dropdown-menu"">" );
+                $@"<div class=""dropdown dropdown-family"">
+<a href=""#"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""true"">
+{personNameHtml}
+<i class=""fa fa-chevron-down ml-2""></i>
+</a>
+<ul class=""dropdown-menu"">" );
 
             foreach ( var groupMember in orderedGroupMemberList )
             {
