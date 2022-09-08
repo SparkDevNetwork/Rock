@@ -994,7 +994,6 @@
     <Compile Include="Model\Communication\Communication\Communication.Logic.cs" />
     <Compile Include="Model\Communication\Communication\Communication.SaveHook.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationExtensionMethods.cs" />
-    <Compile Include="Model\Communication\Communication\CommunicationStatus.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />

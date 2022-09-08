@@ -20,6 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// The status of a communication
     /// </summary>
+    [Enums.EnumDomain( "Communication" )]
     public enum CommunicationStatus
     {
         /// <summary>
