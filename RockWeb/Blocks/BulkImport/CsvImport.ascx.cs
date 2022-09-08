@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.BulkImport
                             .ForEach( f => File.Delete( f ) );
                     }
                 }
-                catch ( Exception exception )
+                catch ( Exception )
                 {
                     nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
                     nbPageError.Visible = true;
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.BulkImport
                     tdRecordCount.Description = recordsCount.ToString();
                 }
             }
-            catch ( Exception exception )
+            catch ( Exception )
             {
                 nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
                 nbPageError.Visible = true;
