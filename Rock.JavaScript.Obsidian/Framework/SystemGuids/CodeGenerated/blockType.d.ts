@@ -146,6 +146,8 @@ export const enum BlockType {
     ObsidianExampleControlGallery = "3ED1B4B2-FD1C-4E4B-B4B9-2DE4E6EF8915",
     /** The obsidian event field type gallery */
     ObsidianExampleFieldTypeGallery = "B9C209C2-ABB8-4B48-A68E-944572007B03",
+    /** The reporting dashboard liquid/lava dashboard widget. */
+    ReportingLavaDashboardWidget = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }
