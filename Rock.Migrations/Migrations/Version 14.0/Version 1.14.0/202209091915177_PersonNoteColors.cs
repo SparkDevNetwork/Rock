@@ -39,6 +39,9 @@ namespace Rock.Migrations
         {
         }
 
+        /// <summary>
+        /// N.A.: Migration to Add default colors for Person Note types which are empty/default
+        /// </summary>
         private void AddPersonNoteColors()
         {
             Sql( @"
