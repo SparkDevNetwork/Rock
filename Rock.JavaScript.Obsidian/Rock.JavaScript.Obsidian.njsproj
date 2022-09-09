@@ -35,6 +35,7 @@
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
+    <Content Include="Framework\Controls\workflowActionTypePicker.vue" />
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
     <Content Include="Framework\FieldTypes\tsconfig.json" />
@@ -785,6 +786,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\schedulePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepStatusPickerGetStepStatusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\entityAuditBag.d.ts" />

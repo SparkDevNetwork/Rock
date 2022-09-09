@@ -170,6 +170,7 @@ import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
 import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
 import ReportPicker from "@Obsidian/Controls/reportPicker";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
+import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
 
 // #region Gallery Support
 
@@ -5715,6 +5716,43 @@ const schedulePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates workflow action type picker */
+const workflowActionTypePickerGallery = defineComponent({
+    name: "WorkflowActionTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        WorkflowActionTypePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("workflowActionTypePicker"),
+            exampleCode: `<WorkflowActionTypePicker label="Workflow Action Type" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <WorkflowActionTypePicker label="Workflow Action Type"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5824,6 +5862,7 @@ const controlGalleryComponents: Record<string, Component> = [
     registrationTemplatePickerGallery,
     reportPickerGallery,
     schedulePickerGallery,
+    workflowActionTypePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

@@ -22,7 +22,13 @@
 		"volar.completion.preferredAttrNameCase": "camel",
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
-		"html.format.wrapLineLength": 0
+		"html.format.wrapLineLength": 0,
+		"editor.codeActionsOnSave": {
+		  "source.fixAll.eslint": true
+		},
+		"[vue]": {
+		  "editor.defaultFormatter": "Vue.volar"
+		},
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -82,7 +88,8 @@
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
 				},
-				"isBackground": true
+				"isBackground": true,
+				"problemMatcher": []
 			},
 			{
 				"label": "Watch Obsidian Blocks",
