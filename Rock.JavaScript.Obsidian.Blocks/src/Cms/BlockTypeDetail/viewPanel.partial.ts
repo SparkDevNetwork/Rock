@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -81,12 +81,15 @@ export default defineComponent({
                 valueBuilder.addHtmlValue("Status", `<span class="label label-danger">The file ${props.modelValue.path} does not exist.</span>`);
             }
 
-            if (!props.modelValue. && props.modelValue.entityType) {
-                valueBuilder.addHtmlValue("Status", `<span class="label label-info">${props.modelValue.entityType.text}</span>`);
-            } else if (props.modelValue.isBlockExists) {
-                valueBuilder.addHtmlValue("Status", `<span class="label label-success">Block exists on the file system.</span>`);
+            const pagesStr = "Pages that use this block type";
+            if (props.modelValue.pages && props.modelValue.pages.length > 0) {
+                let pages = "";
+                for (const page of props.modelValue.pages) {
+                    pages += `<li>${page}</li>`;
+                }
+                valueBuilder.addHtmlValue(pagesStr, `<ul>${pages}</ul>`);
             } else {
-                valueBuilder.addHtmlValue("Status", `<span class="label label-danger">The file ${props.modelValue.path} does not exist.</span>`);
+                valueBuilder.addHtmlValue(pagesStr, "<span class='text-muted'><em>No pages are currently using this block</em></muted>");
             }
 
             return valueBuilder.build();
@@ -152,7 +155,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    <AttributeValuesContainer v-if="isDynamicAttributesBlock" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 </fieldset>
 `
 });

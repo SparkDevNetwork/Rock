@@ -15,11 +15,9 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -177,7 +175,9 @@ namespace Rock.Blocks.Cms
                 Description = entity.Description,
                 EntityType = entity.EntityType.ToListItemBag(),
                 IsSystem = entity.IsSystem,
-                Name = entity.Name
+                Name = entity.Name,
+                Path = entity.Path,
+                IsDynamicAttributesBlock = entity.IsDynamicAttributesBlock()
             };
         }
 
@@ -194,7 +194,6 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-            bag.Path = entity.Path;
             bag.IsBlockExists = entity.IsBlockExists();
             bag.Pages = entity.Blocks.Where( a => a.Page != null ).Select( a => a.Page.GetFullyQualifiedPageName() ).OrderBy( a => a ).ToList();
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
@@ -251,6 +250,9 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
+
+            box.IfValidProperty( nameof( box.Entity.Path ),
+                () => entity.Path = box.Entity.Path );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>

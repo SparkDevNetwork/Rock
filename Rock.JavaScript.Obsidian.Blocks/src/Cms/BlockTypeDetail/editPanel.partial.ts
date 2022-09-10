@@ -55,10 +55,11 @@ export default defineComponent({
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
         const description = propertyRef(props.modelValue.description ?? "", "Description");
         const name = propertyRef(props.modelValue.name ?? "", "Name");
+        const path = propertyRef(props.modelValue.path ?? "", "Path");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
-        const propRefs = [description, name];
+        const propRefs = [description, name, path];
 
         // #endregion
 
@@ -80,6 +81,7 @@ export default defineComponent({
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
             updateRefValue(description, props.modelValue.description ?? "");
             updateRefValue(name, props.modelValue.name ?? "");
+            updateRefValue(path, props.modelValue.path ?? "");
         });
 
         // Determines which values we want to track changes on (defined in the
@@ -89,7 +91,8 @@ export default defineComponent({
                 ...props.modelValue,
                 attributeValues: attributeValues.value,
                 description: description.value,
-                name: name.value
+                name: name.value,
+                path: path.value
             };
 
             emit("update:modelValue", newValue);
@@ -103,7 +106,8 @@ export default defineComponent({
             attributes,
             attributeValues,
             description,
-            name
+            name,
+            path
         };
     },
 
@@ -122,7 +126,10 @@ export default defineComponent({
         label="Description"
         textMode="multiline" />
 
-    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    <TextBox v-model="path"
+        label="Path" />
+
+    <AttributeValuesContainer v-if="isDynamicAttributesBlock" v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 </fieldset>
 `
 });

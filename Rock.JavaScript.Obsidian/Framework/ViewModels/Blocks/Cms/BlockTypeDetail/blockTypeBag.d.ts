@@ -31,9 +31,6 @@ export type BlockTypeBag = {
     /** Gets or sets the user defined description of the BlockType. */
     description?: string | null;
 
-    /** Gets or sets the path of the BlockType. */
-    path?: string | null;
-
     /** Gets or sets the type of the entity. */
     entityType?: ListItemBag | null;
 
@@ -43,11 +40,17 @@ export type BlockTypeBag = {
     /** Gets or sets the name of the BlockType. */
     name?: string | null;
 
+    /** Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. */
+    path?: string | null;
+
     /** Gets or sets a flag indicating if this Block exists. */
     isBlockExists: boolean;
 
-    /** Gets or sets the pages that uses this block type. */
-    pages?: Record<string, PublicAttributeBag> | null;
+    /** Gets or sets a flag indicating if BlockType supports adding additional block type attributes at runtime. */
+    isDynamicAttributesBlock: boolean;
+
+    /** Gets or sets the name of the fully qualified page referencing Block Type. */
+    pages?: string[] | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
