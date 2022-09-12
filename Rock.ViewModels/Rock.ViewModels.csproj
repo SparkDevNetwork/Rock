@@ -103,6 +103,8 @@
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\IValidPropertiesBox.cs" />
+    <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateBag.cs" />
+    <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />

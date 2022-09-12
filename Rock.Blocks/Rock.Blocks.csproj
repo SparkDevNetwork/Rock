@@ -80,6 +80,7 @@
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="IHasCustomActions.cs" />
+    <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

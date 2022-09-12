@@ -118,6 +118,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
@@ -501,6 +502,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionFilterSettingsBag.d.ts" />
