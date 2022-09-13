@@ -39,7 +39,8 @@
 				"command": "npm run build -s",
 				"presentation": {
 					"showReuseMessage": false,
-					"clear": true
+					"clear": true,
+					"group": "build"
 				},
 				"group": {
 					"kind": "build",
@@ -55,7 +56,8 @@
 				"command": "npm run build -s",
 				"presentation": {
 					"showReuseMessage": false,
-					"clear": true
+					"clear": true,
+					"group": "build"
 				},
 				"group": {
 					"kind": "build",
