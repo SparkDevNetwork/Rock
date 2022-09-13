@@ -171,6 +171,7 @@ import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplateP
 import ReportPicker from "@Obsidian/Controls/reportPicker";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
 import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
 
 // #region Gallery Support
 
@@ -5753,6 +5754,46 @@ const workflowActionTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a day of week picker */
+const dayOfWeekPickerGallery = defineComponent({
+    name: "DayOfWeekPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        DayOfWeekPicker
+    },
+    setup() {
+        return {
+            showBlankItem: ref(false),
+            multiple: ref(false),
+            columns: ref(1),
+            value: ref(null),
+            importCode: getControlImportPath("dayOfWeekPicker"),
+            exampleCode: `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+            <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5863,6 +5904,7 @@ const controlGalleryComponents: Record<string, Component> = [
     reportPickerGallery,
     schedulePickerGallery,
     workflowActionTypePickerGallery,
+    dayOfWeekPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

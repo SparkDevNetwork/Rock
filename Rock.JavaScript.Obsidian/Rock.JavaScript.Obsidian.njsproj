@@ -34,6 +34,7 @@
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.vue" />
+    <Content Include="Framework\Controls\dayOfWeekPicker.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\workflowActionTypePicker.vue" />
     <Content Include="Framework\Core\tsconfig.json" />
@@ -236,6 +237,7 @@
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationStatus.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.d.ts" />

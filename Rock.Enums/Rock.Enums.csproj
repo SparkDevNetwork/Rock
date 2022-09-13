@@ -49,6 +49,7 @@
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
+    <Compile Include="Controls\DayOfWeek.cs" />
     <Compile Include="Controls\MergeTemplateOwnership.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
     <Compile Include="Crm\Gender.cs" />
