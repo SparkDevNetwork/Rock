@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -42,6 +43,9 @@ export type MergeTemplateBag = {
 
     /** Gets or sets the template binary file. */
     templateBinaryFile?: ListItemBag | null;
+
+    /** Gets or sets the merge template ownership. */
+    mergeTemplateOwnership: MergeTemplateOwnership;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
@@ -50,5 +51,10 @@ namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
         /// Gets or sets the template binary file.
         /// </summary>
         public ListItemBag TemplateBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the merge template ownership.
+        /// </summary>
+        public MergeTemplateOwnership MergeTemplateOwnership { get; set; }
     }
 }

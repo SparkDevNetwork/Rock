@@ -37,7 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular merge template." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "fa fa-files-o" )]
 
     #region Block Attributes
 
@@ -86,11 +86,9 @@ namespace Rock.Blocks.Reporting
                 var box = new DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
-
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
                 box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MergeTemplate>();
-
                 return box;
             }
         }
@@ -168,7 +166,6 @@ namespace Rock.Blocks.Reporting
 
             var isViewable = entity.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
-
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
@@ -211,6 +208,9 @@ namespace Rock.Blocks.Reporting
                 return null;
             }
 
+            var mergeTemplateOwnership = GetAttributeValue( AttributeKey.MergeTemplatesOwnership )
+                .ConvertToEnum<Rock.Enums.Controls.MergeTemplateOwnership>( Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal );
+
             return new MergeTemplateBag
             {
                 IdKey = entity.IdKey,
@@ -218,7 +218,8 @@ namespace Rock.Blocks.Reporting
                 Description = entity.Description,
                 MergeTemplateTypeEntityType = entity.MergeTemplateTypeEntityType.ToListItemBag(),
                 Name = entity.Name,
-                PersonAlias = entity.PersonAlias.ToListItemBag(),
+                MergeTemplateOwnership = mergeTemplateOwnership,
+                PersonAlias = mergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal && entity.Id == 0 ? RequestContext.CurrentPerson.PrimaryAlias.ToListItemBag() : entity.PersonAlias.ToListItemBag(),
                 TemplateBinaryFile = entity.TemplateBinaryFile.ToListItemBag()
             };
         }
@@ -276,7 +277,7 @@ namespace Rock.Blocks.Reporting
             }
 
             box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ).Value );
+                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) ?? 0 );
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
@@ -300,6 +301,14 @@ namespace Rock.Blocks.Reporting
 
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
                 } );
+
+            if ( entity.CategoryId == 0 && entity.PersonAliasId.HasValue )
+            {
+                int personalMergeTemplateCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
+
+                // if the category picker isn't shown and/or the category isn't selected, and it's a personal filter...
+                entity.CategoryId = personalMergeTemplateCategoryId;
+            }
 
             return true;
         }

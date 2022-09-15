@@ -20,11 +20,13 @@
                               :binaryFileTypeGuid="binaryFileTypeGuid"
                               uploadButtonText="Upload"
                               :showDeleteButton="true" />
-                <CategoryPicker v-model="category"
+                <CategoryPicker v-if="showCategory"
+                                v-model="category"
                                 label="Category"
                                 rules="required"
                                 :entityTypeGuid="entityTypeGuid" />
-                <PersonPicker v-model="personAlias"
+                <PersonPicker v-if="showPersonPicker"
+                              v-model="personAlias"
                               label="Person"
                               help="Set this to make it a personal merge template. Leave it blank to make it a global." />
 
@@ -50,6 +52,7 @@
     import { Guid } from "@Obsidian/Types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids";
     import FileUploader from "@Obsidian/Controls/fileUploader";
+import { MergeTemplateOwnership } from "../../../../Rock.JavaScript.Obsidian/Framework/Enums/Controls/mergeTemplateOwnership";
 
     const props = defineProps({
         modelValue: {
@@ -83,6 +86,8 @@
     const templateBinaryFile = propertyRef(props.modelValue.templateBinaryFile ?? {}, "TemplateBinaryFile");
     const category = propertyRef(props.modelValue.category ?? {}, "Category");
     const personAlias = propertyRef(props.modelValue.personAlias ?? {}, "PersonAlias");
+    const showPersonPicker = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal);
+    const showCategory = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal || props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.Global);
     const entityTypeGuid = ref(props.entityTypeGuid);
     const containerType = ref("Rock.MergeTemplates.MergeTemplateTypeContainer");
     const binaryFileTypeGuid = BinaryFiletype.MergeTemplate;
