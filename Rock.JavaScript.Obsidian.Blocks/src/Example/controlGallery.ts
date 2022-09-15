@@ -172,6 +172,8 @@ import ReportPicker from "@Obsidian/Controls/reportPicker";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
 import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
+import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.vue";
 
 // #region Gallery Support
 
@@ -5794,6 +5796,68 @@ const dayOfWeekPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a month/day picker */
+const monthDayPickerGallery = defineComponent({
+    name: "MonthDayPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthDayPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, day: 0 }),
+            importCode: getControlImportPath("monthDayPicker"),
+            exampleCode: `<MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a month/year picker */
+const monthYearPickerGallery = defineComponent({
+    name: "MonthYearPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthYearPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, year: 0 }),
+            importCode: getControlImportPath("monthYearPicker"),
+            exampleCode: `<MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5904,7 +5968,9 @@ const controlGalleryComponents: Record<string, Component> = [
     reportPickerGallery,
     schedulePickerGallery,
     workflowActionTypePickerGallery,
-    dayOfWeekPickerGallery
+    dayOfWeekPickerGallery,
+    monthDayPickerGallery,
+    monthYearPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

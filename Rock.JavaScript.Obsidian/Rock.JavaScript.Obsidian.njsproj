@@ -35,6 +35,8 @@
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\dayOfWeekPicker.vue" />
+    <Content Include="Framework\Controls\monthDayPicker.vue" />
+    <Content Include="Framework\Controls\monthYearPicker.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\workflowActionTypePicker.vue" />
     <Content Include="Framework\Core\tsconfig.json" />
@@ -504,6 +506,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\flowNodeDiagramNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\flowNodeDiagramSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\monthDayValue.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
