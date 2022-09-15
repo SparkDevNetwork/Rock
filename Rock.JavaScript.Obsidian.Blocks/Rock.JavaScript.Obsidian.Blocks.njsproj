@@ -34,6 +34,10 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
+    <Content Include="src\Core\categoryDetail.vue" />
+    <Content Include="src\Core\categoryDetailCustomSettings.vue" />
+    <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
+    <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
     <Content Include="src\Reporting\mergeTemplateDetail.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\editPanel.partial.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
@@ -56,6 +60,7 @@
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
+    <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
@@ -69,6 +74,7 @@
     <Folder Include="src\Finance\" />
     <Folder Include="src\Groups\" />
     <Folder Include="src\Reporting\" />
+    <Folder Include="src\Reporting\MergeTemplateDetail\" />
     <Folder Include="src\Security\" />
     <Folder Include="src\Utility\" />
     <Folder Include="src\WorkFlow\" />
@@ -133,6 +139,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\CategoryDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\noteTypeDetail.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\types.d.ts" />

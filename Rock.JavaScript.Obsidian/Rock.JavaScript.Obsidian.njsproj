@@ -106,6 +106,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
@@ -119,6 +120,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
@@ -483,6 +485,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CategoryDetail\categoryBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CategoryDetail\categoryDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CategoryDetail\customSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CategoryDetail\customSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeBag.d.ts" />

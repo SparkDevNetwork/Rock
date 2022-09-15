@@ -81,6 +81,10 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CategoryBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CategoryDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
