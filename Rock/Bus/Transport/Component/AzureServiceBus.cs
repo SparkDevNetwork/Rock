@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,13 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
+#if REVIEW_WEBFORMS
 using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
+#else
+using MassTransit.Azure.ServiceBus.Core;
+//using MassTransit.Azure.ServiceBus.Core.Contexts;
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -129,6 +134,7 @@ namespace Rock.Bus.Transport
         /// <param name="url"></param>
         private static void ConfigureBusResources( TimeSpan messageExpiration, bool enableDeadletterOnMessageExpiration, string url )
         {
+#if REVIEW_WEBFORMS
             var namespaceManager = NamespaceManager.CreateFromConnectionString( url );
 
             // Get all of the current queues
@@ -178,6 +184,7 @@ namespace Rock.Bus.Transport
                     }
                 }
             }
+#endif
         }
 
         /// <summary>
