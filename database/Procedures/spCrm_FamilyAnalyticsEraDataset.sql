@@ -82,14 +82,12 @@ BEGIN
  DistinctCount INT
         ,GivingId NVARCHAR(50)
         ,TransactionDateTime DATETIME
-        ,SundayDate Date
         )
 
     INSERT INTO @TempFinancialTransactionByDateAndGivingId
     SELECT COUNT(DISTINCT (ft.[Id])) [DistinctCount]
         ,g1.GivingId
         ,ft.TransactionDateTime [TransactionDateTime]
-        ,SundayDate Date
     FROM [FinancialTransaction] ft
     INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
     INNER JOIN [Person] g1 ON g1.[Id] = pa.[PersonId]
@@ -100,7 +98,6 @@ BEGIN
         AND ft.TransactionDateTime >= @SundayEntryGivingDurationLong
     GROUP BY g1.GivingId
         ,ft.TransactionDateTime
-        ,SundayDate
 
     DECLARE @TempAttendanceBySundayDateAndFamily TABLE (
         SundayDate DATE
@@ -136,7 +133,7 @@ BEGIN
 	SELECT GivingId, SUM(ft.DistinctCount)
 	FROM @TempFinancialTransactionByDateAndGivingId ft
 	WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationShort
-		AND ft.SundayDate <= @SundayDateStart
+		AND ft.TransactionDateTime <= @SundayDateStart
 	GROUP BY GivingId
 
 	DECLARE @TempExitGiftCountDuration TABLE (
@@ -148,7 +145,7 @@ BEGIN
 	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0)
 	FROM @TempFinancialTransactionByDateAndGivingId ft
 	WHERE ft.TransactionDateTime >= @SundayExitGivingDuration
-		AND ft.SundayDate <= @SundayDateStart
+		AND ft.TransactionDateTime <= @SundayDateStart
 	GROUP BY GivingId
 
 	DECLARE @TempEntryGiftCountDurationLong TABLE (
@@ -160,7 +157,7 @@ BEGIN
 	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0) AS [EntryGiftCountDurationLong]
 					FROM @TempFinancialTransactionByDateAndGivingId ft
 					WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationLong
-						AND ft.SundayDate <= @SundayDateStart
+						AND ft.TransactionDateTime <= @SundayDateStart
 	GROUP BY GivingId
 
 	DECLARE @TempExitAttendanceCountDurationShort TABLE (
