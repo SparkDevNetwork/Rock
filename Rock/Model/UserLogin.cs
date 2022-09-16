@@ -185,7 +185,6 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the API key that is associated with the UserLogin
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         [HideFromReporting]
         public string ApiKey { get; set; }
         
@@ -260,8 +259,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the encrypted confirmation code.
         /// </value>
-        [DataMember]
+        [HideFromReporting]
         [NotMapped]
+        [LavaInclude]
         public virtual string ConfirmationCode
         {
             get
@@ -286,8 +286,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
         /// </value>
-        [DataMember]
+        [HideFromReporting]
         [NotMapped]
+        [LavaInclude]
         public virtual string ConfirmationCodeEncoded
         {
             get

@@ -290,6 +290,7 @@ namespace RockWeb.Blocks.Security
 
                     userLoginService.SetPassword( user, tbPassword.Text );
                     user.IsConfirmed = true;
+                    user.IsLockedOut = false; // unlock the user account if they reset their password.
                     rockContext.SaveChanges();
 
                     pnlResetSuccess.Visible = true;
