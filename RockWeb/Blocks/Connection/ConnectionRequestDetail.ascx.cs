@@ -538,6 +538,12 @@ namespace RockWeb.Blocks.Connection
             int connectionRequestId = hfConnectionRequestId.ValueAsInt();
             if ( connectionRequestId > 0 )
             {
+                /*
+                 SK - 09/04/2022
+                 Technically Show Add as well as IsDeleteEnabled will always be true here as User with Edit access can only reach to Edit Panel and invoke the current event.
+                 */
+                gConnectionRequestActivities.Actions.ShowAdd = true;
+                gConnectionRequestActivities.IsDeleteEnabled = true;
                 ShowReadonlyDetails( new ConnectionRequestService( new RockContext() ).Get( connectionRequestId ) );
                 pnlReadDetails.Visible = true;
                 pnlConnectionRequestActivities.Visible = true;

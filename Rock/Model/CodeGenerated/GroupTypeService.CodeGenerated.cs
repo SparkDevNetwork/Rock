@@ -74,12 +74,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<GroupMember>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupMember.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<GroupMemberScheduleTemplate>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupMemberScheduleTemplate.FriendlyTypeName );
