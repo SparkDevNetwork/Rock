@@ -34,6 +34,9 @@
                         <asp:Literal ID="lAddPlacementGroupButtonText" Text="Add ..." runat="server" />
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" OnClick="btnConfiguration_Click"><i class="fa fa-gear"></i></asp:LinkButton>
+                    <button type="button" class="btn btn-default btn-xs btn-square js-toggle-group-details">
+                        <i class="fa fa-angle-double-up"></i>
+                    </button>
                 </div>
             </div>
 
@@ -139,7 +142,7 @@
                                             <div class="person-container">
                                                 <span class="person-name js-groupmember-name"></span>
                                                 <div class="dropdown js-groupmember-actions hide-transit">
-                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></button>
+                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="js-edit-group-member">Edit</a></li>
                                                         <li><a class="js-remove-group-member">Remove</a></li>
@@ -200,7 +203,7 @@
 
                                                     <div class="panel-body padding-all-none js-group-details">
 
-                                                        <asp:Panel Id="pnlGroupAttributes" runat="server" CssClass="panel-drawer">
+                                                        <asp:Panel Id="pnlGroupAttributes" runat="server" CssClass="panel-drawer p-3 pb-0 border-bottom border-panel">
                                                             <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" NumberOfColumns="2" />
                                                         </asp:Panel>
 
@@ -313,7 +316,7 @@
         <asp:Panel ID="pnlConfiguration" runat="server">
             <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" CssClass=".js-configuration-modal" OnSaveClick="mdPlacementConfiguration_SaveClick">
                 <Content>
-                    <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" />
+                    <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" CssClass="input-width-xl" />
 
                     <%-- This will only be shown when in Registration Template mode --%>
                     <Rock:PanelWidget ID="pwRegistrationTemplateConfiguration" runat="server" Title="Registration Template Configuration">
