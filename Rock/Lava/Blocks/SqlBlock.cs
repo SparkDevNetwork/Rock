@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -64,71 +65,91 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            using ( TextWriter sql = new StringWriter() )
+            // Get the SQL statement from the block content.
+            string sql;
+            using ( TextWriter sqlWriter = new StringWriter() )
             {
-                base.OnRender( context, sql );
+                base.OnRender( context, sqlWriter );
+                sql = sqlWriter.ToString();
+            }
 
-                var parms = ParseMarkup( _markup, context );
+            var parms = ParseMarkup( _markup, context );
 
-                var sqlTimeout = (int?)null;
-                if ( parms.ContainsKey( "timeout" ) )
-                {
-                    sqlTimeout = parms["timeout"].AsIntegerOrNull();
-                }
+            var sqlTimeout = (int?)null;
+            if ( parms.ContainsKey( "timeout" ) )
+            {
+                sqlTimeout = parms["timeout"].AsIntegerOrNull();
+            }
 
-                switch ( parms["statement"] )
-                {
-                    case "select":
-
-                        var stopWatch = new Stopwatch();
+            switch ( parms["statement"] )
+            {
+                case "select":
+                    var stopWatch = new Stopwatch();
+                    DataSet results = null;
+                    Exception queryException = null;
+                    var summary = $"[Params]=\"{_markup}\", [Sql]=\"{sql}\", Timeout={sqlTimeout ?? -1}s";
+                    try
+                    {
                         stopWatch.Start();
-                        var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => (object)i.Value ), sqlTimeout );
+                        results = DbService.GetDataSet( sql, CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
                         stopWatch.Stop();
+                    }
+                    catch ( Exception ex )
+                    {
+                        queryException = ex;
+                    }
+                    finally
+                    {
+                        summary += $", Elapsed={stopWatch.Elapsed.TotalSeconds}";
+                    }
+                    if ( queryException != null )
+                    {
+                        throw new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                    }
 
-                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamicTypeCollection() );
+                    context.SetMergeField( parms["return"], results.Tables[0].ToDynamicTypeCollection() );
 
-                        // Manually add query timings
-                        var rockMockContext = LavaHelper.GetRockContextFromLavaContext( context );
-                        rockMockContext.QueryCount++;
-                        if ( rockMockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                    // Manually add query timings
+                    var rockMockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                    rockMockContext.QueryCount++;
+                    if ( rockMockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                    {
+                        rockMockContext.QueryMetricDetails.Add( new QueryMetricDetail
                         {
-                            rockMockContext.QueryMetricDetails.Add( new QueryMetricDetail
-                            {
-                                Sql = sql.ToString(), 
-                                Duration = stopWatch.ElapsedTicks,
-                                Database = rockMockContext.Database.Connection.Database,
-                                Server = rockMockContext.Database.Connection.DataSource
-                            } );
-                        }
-                        break;
-                    case "command":
-                        var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+                            Sql = sql,
+                            Duration = stopWatch.ElapsedTicks,
+                            Database = rockMockContext.Database.Connection.Database,
+                            Server = rockMockContext.Database.Connection.DataSource
+                        } );
+                    }
+                    break;
+                case "command":
+                    var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
 
-                        foreach ( var p in parms )
-                        {
-                            sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
-                        }
+                    foreach ( var p in parms )
+                    {
+                        sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
+                    }
 
-                        var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                    var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
-                        // Save the orginal command timeout as we're about to change it
-                        var originalCommandTimeout = rockContext.Database.CommandTimeout;
+                    // Save the orginal command timeout as we're about to change it
+                    var originalCommandTimeout = rockContext.Database.CommandTimeout;
 
-                        if ( sqlTimeout != null )
-                        {
-                            rockContext.Database.CommandTimeout = sqlTimeout;
-                        }
-                        int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+                    if ( sqlTimeout != null )
+                    {
+                        rockContext.Database.CommandTimeout = sqlTimeout;
+                    }
+                    int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql, sqlParameters.ToArray() );
 
-                        // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
-                        rockContext.Database.CommandTimeout = originalCommandTimeout;
+                    // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
+                    rockContext.Database.CommandTimeout = originalCommandTimeout;
 
-                        context.SetMergeField( parms["return"], numOfRowsAffected );
+                    context.SetMergeField( parms["return"], numOfRowsAffected );
 
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                default:
+                    break;
             }
         }
 

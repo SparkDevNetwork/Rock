@@ -728,11 +728,9 @@ namespace Rock.Lava.Fluid
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
-            string liquidTemplate;
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out _ );
 
-            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out liquidTemplate );
-
-            var newTemplate = new FluidTemplateProxy( fluidTemplate );
+            var newTemplate = new FluidTemplateProxy( fluidTemplate, lavaTemplate );
 
             return newTemplate;
         }
