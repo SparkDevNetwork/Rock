@@ -73,6 +73,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIncludeChildGroups" runat="server" Label="Include Child Groups" AutoPostBack="true" OnCheckedChanged="cbIncludeChildGroups_CheckedChanged" ValidationGroup="vgRosterConfiguration" />
+                                <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Occurrence Date" />
                                 <Rock:RockCheckBoxList ID="cblLocations" runat="server" Label="Locations" ValidationGroup="vgRosterConfiguration" FormGroupCssClass="js-locations-picker" />
                                 <Rock:NotificationBox ID="nbLocationsWarning" runat="server" NotificationBoxType="Warning" />
                             </div>
