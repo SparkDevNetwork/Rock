@@ -14,16 +14,140 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
 {
     [TestClass]
-    [Ignore("These tests are long-running and should only be enabled when testing changes to the Sql Command Block.")]
-    public class SqlTests : LavaIntegrationTestBase
+    public class SqlCommandTests : LavaIntegrationTestBase
+    {
+        [TestMethod]
+        public void SqlBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
+        {
+            var input = @"
+{% sql %}
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+    ORDER BY [NickName]
+{% endsql %}
+";
+
+            var expectedOutput = "The Lava command 'sql' is not configured for this template.";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void SqlBlock_PersonWhereLastNameIsDecker_ReturnsDeckers()
+        {
+            var input = @"
+{% sql %}
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+    ORDER BY [NickName]
+{% endsql %}
+
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"Alex_Decker;Ted_Decker;";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void SqlBlock_NullColumnValueInResult_IsRenderedAsEmptyString()
+        {
+            var input = @"
+{% sql %}
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+UNION
+    SELECT   null as [NickName], null as [LastName]
+    ORDER BY [NickName]
+{% endsql %}
+
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"_;Alex_Decker;Ted_Decker;";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
+        /// Verify that a nullable database column is mapped to a Nullable<> System.Type.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_NullableDatabaseColumn_IsReturnedAsNullableType()
+        {
+            var input = @"
+{% sql return:'Items' %}
+    SELECT TOP 1 p.[PhotoId] FROM [Person] as p WHERE [PhotoId] IS NULL
+{% endsql %}
+{% for item in Items %}
+    {% if item.PhotoId == null %}
+    Is Null
+    {% endif %}
+{% endfor %}
+";
+
+            var expectedOutput = @"Is Null";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
+        /// Verify that the Select filter operates correctly on the result set returned by the Sql Lava block.
+        /// Verifies Issue #4938 ⁃ Select Lava Filter Does Not See Values In A SQL Results Array.
+        /// Refer https://github.com/SparkDevNetwork/Rock/issues/4938.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_SelectFilterAppliedToResultSet_ReturnsSelectedField()
+        {
+            var input = @"
+{% sql %}
+SELECT * FROM Campus
+{% endsql %}
+{% assign campusNames = results | Select:'Name' | Uniq %}
+{% for campusName in campusNames %}
+{{ campusName }};
+{% endfor %}
+";
+
+            var expectedOutput = @"
+Main Campus;Stepping Stone;
+";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+    }
+
+    #region SQL Timeout Tests
+
+    [TestClass]
+    [Ignore( "These tests are long-running and should only be enabled when testing changes to the Sql Command Block." )]
+    public class SqlCommandTimeoutTests : LavaIntegrationTestBase
     {
         [TestMethod]
         [TestProperty( "Execution Time", "Long" )]
@@ -141,7 +265,8 @@ namespace Rock.Tests.Integration.Lava
         {
             var lavaScript = @"{% sql statement:'command' timeout:'10' %}
                 WAITFOR DELAY '00:00:20';
-                DELETE FROM [DefinedValue] WHERE 1 != 1
+                SELECT TOP 5 * 
+                FROM Person
             {% endsql %}
 
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
@@ -214,7 +339,92 @@ namespace Rock.Tests.Integration.Lava
             } );
         }
 
-        private LavaRenderResult ExecuteSqlBlock(ILavaEngine engine, string lavaScript)
+        [TestMethod]
+        public void SqlBlock_MultipleExecutionsWithTimeout_TimeoutShouldReturnToDefault()
+        {
+            var input = @"
+{% sql statement:'command' timeout:'60' %}
+    WAITFOR DELAY '00:00:35';
+    DELETE FROM [DefinedValue] WHERE 1 != 1
+{% endsql %}
+
+{% sql timeout:'10' %}
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+    ORDER BY [NickName];
+{% endsql %}
+
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"Alex_Decker;Ted_Decker;";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
+        /// Verify that the SQL block timeout parameter does not affect subsequent database operations.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_ParallelExecutionsWithTimeout_TimeoutShouldReturnToDefault()
+        {
+            var templateLong = @"
+***
+Iteration: {{ iteration }}
+***
+{% sql statement:'command' timeout:'60' %}
+    SELECT DELETE FROM [DefinedValue] WHERE 1 != 1
+    WAITFOR DELAY '00:00:35';
+{% endsql %}
+";
+
+            var templateShort = @"
+
+{% sql %}
+    WAITFOR DELAY '00:00:05';
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+    ORDER BY [NickName];
+{% endsql %}
+
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"***Iteration: <?>***Alex_Decker;Ted_Decker;";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    TestHelper.DebugWriteRenderResult( engine, "(Ignored)", "(Ignored)" );
+                    return;
+                }
+
+                Action<int, string> renderAction = ( x, input ) =>
+                       {
+                           var context = new LavaDataDictionary();
+                           context["iteration"] = x;
+                           var options = new LavaTestRenderOptions() { EnabledCommands = "Sql", MergeFields = context, Wildcards = new List<string> { "<?>" } };
+
+                           TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                       };
+
+
+                var task1 = Task.Run( () => renderAction( 1, templateLong ) );
+                var task2 = Task.Run( () => renderAction( 2, templateShort ) );
+                var task3 = Task.Run( () => renderAction( 2, templateShort ) );
+
+                Task.WhenAll( task1, task2, task3 );
+            } );
+        }
+
+        private LavaRenderResult ExecuteSqlBlock( ILavaEngine engine, string lavaScript )
         {
             var renderContext = engine.NewRenderContext( new List<string> { "Sql" } );
 
@@ -224,4 +434,6 @@ namespace Rock.Tests.Integration.Lava
             return result;
         }
     }
+
+    #endregion
 }
