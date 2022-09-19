@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.DetailPage )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "0DE16268-BD5B-4CFC-A7C6-F1E07F47527A" )]
     public partial class BenevolenceTypeList : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

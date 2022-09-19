@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Security.Oidc
         "Detail Page",
         Key = AttributeKey.DetailPage,
         Order = 1)]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_SCOPE_LIST )]
     public partial class AuthScopeList : RockBlock, ICustomGridColumns
     {
         public class AttributeKey

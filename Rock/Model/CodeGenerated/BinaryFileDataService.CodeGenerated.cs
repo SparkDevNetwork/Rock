@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// BinaryFileData View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( BinaryFileData ) )]
-    public partial class BinaryFileDataViewModelHelper : ViewModelHelper<BinaryFileData, Rock.ViewModel.BinaryFileDataViewModel>
+    public partial class BinaryFileDataViewModelHelper : ViewModelHelper<BinaryFileData, BinaryFileDataBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,18 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.BinaryFileDataViewModel CreateViewModel( BinaryFileData model, Person currentPerson = null, bool loadAttributes = true )
+        public override BinaryFileDataBag CreateViewModel( BinaryFileData model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.BinaryFileDataViewModel
+            var viewModel = new BinaryFileDataBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
-                Content = model.Content,
+                IdKey = model.IdKey,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -170,7 +169,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.BinaryFileDataViewModel ToViewModel( this BinaryFileData model, Person currentPerson = null, bool loadAttributes = false )
+        public static BinaryFileDataBag ToViewModel( this BinaryFileData model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new BinaryFileDataViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

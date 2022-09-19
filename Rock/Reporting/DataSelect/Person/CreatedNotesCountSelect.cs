@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the count of notes created by the person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the count of notes created by the person" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B1CD75F8-7CD2-4495-B13A-B6196ADE94B0")]
     public class CreatedNotesCountSelect : DataSelectComponent
     {
         #region Properties

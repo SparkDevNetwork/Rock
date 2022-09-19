@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace RockWeb.Blocks.Mobile
     [DisplayName( "Mobile Layout Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile layout." )]
+    [Rock.SystemGuid.BlockTypeGuid( "74B6C64A-9617-4745-9928-ABAC7948A95D" )]
     public partial class MobileLayoutDetail : RockBlock
     {
         #region Base Methods

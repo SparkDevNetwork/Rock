@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -39,6 +39,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PersonalDevices/UpdateByMACAddress/{macAddress}" )]
+        [Rock.SystemGuid.RestActionGuid( "DDD28018-059B-42D1-8E7D-3E94A957AB44" )]
         public PersonalDevice UpdateByMACAddress( string macAddress, string deviceIdentifier = "", string devicePlatform = "", string deviceVersion = "", int? personAliasId = null )
         {
             var rockContext = new Data.RockContext();
@@ -72,7 +73,7 @@ namespace Rock.Rest.Controllers
                 {
                     dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
-                personalDevice.PlatformValueId = dv != null ? dv.Id : (int?)null;
+                personalDevice.PlatformValueId = dv != null ? dv.Id : ( int? ) null;
             }
 
             // Version

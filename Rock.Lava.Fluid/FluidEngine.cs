@@ -69,7 +69,8 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         protected override ILavaRenderContext OnCreateRenderContext()
         {
-            var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
+            var options = GetTemplateOptions();
+            var fluidContext = new global::Fluid.TemplateContext( options );
             var context = new FluidRenderContext( fluidContext );
 
             return context;
@@ -165,7 +166,7 @@ namespace Rock.Lava.Fluid
                 // return the appropriate Fluid wrapper to short-circuit further conversion attempts.
                 if ( value is IDictionary<string, object> liquidDictionary )
                 {
-                    return new DictionaryValue( new ObjectDictionaryFluidIndexable<object>( liquidDictionary, _templateOptions ) );
+                    return new DictionaryValue( new ObjectDictionaryFluidIndexable<object>( liquidDictionary, templateOptions ) );
                 }
 
                 var valueType = value.GetType();

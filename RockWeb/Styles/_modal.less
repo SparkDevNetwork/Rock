@@ -14,16 +14,25 @@
 // Rock modal (page properties, etc.)
 // -------------------------
 
+body.rock-modal {
+  background: transparent;
+
+  .modal-content {
+    border: 0 !important;
+    box-shadow: none;
+    //background: transparent;
+  }
+}
+
 .modal-content.rock-modal,
 .rock-modal .modal-content {
-  color: @modal-body-text-color;
-  background-color: @modal-body-bg;
+  background: transparent;
   border: 0;
   .box-shadow(@shadow-modal);
 
   .modal-header {
     min-height: 34px;
-    padding: 5px 15px;
+    padding: @modal-rock-header-padding-y @modal-rock-header-padding-x;
     color: @modal-header-text-color;
     background-color: @modal-header-bg;
 
@@ -57,8 +66,10 @@
   }
 
   .modal-body {
+    padding: @modal-rock-inner-padding;
     color: @modal-body-text-color;
     text-align: left;
+    background-color: @modal-body-bg;
 
     > .scroll-container {
       width: 720px;
@@ -74,8 +85,8 @@
   }
 
   .modal-footer {
-    padding: 8px;
-    margin-top: 10px;
+    padding: @modal-rock-footer-padding-y @modal-rock-footer-padding-x;
+    margin-top: @modal-rock-footer-margin-top;
     color: @modal-footer-text-color;
     background-color: @modal-footer-bg;
     border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -83,16 +94,15 @@
 }
 
 .rock-modal {
-  .modal-body {
-    padding: 8px 12px 12px;
-  }
-  .modal-footer::after {
-    clear: both;
-  }
+
   .modal-footer .btn {
     float: right;
     margin-left: 5px;
   }
+}
+
+.rock-modal-frame {
+  border-radius: @modal-rock-border-radius !important;
 }
 
 // Fix for overflow scrolling on iOS

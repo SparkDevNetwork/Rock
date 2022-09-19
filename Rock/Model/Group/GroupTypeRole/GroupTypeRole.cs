@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D155C373-9E47-4C6A-BADD-792F31AF5FBA")]
     public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {
         #region Entity Properties

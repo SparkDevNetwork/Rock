@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "80ED0575-8FAE-4BC4-A51F-CAC211DD104F")]
     public class ValueFilterFieldType : FieldType
     {
         #region Configuration
@@ -176,7 +177,13 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var filter = GetFilterExpression( configurationValues, value );
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var filter = FilterExpression.FromJsonOrNull( privateValue );
 
             try
             {

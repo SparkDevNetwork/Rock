@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in a registration instance of the specified registration template or templates" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Registration Template(s) Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E7D705CC-E950-4E7B-9101-F9138F1B1B10")]
     public class InRegistrationInstanceRegistrationTemplateFilter : DataFilterComponent
     {
         #region Properties

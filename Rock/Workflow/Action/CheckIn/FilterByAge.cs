@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter By Age" )]
 
     [BooleanField( "Remove", "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
+    [Rock.SystemGuid.EntityTypeGuid( "3A77A36E-D613-44F7-ACA1-34666A85CD07")]
     public class FilterByAge : CheckInActionComponent
     {
         /// <summary>

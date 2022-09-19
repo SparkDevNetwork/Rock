@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMailing" )]
     [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 6, "IsMapped" )]
     [BooleanField( "Save Current Address as Previous Address", "Determines whether this will overwrite an existing address of the specified type or change its type to Previous and add a new address.", order: 7, key: "SavePreviousAddress" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B9C0DDB5-F437-4175-AB32-84AA4E20F788")]
     public class PersonAddressUpdate : ActionComponent
     {
         /// <summary>

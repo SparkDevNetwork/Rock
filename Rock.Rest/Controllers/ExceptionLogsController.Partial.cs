@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.Http;
 
 using Rock.Chart;
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
@@ -36,6 +37,9 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
+        [Rock.SystemGuid.RestActionGuid( "403444AE-0267-408A-B9A8-7E5D70AA594F" )]
+        [RockObsolete( "1.14.0" )]
+        [Obsolete( "This method is no longer used by the Exception List block." )]
         public IEnumerable<IChartData> GetChartData()
         {
             // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
@@ -80,6 +84,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/LogException" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "3BE0D16F-C372-4483-8A99-D5DE9278BD41" )]
         public void LogException( Exception ex )
         {
             var personAlias = this.GetPersonAlias();
@@ -87,7 +92,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ExceptionChartData : IChartData
         {

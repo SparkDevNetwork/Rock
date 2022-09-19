@@ -14,21 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Model
 {
+    /*
+      02/08/2022 - CWR
+      This class does not appear to be implemented in Rock core.  Therefore, we are obsoleting it.
+     */
+
     /// <summary>
     /// Represents a Range of objects in Rock.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [RockObsolete( "1.14" )]
+    [Obsolete( "This class is not used in Rock." )]
     public class RangeValue<T>
     {
-
         /// <summary>
-        /// Initializes a new instanceof the <see cref="RangeValue{T}"/> class.
+        /// Initializes a new instance of the <see cref="RangeValue{T}"/> class.
         /// </summary> 
         /// <param name="from">The From/minimum value of the range.</param>
         /// <param name="to">The To/maximum value of the range.</param>
-        public RangeValue(T from, T to)
+        public RangeValue( T from, T to )
         {
             this.From = from;
             this.To = to;

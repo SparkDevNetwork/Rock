@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupScheduleExclusion View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupScheduleExclusion ) )]
-    public partial class GroupScheduleExclusionViewModelHelper : ViewModelHelper<GroupScheduleExclusion, Rock.ViewModel.GroupScheduleExclusionViewModel>
+    public partial class GroupScheduleExclusionViewModelHelper : ViewModelHelper<GroupScheduleExclusion, GroupScheduleExclusionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupScheduleExclusionViewModel CreateViewModel( GroupScheduleExclusion model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupScheduleExclusionBag CreateViewModel( GroupScheduleExclusion model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupScheduleExclusionViewModel
+            var viewModel = new GroupScheduleExclusionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EndDate = model.EndDate,
                 GroupTypeId = model.GroupTypeId,
                 StartDate = model.StartDate,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupScheduleExclusionViewModel ToViewModel( this GroupScheduleExclusion model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupScheduleExclusionBag ToViewModel( this GroupScheduleExclusion model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupScheduleExclusionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

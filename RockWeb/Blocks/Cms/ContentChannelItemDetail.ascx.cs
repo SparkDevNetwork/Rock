@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -29,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -63,6 +65,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ContentChannel )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "5B99687B-5FE9-4EE2-8679-5040CAEB9E2E" )]
     public partial class ContentChannelItemDetail : RockBlock
     {
         #region Attribute Keys
@@ -205,6 +208,7 @@ namespace RockWeb.Blocks.Cms
                     }}
                     return false;
                 }}";
+
         #endregion
 
         #region Control Methods
@@ -237,7 +241,7 @@ namespace RockWeb.Blocks.Cms
             gParentItems.GridRebind += gParentItems_GridRebind;
             gParentItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
-            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID ); 
+            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID );
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
@@ -327,7 +331,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null &&
-                ( IsUserAuthorized( Authorization.EDIT ) || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 StructuredContentHelper structuredContentHelper = null;
                 StructuredContentChanges structuredContentChanges = null;
@@ -345,6 +349,7 @@ namespace RockWeb.Blocks.Cms
                     contentItem.StructuredContent = structuredContentHelper.Content;
                     contentItem.Content = structuredContentHelper.Render();
                 }
+
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.ItemGlobalKey = contentItem.Id != 0 ? lblItemGlobalKey.Text : CreateItemGlobalKey();
 
@@ -438,6 +443,16 @@ namespace RockWeb.Blocks.Cms
                         taglTags.SaveTagValues( CurrentPersonAlias );
                     }
 
+                    if ( contentItem.ContentChannel.EnablePersonalization )
+                    {
+                        var entityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id;
+                        var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
+                        personalizationSegmentService.UpdatePersonalizedEntityForSegments( entityTypeId, contentItem.Id, lbSegments.SelectedValuesAsInt );
+
+                        var requestFilterService = new RequestFilterService( rockContext );
+                        requestFilterService.UpdatePersonalizedEntityForRequestFilters( entityTypeId, contentItem.Id, lbRequestFilters.SelectedValuesAsInt );
+                    }
+
                     int? eventItemOccurrenceId = PageParameter( PageParameterKey.EventItemOccurrenceId ).AsIntegerOrNull();
                     if ( eventItemOccurrenceId.HasValue )
                     {
@@ -459,6 +474,13 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
                 } );
+
+                // Update the content collection index.
+                new ProcessContentCollectionDocument.Message
+                {
+                    EntityTypeId = contentItem.TypeId,
+                    EntityId = contentItem.Id
+                }.Send();
 
                 ReturnToParentPage();
             }
@@ -804,6 +826,7 @@ namespace RockWeb.Blocks.Cms
                 return contentChannelItemSlugService.GetUniqueContentSlug( tbTitle.Text, null );
             }
         }
+
         /// <summary>
         /// Gets the slug prefix.
         /// </summary>
@@ -820,7 +843,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( itemUrl.EndsWith( "{{Slug}}" ) )
             {
-                return itemUrl.Replace( "{{Slug}}", "" );
+                return itemUrl.Replace( "{{Slug}}", string.Empty );
             }
 
             return string.Empty;
@@ -910,7 +933,6 @@ namespace RockWeb.Blocks.Cms
 
         public void ShowDetail( int contentItemId, int? contentChannelId )
         {
-            bool canEdit = IsUserAuthorized( Authorization.EDIT );
             hfId.Value = contentItemId.ToString();
             hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
@@ -945,7 +967,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
-                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 hfIsDirty.Value = "false";
 
@@ -1096,6 +1118,23 @@ namespace RockWeb.Blocks.Cms
                 bool canHaveChildren = contentItem.Id > 0 && contentItem.ContentChannel.ChildContentChannels.Any();
                 bool canHaveParents = contentItem.Id > 0 && contentItem.ContentChannel.ParentContentChannels.Any();
 
+                var enablePersonalization = contentItem.Id > 0 && contentItem.ContentChannel.EnablePersonalization;
+                if ( contentItem.Id == 0 && contentChannelId.HasValue )
+                {
+                    var contentChannel = ContentChannelCache.Get( contentChannelId.Value );
+                    if ( contentChannel != null )
+                    {
+                        enablePersonalization = contentChannel.EnablePersonalization;
+                    }
+                }
+
+                pnlPersonalization.Visible = enablePersonalization;
+                if ( enablePersonalization )
+                {
+                    BindSegmentListBox( contentItem );
+                    BindRequestFilterListBox( contentItem );
+                }
+
                 pnlChildrenParents.Visible = canHaveChildren || canHaveParents;
                 phPills.Visible = canHaveChildren && canHaveParents;
                 if ( canHaveChildren && !canHaveParents )
@@ -1123,6 +1162,44 @@ namespace RockWeb.Blocks.Cms
             {
                 nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentChannelItem.FriendlyTypeName );
                 pnlEditDetails.Visible = false;
+            }
+        }
+
+        private void BindRequestFilterListBox( ContentChannelItem contentItem )
+        {
+            var requestFilterService = new RequestFilterService( new RockContext() );
+            var requestFilters = requestFilterService
+                .Queryable()
+                .OrderBy( a => a.Name )
+                .ToList();
+            lbRequestFilters.DataSource = requestFilters;
+            lbRequestFilters.DataBind();
+            if ( contentItem.Id > 0 )
+            {
+                var selectedRequestFilterIds = requestFilterService
+                    .GetPersonalizedEntityRequestFilterQuery( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
+                    .Select( a => a.PersonalizationEntityId )
+                    .ToList();
+                lbRequestFilters.SetValues( selectedRequestFilterIds );
+            }
+        }
+
+        private void BindSegmentListBox( ContentChannelItem contentItem )
+        {
+            var personalizationSegmentService = new PersonalizationSegmentService( new RockContext() );
+            var segments = new PersonalizationSegmentService( new RockContext() )
+                .Queryable()
+                .OrderBy( a => a.Name )
+                .ToList();
+            lbSegments.DataSource = segments;
+            lbSegments.DataBind();
+            if ( contentItem.Id > 0 )
+            {
+                var selectedSegmentIds = personalizationSegmentService
+                    .GetPersonalizedEntitySegmentQuery( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
+                    .Select( a => a.PersonalizationEntityId )
+                    .ToList();
+                lbSegments.SetValues( selectedSegmentIds );
             }
         }
 
@@ -1415,7 +1492,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// When navigating to child items of childitems of childitems, the "Hierarchy" will be a list of how to navigate backwards thru the parents
+        /// When navigating to child items of childitems of childitems, the "Hierarchy" will be a list of how to navigate backwards through the parents.
         /// </summary>
         /// <returns></returns>
         private List<string> GetNavHierarchy()

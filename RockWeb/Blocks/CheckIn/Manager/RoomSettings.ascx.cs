@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [DisplayName( "Room Settings" )]
     [Category( "Check-in > Manager" )]
     [Description( "Block used to open and close classrooms, Etc." )]
+    [Rock.SystemGuid.BlockTypeGuid( "C809C18F-A611-40F8-A67C-CB7289431507" )]
     public partial class RoomSettings : Rock.Web.UI.RockBlock
     {
         #region Page Parameter Keys

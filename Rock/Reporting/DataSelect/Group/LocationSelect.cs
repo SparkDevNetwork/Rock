@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select the Location of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group's Location" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8533C1A1-01E6-4791-B653-C3D0774818BA")]
     public class LocationSelect : DataSelectComponent
     {
         #region Properties

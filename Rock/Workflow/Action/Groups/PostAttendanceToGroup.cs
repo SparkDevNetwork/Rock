@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,24 +37,81 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Attendance Add" )]
 
-    [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]
+    #region Attributes
 
-    [WorkflowAttribute("Person", "The attribute to set to the person in the group.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" })]
+    [WorkflowAttribute(
+        "Group",
+        Description = "The attribute containing the group to get the leader for.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" },
+        Key = AttributeKey.Group )]
 
-    [WorkflowAttribute("Attendance Date/Time", "The attribute with the date time to use for the attendance. Leave blank to use the current date time.", false, "", "", 2, "AttendanceDatetime")]
+    [WorkflowAttribute(
+        "Person",
+        Description = "The attribute to set to the person in the group.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
+        Key = AttributeKey.Person )]
 
-    [WorkflowAttribute("Location", "The attribute to set to the location of the attendance (optional).", false, "", "", 3, null,
-        new string[] { "Rock.Field.Types.LocationFieldType" })]
+    [WorkflowAttribute(
+        "Attendance Date/Time",
+        Description = "The attribute with the date time to use for the attendance. Leave blank to use the current date time.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.AttendanceDatetime )]
 
-    [WorkflowAttribute( "Schedule", "The attribute to set to the schedule of the attendance (optional).", false, "", "", 4, null,
-        new string[] { "Rock.Field.Types.ScheduleFieldType" } )]
+    [WorkflowAttribute(
+        "Location",
+        Description = "The attribute to set to the location of the attendance (optional).",
+        IsRequired = false,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.LocationFieldType" },
+        Key = AttributeKey.Location )]
 
-    [BooleanField("Add To Group", "Adds the person to the group if they are not already a member.", true, "", 5)]
-    
+    [CampusField(
+        name: "Campus",
+        description: "The campus for the Attendance.",
+        includeInactive: false,
+        required: false,
+        order: 4,
+        key: AttributeKey.Campus )]
+
+    [WorkflowAttribute(
+        "Schedule",
+        Description = "The attribute to set to the schedule of the attendance (optional).",
+        IsRequired = false,
+        Order = 5,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ScheduleFieldType" },
+        Key = AttributeKey.Schedule )]
+
+    [BooleanField(
+        "Add To Group",
+        Description = "Adds the person to the group if they are not already a member.",
+        DefaultBooleanValue = true,
+        Order = 6,
+        Key = AttributeKey.AddToGroup )]
+
+    #endregion Attributes
+    [Rock.SystemGuid.EntityTypeGuid( "7D939E2E-EBD5-491A-AA9C-FBCC91AAD5D3")]
     public class PostAttendanceToGroup : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Group = "Group";
+            public const string Person = "Person";
+            public const string AttendanceDatetime = "AttendanceDatetime";
+            public const string Location = "Location";
+            public const string Schedule = "Schedule";
+            public const string AddToGroup = "AddToGroup";
+            public const string Campus = "Campus";
+        }
+
+        #endregion Attribute Keys
+        
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -71,80 +128,81 @@ namespace Rock.Workflow.Action
             Person person = null;
             var attendanceDateTime = RockDateTime.Now;
             bool addToGroup = true;
-           
+
             // get the group attribute
-            Guid groupAttributeGuid = GetAttributeValue(action, "Group").AsGuid();
+            Guid groupAttributeGuid = GetAttributeValue( action, AttributeKey.Group ).AsGuid();
 
             if ( !groupAttributeGuid.IsEmpty() )
             {
-                groupGuid = action.GetWorkflowAttributeValue(groupAttributeGuid).AsGuidOrNull();
+                groupGuid = action.GetWorkflowAttributeValue( groupAttributeGuid ).AsGuidOrNull();
 
                 if ( !groupGuid.HasValue )
                 {
-                    errorMessages.Add("The group could not be found!");
+                    errorMessages.Add( "The group could not be found!" );
                 }
             }
 
             // get person alias guid
             Guid personAliasGuid = Guid.Empty;
-            string personAttribute = GetAttributeValue( action, "Person" );
+            string personAttribute = GetAttributeValue( action, AttributeKey.Person );
 
             Guid guid = personAttribute.AsGuid();
-            if (!guid.IsEmpty())
+            if ( !guid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
-                    string value = action.GetWorkflowAttributeValue(guid);
+                    string value = action.GetWorkflowAttributeValue( guid );
                     personAliasGuid = value.AsGuid();
                 }
 
                 if ( personAliasGuid != Guid.Empty )
                 {
-                    person = new PersonAliasService(rockContext).Queryable().AsNoTracking()
-                                    .Where(p => p.Guid.Equals(personAliasGuid))
-                                    .Select(p => p.Person)
+                    person = new PersonAliasService( rockContext ).Queryable().AsNoTracking()
+                                    .Where( p => p.Guid.Equals( personAliasGuid ) )
+                                    .Select( p => p.Person )
                                     .FirstOrDefault();
                 }
-                else {
-                    errorMessages.Add("The person could not be found in the attribute!");
+                else
+                {
+                    errorMessages.Add( "The person could not be found in the attribute!" );
                 }
             }
 
             // get attendance date
-            Guid dateTimeAttributeGuid = GetAttributeValue(action, "AttendanceDatetime").AsGuid();
+            Guid dateTimeAttributeGuid = GetAttributeValue( action, AttributeKey.AttendanceDatetime ).AsGuid();
             if ( !dateTimeAttributeGuid.IsEmpty() )
             {
-                string attributeDatetime = action.GetWorkflowAttributeValue(dateTimeAttributeGuid);
+                string attributeDatetime = action.GetWorkflowAttributeValue( dateTimeAttributeGuid );
 
-                if ( !string.IsNullOrWhiteSpace(attributeDatetime) )
+                if ( !string.IsNullOrWhiteSpace( attributeDatetime ) )
                 {
-                    if ( !DateTime.TryParse(attributeDatetime, out attendanceDateTime) )
+                    if ( !DateTime.TryParse( attributeDatetime, out attendanceDateTime ) )
                     {
-                        errorMessages.Add(string.Format("Could not parse the date provided {0}.", attributeDatetime));
+                        errorMessages.Add( string.Format( "Could not parse the date provided {0}.", attributeDatetime ) );
                     }
                 }
             }
 
             // get add to group
-            addToGroup = GetAttributeValue(action, "AddToGroup").AsBoolean();
+            addToGroup = GetAttributeValue( action, AttributeKey.AddToGroup ).AsBoolean();
 
             // get location
             Guid locationGuid = Guid.Empty;
-            Guid locationAttributeGuid = GetAttributeValue(action, "Location").AsGuid();
+            Guid locationAttributeGuid = GetAttributeValue( action, AttributeKey.Location ).AsGuid();
             if ( !locationAttributeGuid.IsEmpty() )
             {
-                var locationAttribute = AttributeCache.Get(locationAttributeGuid, rockContext);
+                var locationAttribute = AttributeCache.Get( locationAttributeGuid, rockContext );
 
                 if ( locationAttribute != null )
                 {
-                    locationGuid = action.GetWorkflowAttributeValue(locationAttributeGuid).AsGuid();
+                    locationGuid = action.GetWorkflowAttributeValue( locationAttributeGuid ).AsGuid();
                 }
             }
 
             //// get Schedule
             Guid scheduleGuid = Guid.Empty;
-            Guid scheduleAttributeGuid = GetAttributeValue( action, "Schedule" ).AsGuid();
+            Guid scheduleAttributeGuid = GetAttributeValue( action, AttributeKey.Schedule ).AsGuid();
             if ( !scheduleAttributeGuid.IsEmpty() )
             {
                 var scheduleAttribute = AttributeCache.Get( scheduleAttributeGuid, rockContext );
@@ -157,24 +215,22 @@ namespace Rock.Workflow.Action
             // set attribute
             if ( groupGuid.HasValue && person != null && attendanceDateTime != DateTime.MinValue )
             {
-                var group = new GroupService(rockContext).Queryable("GroupType.DefaultGroupRole")
-                                            .Where(g => g.Guid == groupGuid)
+                var group = new GroupService( rockContext ).Queryable( "GroupType.DefaultGroupRole" )
+                                            .Where( g => g.Guid == groupGuid )
                                             .FirstOrDefault();
                 if ( group != null )
                 {
-                    GroupMemberService groupMemberService = new GroupMemberService(rockContext);
+                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                     // get group member
                     var groupMember = groupMemberService.Queryable()
-                                            .Where(m => m.Group.Guid == groupGuid
-                                                && m.PersonId == person.Id)
+                                            .Where( m => m.Group.Guid == groupGuid
+                                                 && m.PersonId == person.Id )
                                             .FirstOrDefault();
                     if ( groupMember == null )
                     {
                         if ( addToGroup )
                         {
-
-
                             if ( group != null )
                             {
                                 groupMember = new GroupMember();
@@ -182,13 +238,13 @@ namespace Rock.Workflow.Action
                                 groupMember.PersonId = person.Id;
                                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                                 groupMember.GroupRole = group.GroupType.DefaultGroupRole;
-                                groupMemberService.Add(groupMember);
+                                groupMemberService.Add( groupMember );
                                 rockContext.SaveChanges();
                             }
                         }
                         else
                         {
-                            action.AddLogEntry(string.Format("{0} was not a member of the group {1} and the action was not configured to add them.", person.FullName, group.Name));
+                            action.AddLogEntry( string.Format( "{0} was not a member of the group {1} and the action was not configured to add them.", person.FullName, group.Name ) );
                         }
                     }
 
@@ -218,6 +274,14 @@ namespace Rock.Workflow.Action
                         }
                     }
 
+                    //get attendance campus
+                    var campusId = group.CampusId;
+                    var campusAttributeId = GetAttributeValue( action, AttributeKey.Campus ).AsGuidOrNull();
+                    if ( campusAttributeId.HasValue )
+                    {
+                        campusId = CampusCache.Get( campusAttributeId.Value )?.Id;
+                    }
+
                     int? personAliasId = person.PrimaryAliasId;
                     if ( personAliasId.HasValue )
                     {
@@ -226,7 +290,7 @@ namespace Rock.Workflow.Action
                            Updated code to consider time with attendance date to fix the issue raised in #4159
                            https://github.com/SparkDevNetwork/Rock/issues/4159
                         */
-                        new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime, group.Id, locationId, scheduleId, group.CampusId );
+                        new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime, group.Id, locationId, scheduleId, campusId );
                         rockContext.SaveChanges();
 
                         if ( locationId.HasValue )
@@ -237,7 +301,7 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
-                    errorMessages.Add(string.Format("Could not find group matching the guid '{0}'.", groupGuid));
+                    errorMessages.Add( string.Format( "Could not find group matching the guid '{0}'.", groupGuid ) );
                 }
             }
 

@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M8,14a6,6,0,1,1,6-6A6,6,0,0,1,8,14ZM8,3.5A4.5,4.5,0,1,0,12.5,8,4.51,4.51,0,0,0,8,3.5Z""/><circle  cx=""8"" cy=""8"" r=""3""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SINGLE_SELECT )]
     public class SelectSingleFieldType : FieldType
     {
 
@@ -242,9 +243,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -629,5 +630,42 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            var oldSqlQuery = oldValues.ToUpper().Contains( "SELECT" ) && oldValues.ToUpper().Contains( "FROM" );
+            var newSqlQuery = newValues.ToUpper().Contains( "SELECT" ) && newValues.ToUpper().Contains( "FROM" );
+
+            if ( oldValues != newValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var options = new Lava.CommonMergeFieldsOptions
+            {
+                GetLegacyGlobalMergeFields = false
+            };
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
+            var listSource = values.ResolveMergeFields( mergeFields );
+
+            // If the source is a SQL query then it is volatile since the results
+            // of the query might change at any time.
+            return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
+        }
+
+        #endregion
     }
 }

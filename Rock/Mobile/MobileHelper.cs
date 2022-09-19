@@ -343,6 +343,14 @@ namespace Rock.Mobile
             var settings = additionalSettings.DownhillSettings;
             settings.Platform = DownhillPlatform.Mobile; // ensure the settings are set to mobile
 
+            // Use this dictionary to include any additional styles in the future that we add and need to parse within the mobile package.
+            var additionalDownhill = new Dictionary<string, string>
+            {
+                ["?color-bar-background"] = additionalSettings.BarBackgroundColor
+            };
+
+            settings.AdditionalCssToParse = additionalDownhill;
+
             var cssStyles = CssUtilities.BuildFramework( settings ); // append custom css but parse it for downhill variables
 
             if ( additionalSettings.CssStyle.IsNotNullOrWhiteSpace() )
@@ -402,6 +410,11 @@ namespace Rock.Mobile
             package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
             package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
             package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
+
+            //
+            // Setup the deep link settings.
+            //
+            package.DeepLinkSettings.DeepLinkRoutes = additionalSettings.DeepLinkRoutes;
 
             if ( site.FavIconBinaryFileId.HasValue )
             {

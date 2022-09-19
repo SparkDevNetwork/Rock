@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes any group type that does not have any groups" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Group Types" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E998B9A7-31C9-46F6-B91C-4E5C3F06C82F")]
     public class RemoveEmptyGroupTypes : CheckInActionComponent
     {
         /// <summary>

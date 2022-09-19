@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.UniversalSearch;
 
@@ -30,6 +31,7 @@ namespace Rock.Search.Other
     [Description("Universal Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Universal Search")]
+    [Rock.SystemGuid.EntityTypeGuid( "BD0FAAC1-2313-4D36-8B78-268715320F02")]
     public class Universal : SearchComponent
     {
 
@@ -56,6 +58,9 @@ namespace Rock.Search.Other
         /// <returns>A queryable of index models that match the search term.</returns>
         private List<UniversalSearch.IndexModels.IndexModelBase> GetSearchResults( string searchTerm )
         {
+            // Strip off the special HTML that might have been prepended
+            searchTerm = Regex.Replace( searchTerm, @"\<data.*\</i\>", string.Empty )?.Trim();
+
             // get configured entities and turn it into a list of entity ids
             List<int> entityIds = new List<int>();
 

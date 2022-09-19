@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Workflow.Action.CheckIn
         Category = "",
         Order = 0 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "176E0639-6482-4AED-957F-FDAA7AAA44FA")]
     public class FilterLocationsByLocationSelectionStrategy : CheckInActionComponent
     {
         private class AttributeKey
@@ -58,6 +59,12 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState == null )
             {
                 return false;
+            }
+
+            if ( checkInState.ManagerLoggedIn )
+            {
+                // If the manager is logged in don't filter or return an error. The manager should get an un-loadblanced list in order to choose the desired location.
+                return true;
             }
 
             var family = checkInState.CheckIn.CurrentFamily;
@@ -79,8 +86,8 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var checkinGroupType in person.GroupTypes )
                 {
                     var attributeLocationSelectionStrategy = ( CheckinConfigurationHelper.LocationSelectionStrategy? ) checkinGroupType.GroupType.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY ).AsIntegerOrNull() ?? null;
-                    
-                    if ( attributeLocationSelectionStrategy == null ||  attributeLocationSelectionStrategy == CheckinConfigurationHelper.LocationSelectionStrategy.Ask )
+
+                    if ( attributeLocationSelectionStrategy == null || attributeLocationSelectionStrategy == CheckinConfigurationHelper.LocationSelectionStrategy.Ask )
                     {
                         // Either this is not set for some reason or the location should not be automatically selected, so don't filter the locations.
                         continue;
@@ -99,7 +106,7 @@ namespace Rock.Workflow.Action.CheckIn
         {
             // Order the list
             var checkinGroups = checkInGroupType.Groups.OrderBy( g => g.Group.Order ).ToList();
-            
+
             foreach ( var checkinGroup in checkinGroups )
             {
                 // Get a list of locations that have not reached their threshold.
@@ -159,7 +166,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var foundFirstMatch = false;
                 foreach ( var location in locationList )
                 {
-                    if ( location.Schedules.Contains( selectedSchedule ) )
+                    if ( location.Schedules.Select( s => s.Schedule.Id ).Contains( selectedSchedule.Schedule.Id ) )
                     {
                         if ( foundFirstMatch )
                         {

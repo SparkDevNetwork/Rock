@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StepPrograms/BadgeData/{stepProgramGuid}/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "B942DF16-AF7B-4F4F-B6C6-9ED12C84AF1C" )]
         public List<PersonStepType> GetStepsBadgeData( Guid stepProgramGuid, int personId )
         {
             var stepProgramQuery = Service.Queryable().AsNoTracking().Where( sp => sp.Guid == stepProgramGuid && sp.IsActive );

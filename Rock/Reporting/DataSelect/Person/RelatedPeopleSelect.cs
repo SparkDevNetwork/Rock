@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows a list of people who have a specified type of relationship with a person." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Related People" )]
+    [EntityTypeGuid( "7D2CB16A-9391-4D5A-A4B4-4DA34FD3E96E")]
     public class RelatedPeopleSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Support Classes

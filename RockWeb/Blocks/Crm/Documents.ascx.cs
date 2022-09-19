@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Crm
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "A8456E2D-1930-4FF7-8A46-FB0800AC31E0" )]
     public partial class Documents : RockBlock, ISecondaryBlock
     {
         private static class AttributeKeys
@@ -110,9 +111,17 @@ namespace RockWeb.Blocks.Crm
 
             // Configure security button
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
-            if ( this.ContextEntity() != null )
+            if ( securityColumn != null )
             {
-                securityColumn.EntityTypeId = this.ContextEntity().TypeId;
+                /*
+                    2/22/2022 - KA
+                    this.ContextEntity().TypeId is not being used as the securityColumn.EntityTypeId because in the case where the
+                    DocumentsBlock was displayed in the Person page the context entity was Person.cs, thUs the service instance
+                    generated in the Security.cs block when the security button was clicked was a PersonService not DocumentService, 
+                    since we know gFileList will always display documents we can set the securityColumn.EntityTypeId to the typeId
+                    of the Document.cs model.
+                */
+                securityColumn.EntityTypeId = new Document().TypeId;
             }
         }
 

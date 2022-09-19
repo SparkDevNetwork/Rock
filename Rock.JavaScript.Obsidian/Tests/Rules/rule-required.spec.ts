@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { validateValue } from "../../Framework/Rules/index";
+import { validateValue } from "../../Framework/ValidationRules/index";
 
 const expectedRequiredErrorText = "is required";
 
@@ -72,6 +72,18 @@ describe("required Rule", () => {
 
     it("False boolean produces no error", () => {
         const result = validateValue(false, "required");
+
+        assert.deepStrictEqual(result, []);
+    });
+
+    it("Empty array produces error", () => {
+        const result = validateValue([], "required");
+
+        assert.deepStrictEqual(result, [expectedRequiredErrorText]);
+    });
+
+    it("Non-empty array produces no error", () => {
+        const result = validateValue(["text"], "required");
 
         assert.deepStrictEqual(result, []);
     });

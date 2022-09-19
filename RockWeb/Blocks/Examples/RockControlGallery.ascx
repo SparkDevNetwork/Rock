@@ -203,7 +203,7 @@
                                     <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
                                     <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
                                     <Rock:EditField />
-                                    <Rock:SecurityField />
+                                    <Rock:SecurityField TitleField="DefinedValueTypeName" />
                                     <Rock:DeleteField />
                                 </Columns>
                             </Rock:Grid>

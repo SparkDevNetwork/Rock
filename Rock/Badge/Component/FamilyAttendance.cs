@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -34,6 +36,7 @@ namespace Rock.Badge.Component
     [IntegerField("Months To Display", "The number of months to show on the chart (default 24.)", false, 24)]
     [IntegerField("Minimum Bar Height", "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)", false, 2)]
     [BooleanField("Animate Bars", "Determine whether bars should animate when displayed.", true)]
+    [Rock.SystemGuid.EntityTypeGuid( "78F5527E-0E90-4AC9-AAAB-F8F2F061BDFB")]
     public class FamilyAttendance : BadgeComponent
     {
         /// <summary>
@@ -46,14 +49,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -67,36 +66,33 @@ namespace Rock.Badge.Component
 
             string tooltip;
             var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
-            if ( Person.AgeClassification == AgeClassification.Child )
+            if ( person.AgeClassification == AgeClassification.Child )
             {
-                tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
+                tooltip = $"{person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
             else
             {
                 tooltip = $"Family attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
 
-            writer.Write( string.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
+            writer.Write( string.Format( "<div class='rockbadge rockbadge-attendance{0} rockbadge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
 
             writer.Write("</div>");
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var minBarHeight = GetAttributeValue( badge, "MinimumBarHeight" ).AsIntegerOrNull() ?? 2;
             var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
+            var personId = ( entity as Person )?.Id ?? 0;
 
             return
 $@"var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 
 $.ajax({{
     type: 'GET',
-    url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{Person.Id}/{monthsToDisplay}' ,
+    url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{personId}/{monthsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
             var chartHtml = '<ul class=\'attendance-chart trend-chart list-unstyled\'>';
@@ -110,7 +106,7 @@ $.ajax({{
             }});
             chartHtml += '</ul>';
 
-            $('.badge-attendance.badge-id-{badge.Id}').html(chartHtml);
+            $('.rockbadge-attendance.rockbadge-id-{badge.Id}').html(chartHtml);
         }}
     }},
 }});";

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Communication Templates */
 export const enum SystemCommunication {
     /** Gets the template guid for the Attendance communication */
     AttendanceNotification = "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6",
@@ -30,8 +31,10 @@ export const enum SystemCommunication {
     ConfigJobNotification = "691FEA1B-E5C4-4BF8-A7CD-C588F5C63CA8",
     /** Gets the template guid for finance pledge confirmation communication */
     FinancePledgeConfirmation = "73E8D035-61BB-495A-A87F-39007B98834C",
-    /** The financial transaction alert notification summary.
- */
+    /**
+     * The financial transaction alert notification summary.
+     * Rock.Model.FinancialTransactionAlertType.AlertSummaryNotificationGroupId
+     */
     FinancialTransactionAlertNotificationSummary = "FDF323F5-31FA-4F98-9B4C-A8C26A10840E",
     /** Gets the template guid for group attendance reminder */
     GroupAttendanceReminder = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA",
@@ -96,4 +99,3 @@ export const enum SystemCommunication {
     /** Gets the template guid for  */
     KioskInfoUpdate = "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
 }
-

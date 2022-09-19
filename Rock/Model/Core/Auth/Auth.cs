@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Auth" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "84855F4E-9865-4F1B-B420-939318272004")]
     public partial class Auth : Model<Auth>, IOrdered
     {
         #region Entity Properties
@@ -150,15 +151,6 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual Model.EntityType EntityType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Audit Log.
-        /// </summary>
-        /// <value>
-        /// The Audit Log.
-        /// </value>
-        [NotMapped]
-        private AuthAuditLog AuthAuditLog { get; set; }
 
         #endregion
     }

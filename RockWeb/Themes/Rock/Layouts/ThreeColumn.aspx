@@ -33,10 +33,13 @@
         <!-- Start Content Area -->
 
         <!-- Page Title -->
-        <section id="secPageTitle" class="page-title" runat="server">
-            <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-            <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-            <Rock:PageDescription ID="PageDescription" runat="server" />
+        <section id="secPageTitle" class="page-header" runat="server">
+            <div class="page-title">
+                <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+                <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                <Rock:PageDescription ID="PageDescription" runat="server" />
+            </div>
+            <Rock:Zone Name="Context" CssClass="zone-context" runat="server" />
         </section>
 
         <section id="page-content">

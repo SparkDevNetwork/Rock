@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
     {
         private static class AttributeKey
@@ -416,12 +417,28 @@ namespace RockWeb.Blocks.Groups
             dpScheduleStartDate.SelectedDate = groupMember.ScheduleStartDate;
             nbScheduleReminderEmailOffsetDays.Text = groupMember.ScheduleReminderEmailOffsetDays.ToString();
 
+            // Show the Group Member Attributes.
             groupMember.LoadAttributes();
             avcAttributes.Visible = false;
             avcAttributesReadOnly.Visible = false;
 
-            var editableAttributes = !readOnly ? groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList() : new List<string>();
-            var viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+
+            List<string> editableAttributes;
+            List<string> viewableAttributes;
+            
+            if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+            {
+                // If the Current User has Administrate permissions for the Group, show all Attributes.
+                editableAttributes = readOnly ? new List<string>()
+                    : groupMember.Attributes.Select( a => a.Key ).ToList();
+                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+            }
+            else
+            {
+                editableAttributes = readOnly ? new List<string>()
+                    : groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            }
 
             if ( editableAttributes.Any() )
             {
@@ -1374,7 +1391,7 @@ namespace RockWeb.Blocks.Groups
                         var sendErrorMessages = new List<string>();
 
                         string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
-                        if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                        if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                             groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
                         {
                             rockContext.SaveChanges();

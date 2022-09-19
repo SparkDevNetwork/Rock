@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Attendances REST API
     /// </summary>
+    [RestControllerGuid( "4FB7E1C9-B57E-4FA4-BDD6-61FD81746AC4" )]
     public partial class AttendancesController : Rock.Rest.ApiController<Rock.Model.Attendance>
     {
         /// <summary>

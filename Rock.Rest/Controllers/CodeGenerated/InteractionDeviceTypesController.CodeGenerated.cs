@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// InteractionDeviceTypes REST API
     /// </summary>
+    [RestControllerGuid( "D96E2512-12AD-47DF-9D24-3C29B77E4DA5" )]
     public partial class InteractionDeviceTypesController : Rock.Rest.ApiController<Rock.Model.InteractionDeviceType>
     {
         /// <summary>

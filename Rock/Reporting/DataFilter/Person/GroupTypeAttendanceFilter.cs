@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "55E78F48-F849-444A-B285-FDA99E7236E7")]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         #region Properties

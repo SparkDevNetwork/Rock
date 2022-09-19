@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Locations REST API
     /// </summary>
+    [RestControllerGuid( "F4812FAF-E7B7-4DA6-AF59-99A33548809D" )]
     public partial class LocationsController : Rock.Rest.ApiController<Rock.Model.Location>
     {
         /// <summary>

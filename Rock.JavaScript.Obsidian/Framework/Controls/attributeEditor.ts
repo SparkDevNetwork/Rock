@@ -15,23 +15,23 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import CheckBox from "../Elements/checkBox";
-import TextBox from "../Elements/textBox";
-import { Guid } from "../Util/guid";
-import { FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
-import { PublicEditableAttributeViewModel } from "../ViewModels/publicEditableAttribute";
-import CategoriesPicker from "./categoriesPicker";
+import CheckBox from "./checkBox";
+import TextBox from "./textBox";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+import CategoryPicker from "./categoryPicker";
 import FieldTypeEditor from "./fieldTypeEditor";
-import StaticFormControl from "../Elements/staticFormControl";
-import PanelWidget from "../Elements/panelWidget";
-import { EntityType } from "../SystemGuids";
+import StaticFormControl from "./staticFormControl";
+import PanelWidget from "./panelWidget";
+import { EntityType } from "@Obsidian/SystemGuids";
 
 export default defineComponent({
     name: "AttributeEditor",
 
     components: {
-        CategoriesPicker,
+        CategoryPicker,
         CheckBox,
         FieldTypeEditor,
         PanelWidget,
@@ -41,7 +41,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<PublicEditableAttributeViewModel | null>,
+            type: Object as PropType<PublicEditableAttributeBag | null>,
             default: null
         },
 
@@ -101,7 +101,7 @@ export default defineComponent({
         const preHtml = ref(props.modelValue?.preHtml ?? "");
         const postHtml = ref(props.modelValue?.postHtml ?? "");
         const categories = ref([...(props.modelValue?.categories ?? [])]);
-        const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
+        const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
             fieldTypeGuid: props.modelValue?.fieldTypeGuid ?? "",
             configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
             defaultValue: props.modelValue?.defaultValue ?? ""
@@ -138,8 +138,8 @@ export default defineComponent({
             categories,
             fieldTypeValue],
             () => {
-                const newModelValue: PublicEditableAttributeViewModel = {
-                    ...(props.modelValue ?? {}),
+                const newModelValue: PublicEditableAttributeBag = {
+                    ...(props.modelValue ?? { isSystem: false }),
                     name: attributeName.value,
                     abbreviatedName: abbreviatedName.value,
                     key: attributeKey.value,
@@ -228,11 +228,12 @@ export default defineComponent({
 
     <div class="row">
         <div class="col-md-6">
-            <CategoriesPicker v-model="categories"
+            <CategoryPicker v-model="categories"
                 label="Categories"
                 :entityTypeGuid="attributeEntityTypeGuid"
                 entityTypeQualifierColumn="EntityTypeId"
-                :entityTypeQualifierValue="categoryQualifierValue" />
+                :entityTypeQualifierValue="categoryQualifierValue"
+                multiple />
 
             <StaticFormControl v-if="isSystem" v-model="attributeKey" label="Key" />
             <TextBox v-else v-model="attributeKey" label="Key" rules="required" :disabled="keyDisabledAttr" />

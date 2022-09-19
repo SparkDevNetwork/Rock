@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -98,6 +98,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.IncludePageList )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PAGE_MENU )]
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {
         #region Attribute Keys

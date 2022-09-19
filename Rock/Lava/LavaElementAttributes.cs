@@ -135,14 +135,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public string GetStringValue( string name, string defaultValue = null, bool trimWhiteSpace = true )
         {
-            var value = string.Empty;
-
+            var value = defaultValue;
             if ( _settings.ContainsKey( name ) )
             {
                 value = _settings[name] ?? string.Empty;
             }
 
-            if ( trimWhiteSpace )
+            if ( trimWhiteSpace && value != null )
             {
                 value = value.Trim();
             }

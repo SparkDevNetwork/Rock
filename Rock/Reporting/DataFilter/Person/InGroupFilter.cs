@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in the specified group, groups or child groups, with specific roles, status and dates" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group(s) Filter (Advanced)" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A40B4BD4-FA17-4A82-97CC-2C71805F9D7C")]
     public class InGroupFilter : DataFilterComponent
     {
         #region Properties
@@ -448,15 +449,26 @@ namespace Rock.Reporting.DataFilter.Person
             if ( !cbChildGroups.Checked )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-l-md" );
+                cbIncludeSelectedGroup.Checked = false;
+                cbChildGroupsPlusDescendants.Checked = false;
+                cbIncludeInactiveGroups.Checked = false;
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             cbIncludeSelectedGroup.ContainerCssClass = "margin-l-md";
+            cbIncludeSelectedGroup.Enabled = cbChildGroups.Checked;
             cbIncludeSelectedGroup.RenderControl( writer );
+
             cbChildGroupsPlusDescendants.ContainerCssClass = "margin-l-md";
+            cbChildGroupsPlusDescendants.Enabled = cbChildGroups.Checked;
             cbChildGroupsPlusDescendants.RenderControl( writer );
+
             cbIncludeInactiveGroups.ContainerCssClass = "margin-l-md";
+            cbIncludeInactiveGroups.Enabled = cbChildGroups.Checked;
             cbIncludeInactiveGroups.RenderControl( writer );
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();

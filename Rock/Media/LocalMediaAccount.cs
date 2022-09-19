@@ -18,7 +18,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Rock.Model;
 
 namespace Rock.Media
@@ -30,6 +29,7 @@ namespace Rock.Media
     [Description( "Local Media Account" )]
     [Export( typeof( MediaAccountComponent ) )]
     [ExportMetadata( "ComponentName", "LocalMediaAccount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D551B9A7-70AA-4DDC-AF67-9360BFC296AA")]
     public class LocalMediaAccount : MediaAccountComponent
     {
         #region Media Account Component Implementation

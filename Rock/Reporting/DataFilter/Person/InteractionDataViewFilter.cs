@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select Person through their Interaction." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Interaction View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "98FEB935-38B6-44AD-ADA0-9C9E8E0311EF")]
     public class InteractionDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.Interaction>
     {
         #region Overrides

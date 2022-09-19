@@ -449,6 +449,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Put any JS that needs to be registered when the control renders here. This does is Lava enabled with the same options as the button template.
+        /// </summary>
+        /// <value>The js script to register.</value>
+        public string JsScriptToRegister
+        {
+            get => ViewState["JsScriptToRegister"] as string;
+            set => ViewState["JsScriptToRegister"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the modal CSS class.
         /// If js hooks are needed to find this modal, this is the place to add them.
         /// </summary>
@@ -469,6 +479,23 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show select none button].
+        /// </summary>
+        /// <value><c>true</c> if [show select none button]; otherwise, <c>false</c>.</value>
+        public bool ShowSelectNoneButton
+        {
+            get
+            {
+                EnsureChildControls();
+                return ViewState["ShowSelectNoneButton"] as bool? ?? true;
+            }
+            set
+            {
+                EnsureChildControls();
+                ViewState["ShowSelectNoneButton"] = value;
+            }
+        }
         /// <summary>
         /// Shows the modal.
         /// </summary>
@@ -521,7 +548,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
-            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.CssClass = "js-picker-select-none picker-select-none";
             _btnSelectNone.Text = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Click += _lbClearPicker_Click;
@@ -655,7 +682,7 @@ namespace Rock.Web.UI.Controls
             mergeFields.Add( "SelectedValue", SelectedValue ?? string.Empty );
 
             _lbShowPicker.Text = this.PickerButtonTemplate.ResolveMergeFields( mergeFields );
-            _btnSelectNone.Visible = SelectedValue.IsNotNullOrWhiteSpace() && _lbShowPicker.Visible;
+            _btnSelectNone.Visible = SelectedValue.IsNotNullOrWhiteSpace() && _lbShowPicker.Visible && ShowSelectNoneButton;
 
             if ( this.ShowInModal )
             {
@@ -665,6 +692,11 @@ namespace Rock.Web.UI.Controls
             else
             {
                 base.CssClass = this.SelectControlCssClass + " " + this.CssClass;
+            }
+
+            if( JsScriptToRegister.IsNotNullOrWhiteSpace() )
+            {
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "ItemFromBlockPickerBlockScript_" + this.ClientID, JsScriptToRegister.ResolveMergeFields( mergeFields ), true );
             }
 
             base.RenderControl( writer );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Account Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial account." )]
+    [Rock.SystemGuid.BlockTypeGuid( "DCD63280-B661-48AA-8DEB-F5ED63C7AB77" )]
     public partial class AccountDetail : RockBlock
     {
         #region ViewStateKeys

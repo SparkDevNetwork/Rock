@@ -86,6 +86,9 @@ namespace Rock.Client
         public string PickerItemDetailsPersonInfoHtml { get; set; }
 
         /// <summary />
+        public Guid PrimaryAliasGuid { get; set; }
+
+        /// <summary />
         public string RecordStatus { get; set; }
 
         /// <summary />
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.PickerItemDetailsHtml = source.PickerItemDetailsHtml;
             this.PickerItemDetailsImageHtml = source.PickerItemDetailsImageHtml;
             this.PickerItemDetailsPersonInfoHtml = source.PickerItemDetailsPersonInfoHtml;
+            this.PrimaryAliasGuid = source.PrimaryAliasGuid;
             this.RecordStatus = source.RecordStatus;
             this.SearchDetailsHtml = source.SearchDetailsHtml;
             this.SpouseName = source.SpouseName;

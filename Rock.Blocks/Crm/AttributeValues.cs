@@ -26,7 +26,7 @@ using Rock.Model;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Crm
+namespace Rock.Blocks.CRM
 {
     /// <summary>
     /// Allows for editing the value(s) of a set of attributes for person.

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,7 @@ using Rock.ClientService.Core.Campus;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Connection
@@ -80,6 +80,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
     public class ConnectionRequestDetail : RockMobileBlockType
     {
         #region Block Attributes
@@ -548,11 +550,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         /// <param name="connectionType">Connection type to query.</param>
         /// <returns>A list of list items that can be displayed.</returns>
-        private static List<ListItemViewModel> GetOpportunityStatusListItems( ConnectionType connectionType )
+        private static List<ListItemBag> GetOpportunityStatusListItems( ConnectionType connectionType )
         {
             return connectionType.ConnectionStatuses
                 .OrderBy( s => s.Order )
-                .Select( s => new ListItemViewModel
+                .Select( s => new ListItemBag
                 {
                     Value = s.Guid.ToString(),
                     Text = s.Name
@@ -765,52 +767,33 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 };
             }
 
-            // Workflow processed, see if it is persisted. If not then it was a
-            // one-off and we just need to return a status that it processed.
-            if ( workflow.Id == 0 )
-            {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
-
             // The workflow is persisted, so we need to create the link between
             // the workflow and this connection request.
-            new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
+            if ( workflow.Id != 0 )
             {
-                ConnectionRequestId = connectionRequest.Id,
-                WorkflowId = workflow.Id,
-                ConnectionWorkflowId = connectionWorkflow.Id,
-                TriggerType = connectionWorkflow.TriggerType,
-                TriggerQualifier = connectionWorkflow.QualifierValue
-            } );
+                new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
+                {
+                    ConnectionRequestId = connectionRequest.Id,
+                    WorkflowId = workflow.Id,
+                    ConnectionWorkflowId = connectionWorkflow.Id,
+                    TriggerType = connectionWorkflow.TriggerType,
+                    TriggerQualifier = connectionWorkflow.QualifierValue
+                } );
 
-            rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
 
             // Check if there is an entry form waiting for this person to enter
             // data into.
-            if ( workflow.HasActiveEntryForm( currentPerson ) )
+            var hasEntryForm = workflow.HasActiveEntryForm( currentPerson );
+
+            return new ConnectionWorkflowLaunchedViewModel
             {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    HasActiveEntryForm = true,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
-            else
-            {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
+                WorkflowTypeGuid = workflowType.Guid,
+                WorkflowGuid = workflow.Guid,
+                HasActiveEntryForm = hasEntryForm,
+                Message = $"A '{workflowType.Name}' workflow was processed."
+            };
         }
 
         /// <summary>
@@ -1443,7 +1426,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // in the Guid an Name to send to the client.
                 var activityTypes = connectionActivityTypeService.Queryable()
                     .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId )
-                    .Select( a => new ListItemViewModel
+                    .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
                         Text = a.Name
@@ -2186,7 +2169,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The campuses available to pick from.
             /// </value>
-            public List<ListItemViewModel> Campuses { get; set; }
+            public List<ListItemBag> Campuses { get; set; }
 
             /// <summary>
             /// Gets or sets the placement groups available to pick from.
@@ -2202,7 +2185,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The statuses available to pick from.
             /// </value>
-            public List<ListItemViewModel> Statuses { get; set; }
+            public List<ListItemBag> Statuses { get; set; }
 
             /// <summary>
             /// Gets or sets the future follow up date.
@@ -2419,7 +2402,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The activity types available to pick from.
             /// </value>
-            public List<ListItemViewModel> ActivityTypes { get; set; }
+            public List<ListItemBag> ActivityTypes { get; set; }
 
             /// <summary>
             /// Gets or sets the connectors available.
@@ -2482,7 +2465,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// Custom class to store the value along with the attribute. This is for
         /// backwards compatibility with Mobile Shell.
         /// </summary>
-        public class PublicEditableAttributeValueViewModel : PublicAttributeViewModel
+        public class PublicEditableAttributeValueViewModel : PublicAttributeBag
         {
             /// <summary>
             /// Gets or sets the value.
@@ -2501,7 +2484,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// Gets or sets the attributes.
             /// </summary>
             /// <value>The attributes.</value>
-            public Dictionary<string, PublicAttributeViewModel> Attributes { get; set; }
+            public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the values for the attributes.

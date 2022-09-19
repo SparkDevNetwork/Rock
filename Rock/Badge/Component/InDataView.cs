@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -40,15 +41,11 @@ namespace Rock.Badge.Component
 
     [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
     [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='fa fa-smile-o'></i></div>", order: 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "DF4A569D-9368-4CF4-94D5-AB08E6F5A8D4")]
     public class InDataView : BadgeComponent
     {
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
             RockContext rockContext = new RockContext();
             var dataViewAttributeGuid = GetAttributeValue( badge, "DataView" ).AsGuid();
@@ -69,7 +66,7 @@ namespace Rock.Badge.Component
                     var isEntityFound = false;
                     if ( qry != null )
                     {
-                        isEntityFound = qry.Where( e => e.Id == Entity.Id ).Any();
+                        isEntityFound = qry.Where( e => e.Id == entity.Id ).Any();
                         stopwatch.Stop();
                         DataViewService.AddRunDataViewTransaction( dataView.Id,
                                                         Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
@@ -78,8 +75,8 @@ namespace Rock.Badge.Component
                     if ( isEntityFound )
                     {
                         Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-                        mergeValues.Add( "Person", Person );
-                        mergeValues.Add( "Entity", Entity );
+                        mergeValues.Add( "Person", entity as Person );
+                        mergeValues.Add( "Entity", entity );
                         writer.Write( GetAttributeValue( badge, "BadgeContent" ).ResolveMergeFields( mergeValues ) );
                     }
                 }

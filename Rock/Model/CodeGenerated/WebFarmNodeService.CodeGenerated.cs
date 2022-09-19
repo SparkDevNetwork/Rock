@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// WebFarmNode View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( WebFarmNode ) )]
-    public partial class WebFarmNodeViewModelHelper : ViewModelHelper<WebFarmNode, Rock.ViewModel.WebFarmNodeViewModel>
+    public partial class WebFarmNodeViewModelHelper : ViewModelHelper<WebFarmNode, WebFarmNodeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WebFarmNodeViewModel CreateViewModel( WebFarmNode model, Person currentPerson = null, bool loadAttributes = true )
+        public override WebFarmNodeBag CreateViewModel( WebFarmNode model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WebFarmNodeViewModel
+            var viewModel = new WebFarmNodeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AddedDateTime = model.AddedDateTime,
                 ConfiguredLeadershipPollingIntervalSeconds = model.ConfiguredLeadershipPollingIntervalSeconds,
                 CurrentLeadershipPollingIntervalSeconds = model.CurrentLeadershipPollingIntervalSeconds,
@@ -196,7 +196,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WebFarmNodeViewModel ToViewModel( this WebFarmNode model, Person currentPerson = null, bool loadAttributes = false )
+        public static WebFarmNodeBag ToViewModel( this WebFarmNode model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new WebFarmNodeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

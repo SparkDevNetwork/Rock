@@ -49,9 +49,6 @@
                             <Rock:GroupTypePicker ID="ddlAttendanceArea" runat="server" Label="Attendance Area" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                             <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
-                            <div class="actions margin-b-md">
-                            </div>
-
                             <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range"
                                 EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year" />
@@ -166,8 +163,8 @@
 
                                         </div>
                                     </div>
-                                    <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-                                    <Rock:BarChart ID="bcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+                                    <Rock:RockLineChart ID="lcAttendance" runat="server" Title="" Subtitle="" ChartHeight="300" />
+                                    <Rock:RockBarChart ID="bcAttendance" runat="server" Title="" Subtitle="" ChartHeight="300" />
                                     <div class="row margin-t-sm">
                                         <div class="col-md-12">
                                             <div class="pull-right">

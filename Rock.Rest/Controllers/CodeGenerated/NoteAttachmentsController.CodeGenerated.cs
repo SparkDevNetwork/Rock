@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// NoteAttachments REST API
     /// </summary>
+    [RestControllerGuid( "F082AFA5-E500-428C-91F0-C8B9227AFB5E" )]
     public partial class NoteAttachmentsController : Rock.Rest.ApiController<Rock.Model.NoteAttachment>
     {
         /// <summary>

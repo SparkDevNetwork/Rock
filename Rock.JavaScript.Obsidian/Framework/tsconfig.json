@@ -1,29 +1,15 @@
 {
-  "compilerOptions": {
-    "outDir": "../dist/Framework",
-    "rootDir": ".",
-    "incremental": true,
-    "noImplicitAny": true,
-    "noImplicitOverride": true,
-    "noEmitOnError": true,
-    "removeComments": true,
-    "allowUnreachableCode": false,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    "target": "ES2016",
-    "module": "System",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "strict": true,
-    "lib": [
-      "DOM",
-      "ES2016",
-      "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
-    ],
-    "paths": {
-    }
-  },
-  "exclude": [
-    "./Tests/**/*"
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./Libs" },
+    { "path": "./Core" },
+    { "path": "./ValidationRules" },
+    { "path": "./PageState" },
+    { "path": "./Utility" },
+    { "path": "./Controls" },
+    { "path": "./Directives" },
+    { "path": "./FieldTypes" },
+    { "path": "./Templates" }
   ]
 }

@@ -8,6 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace SignNowSDK
 {
+    [Obsolete]
     public class DocumentGroup
     {
         /// <summary>

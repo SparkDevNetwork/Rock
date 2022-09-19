@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Cms
         Order = 4 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "BBA9210E-80E1-486A-822D-F8842FE09F99" )]
     public partial class LinkListLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

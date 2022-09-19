@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
@@ -27,7 +27,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Controller of misc utility functions that are used by Rock controls
     /// </summary>
-    public class LavaController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "71B490B4-7230-49B7-A25D-42A38A5A9F56")]
+    public class LavaController : ApiControllerBase 
     {
 
         /// <summary>
@@ -39,6 +40,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Lava/RenderTemplate" )]
         [HttpPost]
         [Authenticate, Secured]
+        [Rock.SystemGuid.RestActionGuid( "8E85BC7A-FECC-4B58-AC90-69264D671930" )]
         public string RenderTemplate( [NakedBody] string template, [FromUri] string additionalMergeObjects = null )
         {
             Rock.Lava.CommonMergeFieldsOptions lavaOptions = new Lava.CommonMergeFieldsOptions();

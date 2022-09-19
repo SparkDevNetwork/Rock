@@ -96,7 +96,7 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
-        /// A parser that captures the literal content a Lava Block.
+        /// A parser that captures the literal content of a Lava Block.
         /// This parser is invoked after the opening tag has been parsed, and is intended to capture all content until the closing tag,
         /// including nested blocks.
         /// </summary>
@@ -135,7 +135,7 @@ namespace Rock.Lava.Fluid
                     .SkipAnd( closeTagOnlyParser );
 
                 TextPosition nextStartTagPos = TextPosition.Start;
-                TextPosition nextEndTagPos = TextPosition.Start;
+                TextPosition nextEndTagPos;
 
                 TextPosition currentSearchStart = start;
                 var resultStartTag = new ParseResult<LavaTagResult>();
@@ -294,7 +294,6 @@ namespace Rock.Lava.Fluid
             public LavaTagStartParser( LavaTagFormatSpecifier format, bool skipWhiteSpace = false )
             {
                 _skipWhiteSpace = skipWhiteSpace;
-
                 _firstTagChar = '{';
 
                 if ( format == LavaTagFormatSpecifier.LavaShortcode )
@@ -307,8 +306,8 @@ namespace Rock.Lava.Fluid
                 }
 
                 _format = format;
-
             }
+
             public override bool Parse( ParseContext context, ref ParseResult<LavaTagResult> result )
             {
                 if ( _skipWhiteSpace )
@@ -317,13 +316,27 @@ namespace Rock.Lava.Fluid
                 }
 
                 var start = context.Scanner.Cursor.Position;
+                var p = ( FluidParseContext ) context;
 
+                // If we are processing the content of a {% liquid %} tag, and scanning for a standard liquid open tag token,
+                // the existence of the open tag token is implied so return a match.
+                if ( p.InsideLiquidTag )
+                {
+                    var lavaTagResult = new LavaTagResult()
+                    {
+                        TagResult = TagResult.TagOpen,
+                        Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
+                        TagFormat = _format
+                    };
+
+                    result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
+                    return true;
+                }
+
+                // Find the tag start token.
                 if ( context.Scanner.ReadChar( _firstTagChar ) && context.Scanner.ReadChar( _secondTagChar ) )
                 {
-                    var p = ( FluidParseContext ) context;
-
                     var trim = context.Scanner.ReadChar( '-' );
-
                     if ( p.PreviousTextSpanStatement != null )
                     {
                         if ( trim )
@@ -332,7 +345,6 @@ namespace Rock.Lava.Fluid
                         }
 
                         p.PreviousTextSpanStatement.NextIsTag = true;
-
                         p.PreviousTextSpanStatement = null;
                     }
 
@@ -344,7 +356,6 @@ namespace Rock.Lava.Fluid
                     };
 
                     result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
-
                     return true;
                 }
                 else
@@ -369,7 +380,6 @@ namespace Rock.Lava.Fluid
             public LavaTagEndParser( LavaTagFormatSpecifier format, bool skipWhiteSpace = false )
             {
                 _skipWhiteSpace = skipWhiteSpace;
-
                 _format = format;
 
                 if ( _format == LavaTagFormatSpecifier.LavaShortcode )
@@ -386,38 +396,108 @@ namespace Rock.Lava.Fluid
 
             public override bool Parse( ParseContext context, ref ParseResult<LavaTagResult> result )
             {
+                var p = ( FluidParseContext ) context;
+                var newLineIsPresent = false;
+
+                // Process the whitespace preceding the end tag token.
                 if ( _skipWhiteSpace )
                 {
-                    context.SkipWhiteSpace();
+                    if ( p.InsideLiquidTag )
+                    {
+                        // If processing the content of a {% liquid %} tag, new lines should also be interpreted as a close tag token.
+                        var cursor = context.Scanner.Cursor;
+                        while ( Character.IsWhiteSpace( cursor.Current ) )
+                        {
+                            cursor.Advance();
+                        }
+
+                        if ( Character.IsNewLine( cursor.Current ) )
+                        {
+                            newLineIsPresent = true;
+                            while ( Character.IsNewLine( cursor.Current ) )
+                            {
+                                cursor.Advance();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        context.SkipWhiteSpace();
+                    }
                 }
 
+                // Process the end tag token.
                 var start = context.Scanner.Cursor.Position;
+                bool trim;
 
-                bool trim = context.Scanner.ReadChar( '-' );
-
-                if ( context.Scanner.ReadChar( _firstTagChar ) && context.Scanner.ReadChar( _secondTagChar ) )
+                if ( p.InsideLiquidTag )
                 {
-                    var p = ( FluidParseContext ) context;
-
-                    p.StripNextTextSpanStatement = trim;
-                    p.PreviousTextSpanStatement = null;
-                    p.PreviousIsTag = true;
-                    p.PreviousIsOutput = false;
-
-                    var lavaTagResult = new LavaTagResult()
+                    // If processing the content of a {% liquid %} tag, either a newline or an explicit tag close token can signify the end of a tag.
+                    if ( newLineIsPresent )
                     {
-                        TagResult = trim ? TagResult.TagCloseTrim : TagResult.TagClose,
-                        Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
-                        TagFormat = _format
-                    };
+                        // If we encountered a newline sequence, imply the existence of a tag close token.
+                        var lavaTagResult = new LavaTagResult()
+                        {
+                            TagResult = TagResult.TagClose,
+                            Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
+                            TagFormat = _format
+                        };
 
-                    result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
+                        result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
+                        return true;
+                    }
+                    else
+                    {
+                        // Find an explicit tag close token.
+                        trim = context.Scanner.ReadChar( '-' );
 
-                    return true;
+                        if ( context.Scanner.ReadChar( _firstTagChar ) && context.Scanner.ReadChar( _secondTagChar ) )
+                        {
+                            p.StripNextTextSpanStatement = trim;
+                            p.PreviousTextSpanStatement = null;
+                            p.PreviousIsTag = true;
+                            p.PreviousIsOutput = false;
+
+                            context.Scanner.Cursor.ResetPosition( start );
+
+                            var lavaTagResult = new LavaTagResult()
+                            {
+                                TagResult = TagResult.TagClose,
+                                Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
+                                TagFormat = _format
+                            };
+                            result.Set( start.Offset, start.Offset, lavaTagResult );
+                            return true;
+                        }
+
+                        // Not found, so return the scanner to the start position.
+                        context.Scanner.Cursor.ResetPosition( start );
+                        return false;
+                    }
                 }
                 else
                 {
-                    // Return the scanner to the start position.
+                    // Find the tag close token.
+                    trim = context.Scanner.ReadChar( '-' );
+                    if ( context.Scanner.ReadChar( _firstTagChar ) && context.Scanner.ReadChar( _secondTagChar ) )
+                    {
+                        p.StripNextTextSpanStatement = trim;
+                        p.PreviousTextSpanStatement = null;
+                        p.PreviousIsTag = true;
+                        p.PreviousIsOutput = false;
+
+                        var lavaTagResult = new LavaTagResult()
+                        {
+                            TagResult = trim ? TagResult.TagCloseTrim : TagResult.TagClose,
+                            Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
+                            TagFormat = _format
+                        };
+
+                        result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
+                        return true;
+                    }
+
+                    // Not found, so return the scanner to the start position.
                     context.Scanner.Cursor.ResetPosition( start );
                     return false;
                 }

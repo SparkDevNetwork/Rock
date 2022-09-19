@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Connection.ConnectionRequest;
+using Rock.ViewModels.Connection;
 
 namespace Rock.ClientService.Connection.ConnectionOpportunity
 {
@@ -52,18 +52,18 @@ namespace Rock.ClientService.Connection.ConnectionOpportunity
         /// <summary>
         /// Gets both the opportunity request counts (TotalCount and AssignedToYouCount) for the
         /// given opportunities. The Person the service was initialized with is used to calculate
-        /// <see cref="ConnectionRequestCountsViewModel.AssignedToYouCount"/>.
+        /// <see cref="ConnectionRequestCountsBag.AssignedToYouCount"/>.
         /// </summary>
         /// <remarks>This method does not check security, it is assumed you have already done so.</remarks>
         /// <param name="connectionOpportunityIds">The connection opportunity identifiers.</param>
         /// <returns>A dictionary of connection request count objects.</returns>
-        public Dictionary<int, ConnectionRequestCountsViewModel> GetOpportunityRequestCounts( IEnumerable<int> connectionOpportunityIds )
+        public Dictionary<int, ConnectionRequestCountsBag> GetOpportunityRequestCounts( IEnumerable<int> connectionOpportunityIds )
         {
             var connectionRequestService = new ConnectionRequestService( RockContext );
 
             // Create all counts as initially empty, this method must always return
             // a value for each opportunity id.
-            var requestCounts = connectionOpportunityIds.ToDictionary( id => id, _ => new ConnectionRequestCountsViewModel() );
+            var requestCounts = connectionOpportunityIds.ToDictionary( id => id, _ => new ConnectionRequestCountsBag() );
 
             // Find all the connection requests assigned to the person.
             var activeConnectionRequestQry = connectionRequestService.Queryable()

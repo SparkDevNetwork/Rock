@@ -16,6 +16,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -31,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationRegistrant" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "8A25E5CE-1B4F-4825-BCEA-216167836305" )]
     public partial class RegistrationRegistrant : Model<RegistrationRegistrant>
     {
         #region Entity Properties
@@ -62,6 +64,16 @@ namespace Rock.Model
         [DataMember]
         [IgnoreCanDelete]
         public int? GroupMemberId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int RegistrationTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether registrant is on a wait list.
@@ -176,7 +188,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrationRegistrantConfiguration"/> class.
-        /// </summary>
+        /// </summary> 
         public RegistrationRegistrantConfiguration()
         {
             this.HasRequired( r => r.Registration ).WithMany( t => t.Registrants ).HasForeignKey( r => r.RegistrationId ).WillCascadeOnDelete( true );

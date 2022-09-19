@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.Http;
 
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -36,7 +37,8 @@ namespace Rock.Rest.Controllers
     /// Provides API interfaces for mobile applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    public class MobileController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "EE29C4BA-5B17-48BB-8309-29BBB29464D0")]
+    public class MobileController : ApiControllerBase 
     {
         /// <summary>
         /// Gets the communication interaction channel identifier.
@@ -71,9 +73,10 @@ namespace Rock.Rest.Controllers
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
         /// <param name="notificationsEnabled">Determines if notifications are fully enabled on the device.</param>
         /// <returns>An action result.</returns>
-        [Route( "api/mobile/GetLaunchPacket" )]
+        [System.Web.Http.Route( "api/mobile/GetLaunchPacket" )]
         [HttpGet]
         [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "BA9E7BA3-FCC1-4B1D-9FA1-A9946076B361" )]
         public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null, bool? notificationsEnabled = null )
         {
             var site = MobileHelper.GetCurrentApplicationSite();
@@ -211,8 +214,9 @@ namespace Rock.Rest.Controllers
         /// <param name="registration">The registration token used to send push notifications.</param>
         /// <param name="notificationsEnabled">Determines if notifications are fully enabled on the device.</param>
         /// <returns>A status code that indicates if the request was successful.</returns>
-        [Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
+        [System.Web.Http.Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
         [HttpPut]
+        [Rock.SystemGuid.RestActionGuid( "B35111EB-9EBF-45CC-8BC1-54C01A271841" )]
         public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration, bool? notificationsEnabled = null )
         {
             using ( var rockContext = new Rock.Data.RockContext() )
@@ -245,9 +249,10 @@ namespace Rock.Rest.Controllers
         /// <param name="sessions">The sessions.</param>
         /// <param name="personalDeviceGuid">The unique identifier of the device sending the interaction data.</param>
         /// <returns>An HTTP status code indicating the result.</returns>
-        [Route( "api/mobile/Interactions" )]
+        [System.Web.Http.Route( "api/mobile/Interactions" )]
         [HttpPost]
         [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2AB24DF6-7181-41DC-8968-8192D816AE1C" )]
         public IHttpActionResult PostInteractions( [FromBody] List<MobileInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
@@ -453,8 +458,9 @@ namespace Rock.Rest.Controllers
         /// <param name="loginParameters">The login parameters to use during authentication.</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier being used to log the person in.</param>
         /// <returns>A MobilePerson object if the login was successful.</returns>
-        [Route( "api/mobile/Login" )]
+        [System.Web.Http.Route( "api/mobile/Login" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "D21CDF04-9190-4D86-B2F9-0C17EDC52FCC" )]
         public IHttpActionResult Login( [FromBody] LoginParameters loginParameters, Guid? personalDeviceGuid = null )
         {
             var site = MobileHelper.GetCurrentApplicationSite();

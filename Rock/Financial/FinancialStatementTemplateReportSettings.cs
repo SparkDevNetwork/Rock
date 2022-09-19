@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -237,9 +238,7 @@ namespace Rock.Financial
                 transactionAccountIds = this.SelectedAccountIds ?? new List<int>();
                 if ( this.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren )
                 {
-                    var childAccountIds = new FinancialAccountService( rockContext ).Queryable()
-                        .Where( a => a.ParentAccountId.HasValue && transactionAccountIds.Contains( a.ParentAccountId.Value ) )
-                        .Select( a => a.Id ).ToList();
+                    var childAccountIds = FinancialAccountCache.GetByIds( transactionAccountIds ).SelectMany( s => s.GetDescendentFinancialAccountIds() );
                     transactionAccountIds.AddRange( childAccountIds );
                 }
             }

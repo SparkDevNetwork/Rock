@@ -365,6 +365,42 @@ namespace Rock.SystemGuid
 
         #endregion Obsidian Block Types
 
+        #region Reporting Block Types
+
+        /// <summary>
+        /// Data Views with persistence enabled block Guid
+        /// </summary>
+        public const string PERSISTED_DATA_VIEW_LIST = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE";
+
+        /// <summary>
+        /// The dataview search results block type
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "BFB625F7-75CA-48FE-9C82-90E47374242B";
+
+        /// <summary>
+        /// The report search results block type
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "13955B32-11F4-4606-8C31-4C6E5324C81A";
+
+        #endregion Reporting Block Types
+
+        #region Steps Block Types
+
+        /// <summary>
+        /// The Step Flow
+        /// </summary>
+        public const string STEP_FLOW = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E";
+        #endregion Steps Block Types
+
+        #region Reporting Block Types
+
+        /// <summary>
+        /// The reporting dashboard liquid/lava dashboard widget.
+        /// </summary>
+        public const string REPORTING_LAVA_DASHBOARD_WIDGET = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5";
+
+        #endregion Reporting Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>

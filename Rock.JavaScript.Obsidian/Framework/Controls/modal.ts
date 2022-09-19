@@ -15,16 +15,19 @@
 // </copyright>
 //
 import { defineComponent, PropType, ref, watch } from "vue";
-import RockForm from "../Controls/rockForm";
-import RockButton from "../Elements/rockButton";
-import { trackModalState } from "../Util/page";
+import RockForm from "./rockForm";
+import RockButton from "./rockButton";
+import RockValidation from "./rockValidation";
+import { trackModalState } from "@Obsidian/Utility/page";
+import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({
     name: "Modal",
 
     components: {
         RockButton,
-        RockForm
+        RockForm,
+        RockValidation
     },
 
     props: {
@@ -60,6 +63,10 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
+        const internalModalVisible = ref(props.modelValue);
+        const container = ref(document.fullscreenElement ?? document.body);
+        const validationErrors = ref<FormError[]>([]);
+
         /** Used to determine if shaking should be currently performed. */
         const isShaking = ref(false);
 
@@ -89,27 +96,50 @@ export default defineComponent({
             emit("save");
         };
 
+        /**
+         * Event handler for when the visible validation errors have changed.
+         * This should trigger us showing these errors in the modal.
+         * 
+         * @param errors The errors that should be displayed.
+         */
+        const onVisibleValidationChanged = (errors: FormError[]): void => {
+            validationErrors.value = errors;
+        };
+
         // If we are starting visible, then update the modal tracking.
-        if (props.modelValue) {
+        if (internalModalVisible.value) {
             trackModalState(true);
         }
 
-        // Watch for changes in our visiblity and update the modal tracking.
-        watch(() => props.modelValue, () => trackModalState(props.modelValue));
+        // Watch for changes in our visiblity.
+        watch(() => props.modelValue, () => {
+            if (props.modelValue) {
+                container.value = document.fullscreenElement || document.body;
+
+                // Clear any old validation errors. They will be updated when
+                // the submit button is next clicked.
+                validationErrors.value = [];
+            }
+
+            internalModalVisible.value = props.modelValue;
+            trackModalState(internalModalVisible.value);
+        });
 
         return {
+            container,
+            internalModalVisible,
             isShaking,
             onClose,
             onScrollableClick,
-            onSubmit
+            onSubmit,
+            onVisibleValidationChanged,
+            validationErrors
         };
     },
 
     template: `
-<teleport to="body" v-if="modelValue">
+<teleport :to="container" v-if="modelValue">
     <div>
-        <div class="modal-backdrop" style="z-index: 1060;"></div>
-
         <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1060;">
             <div @click.stop
                 class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
@@ -127,8 +157,10 @@ export default defineComponent({
                     <slot v-else name="header" />
                 </div>
 
-                <RockForm @submit="onSubmit">
+                <RockForm @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
                     <div class="modal-body">
+                        <RockValidation :errors="validationErrors" />
+
                         <slot />
                     </div>
 
@@ -140,6 +172,8 @@ export default defineComponent({
                 </RockForm>
             </div>
         </div>
+
+        <div class="modal-backdrop" style="z-index: 1050;"></div>
     </div>
 </teleport>
 `

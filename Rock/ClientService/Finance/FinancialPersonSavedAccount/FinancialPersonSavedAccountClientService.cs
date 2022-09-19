@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Finance;
 using Rock.Web.Cache;
 
 namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
@@ -64,8 +64,8 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
         /// </summary>
         /// <param name="personId">The person identifier whose accounts should be retrieved.</param>
         /// <param name="options">The options for filtering and limiting the results.</param>
-        /// <returns>A list of <see cref="SavedFinancialAccountListItemViewModel"/> objects that represent the accounts.</returns>
-        public List<SavedFinancialAccountListItemViewModel> GetSavedFinancialAccountsForPersonAsAccountListItems( int personId, SavedFinancialAccountOptions options = null )
+        /// <returns>A list of <see cref="SavedFinancialAccountListItemBag"/> objects that represent the accounts.</returns>
+        public List<SavedFinancialAccountListItemBag> GetSavedFinancialAccountsForPersonAsAccountListItems( int personId, SavedFinancialAccountOptions options = null )
         {
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
 
@@ -133,7 +133,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                         image = creditCardTypeValueCache?.GetAttributeValue( SystemKey.CreditCardTypeAttributeKey.IconImage );
                     }
 
-                    return new SavedFinancialAccountListItemViewModel
+                    return new SavedFinancialAccountListItemBag
                     {
                         Value = a.Guid.ToString(),
                         Text = a.Name,

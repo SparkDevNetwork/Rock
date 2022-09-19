@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Rest.Utility;
 
@@ -35,7 +36,8 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [Route( "api/Communications/Send/{id}" )]
+        [System.Web.Http.Route( "api/Communications/Send/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "272C25FC-C608-4673-99D5-7FB1377D8A61" )]
         public virtual Task Send( int id )
         {
             var communication = GetById( id );
@@ -43,12 +45,16 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Sets a communication sent status for the <see cref="Model.Communication"/> record and the <see cref="Model.CommunicationRecipient"/> record.
+        /// Imports a communication record <see cref="Model.Communication"/> (with a sent status) for a list of given recipient <see cref="Model.CommunicationRecipient"/> data.
+        /// This is useful for recording emails that have already been sent (via some external system) into Rock as communications.
+        /// These communications won't receive any interactions for opens or clicks, but will record the fact that the communication was sent so they can be seen in Rock by staff.
+        /// The payload data needs to use correct Rock Ids when provided (for things like MediumEntityTypeId, SenderPersonAliasId, etc.) but other items such as ForeignId/Guid are optional.
         /// </summary>
         /// <param name="importCommunications">The communication payload.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [Route( "api/Communications/ImportSent" )]
+        [System.Web.Http.Route( "api/Communications/ImportSent" )]
+        [Rock.SystemGuid.RestActionGuid( "D99D0FEE-3479-4DC5-B92E-5D743C07EFC1" )]
         public virtual async Task<HttpResponseMessage> ImportSent( [FromBody] IEnumerable<ImportSentCommunicationApiModel> importCommunications )
         {
             if ( importCommunications == null || importCommunications.Count() == 0 )

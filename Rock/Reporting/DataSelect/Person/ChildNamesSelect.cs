@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8DE06919-D68C-4A29-989B-359A0379F1F3")]
     public class ChildNamesSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties

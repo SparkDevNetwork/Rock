@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Finds people with a relationship to members of family" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Find Relationships" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F43099A7-E872-439B-A750-351C741BCFEF")]
     public class FindRelationships : CheckInActionComponent
     {
         /// <summary>

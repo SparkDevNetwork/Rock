@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,7 +105,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 7 )]
 
     [EnumsField( "Disable Matching for the Following Protection Profiles",
-        Description = "This disables matching on people with one of the selected protection profiles. A person with a selected protection profile will be required to login by username and password.",
+        Description = "This disables matching on people with one of the selected protection profiles. A person with a selected protection profile will be required to log in by username and password.",
         EnumSourceType = typeof( AccountProtectionProfile ),
         DefaultValue = "2,3",
         Key = AttributeKeys.DisableMatchingProtectionProfiles,
@@ -161,7 +161,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [LinkedPage( "Login Page",
-        Description = "The page that will be used if allowing login by existing account credentials.",
+        Description = "The page to use when allowing log in by existing account credentials.",
         IsRequired = false,
         Category = AttributeCategories.Pages,
         Key = AttributeKeys.LoginPage,
@@ -416,6 +416,8 @@ namespace Rock.Blocks.Types.Mobile.Security
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_SECURITY_ONBOARD_PERSON )]
+    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47")]
     public class OnboardPerson : RockMobileBlockType
     {
         #region Block Attributes
@@ -1501,7 +1503,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     }
 
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    groupMember.CommunicationPreference = CommunicationType.RecipientPreference;
+                    groupMember.CommunicationPreference = Model.CommunicationType.RecipientPreference;
 
                     if ( groupMember.IsValidGroupMember( rockContext ) )
                     {
@@ -1659,7 +1661,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 {
                     if ( DisableMatchingProtectionProfiles.Contains( person.AccountProtectionProfile ) )
                     {
-                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to login with a username and password." );
+                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to log in with a username and password." );
                     }
                 }
 
@@ -1759,12 +1761,12 @@ namespace Rock.Blocks.Types.Mobile.Security
         }
 
         /// <summary>
-        /// Attempts to perform final login of the person.
+        /// Attempts to perform final log in of the person.
         /// </summary>
         /// <param name="state">The custom state data that was sent to the client.</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier that the client has been assigned.</param>
         /// <param name="details">The details that the individual filled out.</param>
-        /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
+        /// <returns>A <see cref="CreatePersonResponse"/> that contains the log in result or an error object.</returns>
         /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
         [RockObsolete( "1.13" )]
         [Obsolete]
@@ -1782,10 +1784,10 @@ namespace Rock.Blocks.Types.Mobile.Security
         }
 
         /// <summary>
-        /// Attempts to perform final login of the person.
+        /// Attempts to perform final log in of the person.
         /// </summary>
         /// <param name="request">The details of the request.</param>
-        /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
+        /// <returns>A <see cref="CreatePersonResponse"/> that contains the log in result or an error object.</returns>
         [BlockAction]
         public BlockActionResult CreatePerson( CreatePersonRequest request )
         {
@@ -1895,8 +1897,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                if ( ShowNotificationsRequest )
+                                {
+                                    personalDevice.DeviceRegistrationId = request.Details.PushToken;
+                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                }
 
                                 rockContext.SaveChanges();
                             }
@@ -1906,7 +1911,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
                     // Set the authentication token to either a normal token so
-                    // they can login.
+                    // they can log in.
                     mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
                     return ActionOk( new CreatePersonResponse
@@ -1979,8 +1984,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            personalDevice.DeviceRegistrationId = details.PushToken;
-                            personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            if ( ShowNotificationsRequest )
+                            {
+                                personalDevice.DeviceRegistrationId = details.PushToken;
+                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            }
                         }
                     }
 

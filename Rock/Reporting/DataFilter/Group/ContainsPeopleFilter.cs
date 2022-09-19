@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups based on the number of group members that also exist in a filtered set of people." )]
     [Export( typeof(DataFilterComponent) )]
     [ExportMetadata( "ComponentName", "Contains People" )]
+    [Rock.SystemGuid.EntityTypeGuid( "79E9FE53-3BAD-4935-B8AE-BC412615F057")]
     public class ContainsPeopleFilter : DataFilterComponent
     {
         #region Settings

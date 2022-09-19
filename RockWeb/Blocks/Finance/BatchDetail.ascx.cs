@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch.", order: 1 )]
     [LinkedPage( "Audit Page", "Page used to display the history of changes to a batch.", order: 2 )]
     [DefinedTypeField( "Batch Names", "The Defined Type that contains a predefined list of batch names to choose from instead of entering it in manually when adding a new batch. Leave this blank to hide this option and let them edit the batch name manually.", false, "", "", 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "CE34CE43-2CCF-4568-9AEB-3BE203DB3470" )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock
     {
         #region Control Methods

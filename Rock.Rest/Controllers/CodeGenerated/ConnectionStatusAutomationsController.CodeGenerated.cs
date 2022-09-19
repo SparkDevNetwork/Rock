@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ConnectionStatusAutomations REST API
     /// </summary>
+    [RestControllerGuid( "9C85FBF9-E65D-4B49-A9EB-F9128824ACA0" )]
     public partial class ConnectionStatusAutomationsController : Rock.Rest.ApiController<Rock.Model.ConnectionStatusAutomation>
     {
         /// <summary>

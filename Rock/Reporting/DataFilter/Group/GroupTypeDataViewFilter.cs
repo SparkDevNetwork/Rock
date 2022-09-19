@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups using a set of GroupTypes identified by a Group Type Data View" )]
     [Export( typeof(DataFilterComponent) )]
     [ExportMetadata( "ComponentName", "Group Type Data View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "480A8453-2974-44B7-8500-2A16A5F19206")]
     public class GroupTypeDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Group, Rock.Model.GroupType>
     {
         #region Overrides

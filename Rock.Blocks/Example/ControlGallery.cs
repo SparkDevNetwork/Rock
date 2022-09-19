@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Blocks.Example
     [Description( "Allows the user to try out various controls." )]
     [IconCssClass( "fa fa-flask" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_CONTROL_GALLERY )]
     public class ControlGallery : RockObsidianBlockType
     {
     }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a field of the entity and format through Lava" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Group Formatted Field" )]
+    [Rock.SystemGuid.EntityTypeGuid( "04FDA50D-EE9E-47DF-AABC-9E901641E98B")]
     public class GroupFormattedFieldSelect : FormattedFieldSelect<Rock.Model.Group>
     {
     }

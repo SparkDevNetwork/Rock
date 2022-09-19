@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D5992F79-7FB8-49FF-82AB-E8CB2CEC1E74")]
     public partial class ContentChannelType : Model<ContentChannelType>, ICacheable
     {
         #region Entity Properties
@@ -127,11 +128,8 @@ namespace Rock.Model
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
         /// <summary>
-        /// Gets the supported actions.
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
         [NotMapped]
         public override Dictionary<string, string> SupportedActions
         {
@@ -139,7 +137,7 @@ namespace Rock.Model
             {
                 var supportedActions = base.SupportedActions;
                 supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve." );
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
             }
         }

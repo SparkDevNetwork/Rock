@@ -77,7 +77,30 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, HttpUtility.UrlEncode( Title.EscapeQuotes() ) ) );
+            var title = Title;
+            var titleUpper = title.ToUpper();
+            const string SECURE_UPPER = "SECURE";
+            const string SECURE_TITLE = "Secure";
+
+            // If the control is specifying "Secure some title" ex. "Secure Person"
+            if ( titleUpper.StartsWith( SECURE_UPPER ) )
+            {
+                // The information after "Secure" ex. "Secure Person" would be just "Person" in the substring
+                var titleSubString = title.SubstringSafe( 6 ).Trim();
+
+                // If there is a Title substring part and the controls Title property does not start with "Secure " <-- with a space
+                if ( !titleSubString.IsNullOrWhiteSpace() && !titleUpper.StartsWith( $"{SECURE_UPPER} " ) )
+                {
+                    title = $"{SECURE_TITLE} {titleSubString}";
+                }
+            }
+            // Otherwise show the title as "Secure " plus the controls Title property ex. "Secure Person"
+            else
+            {
+                title = $"{SECURE_TITLE} {title}";
+            }
+
+            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, HttpUtility.UrlEncode( title.EscapeQuotes() ) ) );
             this.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
 
             base.RenderControl( writer );

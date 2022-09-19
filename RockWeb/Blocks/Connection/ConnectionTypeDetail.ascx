@@ -63,7 +63,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IconCssClass" ValidateRequestMode="Disabled"/>
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" ValidateRequestMode="Disabled"/>
                             <Rock:NumberBox ID="nbDaysUntilRequestIdle" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="DaysUntilRequestIdle" Label="Days Until Request Considered Idle" ValidateRequestMode="Disabled" NumberType="Integer" MinimumValue="0"/>
                             <Rock:PagePicker ID="ppConnectionRequestDetail" runat="server" Label="Connection Request Detail Page" Required="false" PromptForPageRoute="true" Help="Choose a page that should be used for viewing connection requests of this type. This is useful if you have different detail pages with different settings. A default page will be used if this is left blank." />
                         </div>
@@ -214,6 +214,7 @@
         <Rock:ModalDialog ID="dlgConnectionStatuses" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddConnectionStatus_Click" Title="Create Status" ValidationGroup="ConnectionStatus">
             <Content>
                 <asp:HiddenField ID="hfConnectionTypeAddConnectionStatusGuid" runat="server" />
+                <Rock:NotificationBox ID="nbDuplicateConnectionStatus" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbConnectionStatusName" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="ConnectionStatus" />
@@ -244,8 +245,9 @@
                     <Rock:NotificationBox ID="nbMessage" NotificationBoxType="Info" runat="server" Text="Please save the new Status before adding any Status Automations." Visible="false" />
                     <Rock:RockControlWrapper ID="rcwStatusAutomationsView" runat="server">
                         <div class="grid">
-                            <Rock:Grid ID="gStatusAutomations" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Status Automation">
+                            <Rock:Grid ID="gStatusAutomations" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Status Automation" OnGridReorder="gStatusAutomations_GridReorder">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="AutomationName" HeaderText="Automation Name" />
                                     <Rock:RockBoundField DataField="DataViewName" HeaderText="Data View" />
                                     <Rock:EnumField DataField="GroupRequirementsFilter" HeaderText="Group Requirements Filter" />

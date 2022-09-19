@@ -17,8 +17,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -34,35 +36,32 @@ namespace Rock.Badge.Component
 
     [CodeEditorField( "Display Text", "The text (or HTML) to display as a badge", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
+    [Rock.SystemGuid.EntityTypeGuid( "95912004-62B5-4460-951F-D752427D44FE")]
     public class Liquid : BadgeComponent
     {
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
             var displayText = GetAttributeValue( badge, "DisplayText" );
 
-            if ( Entity != null )
+            if ( entity != null )
             {
                 var mergeValues = new Dictionary<string, object>();
 
                 // Always add Entity as a merge field so that lava badges that aren't tied to a particular model can have consistency
-                mergeValues.Add( "Entity", Entity );
+                mergeValues.Add( "Entity", entity );
 
                 // Add a merge field by the model's name (Group, Person, FinancialAccount, etc)
-                var modelTypeName = Entity.GetType()?.BaseType?.Name;
+                var modelTypeName = entity.GetType()?.BaseType?.Name;
                 if ( !modelTypeName.IsNullOrWhiteSpace() )
                 {
-                    mergeValues.Add( modelTypeName, Entity );
+                    mergeValues.Add( modelTypeName, entity );
                 }
 
                 // Continue to provide the person merge field since this was originally a person badge and the lava would need to be updated to not break
                 if ( modelTypeName != "Person" )
                 {
-                    mergeValues.Add( "Person", Person );
+                    mergeValues.Add( "Person", entity as Person );
                 }
 
                 // Resolve the merge fields and add debug info if requested

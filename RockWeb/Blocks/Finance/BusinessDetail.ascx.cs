@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = true,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3CB1F9F0-11B2-4A46-B9D1-464811E5015C" )]
     public partial class BusinessDetail : ContextEntityBlock
     {
         private static class AttributeKey
@@ -247,7 +248,6 @@ namespace RockWeb.Blocks.Finance
             {
                 business = new Person();
                 personService.Add( business );
-                tbBusinessName.Text = tbBusinessName.Text.FixCase();
             }
 
             // Business Name
@@ -875,6 +875,19 @@ namespace RockWeb.Blocks.Finance
             if ( groupMember.Id == 0)
             {
                 groupMemberService.Add( groupMember );
+
+                /*
+                     6/20/2022 - SMC
+
+                     We need to save the new Group to the database so that an Id is assigned.  This
+                     Id is necessary to calculate the correct GivingId for the business, otherwise
+                     all new businesses are given a GivingId of "G0" until the Rock Cleanup Job runs,
+                     which causes the transactions to appear on any new records (because they all
+                     have the same GivingId).
+
+                     Reason: Transactions showing up on records they don't belong to.
+                */
+                rockContext.SaveChanges();
             }
 
             return groupMember;

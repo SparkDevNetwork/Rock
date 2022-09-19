@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,9 +26,11 @@ using Rock.Security;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    /// Class AuthController.
+    /// Implements the <see cref="System.Web.Http.ApiController" />
     /// </summary>
-    public class AuthController : ApiController
+    [Rock.SystemGuid.RestControllerGuid( "713B9E66-E962-4637-B701-53372FB40DBF")]
+    public class AuthController : ApiController 
     {
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
@@ -37,6 +39,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/Login" )]
+        [Rock.SystemGuid.RestActionGuid( "6149C98B-134F-48EB-A92F-D37B9B08B322" )]
         public void Login( [FromBody] LoginParameters loginParameters )
         {
             string userName;

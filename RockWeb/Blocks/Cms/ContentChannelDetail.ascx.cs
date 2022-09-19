@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Content Channel Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B28075DA-46C1-4F6B-933D-DFCFEFB439EE" )]
     public partial class ContentChannelDetail : RockBlock
     {
 
@@ -115,15 +116,16 @@ namespace RockWeb.Blocks.Cms
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            string script = @"
-    $('.js-content-channel-enable-rss').change( function() {
+            string script = string.Format( @"
+    $('.js-content-channel-enable-rss').change( function() {{
         $(this).closest('div.form-group').siblings('div.js-content-channel-rss').slideToggle()
-    });
+    }});
 
-    $('.js-content-channel-enable-tags').change( function() {
+    $('.js-content-channel-enable-tags').change( function() {{
+        $('#{0}').slideToggle();
         $(this).closest('div.form-group').siblings('div.js-content-channel-tags').slideToggle()
-    });
-";
+    }});
+", divTag.ClientID );
             ScriptManager.RegisterStartupScript( cbEnableRss, cbEnableRss.GetType(), "enable-rss", script, true );
 
         }
@@ -339,6 +341,7 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
+                contentChannel.EnablePersonalization = cbEnablePersonalization.Checked;
                 contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : ( int? ) null;
 
                 // Add any categories
@@ -566,9 +569,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgItemAttributes_SaveClick( object sender, EventArgs e )
         {
-#pragma warning disable 0618 // Type or member is obsolete
-            var attribute = SaveChangesToStateCollection( edtItemAttributes, ItemAttributesState );
-#pragma warning restore 0618 // Type or member is obsolete
+            var attribute = edtItemAttributes.SaveChangesToStateCollection( ItemAttributesState );
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -577,7 +578,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             BindItemAttributesGrid();
-
             HideDialog();
         }
 
@@ -793,6 +793,7 @@ namespace RockWeb.Blocks.Cms
                 cbEnableRss.Checked = contentChannel.EnableRss;
                 tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
                 cbEnableTag.Checked = contentChannel.IsTaggingEnabled;
+                cbEnablePersonalization.Checked = contentChannel.EnablePersonalization;
                 cpCategory.SetValue( contentChannel.ItemTagCategoryId );
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
@@ -1112,50 +1113,6 @@ namespace RockWeb.Blocks.Cms
             ChildContentChannelsList.Add( ddlChildContentChannel.SelectedValueAsId() ?? 0 );
             BindChildContentChannelsGrid();
             HideDialog();
-        }
-
-        #endregion
-
-        #region Obsolete Code
-
-        /// <summary>
-        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
-        /// Non-editable system properties of the existing Attribute state are preserved.
-        /// </summary>
-        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
-        /// <param name="attributeStateCollection">The stored state collection.</param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
-        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
-        {
-            // Load the editor values into a new Attribute instance.
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-
-            editor.GetAttributeProperties( attribute );
-
-            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
-            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
-
-            if ( attributeState != null )
-            {
-                attribute.Order = attributeState.Order;
-                attribute.CreatedDateTime = attributeState.CreatedDateTime;
-                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
-                attribute.ForeignGuid = attributeState.ForeignGuid;
-                attribute.ForeignId = attributeState.ForeignId;
-                attribute.ForeignKey = attributeState.ForeignKey;
-
-                attributeStateCollection.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                // Set the Order of the new entry as the last item in the collection.
-                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
-            }
-
-            attributeStateCollection.Add( attribute );
-
-            return attribute;
         }
 
         #endregion

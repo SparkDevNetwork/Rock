@@ -50,7 +50,7 @@
                         <hr id="hrSeparator" runat="server" />
 
                         <div class="row">
-                            <asp:PlaceHolder ID="phFilters" runat="server" />
+                            <Rock:DynamicPlaceHolder ID="phFilters" runat="server" />
                         </div>
                     </div>
                 </asp:Panel>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,13 +27,13 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Prompts user for attribute values
     /// </summary>
     [ActionCategory( "Workflow Control" )]
     [Description( "Prompts user for attribute values" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Form" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "486DC4FA-FCBC-425F-90B0-E606DA8A9F68")]
     public class UserEntryForm : ActionComponent
     {
         /// <summary>
@@ -153,6 +153,7 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Always return false. Special logic for User Form will be handled in the WorkflowEntry block.
             return false;
         }
 

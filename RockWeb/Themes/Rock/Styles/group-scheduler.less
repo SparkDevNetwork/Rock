@@ -20,6 +20,30 @@
 
 @grid-height: 51px;
 
+.sticky-left {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.sticky-cell {
+  position: sticky;
+  left: 8px;
+  display: inline-block;
+}
+
+.schedule-status-board-header {
+  position: sticky;
+  inset-block-start: 0; /* "top" */
+  z-index: 1;
+
+  th {
+    background: @white;
+    border-bottom-color: transparent !important;
+    box-shadow: inset 0 -2px 0 @panel-default-border; // Emulate bottom-border for position sticky
+  }
+}
+
 .panel-body-parent {
   position: relative;
   height: 100%;
@@ -154,7 +178,7 @@
   background-color: @btn-default-bg;
   border: 1px solid @btn-default-border;
   border-radius: 4px;
-  box-shadow: 0 1px 0 hsl(228, 7%, 83%);
+  box-shadow: 0 1px 0 #d1d2d7;
 
   .flex {
     display: flex !important;
@@ -254,7 +278,7 @@
   }
 
   .dropdown-menu {
-    font-size: (@font-size-base * .75);
+    font-size: 14px;
   }
 
   .resource-blackout-status {
@@ -514,6 +538,10 @@
     padding: 0;
   }
 
+  .group-locations {
+    position: relative;
+  }
+
   .location-row {
     transition: max-height .3s;
   }
@@ -523,11 +551,15 @@
     overflow: hidden;
   }
 
-  td.location {
+  th.location {
+    position: sticky;
     min-width: 100px;
     font-size: @font-size-sm;
     font-weight: @font-weight-semibold;
     text-align: right;
+    background: @white;
+    border-right: 1px solid @panel-default-border;
+    inset-inline-start: 0;  // Left
 
     > div {
       height: 100%;
@@ -705,6 +737,9 @@
   border-radius: 2px;
 }
 .board-cards {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   padding: 1px 16px 130px;
   overflow-x: hidden;
   overflow-y: scroll;

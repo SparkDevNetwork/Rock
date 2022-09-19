@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,6 +94,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED")]
     public class WorkflowEntry : RockMobileBlockType
     {
         #region Feature Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
     [Description( "Block used to set values specific to data automation (updating person status, family campus, etc.)." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E34C45E9-97CA-4902-803B-1EFAC9174083" )]
     public partial class DataAutomationSettings : RockBlock
     {
         #region private variables
@@ -425,6 +426,7 @@ namespace RockWeb.Blocks.Administration
             pnlCampusUpdate.Enabled = _campusSettings.IsEnabled;
             cbMostFamilyAttendance.Checked = _campusSettings.IsMostFamilyAttendanceEnabled;
             nbMostFamilyAttendance.Text = _campusSettings.MostFamilyAttendancePeriod.ToStringSafe();
+            nbTimesToTriggerCampusChange.Text = _campusSettings.TimesToTriggerCampusChange.ToStringSafe();
             cbMostFamilyGiving.Checked = _campusSettings.IsMostFamilyGivingEnabled;
             nbMostFamilyGiving.Text = _campusSettings.MostFamilyGivingPeriod.ToStringSafe();
             ddlAttendanceOrGiving.SetValue( _campusSettings.MostAttendanceOrGiving.ConvertToInt() );
@@ -603,6 +605,7 @@ namespace RockWeb.Blocks.Administration
 
             _campusSettings.IsMostFamilyAttendanceEnabled = cbMostFamilyAttendance.Checked;
             _campusSettings.MostFamilyAttendancePeriod = nbMostFamilyAttendance.Text.AsInteger();
+            _campusSettings.TimesToTriggerCampusChange = nbTimesToTriggerCampusChange.Text.AsInteger();
 
             _campusSettings.IsMostFamilyGivingEnabled = cbMostFamilyGiving.Checked;
             _campusSettings.MostFamilyGivingPeriod = nbMostFamilyGiving.Text.AsInteger();

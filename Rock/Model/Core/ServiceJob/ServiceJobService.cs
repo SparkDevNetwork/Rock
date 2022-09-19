@@ -19,12 +19,15 @@ using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Compilation;
+using System.Collections.Concurrent;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock.Data;
 using Rock.Jobs;
+using CronExpressionDescriptor;
 
 namespace Rock.Model
 {
@@ -176,6 +179,22 @@ namespace Rock.Model
 
         }
 
+        private static ConcurrentDictionary<string, bool> _verifiedJobTypeAttributes = new ConcurrentDictionary<string, bool>();
+
+        /// <summary>
+        /// Updates the attributes on the Job's Job Type if they haven't been verified yet
+        /// </summary>
+        /// <param name="jobCompiledType">Type of the job compiled.</param>
+        public static void UpdateAttributesIfNeeded( Type jobCompiledType )
+        {
+            if ( !_verifiedJobTypeAttributes.ContainsKey( jobCompiledType.FullName ) )
+            {
+                int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
+                Rock.Attribute.Helper.UpdateAttributes( jobCompiledType, jobEntityTypeId, "Class", jobCompiledType.FullName );
+                _verifiedJobTypeAttributes.TryAdd( jobCompiledType.FullName, true );
+            }
+        }
+
         /// <summary>
         /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
         /// </summary>
@@ -183,39 +202,16 @@ namespace Rock.Model
         /// <returns>A object that implements the <see cref="Quartz.IJobDetail"/> interface</returns>
         public IJobDetail BuildQuartzJob( ServiceJob job )
         {
-            // build the type object, will depend if the class is in an assembly or the App_Code folder
-            Type type = null;
-
-            if ( string.IsNullOrWhiteSpace( job.Assembly ) )
+            var type = job.GetCompiledType();
+            if ( type == null )
             {
-                // first, if no assembly is known, look in all the dlls for it
-                type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
-
-                if ( type == null )
-                {
-                    // if it can't be found in dlls, look in App_Code using BuildManager
-                    type = BuildManager.GetType( job.Class, false );
-                }
-            }
-            else
-            {
-                // if an assembly is specified, load the type from that
-                string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
-                type = Type.GetType( thetype );
+                return null;
             }
 
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
-            Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", type.FullName );
-
-            // load up job attributes (parameters) 
-            job.LoadAttributes();
+            UpdateAttributesIfNeeded( type );
 
             JobDataMap map = new JobDataMap();
-
-            foreach ( var attrib in job.AttributeValues )
-            {
-                map.Add( attrib.Key, attrib.Value.Value );
-            }
+            map.LoadFromJobAttributeValues( job );
 
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
@@ -234,10 +230,23 @@ namespace Rock.Model
         /// <returns>A Quartz trigger that implements <see cref="Quartz.ITrigger"/> for the specified job.</returns>
         public ITrigger BuildQuartzTrigger( ServiceJob job )
         {
+
+            string cronExpression;
+            if ( IsValidCronDescription( job.CronExpression ) )
+            {
+                cronExpression = job.CronExpression;
+            }
+            else
+            {
+                // Invalid cron expression, so specify to never run.
+                // If they view the job in ScheduledJobDetail they'll see that it isn't a valid expression.
+                cronExpression = ServiceJob.NeverScheduledCronExpression;
+            }
+
             // create quartz trigger
             ITrigger trigger = ( ICronTrigger ) TriggerBuilder.Create()
                 .WithIdentity( job.Guid.ToString(), job.Name )
-                .WithCronSchedule( job.CronExpression, x =>
+                .WithCronSchedule( cronExpression, x =>
                 {
                     x.InTimeZone( RockDateTime.OrgTimeZoneInfo );
                     x.WithMisfireHandlingInstructionDoNothing();
@@ -246,6 +255,40 @@ namespace Rock.Model
                 .Build();
 
             return trigger;
+        }
+
+        /// <summary>
+        /// Determines whether the Cron Expression is valid for Quartz
+        /// </summary>
+        /// <param name="cronExpression">The cron expression.</param>
+        /// <returns>bool.</returns>
+        public static bool IsValidCronDescription( string cronExpression )
+        {
+            return Quartz.CronExpression.IsValidExpression( cronExpression );
+        }
+
+        /// <summary>
+        /// Gets a friendly cron description, or 'Invalid Cron Expression' if it isn't valid.
+        /// </summary>
+        /// <param name="cronExpression">The cron expression.</param>
+        /// <returns>string.</returns>
+        public static string GetCronDescription( string cronExpression )
+        {
+            if ( Quartz.CronExpression.IsValidExpression( cronExpression ) )
+            {
+                try
+                {
+                    return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
+                }
+                catch
+                {
+                    return "Invalid Cron Expression";
+                }
+            }
+            else
+            {
+                return "Invalid Cron Expression";
+            }
         }
 
         /// <summary>

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PersonPreviousName View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PersonPreviousName ) )]
-    public partial class PersonPreviousNameViewModelHelper : ViewModelHelper<PersonPreviousName, Rock.ViewModel.PersonPreviousNameViewModel>
+    public partial class PersonPreviousNameViewModelHelper : ViewModelHelper<PersonPreviousName, PersonPreviousNameBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PersonPreviousNameViewModel CreateViewModel( PersonPreviousName model, Person currentPerson = null, bool loadAttributes = true )
+        public override PersonPreviousNameBag CreateViewModel( PersonPreviousName model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PersonPreviousNameViewModel
+            var viewModel = new PersonPreviousNameBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 LastName = model.LastName,
                 PersonAliasId = model.PersonAliasId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -172,7 +172,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PersonPreviousNameViewModel ToViewModel( this PersonPreviousName model, Person currentPerson = null, bool loadAttributes = false )
+        public static PersonPreviousNameBag ToViewModel( this PersonPreviousName model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PersonPreviousNameViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

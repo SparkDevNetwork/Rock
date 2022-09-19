@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// Notification View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Notification ) )]
-    public partial class NotificationViewModelHelper : ViewModelHelper<Notification, Rock.ViewModel.NotificationViewModel>
+    public partial class NotificationViewModelHelper : ViewModelHelper<Notification, NotificationBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.NotificationViewModel CreateViewModel( Notification model, Person currentPerson = null, bool loadAttributes = true )
+        public override NotificationBag CreateViewModel( Notification model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.NotificationViewModel
+            var viewModel = new NotificationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Classification = ( int ) model.Classification,
                 IconCssClass = model.IconCssClass,
                 Message = model.Message,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.NotificationViewModel ToViewModel( this Notification model, Person currentPerson = null, bool loadAttributes = false )
+        public static NotificationBag ToViewModel( this Notification model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new NotificationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Prayer
 
     [ContextAware( typeof( PrayerRequest ) )]
     [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 0 )]
+    [Rock.SystemGuid.BlockTypeGuid( "4F3778DF-A25C-4E59-9242-B1D6813311E1" )]
     public partial class PrayerCommentDetail : RockBlock
     {
         #region Private BlockType Attributes

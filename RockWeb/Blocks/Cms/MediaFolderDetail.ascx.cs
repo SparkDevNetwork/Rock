@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Folder" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3C9D442B-D066-43FA-9380-98C60936992E" )]
     public partial class MediaFolderDetail : RockBlock
     {
         #region PageParameterKeys

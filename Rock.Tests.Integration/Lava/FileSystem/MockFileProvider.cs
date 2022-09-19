@@ -95,6 +95,11 @@ namespace Rock.Tests.Integration.Lava
             return _files.ContainsKey( filePath );
         }
 
+        IChangeToken IFileProvider.Watch( string filter )
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

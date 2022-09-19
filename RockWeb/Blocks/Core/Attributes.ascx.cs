@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Core
         Order = 6,
         Key = AttributeKey.HideColumnsOnGrid )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E5EA2F6D-43A2-48E0-B59C-4409B78AC830" )]
     public partial class Attributes : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -707,9 +708,22 @@ namespace RockWeb.Blocks.Core
                     }
 
                     var fieldType = FieldTypeCache.Get( attribute.FieldType.Id );
-                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
 
-                    rockContext.SaveChanges();
+                    var newValue = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
+
+                    if ( attributeValue.Value != newValue )
+                    {
+                        attributeValue.Value = newValue;
+
+                        Helper.UpdateAttributeValuePersistedValues( attributeValue, attribute );
+
+                        if ( attribute.IsReferencedEntityFieldType )
+                        {
+                            Helper.UpdateAttributeValueEntityReferences( attributeValue, rockContext );
+                        }
+
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 hfIdValues.Value = string.Empty;

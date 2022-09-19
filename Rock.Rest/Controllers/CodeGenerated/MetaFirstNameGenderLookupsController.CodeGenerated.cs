@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MetaFirstNameGenderLookups REST API
     /// </summary>
+    [RestControllerGuid( "58C8FD2F-68B7-4689-AB21-DE964BAB8BFB" )]
     public partial class MetaFirstNameGenderLookupsController : Rock.Rest.ApiController<Rock.Model.MetaFirstNameGenderLookup>
     {
         /// <summary>

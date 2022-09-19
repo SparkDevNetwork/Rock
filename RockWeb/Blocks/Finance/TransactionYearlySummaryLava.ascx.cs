@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
     [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "535307C8-77D1-44F8-AD4D-1577572B6D26" )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods

@@ -134,6 +134,7 @@ namespace Rock.Model
 
                 if ( group != null )
                 {
+                    this.Entity.GroupTypeId = group.GroupTypeId;
                     string oldGroupName = group.Name;
                     if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
                     {
@@ -195,12 +196,12 @@ namespace Rock.Model
                     {
                         // Updated same person in group
                         var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", OriginalValues["GroupRoleId"].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", OriginalValues["Note"].ToStringSafe(), Entity.Note );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", OriginalValues["CommunicationPreference"].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", OriginalValues["GuestCount"].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", OriginalValues["IsArchived"].ToStringSafe().AsBoolean(), Entity.IsArchived );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", OriginalValues[nameof( Entity.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", OriginalValues[nameof( Entity.Note )].ToStringSafe(), Entity.Note );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", OriginalValues[nameof( Entity.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", OriginalValues[nameof( Entity.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", OriginalValues[nameof( Entity.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", OriginalValues[nameof( Entity.IsArchived )].ToStringSafe().AsBoolean(), Entity.IsArchived );
 
                         // If the groupmember was Archived, make sure it is the first GroupMember History change (since they get summarized when doing a HistoryLog and Timeline
                         bool origIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
@@ -244,13 +245,14 @@ namespace Rock.Model
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
                     if ( groupType != null && groupType.IsIndexEnabled )
                     {
+                        int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
                         var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
                         {
-                            EntityTypeId = groupType.Id,
+                            EntityTypeId = groupEntityTypeId,
                             EntityId = group.Id
                         };
 
-                        processEntityTypeIndexMsg.Send();
+                        processEntityTypeIndexMsg.SendWhen( this.RockContext.WrappedTransactionCompletedTask );
                     }
                 }
 

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// WebFarmNodes REST API
     /// </summary>
+    [RestControllerGuid( "71B5D5F1-4980-4736-8F2E-E0B89C6D26BD" )]
     public partial class WebFarmNodesController : Rock.Rest.ApiController<Rock.Model.WebFarmNode>
     {
         /// <summary>

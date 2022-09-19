@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,16 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E04681EB-7A85-441B-B794-82B025FFB5D4")]
     public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>, ICacheable
     {
         #region Entity Properties
@@ -80,7 +80,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the category.
@@ -92,32 +92,6 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are dependent on this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // Tell the CategoryCache that is has been modified since its ScheduleExclusions modified
-            CategoryCache.UpdateCachedEntity( this.CategoryId, EntityState.Modified );
-        }
-
-        #endregion
-
     }
 
     /// <summary>

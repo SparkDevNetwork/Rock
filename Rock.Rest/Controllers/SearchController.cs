@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Controllers
@@ -26,7 +26,8 @@ namespace Rock.Controllers
     /// <summary>
     /// Search REST API
     /// </summary>
-    public partial class SearchController : ApiController
+    [Rock.SystemGuid.RestControllerGuid( "1D08E8B4-61AF-4ED7-9201-B64FCC3C22AD")]
+    public partial class SearchController : ApiController 
     {
         /// <summary>
         /// GET that returns a list of results based on the Search Type and Term
@@ -36,6 +37,7 @@ namespace Rock.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/search" )]
         [EnableQuery]
+        [Rock.SystemGuid.RestActionGuid( "EBAEC60A-9C0A-45CD-954D-51E56B3BD162" )]
         public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;
@@ -43,17 +45,17 @@ namespace Rock.Controllers
             string term = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "term" );
 
             int key = int.MinValue;
-            if (int.TryParse(type, out key))
+            if ( int.TryParse( type, out key ) )
             {
                 var searchComponents = Rock.Search.SearchContainer.Instance.Components;
-                if (searchComponents.ContainsKey(key))
+                if ( searchComponents.ContainsKey( key ) )
                 {
                     var component = searchComponents[key];
                     return component.Value.Search( term );
                 }
             }
 
-            throw new HttpResponseException(HttpStatusCode.BadRequest);
+            throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
     }
 }

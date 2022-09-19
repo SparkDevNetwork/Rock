@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Event
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "A8DB2C89-F80A-43A2-AA53-36C78673F504" )]
     public partial class RegistrationInstanceRegistrationList : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Attribute Keys
@@ -217,6 +218,7 @@ namespace RockWeb.Blocks.Event
             fRegistrations.SaveUserPreference( "RegisteredBy Last Name", tbRegistrationRegisteredByLastName.Text );
             fRegistrations.SaveUserPreference( "Registrant First Name", tbRegistrationRegistrantFirstName.Text );
             fRegistrations.SaveUserPreference( "Registrant Last Name", tbRegistrationRegistrantLastName.Text );
+            fRegistrations.SaveUserPreference( UserPreferenceKeyBase.GridFilter_RegistrationCampus, cblCampus.SelectedValues.AsDelimited( ";" ) );
 
             // Store the selected date range in the page context so it can be used to synchronise the data displayed by other blocks, such as the RegistrationInstanceGroupPlacement block.
             RockPage.SaveSharedItem( RegistrationInstanceBlock.SharedItemKey.RegistrationDateRange, DateRange.FromDelimitedValues( sdrpRegistrationDateRange.DelimitedValues ) );
@@ -237,6 +239,7 @@ namespace RockWeb.Blocks.Event
             fRegistrations.SaveUserPreference( "RegisteredBy Last Name", string.Empty );
             fRegistrations.SaveUserPreference( "Registrant First Name", string.Empty );
             fRegistrations.SaveUserPreference( "Registrant Last Name", string.Empty );
+            fRegistrations.SaveUserPreference( UserPreferenceKeyBase.GridFilter_RegistrationCampus, string.Empty );
 
             BindRegistrationsFilter();
         }
@@ -260,11 +263,32 @@ namespace RockWeb.Blocks.Event
                 case "Registrant First Name":
                 case "Registrant Last Name":
                     break;
-
+                case UserPreferenceKeyBase.GridFilter_RegistrationCampus:
+                    e.Value = GetRegistrationsFilterCampuses( e.Value );
+                    break;
                 default:
                     e.Value = string.Empty;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Gets the registrations filter campuses.
+        /// </summary>
+        /// <param name="filterValue">The value.</param>
+        private string GetRegistrationsFilterCampuses( string filterValue )
+        {
+            var values = new List<string>();
+            foreach ( string value in filterValue.Split( ';' ) )
+            {
+                var item = cblCampus.Items.FindByValue( value );
+                if ( item != null )
+                {
+                    values.Add( item.Text );
+                }
+            }
+
+            return values.AsDelimited( ", " );
         }
 
         /// <summary>
@@ -527,6 +551,16 @@ namespace RockWeb.Blocks.Event
             tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegisteredByLastName );
             tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrantFirstName );
             tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrantLastName );
+
+            cblCampus.DataSource = CampusCache.All();
+            cblCampus.DataBind();
+
+            string campusValue = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrationCampus );
+
+            if ( !string.IsNullOrWhiteSpace( campusValue ) )
+            {
+                cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
+            }
         }
 
         /// <summary>
@@ -555,7 +589,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     var qry = new RegistrationService( rockContext )
-                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
+                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee,Campus" )
                         .AsNoTracking()
                         .Where( r =>
                             r.RegistrationInstanceId == instanceId.Value &&
@@ -609,6 +643,13 @@ namespace RockWeb.Blocks.Event
                         qry = qry.Where( r =>
                             r.Registrants.Any( p =>
                                 p.PersonAlias.Person.LastName.StartsWith( rlname ) ) );
+                    }
+
+                    List<int> campusIds = cblCampus.SelectedValuesAsInt;
+                    if ( campusIds.Count > 0 )
+                    {
+                        qry = qry
+                            .Where( r => r.CampusId.HasValue && campusIds.Contains( r.CampusId.Value ) );
                     }
 
                     // If filtering on payment status, need to do some sub-querying...
@@ -761,6 +802,12 @@ namespace RockWeb.Blocks.Event
                     if ( discountCodeHeader != null )
                     {
                         discountCodeHeader.Visible = GetAttributeValue( AttributeKey.DisplayDiscountCodes ).AsBoolean();
+                    }
+
+                    var campusColum = gRegistrations.ColumnsOfType<DataControlField>().FirstOrDefault( m => m.HeaderText == "Campus" );
+                    if ( campusColum != null )
+                    {
+                        campusColum.Visible = qry.Any( m => m.CampusId.HasValue );
                     }
 
                     gRegistrations.DataBind();

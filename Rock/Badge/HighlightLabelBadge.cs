@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.IO;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -25,6 +27,8 @@ namespace Rock.Badge
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
+    [RockObsolete( "1.14" )]
+    [Obsolete( "HighlightLabelBadge depends on Webforms, use BadgeComponent instead and render the HTML." )]
     public abstract class HighlightLabelBadge : BadgeComponent
     {
         /// <summary>
@@ -50,34 +54,39 @@ namespace Rock.Badge
         }
 
         /// <summary>
-        /// Renders the specified writer.
+        /// Renders the badge HTML content that should be inserted into the DOM.
         /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <param name="badge">The badge cache that describes this badge.</param>
+        /// <param name="entity">The entity to render the badge for.</param>
+        /// <param name="writer">The writer to render the HTML into.</param>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Entity != null )
+            if ( entity == null )
+            {
+                return;
+            }
+
+            using ( var htmlWriter = new System.Web.UI.HtmlTextWriter( writer ) )
             {
                 // Code using the old Person interface will return null here. The else block handles rendering for those obsolete badges
-                var label = GetLabel( Entity );
-                
+                var label = GetLabel( entity );
+
                 if ( label != null )
                 {
-                    label.RenderControl( writer );
+                    label.RenderControl( htmlWriter );
                 }
                 else
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    label = GetLabel( Person );
+                    label = GetLabel( entity as Person );
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     if ( label != null )
                     {
-                        label.RenderControl( writer );
+                        label.RenderControl( htmlWriter );
                     }
                 }
             }
         }
     }
-
 }

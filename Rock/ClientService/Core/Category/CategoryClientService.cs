@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Model.Core.Category.Options;
 using Rock.Security;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.ClientService.Core.Category
@@ -68,7 +68,7 @@ namespace Rock.ClientService.Core.Category
         /// </summary>
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A list of view models that describe the tree of categories and items.</returns>
-        public List<TreeItemViewModel> GetCategorizedTreeItems( CategoryItemTreeOptions options = null )
+        public List<TreeItemBag> GetCategorizedTreeItems( CategoryItemTreeOptions options = null )
         {
             options = options ?? DefaultCategoryItemTreeOptions;
 
@@ -118,8 +118,8 @@ namespace Rock.ClientService.Core.Category
 
             // Get all the categories from the query and then filter on security.
             var categoryItemList = categoryList
-                .Where( c => c.IsAuthorized( Authorization.VIEW, Person ) )
-                .Select( c => new TreeItemViewModel
+                .Where( c => c.IsAuthorized( Authorization.VIEW, Person ) || options.SecurityGrant?.IsAccessGranted( c, Authorization.VIEW ) == true )
+                .Select( c => new TreeItemBag
                 {
                     Value = c.Guid.ToString(),
                     Text = c.Name,
@@ -169,7 +169,7 @@ namespace Rock.ClientService.Core.Category
 
                     if ( item.Children == null )
                     {
-                        item.Children = new List<TreeItemViewModel>();
+                        item.Children = new List<TreeItemBag>();
                     }
 
                     GetAllDescendants( item, Person, categoryService, serviceInstance, cachedEntityType, options );
@@ -204,7 +204,7 @@ namespace Rock.ClientService.Core.Category
             // of the two operations.
             foreach ( var childCategory in categoryService.Queryable().Where( c => c.ParentCategory.Guid == parentGuid ) )
             {
-                if ( childCategory.IsAuthorized( Authorization.VIEW, Person ) )
+                if ( childCategory.IsAuthorized( Authorization.VIEW, Person ) || options.SecurityGrant?.IsAccessGranted( childCategory, Authorization.VIEW ) == true )
                 {
                     return true;
                 }
@@ -245,7 +245,7 @@ namespace Rock.ClientService.Core.Category
         /// <param name="cachedEntityType">The cached entity type object that describes the items.</param>
         /// <param name="itemsQry">The items qry.</param>
         /// <returns>A list of child items that should be included in the results.</returns>
-        private List<TreeItemViewModel> GetChildrenItems( CategoryItemTreeOptions options, EntityTypeCache cachedEntityType, IQueryable<ICategorized> itemsQry )
+        private List<TreeItemBag> GetChildrenItems( CategoryItemTreeOptions options, EntityTypeCache cachedEntityType, IQueryable<ICategorized> itemsQry )
         {
             // Do a ToList() to load from database prior to ordering
             // by name, just in case Name is a virtual property.
@@ -264,7 +264,7 @@ namespace Rock.ClientService.Core.Category
                 sortedItemsList = itemsList.OrderBy( i => i.Name ).ToList();
             }
 
-            var children = new List<TreeItemViewModel>();
+            var children = new List<TreeItemBag>();
 
             // Walk each item from the sorted list and determine if we it
             // should be added to the list of children.
@@ -274,7 +274,7 @@ namespace Rock.ClientService.Core.Category
                 // the item is of type IEntity so we can get to the Guid.
                 if ( categorizedItem.IsAuthorized( Authorization.VIEW, Person ) && categorizedItem is IEntity categorizedEntityItem )
                 {
-                    var categoryItem = new TreeItemViewModel
+                    var categoryItem = new TreeItemBag
                     {
                         Value = categorizedEntityItem.Guid.ToString(),
                         Text = categorizedItem.Name,
@@ -304,7 +304,7 @@ namespace Rock.ClientService.Core.Category
         /// <param name="cachedEntityType">The cached entity type of the items.</param>
         /// <param name="options">The options that describe the current operation.</param>
         /// <returns></returns>
-        private TreeItemViewModel GetAllDescendants( TreeItemViewModel categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options )
+        private TreeItemBag GetAllDescendants( TreeItemBag categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options )
         {
             if ( categoryItem.IsFolder )
             {
@@ -317,11 +317,11 @@ namespace Rock.ClientService.Core.Category
 
                 foreach ( var childCategory in childCategories )
                 {
-                    if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) || options.SecurityGrant?.IsAccessGranted( childCategory, Authorization.VIEW ) == true )
                     {
                         // This category has child categories that the person can view so add them to categoryItemList
                         categoryItem.HasChildren = true;
-                        var childCategoryItem = new TreeItemViewModel
+                        var childCategoryItem = new TreeItemBag
                         {
                             Value = childCategory.Guid.ToString(),
                             Text = childCategory.Name,
@@ -337,7 +337,7 @@ namespace Rock.ClientService.Core.Category
                         var childCategorizedItemBranch = GetAllDescendants( childCategoryItem, currentPerson, categoryService, serviceInstance, cachedEntityType, options );
                         if ( categoryItem.Children == null )
                         {
-                            categoryItem.Children = new List<TreeItemViewModel>();
+                            categoryItem.Children = new List<TreeItemBag>();
                         }
 
                         categoryItem.Children.Add( childCategorizedItemBranch );
@@ -362,11 +362,15 @@ namespace Rock.ClientService.Core.Category
                     {
                         var childItems = GetChildrenItems( options, cachedEntityType, childQry );
 
-                        categoryItem.Children = new List<TreeItemViewModel>();
+                        if ( categoryItem.Children == null )
+                        {
+                            categoryItem.Children = new List<TreeItemBag>();
+                        }
                         categoryItem.Children.AddRange( childItems );
-                        categoryItem.HasChildren = childItems.Any();
                     }
                 }
+
+                categoryItem.HasChildren = categoryItem.Children?.Any() ?? false;
             }
 
             return categoryItem;

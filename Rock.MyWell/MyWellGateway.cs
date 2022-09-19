@@ -33,7 +33,7 @@ using Rock.MyWell.Controls;
 using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
-using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
+using RestRequest = RestSharp.Serializers.Newtonsoft.Json.RestRequest;
 
 namespace Rock.MyWell
 {
@@ -93,6 +93,7 @@ namespace Rock.MyWell
         Order = 6 )]
 
     #endregion Component Attributes
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MYWELL_FINANCIAL_GATEWAY )]
     public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent/*, IObsidianFinancialGateway*/
     {
         #region Attribute Keys
@@ -1336,7 +1337,7 @@ namespace Rock.MyWell
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = transactionId;
+                transaction.TransactionCode = response.Data.Id;
                 errorMessage = string.Empty;
                 return transaction;
             }

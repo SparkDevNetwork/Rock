@@ -15,13 +15,13 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import RockFormField from "../Elements/rockFormField";
-import DropDownList from "../Elements/dropDownList";
-import DatePickerBase from "../Elements/datePicker";
-import { ListItem } from "../ViewModels";
-import { toNumber, toNumberOrNull } from "../Services/number";
-import { get } from "../Util/http";
-import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "../Services/slidingDateRange";
+import RockFormField from "./rockFormField";
+import DropDownList from "./dropDownList";
+import DatePickerBase from "./datePicker";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { useHttp } from "@Obsidian/Utility/http";
+import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "@Obsidian/Utility/slidingDateRange";
 
 export default defineComponent({
     name: "SlidingDateRangePicker",
@@ -45,6 +45,7 @@ export default defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue);
+        const http = useHttp();
 
         const rangeType = ref(internalValue.value?.rangeType?.toString() ?? "");
         const timeValue = ref(internalValue.value?.timeValue?.toString() ?? "");
@@ -71,7 +72,7 @@ export default defineComponent({
         });
 
         /** The time unit options that will be made available to the user. */
-        const computedTimeUnitOptions = computed((): ListItem[] => {
+        const computedTimeUnitOptions = computed((): ListItemBag[] => {
             if (!isNumberVisible.value || toNumber(timeValue.value) === 1) {
                 return timeUnitOptions;
             }
@@ -90,7 +91,7 @@ export default defineComponent({
          * made by the user.
          */
         const updateDateRangeText = async (): Promise<void> => {
-           const parameters: Record<string, string> = {
+            const parameters: Record<string, string> = {
                 slidingDateRangeType: rangeType.value || "0",
                 timeUnitType: timeUnit.value || "0",
                 number: timeValue.value || "1"
@@ -101,7 +102,7 @@ export default defineComponent({
                 parameters["endDate"] = highDate.value;
             }
 
-            const result = await get<string>("/api/Utility/CalculateSlidingDateRange", parameters);
+            const result = await http.get<string>("/api/Utility/CalculateSlidingDateRange", parameters);
 
             if (result.isSuccess && result.data) {
                 dateRangeText.value = result.data;
@@ -185,12 +186,12 @@ export default defineComponent({
     name="slidingdaterange">
     <template #default="{uniqueId}">
         <div :id="uniqueId" class="form-control-group">
-            <DropDownList v-model="rangeType" :options="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
+            <DropDownList v-model="rangeType" :items="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
 
             <input v-if="isNumberVisible" v-model="timeValue" class="form-control input-width-sm slidingdaterange-number" type="number" pattern="[0-9]*]" />
 
             <template v-if="isTimeUnit">
-                <DropDownList v-model="timeUnit" :options="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
+                <DropDownList v-model="timeUnit" :items="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
 
                 <div class="label label-info slidingdaterange-info">{{ dateRangeText }}</div>
             </template>

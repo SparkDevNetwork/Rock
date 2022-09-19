@@ -52,5 +52,21 @@ namespace Rock.Model
                 return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault();
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

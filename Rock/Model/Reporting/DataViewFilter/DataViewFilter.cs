@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "DataViewFilter" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "507E646B-9943-4DD6-8FB7-8BA9F95E6BD0")]
     public partial class DataViewFilter : Model<DataViewFilter>
     {
         #region Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
     [Description("Select the Total Amount of a Benevolence Request")]
     [Export(typeof(DataSelectComponent))]
     [ExportMetadata("ComponentName", "Select Benevolence Total Amount")]
+    [Rock.SystemGuid.EntityTypeGuid( "94B231F7-BBB7-48D1-94D1-CAEB0E16123A")]
     public class TotalAmountSelect : DataSelectComponent
     {
         #region Properties

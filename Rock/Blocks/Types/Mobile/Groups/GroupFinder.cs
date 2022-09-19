@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,7 +27,7 @@ using Rock.ClientService.Core.Campus.Options;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -210,6 +210,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_FINDER_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_FINDER )]
     public partial class GroupFinder : RockMobileBlockType
     {
         #region Fields
@@ -517,7 +519,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>A collection of list items.</returns>
-        private List<ViewModel.NonEntities.ListItemViewModel> GetValidCampuses( RockContext rockContext )
+        private List<ViewModels.Utility.ListItemBag> GetValidCampuses( RockContext rockContext )
         {
             var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 
@@ -1078,7 +1080,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Custom class to store the value along with the attribute. This is for
         /// backwards compatibility with Mobile Shell.
         /// </summary>
-        private class PublicEditableAttributeValueViewModel : PublicAttributeViewModel
+        private class PublicEditableAttributeValueViewModel : PublicAttributeBag
         {
             /// <summary>
             /// Gets or sets the value.

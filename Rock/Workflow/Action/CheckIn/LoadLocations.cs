@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Locations" )]
     [BooleanField( "Load All", "By default locations are only loaded for the selected person and group type.  Select this option to load locations for all the loaded people and group types." )]
+    [Rock.SystemGuid.EntityTypeGuid( "4492E36A-77C8-4DC7-8128-570FAA161ADB")]
     public class LoadLocations : CheckInActionComponent
     {
         /// <summary>

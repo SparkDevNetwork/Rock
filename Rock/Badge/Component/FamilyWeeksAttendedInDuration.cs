@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -32,6 +33,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
 
     [IntegerField( "Duration", "The number of weeks to use for the duration (default 16.)", false, 16 )]
+    [Rock.SystemGuid.EntityTypeGuid( "537D05E5-5F89-421C-9F3D-04ADDEEC7C10")]
     public class FamilyWeeksAttendedInDuration : BadgeComponent
     {
         /// <summary>
@@ -44,33 +46,25 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
 
             int duration = GetAttributeValue( badge, "Duration" ).AsIntegerOrNull() ?? 16;
 
-            writer.Write( string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration ) );
+            writer.Write( string.Format( "<div class='rockbadge rockbadge-fraction rockbadge-weeksattendanceduration rockbadge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration ) );
 
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -83,15 +77,12 @@ namespace Rock.Badge.Component
                     url: Rock.settings.get('baseUrl') + 'api/Badges/WeeksAttendedInDuration/{1}/{0}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
-                            var badgeHtml = '<div class=\'weeks-metric\'>';
-                                            
-                            badgeHtml += '<span class=\'weeks-attended\'>' + data + '</span><span class=\'week-duration\'>/{0}</span>';                
-                            badgeHtml += '</div>';
-                                            
-                            $('.badge-weeksattendanceduration.badge-id-{2}').html(badgeHtml);
+                            var badgeHtml = '<span class=\'metric-value\'>' + data + '</span><span class=\'metric-unit\'>/{0}</span>';
+
+                            $('.rockbadge-weeksattendanceduration.rockbadge-id-{2}').html(badgeHtml);
                         }}
                     }},
-                }});", duration, Person.Id.ToString(), badge.Id );
+                }});", duration, person.Id.ToString(), badge.Id );
         }
     }
 }

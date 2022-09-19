@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D")]
     public partial class RestAction : Model<RestAction>, ICacheable
     {
         #region Entity Properties

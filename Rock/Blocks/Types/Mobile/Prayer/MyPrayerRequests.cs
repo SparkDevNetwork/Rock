@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -89,6 +89,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "C095B269-36E2-446A-B73E-2C8CC4B7BF37")]
     public class MyPrayerRequests : RockMobileBlockType
     {
         #region Block Attributes

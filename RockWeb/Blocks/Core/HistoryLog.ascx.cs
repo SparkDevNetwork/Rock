@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.Category,
         EntityType = typeof( Rock.Model.History ) )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C6C2DF41-A50D-4975-B21C-4EFD6FF3E8D0" )]
     public partial class HistoryLog : RockBlock, ISecondaryBlock
     {
         public static class AttributeKey

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -29,7 +30,8 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of achievement types and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class AchievementTypeFieldType : EntitySingleSelectionListFieldTypeBase<AchievementType>
+    [Rock.SystemGuid.FieldTypeGuid( "593132CF-BA5D-462F-97F6-94DCC0BFFE6F")]
+    public class AchievementTypeFieldType : EntitySingleSelectionListFieldTypeBase<AchievementType>, IEntityReferenceFieldType
     {
         /// <summary>
         /// Returns a user-friendly description of the entity.
@@ -58,5 +60,43 @@ namespace Rock.Field.Types
                 } )
                 .ToDictionary( s => s.Guid, s => s.Name );
         }
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var achievementType = AchievementTypeCache.Get( guid.Value );
+
+            if ( achievementType == null )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<AchievementType>().Value, achievementType.Id )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a AchievementType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<AchievementType>().Value, nameof( AchievementType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

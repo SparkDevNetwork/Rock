@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// IdentityVerification View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( IdentityVerification ) )]
-    public partial class IdentityVerificationViewModelHelper : ViewModelHelper<IdentityVerification, Rock.ViewModel.IdentityVerificationViewModel>
+    public partial class IdentityVerificationViewModelHelper : ViewModelHelper<IdentityVerification, IdentityVerificationBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.IdentityVerificationViewModel CreateViewModel( IdentityVerification model, Person currentPerson = null, bool loadAttributes = true )
+        public override IdentityVerificationBag CreateViewModel( IdentityVerification model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.IdentityVerificationViewModel
+            var viewModel = new IdentityVerificationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 FailedMatchAttemptCount = model.FailedMatchAttemptCount,
                 IdentityVerificationCodeId = model.IdentityVerificationCodeId,
                 IssueDateTime = model.IssueDateTime,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.IdentityVerificationViewModel ToViewModel( this IdentityVerification model, Person currentPerson = null, bool loadAttributes = false )
+        public static IdentityVerificationBag ToViewModel( this IdentityVerification model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new IdentityVerificationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

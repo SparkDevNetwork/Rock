@@ -80,6 +80,8 @@ DECLARE @maxPerson INT = 9999
         WHERE guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
         )
     ,@streetAddress INT
+    ,@streetNumber NVARCHAR(MAX)
+    ,@streetSuffix NVARCHAR(MAX)
     ,@zipCode INT
 	,@geoPoint Geography
 
@@ -12234,7 +12236,7 @@ BEGIN
         VALUES (
             @spousePersonId
             ,@spousePersonId
-            ,@personGuid
+            ,@spousePersonGuid
             ,NEWID()
             );
 
@@ -12326,6 +12328,7 @@ BEGIN
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
+            ,GroupTypeId
             )
         VALUES (
             0
@@ -12335,6 +12338,7 @@ BEGIN
             ,newid()
             ,1
 			,SYSDATETIME()
+            ,@familyGroupType
             )
 
         INSERT INTO [GroupMember] (
@@ -12345,6 +12349,7 @@ BEGIN
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
+            ,GroupTypeId
             )
         VALUES (
             0
@@ -12354,6 +12359,7 @@ BEGIN
             ,newid()
             ,1
 			,SYSDATETIME()
+            ,@familyGroupType
             )
 
 		-- Kids loop
@@ -12440,6 +12446,7 @@ BEGIN
 				,[Guid]
 				,GroupMemberStatus
 				,DateTimeAdded
+                ,GroupTypeId
 				)
 			VALUES (
 				0
@@ -12449,6 +12456,7 @@ BEGIN
 				,newid()
 				,1
 				,SYSDATETIME()
+                ,@familyGroupType
 				)
 
             -- have about 10% of kids in the same giving group as the other members in the family that are in a giving group
@@ -12475,6 +12483,24 @@ BEGIN
 
         SET @zipCode = ROUND(rand() * 9999, 0) + 80000;
         SET @streetAddress = ROUND(rand() * 9999, 0) + 100;
+        SET @streetNumber = cast( ROUND(rand() * 99, 0) + 10 as nvarchar(max));
+        declare @streetNumberName nvarchar(max);
+        set @streetNumberName = case
+           when @streetNumber like '%11' then concat(@streetNumber, 'th')
+           when @streetNumber like '%12' then concat(@streetNumber, 'th')
+           when @streetNumber like '%13' then concat(@streetNumber, 'th')
+           when @streetNumber like '%1' then concat(@streetNumber, 'st')
+           when @streetNumber like '%2' then concat(@streetNumber, 'nd')
+           when @streetNumber like '%3' then concat(@streetNumber, 'rd')
+           else concat(@streetNumber, 'th')
+           end
+        declare @randomStreetSuffixInt int = floor(rand() * 3);
+        set @streetSuffix = case 
+            when @randomStreetSuffixInt = 0 then 'Street'
+            when @randomStreetSuffixInt = 1 then 'Ln'
+            when @randomStreetSuffixInt = 2 then 'Ave'
+            else 'Street' 
+            end
 
 		set @geoPoint = concat('POINT (', (rand()*4)-114, ' ',  + (rand()*4)+30, ')');
 
@@ -12490,7 +12516,7 @@ BEGIN
             ,[Guid]
             )
         VALUES (
-            CONVERT(VARCHAR(max), @streetAddress) + ' Random Street'
+            concat(@streetAddress, ' ',  @streetNumberName, ' ', @streetSuffix )
             ,''
             ,'Phoenix'
             ,'AZ'

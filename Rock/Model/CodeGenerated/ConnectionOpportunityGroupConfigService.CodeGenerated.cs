@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ConnectionOpportunityGroupConfig View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionOpportunityGroupConfig ) )]
-    public partial class ConnectionOpportunityGroupConfigViewModelHelper : ViewModelHelper<ConnectionOpportunityGroupConfig, Rock.ViewModel.ConnectionOpportunityGroupConfigViewModel>
+    public partial class ConnectionOpportunityGroupConfigViewModelHelper : ViewModelHelper<ConnectionOpportunityGroupConfig, ConnectionOpportunityGroupConfigBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionOpportunityGroupConfigViewModel CreateViewModel( ConnectionOpportunityGroupConfig model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionOpportunityGroupConfigBag CreateViewModel( ConnectionOpportunityGroupConfig model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionOpportunityGroupConfigViewModel
+            var viewModel = new ConnectionOpportunityGroupConfigBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 GroupMemberRoleId = model.GroupMemberRoleId,
                 GroupMemberStatus = ( int ) model.GroupMemberStatus,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionOpportunityGroupConfigViewModel ToViewModel( this ConnectionOpportunityGroupConfig model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionOpportunityGroupConfigBag ToViewModel( this ConnectionOpportunityGroupConfig model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionOpportunityGroupConfigViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

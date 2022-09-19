@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CMS_DAILY_CHALLENGE_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( "B702FF5B-2488-42C7-AAE8-2DD99E82326D")]
     public class DailyChallengeEntry : RockMobileBlockType
     {
         #region Block Attributes

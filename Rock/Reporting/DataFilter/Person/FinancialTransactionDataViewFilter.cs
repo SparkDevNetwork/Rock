@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select Person by their Transactions from a Financial Transaction View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Financial Transaction View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "046C330F-B8EA-4AB5-85A7-14B177A52E48")]
     public class FinancialTransactionDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.FinancialTransaction>
     {
         #region Overrides

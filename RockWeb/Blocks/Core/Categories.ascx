@@ -23,7 +23,7 @@
                             <Rock:RockBoundField DataField="EntityQualifierField" HeaderText="Entity Qualifier Field" SortExpression="EntityQualifierField" />
                             <Rock:RockBoundField DataField="EntityQualifierValue" HeaderText="Entity Qualifier Value" SortExpression="EntityQualifierValue" />
                             <Rock:EditField OnClick="gCategories_Edit"/>
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gCategories_Delete" />
                         </Columns>
                     </Rock:Grid>
@@ -69,7 +69,7 @@
                         <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                         <Rock:ColorPicker ID="cpHighlight" runat="server" Label="Highlight Color" />
                     </div>
 

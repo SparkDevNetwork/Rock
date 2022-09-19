@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based by the communication status on the specific communication." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Communication Status Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "40A034D7-065A-4D57-8977-E94DB1162A96")]
     public class CommunicationStatusFilter : DataFilterComponent
     {
         private const string _CtlCommunicationId = "tbCommunicationId";

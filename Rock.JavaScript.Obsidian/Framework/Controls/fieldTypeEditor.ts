@@ -16,16 +16,19 @@
 //
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
-import RockField from "../Controls/rockField";
-import Alert from "../Elements/alert";
-import DropDownList from "../Elements/dropDownList";
-import StaticFormControl from "../Elements/staticFormControl";
-import { getFieldType } from "../Fields/index";
-import { get, post } from "../Util/http";
-import { areEqual, newGuid } from "../Util/guid";
-import { PublicAttribute, ListItem } from "../ViewModels";
-import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
-import { deepEqual, updateRefValue } from "../Util/util";
+import RockField from "./rockField";
+import Alert from "./alert";
+import DropDownList from "./dropDownList";
+import StaticFormControl from "./staticFormControl";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { useHttp } from "@Obsidian/Utility/http";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { deepEqual } from "@Obsidian/Utility/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",
@@ -39,7 +42,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldTypeConfigurationViewModel | null>,
+            type: Object as PropType<FieldTypeEditorUpdateAttributeConfigurationOptionsBag | null>,
             default: null
         },
 
@@ -54,6 +57,7 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
+        const http = useHttp();
         const internalValue = ref(props.modelValue);
 
         /** The selected field type in the drop down list. */
@@ -98,7 +102,7 @@ export default defineComponent({
         const fieldErrorMessage = ref("");
 
         /** The options to be shown in the field type drop down control. */
-        const fieldTypeOptions = ref<ListItem[]>([]);
+        const fieldTypeOptions = ref<ListItemBag[]>([]);
 
         /** The UI component that will handle the configuration of the field type. */
         const configurationComponent = computed((): Component | null => {
@@ -118,10 +122,10 @@ export default defineComponent({
         const fieldTypeName = computed((): string => {
             const matches = fieldTypeOptions.value.filter(v => areEqual(v.value, fieldTypeValue.value));
 
-            return matches.length >= 1 ? matches[0].text : "";
+            return matches.length >= 1 ? matches[0].text ?? "" : "";
         });
 
-        const defaultValueAttribute = computed((): PublicAttribute => {
+        const defaultValueAttribute = computed((): PublicAttributeBag => {
             return {
                 fieldTypeGuid: fieldTypeValue.value,
                 attributeGuid: newGuid(),
@@ -150,7 +154,7 @@ export default defineComponent({
                 return;
             }
 
-            const newValue: FieldTypeConfigurationViewModel = {
+            const newValue: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: defaultValue.value ?? ""
@@ -189,13 +193,13 @@ export default defineComponent({
                 return;
             }
 
-            const update: FieldTypeConfigurationViewModel = {
+            const update: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
-            post<FieldTypeConfigurationPropertiesViewModel>("/api/v2/Controls/FieldTypeEditor/fieldTypeConfiguration", null, update)
+            http.post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
                     console.debug("got configuration", result.data);
@@ -207,7 +211,7 @@ export default defineComponent({
                         isInternalUpdate = true;
                         configurationProperties.value = result.data.configurationProperties;
                         configurationValues.value = result.data.configurationValues;
-                        defaultValue.value = result.data.defaultValue;
+                        defaultValue.value = result.data.defaultValue ?? "";
                         isInternalUpdate = false;
 
                         updateModelValue();
@@ -268,7 +272,7 @@ export default defineComponent({
         });
 
         // Get all the available field types that the user is allowed to edit.
-        get<ListItem[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
+        http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
             .then(result => {
                 if (result.isSuccess && result.data) {
                     fieldTypeOptions.value = result.data;
@@ -305,7 +309,7 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :options="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
     </template>
     <Alert v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}

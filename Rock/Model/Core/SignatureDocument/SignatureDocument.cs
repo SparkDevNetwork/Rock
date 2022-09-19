@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "SignatureDocument" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "C1724719-1C03-4D0C-8A66-E3545138F57F")]
     public partial class SignatureDocument : Model<SignatureDocument>
     {
         #region Entity Properties

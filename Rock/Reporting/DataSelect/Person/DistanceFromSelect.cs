@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows the distance of the person's home from a location" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Distance" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D7997EC5-99EA-493A-8655-A31C38477C1C")]
     public class DistanceFromSelect : DataSelectComponent
     {
         #region Properties

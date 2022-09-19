@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on duplicate emails" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Duplicate Emails" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2771A757-DD80-420C-A128-A9FB24F40DA9")]
     public class HasDuplicateEmailFilter : DataFilterComponent
     {
         #region Properties

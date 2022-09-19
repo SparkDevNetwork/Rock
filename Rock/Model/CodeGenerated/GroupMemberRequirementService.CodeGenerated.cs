@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupMemberRequirement View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupMemberRequirement ) )]
-    public partial class GroupMemberRequirementViewModelHelper : ViewModelHelper<GroupMemberRequirement, Rock.ViewModel.GroupMemberRequirementViewModel>
+    public partial class GroupMemberRequirementViewModelHelper : ViewModelHelper<GroupMemberRequirement, GroupMemberRequirementBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,23 +72,31 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupMemberRequirementViewModel CreateViewModel( GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupMemberRequirementBag CreateViewModel( GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupMemberRequirementViewModel
+            var viewModel = new GroupMemberRequirementBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
+                DoesNotMeetWorkflowId = model.DoesNotMeetWorkflowId,
+                DueDate = model.DueDate,
                 GroupMemberId = model.GroupMemberId,
                 GroupRequirementId = model.GroupRequirementId,
                 LastRequirementCheckDateTime = model.LastRequirementCheckDateTime,
+                ManuallyCompletedByPersonAliasId = model.ManuallyCompletedByPersonAliasId,
+                ManuallyCompletedDateTime = model.ManuallyCompletedDateTime,
+                OverriddenByPersonAliasId = model.OverriddenByPersonAliasId,
+                OverriddenDateTime = model.OverriddenDateTime,
                 RequirementFailDateTime = model.RequirementFailDateTime,
                 RequirementMetDateTime = model.RequirementMetDateTime,
                 RequirementWarningDateTime = model.RequirementWarningDateTime,
+                WarningWorkflowId = model.WarningWorkflowId,
+                WasManuallyCompleted = model.WasManuallyCompleted,
+                WasOverridden = model.WasOverridden,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -157,14 +166,23 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMemberRequirement target, GroupMemberRequirement source )
         {
             target.Id = source.Id;
+            target.DoesNotMeetWorkflowId = source.DoesNotMeetWorkflowId;
+            target.DueDate = source.DueDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
             target.GroupRequirementId = source.GroupRequirementId;
             target.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            target.ManuallyCompletedByPersonAliasId = source.ManuallyCompletedByPersonAliasId;
+            target.ManuallyCompletedDateTime = source.ManuallyCompletedDateTime;
+            target.OverriddenByPersonAliasId = source.OverriddenByPersonAliasId;
+            target.OverriddenDateTime = source.OverriddenDateTime;
             target.RequirementFailDateTime = source.RequirementFailDateTime;
             target.RequirementMetDateTime = source.RequirementMetDateTime;
             target.RequirementWarningDateTime = source.RequirementWarningDateTime;
+            target.WarningWorkflowId = source.WarningWorkflowId;
+            target.WasManuallyCompleted = source.WasManuallyCompleted;
+            target.WasOverridden = source.WasOverridden;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -180,7 +198,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupMemberRequirementViewModel ToViewModel( this GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupMemberRequirementBag ToViewModel( this GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupMemberRequirementViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

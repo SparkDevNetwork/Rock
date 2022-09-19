@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
     [Description( "Select Benevolence Requests by their Benevolence results from a Benevolence Result View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Result View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F27F11E-B5C0-4419-87CF-815B3E9A8AB1")]
     public class BenevolenceResultDataViewFilter : RelatedDataViewFilterBase<Rock.Model.BenevolenceRequest, Rock.Model.BenevolenceResult>
     {
         #region Overrides

@@ -71,6 +71,11 @@ namespace Rock.Tests.UnitTests.Rock.Security
         [TestMethod]
         public void CalculateKeyBytesTime()
         {
+            // Run the calculation once before we time it to make sure any
+            // dynamically loaded libraries are in memory first. Otherwise we
+            // are testing the CLR instead of the method call.
+            _ = CalculateKeyBytes( _dataEncryptionKey1 );
+
             var stopWatch = System.Diagnostics.Stopwatch.StartNew();
             _ = CalculateKeyBytes( _dataEncryptionKey1 );
             stopWatch.Stop();

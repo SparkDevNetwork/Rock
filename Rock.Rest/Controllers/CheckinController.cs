@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,10 +31,11 @@ using Rock.Utility;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    public class CheckinController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "921331A3-879C-46BB-B37B-A274CF00378E")]
+    public class CheckinController : ApiControllerBase 
     {
         /// <summary>
         /// Gets the configuration status of a checkin device
@@ -44,6 +45,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/checkin/configuration/status" )]
+        [Rock.SystemGuid.RestActionGuid( "BC3AA76C-E391-481A-AA4E-35D322D55DF7" )]
         public LocalDeviceConfigurationStatus GetConfigurationStatus( LocalDeviceConfiguration localDeviceConfiguration )
         {
             if ( localDeviceConfiguration?.CurrentKioskId == null || localDeviceConfiguration?.CurrentCheckinTypeId == null )
@@ -79,7 +81,8 @@ namespace Rock.Rest.Controllers
         /// </remarks>
         [HttpGet]
         [System.Web.Http.Route( "api/checkin/printsessionlabels" )]
-        public PrintSessionLabelsResponse PrintSessionLabels([FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
+        [Rock.SystemGuid.RestActionGuid( "804F10B4-0201-43E3-BF9F-16E72C897809" )]
+        public PrintSessionLabelsResponse PrintSessionLabels( [FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
         {
             List<Guid?> sessionGuids;
             bool overrideClientPrinter = printerOverride == PrintSessionLabelsPrinterOverride.Client || printerOverride == PrintSessionLabelsPrinterOverride.Both;
@@ -102,7 +105,7 @@ namespace Rock.Rest.Controllers
                         {
                             return guid.Value;
                         }
-                        
+
                         return GuidHelper.FromShortStringOrNull( a );
 
                     } )

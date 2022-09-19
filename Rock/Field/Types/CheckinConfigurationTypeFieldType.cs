@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,8 +30,11 @@ namespace Rock.Field.Types
     /// Stored as a list of GroupType Guids
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class CheckinConfigurationTypeFieldType : SelectFromListFieldType
+    [Rock.SystemGuid.FieldTypeGuid( "7522975C-C224-489A-985D-B44580DFC5BD")]
+    public class CheckinConfigurationTypeFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
+        #region Methods
+
         /// <summary>
         /// Gets the list source.
         /// </summary>
@@ -47,5 +51,44 @@ namespace Rock.Field.Types
                 .ThenBy( a => a.Name )
                 .ToDictionary( k => k.Guid.ToString(), v => v.Name );
         }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            var ids = valueGuidList
+                .Select( guid => GroupTypeCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .ToList();
+
+            var groupTypeEntityTypeId = EntityTypeCache.GetId<GroupType>().Value;
+
+            return ids
+                .Select( id => new ReferencedEntity( groupTypeEntityTypeId, id.Value ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a GroupType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupType>().Value, nameof( GroupType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

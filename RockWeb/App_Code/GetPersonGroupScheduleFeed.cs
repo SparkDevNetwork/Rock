@@ -25,12 +25,13 @@ using Rock.Data;
 using Rock.Model;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
 using System.Globalization;
 using System.Data.Entity;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 namespace RockWeb
 {
@@ -132,13 +133,17 @@ namespace RockWeb
                     {
                         // We have to get the duration from Schedule.iCal for this attendance.
                         // Attendances are ordered by scheduleId so this only happens once for each unique schedule.
-                        var serializer = new CalendarSerializer();
-                        var ical = ( CalendarCollection ) serializer.Deserialize( schedule.iCalendarContent.ToStreamReader() );
-                        duration = ical[0].Events[0].Duration;
+                        var calendar = Calendar.Load( schedule.iCalendarContent );
+                        var scheduleEvent = calendar?.Events[0];
+                        if ( scheduleEvent != null )
+                        {
+                            duration = scheduleEvent.Duration;
+                        }
+
                         currentScheduleId = schedule.Id;
                     }
 
-                    var iCalEvent = new Event();
+                    var iCalEvent = new CalendarEvent();
                     iCalEvent.Summary = scheduleName;
                     iCalEvent.Location = locationName;
                     iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );

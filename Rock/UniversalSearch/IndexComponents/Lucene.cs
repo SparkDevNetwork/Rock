@@ -56,6 +56,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [Export( typeof( IndexComponent ) )]
     [ExportMetadata( "ComponentName", "Lucene.Net 4.8" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "C06ABF4E-6178-45DB-BC26-A057124D98A7")]
     public class Lucene : IndexComponent
     {
         #region Private Fields
@@ -814,7 +815,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 case IndexFieldType.Date:
                                 case IndexFieldType.Number:
                                     {
-                                        typeMappingProperty.IndexType = IndexType.NotAnalyzed;
+                                        typeMappingProperty.IndexType = IndexType.Indexed;
                                         typeMappingProperty.Analyzer = string.Empty;
                                         break;
                                     }

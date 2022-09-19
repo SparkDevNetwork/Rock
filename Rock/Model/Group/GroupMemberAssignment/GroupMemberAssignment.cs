@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberAssignment" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "22BF14ED-E882-4BB0-9328-D12545BF5F61")]
     public class GroupMemberAssignment : Model<GroupMemberAssignment>
     {
         #region Entity Properties
@@ -124,7 +125,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString( true ) ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
+            if ( GroupMember != null )
+            {
+                return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString( true ) ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
 
         #endregion

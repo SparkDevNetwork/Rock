@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ConnectionRequests REST API
     /// </summary>
+    [RestControllerGuid( "7973D1C3-799A-4068-8251-7615E5161D87" )]
     public partial class ConnectionRequestsController : Rock.Rest.ApiController<Rock.Model.ConnectionRequest>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Utility
     [TextField( "Checklist Title", "Title for your checklist.", false, "", "Description", 1 )]
     [CodeEditorField( "Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, "", "Description", 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "15572974-DD86-43C8-BBBF-5181EE76E2C9" )]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;

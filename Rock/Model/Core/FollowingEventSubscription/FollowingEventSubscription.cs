@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "FollowingEventSubscription" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "2EEA3DF1-1FBE-472C-85AF-6D952DFC4684")]
     public partial class FollowingEventSubscription : Model<FollowingEventSubscription>
     {
         #region Entity Properties

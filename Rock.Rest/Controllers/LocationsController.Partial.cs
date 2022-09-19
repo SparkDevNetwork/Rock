@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -40,11 +40,12 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/locations/verify" )]
+        [Rock.SystemGuid.RestActionGuid( "C88F7B3F-6B35-48CA-A3AE-E12F4928A86F" )]
         public Location Verify( Location location )
         {
             if ( location != null )
             {
-                ((LocationService)Service).Verify( location, false );
+                ( ( LocationService ) Service ).Verify( location, false );
                 return location;
             }
 
@@ -59,6 +60,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/locations/postalcodetomapcoordinate/{postalCode}" )]
+        [Rock.SystemGuid.RestActionGuid( "F83113C8-EBC3-44F2-8DB3-26B035DA4E2F" )]
         public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
         {
             return ( ( LocationService ) Service ).GetMapCoordinateFromPostalCode( postalCode );
@@ -77,13 +79,14 @@ namespace Rock.Rest.Controllers
         [EnableQuery]
         [HttpGet]
         [System.Web.Http.Route( "api/locations/{street}/{city}/{state}/{postalCode}" )]
+        [Rock.SystemGuid.RestActionGuid( "94A50E83-5801-42ED-A3DB-0133353E4451" )]
         public Location Get( string street, string city, string state, string postalCode )
         {
             string street2 = string.Empty;
             string country = GlobalAttributesCache.Get().OrganizationCountry;
 
             // Get a new location record for the address
-            var location = ( (LocationService)Service ).Get( street, street2, city, state, postalCode, country );
+            var location = ( ( LocationService ) Service ).Get( street, street2, city, state, postalCode, country );
             if ( location == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -101,6 +104,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/locations/getchildren/{id}/{rootLocationId}" )]
+        [Rock.SystemGuid.RestActionGuid( "179B09BE-63C4-4487-98A5-83EDF94D083E" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootLocationId )
         {
             IQueryable<Location> qry;
@@ -131,7 +135,7 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            foreach ( var location in qry.OrderBy ( l => l.Name ) )
+            foreach ( var location in qry.OrderBy( l => l.Name ) )
             {
                 if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
@@ -147,7 +151,7 @@ namespace Rock.Rest.Controllers
             List<int> resultIds = locationList.Select( a => a.Id ).ToList();
 
             var qryHasChildren = Get()
-                .Where( l => 
+                .Where( l =>
                     l.ParentLocationId.HasValue &&
                     resultIds.Contains( l.ParentLocationId.Value ) )
                 .Select( l => l.ParentLocationId.Value )
@@ -174,6 +178,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/locations/getactivechildren/{id}/{rootLocationId}" )]
+        [Rock.SystemGuid.RestActionGuid( "CBB50308-EE20-4540-9492-A27B45BB9610" )]
         public IQueryable<TreeViewItem> GetActiveChildren( int id, int rootLocationId )
         {
             IQueryable<Location> qry;
@@ -201,7 +206,7 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            foreach ( var location in qry.OrderBy ( l => l.Name ) )
+            foreach ( var location in qry.OrderBy( l => l.Name ) )
             {
                 if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
@@ -217,7 +222,7 @@ namespace Rock.Rest.Controllers
             List<int> resultIds = locationList.Select( a => a.Id ).ToList();
 
             var qryHasChildren = Get()
-                .Where( l => 
+                .Where( l =>
                     l.ParentLocationId.HasValue &&
                     resultIds.Contains( l.ParentLocationId.Value ) &&
                     l.IsActive

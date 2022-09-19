@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,14 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class RestControllersController
     {
@@ -36,6 +36,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RestControllers/EnsureRestControllers" )]
+        [Rock.SystemGuid.RestActionGuid( "4D3BBFFD-292C-415A-BED2-2A8F8F9FC469" )]
         public bool EnsureRestControllers()
         {
             RestControllerService.RegisterControllers();
@@ -51,7 +52,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RestControllers/RestControllerNames" )]
-        public List<string> RestControllerNames( bool includeObsolete  )
+        [Rock.SystemGuid.RestActionGuid( "CE1D0D07-CB40-467B-8616-8D070786C175" )]
+        public List<string> RestControllerNames( bool includeObsolete )
         {
             var restControllerClassList = this.Get().OrderBy( a => a.Name ).Select( a => new
             {

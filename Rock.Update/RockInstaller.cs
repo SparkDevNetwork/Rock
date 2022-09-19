@@ -113,6 +113,7 @@ namespace Rock.Update
                     ProcessContentFiles( packageZip );
                     ProcessDeleteFiles( packageZip );
                     FileManagementHelper.CleanUpDeletedFiles();
+                    ClearPreviousBackups();
                 }
             }
             catch

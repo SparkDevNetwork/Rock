@@ -22,8 +22,8 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Name" />
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Description" />
-                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
-                                
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
+
                                 <Rock:RockCheckBox ID="cbRequiresViewSecurity" runat="server" Label="Requires View Security" Text="Yes" Help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
                                 <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true" />
                                 <div class="attributes">
@@ -57,6 +57,7 @@
                         <div class="row">
 
                             <div class="col-md-6">
+                                <Rock:NumberBox ID="nbMaxFileSizeBytes" runat="server" Label="Max File Size" Help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed." NumberType="Integer" AppendText="Bytes" Required="false" MinimumValue="1"/>
                                 <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
                                 <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />
                                 <Rock:RockDropDownList ID="ddlPreferredColorDepth" runat="server" Label="Preferred Color Depth" Required="true" />

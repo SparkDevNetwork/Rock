@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,6 +24,8 @@ namespace Rock.Chart
     /// <summary>
     /// Represents a container for managing a set of data points of type TDataPoint that define one or more series in a Flot Chart.
     /// </summary>
+    [RockObsolete( "1.14.0" )]
+    [Obsolete( "Use the ChartJsTimeSeriesDataFactory instead." )]
     public class FlotChartDataSet<TDataPoint>
         where TDataPoint : IChartData
     {

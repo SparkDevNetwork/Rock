@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "DataView" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DATAVIEW )]
     public partial class DataView : Model<DataView>, ICategorized
     {
         #region Entity Properties
@@ -105,6 +106,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
         /// </summary>
         /// <value>
         /// The persisted schedule interval minutes.

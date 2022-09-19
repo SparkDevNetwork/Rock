@@ -47,7 +47,7 @@
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
 
-                            <Rock:SecurityField ID="securityField" ToolTip="Secure Document"/>
+                            <Rock:SecurityField ID="securityField" TitleField="Name" ToolTip="Secure Document"/>
                             <Rock:DeleteField OnClick="gFileList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

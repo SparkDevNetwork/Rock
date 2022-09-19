@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System file types.   */
 export const enum BinaryFiletype {
     /** The Default file type guid */
     Default = "C1142570-8CD6-4A20-83B1-ACB47C1CD377",
@@ -51,4 +52,3 @@ export const enum BinaryFiletype {
     /** The Digitally Signed Document guid */
     DigitallySignedDocuments = "40871411-4E2D-45C2-9E21-D9FCBA5FC340",
 }
-

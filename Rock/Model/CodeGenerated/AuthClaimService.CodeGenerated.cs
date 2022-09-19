@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// AuthClaim View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AuthClaim ) )]
-    public partial class AuthClaimViewModelHelper : ViewModelHelper<AuthClaim, Rock.ViewModel.AuthClaimViewModel>
+    public partial class AuthClaimViewModelHelper : ViewModelHelper<AuthClaim, AuthClaimBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AuthClaimViewModel CreateViewModel( AuthClaim model, Person currentPerson = null, bool loadAttributes = true )
+        public override AuthClaimBag CreateViewModel( AuthClaim model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AuthClaimViewModel
+            var viewModel = new AuthClaimBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 IsActive = model.IsActive,
                 IsSystem = model.IsSystem,
                 Name = model.Name,
@@ -180,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AuthClaimViewModel ToViewModel( this AuthClaim model, Person currentPerson = null, bool loadAttributes = false )
+        public static AuthClaimBag ToViewModel( this AuthClaim model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AuthClaimViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -158,6 +159,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PROFILE_DETAILS_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "66B2B513-1C71-4E6B-B4BE-C4EF90E1899C")]
     public class ProfileDetails : RockMobileBlockType
     {
         /// <summary>
@@ -433,10 +436,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             rockContext.SaveChanges();
 
-            var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+            /*
+             * BC 7/26/2022
+             * We have to provide a new RockContext, since EF Core has a caching mechanism that will return the old person with
+             * the wrong primary campus.
+             */
+            using ( var rockContext2 = new RockContext() )
+            {
+                person = new PersonService( rockContext2 ).Get( person.Id );
 
-            return ActionOk( mobilePerson );
+                var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+
+                return ActionOk( mobilePerson );
+            }
         }
 
         #endregion

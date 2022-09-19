@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Steps
         Key = AttributeKey.ShowStartedDateColumn )]
     #endregion Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "5D5EB7BA-A9CE-4801-8168-6CA8ECD354D4" )]
     public partial class PersonProgramStepList : RockBlock
     {
         #region Keys

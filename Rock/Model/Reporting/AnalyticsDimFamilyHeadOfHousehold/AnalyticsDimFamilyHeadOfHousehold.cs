@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [DataContract]
     [HideFromReporting]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "89730008-FD3F-49BE-9084-6CC5EA4DC4B3")]
     public class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimPersonBase<AnalyticsDimFamilyHeadOfHousehold>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields

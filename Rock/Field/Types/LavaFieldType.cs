@@ -27,9 +27,31 @@ namespace Rock.Field.Types
     /// Lava Field Type.  Stored as text
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA )]
     public class LavaFieldType : CodeEditorFieldType
     {
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string newValue = privateValue;
+
+            if ( privateValue.IsLavaTemplate() )
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                newValue = privateValue.ResolveMergeFields( mergeFields ).Trim();
+            }
+
+            return newValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Default method tries to HTML encode which we don't want to do.
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
 
         /// <summary>
         /// Formats the value.
@@ -90,6 +112,17 @@ namespace Rock.Field.Types
         {
             // implementing this as the base method encodes the HTML and we don't want to do that with the Lava control
             return FormatValue( parentControl, value, configurationValues, condensed );
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Lava could cause a different result with each render.
+            return false;
         }
 
         #endregion

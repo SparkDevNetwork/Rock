@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// Stored as EntityType.Guid|EntityId
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITY )]
     public class EntityFieldType : FieldType, IEntityFieldType
     {
 
@@ -110,6 +112,31 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var entityId = GetEntityId( privateValue, out EntityTypeCache entityType );
+
+            if ( !entityId.HasValue )
+            {
+                return string.Empty;
+            }
+
+            // Person is handled differently since it's stored as PersonAlias's EntityType.Guid|PersonAlias.Id
+            // (we need to return the Person tied to the PersonAlias instance)
+            if ( entityType.GetEntityType() == typeof( PersonAlias ) && entityId.HasValue )
+            {
+                entityType = EntityTypeCache.Get( SystemGuid.EntityType.PERSON );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    entityId = new PersonAliasService( rockContext ).GetPersonId( entityId.Value );
+                }
+            }
+
+            return $"{entityType.FriendlyName}|EntityId:{entityId}";
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -120,26 +147,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            int? entityId = GetEntityId( value, out EntityTypeCache entityType );
-            if ( entityType != null )
-            {
-                // Person is handled differently since it's stored as PersonAlias's EntityType.Guid|PersonAlias.Id
-                // (we need to return the Person tied to the PersonAlias instance)
-                if ( entityType.GetEntityType() == typeof( PersonAlias ) && entityId.HasValue )
-                {
-                    entityType = EntityTypeCache.Get( SystemGuid.EntityType.PERSON );
-                    using ( var rockContext = new RockContext() )
-                    {
-                        entityId = new PersonAliasService( rockContext ).GetPersonId( entityId.Value );
-                    }
-                }
-
-                formattedValue = $"{entityType.FriendlyName}|EntityId:{entityId}";
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

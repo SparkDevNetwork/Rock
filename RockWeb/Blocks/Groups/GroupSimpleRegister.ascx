@@ -7,7 +7,7 @@
 
 
                 <fieldset>
-                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" />
+                    <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Placeholder="First Name" ValidationGroup="vgFirstName" />
                     <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" />
                     <div class="form-group">
                         <Rock:EmailBox ID="txtEmail" runat="server" Placeholder="Email" />
@@ -15,6 +15,7 @@
                 </fieldset>
 
                 <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
 
                 <div id="divActions" runat="server" class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

@@ -30,6 +30,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -126,6 +127,14 @@ namespace Rock.Jobs
         Order = 9
         )]
 
+    [IntegerField( "Stale Anonymous Visitor Record Retention Period in Days",
+        Description = "PersonAlias records (tied to the ‘Anonymous Visitor’ record) that are not connected to an actual person record which are older than this will be deleted. (default is 365 days)",
+        IsRequired = false,
+        DefaultIntegerValue = 365,
+        Category = "General",
+        Order = 9,
+        Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
+
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -144,6 +153,7 @@ namespace Rock.Jobs
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
             public const string RemovedExpiredSavedAccountDays = "RemovedExpiredSavedAccountDays";
             public const string RemoveBenevolenceRequestsWithoutAPersonMaxDays = "RemoveBenevolenceRequestsWithoutAPerson";
+            public const string StaleAnonymousVisitorRecordRetentionPeriodInDays = "StaleAnonymousVisitorRecordRetentionPeriodInDays";
         }
 
         /// <summary>
@@ -163,6 +173,7 @@ namespace Rock.Jobs
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
+        private string jobName;
 
         /// <summary>
         /// Job that executes routine Rock cleanup tasks
@@ -177,6 +188,7 @@ namespace Rock.Jobs
 
             JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
 
+            jobName = string.Format( "{0} ({1})", context.JobDetail.Key.Group, this.GetType().Name );
             batchAmount = dataMap.GetString( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
@@ -216,6 +228,8 @@ namespace Rock.Jobs
             RunCleanupTask( "family salutation", () => GroupSalutationCleanup( dataMap ) );
 
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
+
+            RunCleanupTask( "anonymous visitor login", () => RemoveAnonymousVisitorUserLogins() );
 
             RunCleanupTask( "temporary registration", () => CleanUpTemporaryRegistrations() );
 
@@ -275,6 +289,8 @@ namespace Rock.Jobs
             RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts( dataMap ) );
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
+
+            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord( dataMap ) );
 
             /*
              * 21-APR-2022 DMV
@@ -726,6 +742,37 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Removes any UserLogin records associated with the Anonymous Visitor.
+        /// </summary>
+        private int RemoveAnonymousVisitorUserLogins()
+        {
+            int loginCount = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                var userLoginService = new UserLoginService( rockContext );
+                var anonymousVisitor = new PersonService( rockContext ).GetOrCreateAnonymousVisitorPerson();
+                if ( anonymousVisitor == null )
+                {
+                    return 0; // This shouldn't ever happen.
+                }
+
+                var logins = userLoginService.Queryable().Where( l => l.PersonId == anonymousVisitor.Id ).ToList();
+
+                loginCount = logins.Count();
+
+                if ( loginCount > 0 )
+                {
+                    userLoginService.DeleteRange( logins );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return loginCount;
+        }
+
+        /// <summary>
         /// Adds any missing person alternate ids; limited to 150k records per run
         /// to avoid any possible memory issues. Processes about 150k records
         /// in 52 seconds.
@@ -824,6 +871,17 @@ namespace Rock.Jobs
                         group.Name = relationshipGroupType.Name;
                         group.Guid = Guid.NewGuid();
                         group.GroupTypeId = relationshipGroupType.Id;
+
+                        /*
+                             6/16/2022 - NA
+
+                             We must set the groupMember's GroupTypeId here too because the records are added via
+                             BulkInsert() below which bypasses the Pre/PostSave operations that normally handle setting
+                             this from the groupMember's group.
+    
+                             Reason: GroupMember.GroupTypeId is non nullable.
+                        */
+                        groupMember.GroupTypeId = group.GroupTypeId;
 
                         groupGroupMembersToInsert.Add( group.Guid, groupMember );
 
@@ -948,7 +1006,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
                 && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
@@ -2307,6 +2365,52 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             ////var removedCount = rockContext.SaveChanges();
 
             ////return removedCount;
+        }
+
+        /// <summary>
+        /// Remove the Stale Anonymous Visitor Record.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int RemoveStaleAnonymousVisitorRecord( JobDataMap dataMap )
+        {
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+            var staleAnonymousVisitorRecordRetentionPeriodInDays = dataMap.GetString( AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays ).AsIntegerOrNull() ?? 365;
+            var anonymousVisitorId = new PersonService( rockContext ).GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+            var personAliasService = new PersonAliasService( rockContext );
+            var staleAnonymousVisitorDate = RockDateTime.Now.Add( new TimeSpan( staleAnonymousVisitorRecordRetentionPeriodInDays * -1, 0, 0, 0 ) );
+            var stalePersonAliasIds = personAliasService
+                .Queryable()
+                .Where( a => a.PersonId == anonymousVisitorId && a.LastVisitDateTime < staleAnonymousVisitorDate )
+                .Select( a => a.Id )
+                .ToList();
+            var updateCount = 0;
+            foreach ( var stalePersonAliasId in stalePersonAliasIds )
+            {
+                using ( var newRockContext = new RockContext() )
+                {
+                    newRockContext.Database.CommandTimeout = commandTimeout;
+                    var deletePersonAliasService = new PersonAliasService( newRockContext );
+                    var interactionQry = new InteractionService( newRockContext ).Queryable().Where( a => a.PersonAliasId == stalePersonAliasId );
+                    var totalInteractionRowDeleted = BulkDeleteInChunks( interactionQry, batchAmount, commandTimeout );
+
+                    var personAlias = deletePersonAliasService.Get( stalePersonAliasId );
+                    string errorMessage;
+                    if ( deletePersonAliasService.CanDelete( personAlias, out errorMessage ) )
+                    {
+                        updateCount++;
+                        deletePersonAliasService.Delete( personAlias );
+                        newRockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        RockLogger.Log.Warning( RockLogDomains.Jobs, $"{jobName} : Error occurred deleting stale anonymous visitor record ID {stalePersonAliasId}: {errorMessage}" );
+                    }
+                }
+            }
+
+            return updateCount;
         }
 
         /// <summary>

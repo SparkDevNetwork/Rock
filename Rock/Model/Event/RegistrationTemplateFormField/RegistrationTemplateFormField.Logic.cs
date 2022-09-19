@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Web.Cache;
 
@@ -21,6 +22,15 @@ namespace Rock.Model
 {
     public partial class RegistrationTemplateFormField
     {
+        /// <summary>
+        /// Gets or sets the field visibility rules.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules.
+        /// </value>
+        [NotMapped]
+        public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
+
         #region ICacheable
 
         /// <summary>

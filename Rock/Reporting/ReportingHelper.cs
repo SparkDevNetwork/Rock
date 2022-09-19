@@ -230,7 +230,7 @@ namespace Rock.Reporting
 
                     if ( entityField == null )
                     {
-                        // if the reportField selection refers to a non-existant entityField, ignore this field
+                        // If the reportField selection refers to a non-existent entityField, ignore this field.
                         continue;
                     }
 
@@ -242,6 +242,10 @@ namespace Rock.Reporting
                     boundField.SortExpression = boundField.DataField;
                     reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
                     boundField.Visible = reportField.ShowInGrid;
+                    if ( entityField.FieldType.Guid.Equals( SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                    {
+                        boundField.DataFormatString = "{0:g}";
+                    }
                     gReport.Columns.Add( boundField );
 
                     if ( isMergeField )

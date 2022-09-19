@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Blocks.Example
     [Description( "Allows the user to try out various field types." )]
     [IconCssClass( "fa fa-flask" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY )]
     public class FieldTypeGallery : RockObsidianBlockType
     {
 

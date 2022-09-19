@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.BulkImport
         IsRequired = true,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D9302E4A-C498-4CD7-8D3B-0E9DA9802DD5" )]
     public partial class BulkImportTool : RockBlock
     {
         private static class AttributeKey

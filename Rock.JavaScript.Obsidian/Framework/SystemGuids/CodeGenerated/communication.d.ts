@@ -21,10 +21,10 @@
 // </copyright>
 //
 
+/** System Communication Guids */
 export const enum Communication {
     /** The 'Blank' Communication Template that ships with Rock */
     CommunicationTemplateBlank = "A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A",
     /** The default email template for sending emails using Rock's Communications Wizard. */
     CommunicationTemplateDefault = "88B7DF18-9C30-4BAC-8CA2-5AD253D57E4D",
 }
-

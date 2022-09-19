@@ -144,6 +144,12 @@ namespace Rock.Web.UI
             get { return RockPage.CurrentPersonAliasId; }
         }
 
+        /// <inheritdoc cref="RockPage.CurrentVisitor"/>
+        public PersonAlias CurrentVisitor
+        {
+            get { return RockPage.CurrentVisitor; }
+        }
+
         /// <summary>
         /// Returns the currently logged in user.  If user is not logged in, returns null
         /// </summary>
@@ -1111,7 +1117,7 @@ namespace Rock.Web.UI
             {
                 foreach ( Control control in controls )
                 {
-                    if ( control is Rock.Web.UI.Controls.IDoNotBlockValidate)
+                    if ( control is Rock.Web.UI.Controls.IDoNotBlockValidate )
                     {
                         continue;
                     }

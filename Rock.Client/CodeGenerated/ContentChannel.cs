@@ -50,6 +50,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnablePersonalization { get; set; }
+
+        /// <summary />
         public bool EnableRss { get; set; }
 
         /// <summary />
@@ -137,6 +140,7 @@ namespace Rock.Client
             this.ContentChannelTypeId = source.ContentChannelTypeId;
             this.ContentControlType = source.ContentControlType;
             this.Description = source.Description;
+            this.EnablePersonalization = source.EnablePersonalization;
             this.EnableRss = source.EnableRss;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,7 @@ namespace Rock.Rest.Controllers
         [RockObsolete( "1.12" )]
         [Obsolete( "Use api/AchievementTypes/Progress instead" )]
         [System.Web.Http.Route( "api/StreakTypeAchievementTypes/Progress" )]
+        [Rock.SystemGuid.RestActionGuid( "828FA4EE-74B0-4D7F-AB32-92B48D28741A" )]
         public virtual List<ProgressStatement> GetProgressForPerson( [FromUri] int personId = default, [FromUri] bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
@@ -80,7 +81,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AchievementTypes/Progress" )]
-        public virtual List<ProgressStatement> GetProgressForAchiever( [FromUri]int achieverEntityTypeId, [FromUri]int achieverEntityId = default, [FromUri]bool includeOnlyEligible = default )
+        [Rock.SystemGuid.RestActionGuid( "C2E2EB7B-CFD9-450F-863B-BBBCFEC9055D" )]
+        public virtual List<ProgressStatement> GetProgressForAchiever( [FromUri] int achieverEntityTypeId, [FromUri] int achieverEntityId = default, [FromUri] bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
             var isPerson = achieverEntityTypeId == EntityTypeCache.Get<Person>().Id;
@@ -137,6 +139,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AchievementTypes/{achievementTypeId}/BadgeData" )]
+        [Rock.SystemGuid.RestActionGuid( "762278B4-807E-4DAC-B4C5-5309FC2C2234" )]
         public virtual BadgeData GetBadgeData( int achievementTypeId, [FromUri] int? achieverEntityId = null )
         {
             var rockContext = Service.Context as RockContext;

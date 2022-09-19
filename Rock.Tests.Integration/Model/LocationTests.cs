@@ -148,7 +148,7 @@ namespace Rock.Tests.Integration.Model
 
             string errorMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( location, out errorMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
             Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
             Assert.That.AreEqual( $"Incomplete Address. The following fields are required: Address Line 1, Address Line 2, City, County, Province, Postal Code.", errorMessage );
@@ -198,7 +198,7 @@ namespace Rock.Tests.Integration.Model
 
             string errorMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( location, out errorMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
             Assert.That.IsTrue( isValid, "Address validation failed." );
 
@@ -226,7 +226,7 @@ namespace Rock.Tests.Integration.Model
 
             string errorMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( location, out errorMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
             Assert.That.IsTrue( isValid, "Address validation failed." );
 
@@ -252,7 +252,7 @@ namespace Rock.Tests.Integration.Model
 
             string errorMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( location, out errorMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
             Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
             Assert.That.AreEqual( $"Incomplete Address. The following fields are required: Province.", errorMessage );
@@ -273,7 +273,7 @@ namespace Rock.Tests.Integration.Model
 
             string errorMessage;
 
-            var isValid = locationService.ValidateAddressRequirements( location, out errorMessage );
+            var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
             Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
             Assert.That.AreEqual( "Invalid Address. At least one field is required.", errorMessage );

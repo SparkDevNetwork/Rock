@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]
 
     [BooleanField( "Remove", "Select 'Yes' if locations should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "7BB371F9-A8DE-49D3-BEEA-C191F6C7D4A0")]
     public class FilterActiveLocations : CheckInActionComponent
     {
         /// <summary>

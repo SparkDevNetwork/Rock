@@ -43,7 +43,7 @@ namespace Rock.Update.Services
             var client = new RestClient( BaseUrl + SEND_IMPACT_URL );
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
-            request.AddBody( impactStatistic );
+            request.AddJsonBody( impactStatistic );
             client.Execute( request );
         }
     }

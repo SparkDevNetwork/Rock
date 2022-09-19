@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Block Instances.  NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum Block {
     /** The Campus Detail page Campus Detail block guid */
     CampusDetailCampusDetail = "176FFC6F-6B55-4319-A781-A2F7F1F85F24",
@@ -70,5 +71,12 @@ export const enum Block {
     WorkflowConfigurationChangeLogNotes = "2194F555-1261-4D23-B5E0-F19380DFB10A",
     /** The financial account search block */
     FinancialAccountSearch = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A",
+    /** The connection requests bulk update block */
+    ConnectionRequestsBulkUpdate = "86249F40-DAA9-46AC-901B-7460E2659C10",
+    /** The Step Flow block */
+    StepFlow = "A40684E9-10DA-4CF8-815B-EBDE53624419",
+    /** The dataview search results block type */
+    DataviewSearchResults = "F1AADFDD-7F43-4B31-A0FD-318064F4C9CC",
+    /** The report search results block type */
+    ReportSearchResults = "2DA8AA89-0DAA-4A50-B65B-CA721932B8A9",
 }
-

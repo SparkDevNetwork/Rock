@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultBooleanValue = false,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "1BFB72CC-A224-4A0B-B291-21733597738A" )]
     public partial class GroupScheduleStatusBoard : RockBlock
     {
         #region Keys
@@ -361,14 +362,14 @@ namespace RockWeb.Blocks.GroupScheduling
                 var groupSchedulingUrl = ResolveRockUrl( string.Format( "~/GroupScheduler/{0}", locationGroup.Id ) );
 
                 // group header row
-                sbGroupLocations.AppendLine( "<tr class='group-heading js-group-header thead-dark clickable' >" );
+                sbGroupLocations.AppendLine( "<tr class='group-heading js-group-header thead-dark clickable'>" );
                 sbGroupLocations.AppendLine(
                     string.Format(
                         @"
 <th></th>
-<th colspan='{0}'>
+<th colspan='{0}' class='position-relative'><div class='sticky-cell'>
     <i class='fa fa-chevron-down js-toggle-panel'></i> {1}
-    <a href='{2}' class='ml-1 text-color js-group-scheduler-link'><i class='{3}'></i></a>
+    <a href='{2}' class='ml-1 text-color js-group-scheduler-link'><i class='{3}'></i></a></div>
 </th>",
                         columnsCount - 1, // {0}
                         locationGroup.Name, // {1}
@@ -386,7 +387,7 @@ namespace RockWeb.Blocks.GroupScheduling
                     var scheduleCapacitiesLookup = locationScheduleCapacities.ScheduleCapacitiesList.ToDictionary( k => k.ScheduleId, v => v );
                     sbGroupLocations.AppendLine( "<tr class='location-row js-location-row'>" );
 
-                    sbGroupLocations.AppendLine( string.Format( "<td class='location' scope='row' data-location-id='{0}'><div>{1}</div></td>", location.Id, location.Name ) );
+                    sbGroupLocations.AppendLine( string.Format( "<th class='location' scope='row' data-location-id='{0}'><div>{1}</div></th>", location.Id, location.Name ) );
 
                     foreach ( var scheduleOccurrenceDate in scheduleOccurrenceDateList )
                     {

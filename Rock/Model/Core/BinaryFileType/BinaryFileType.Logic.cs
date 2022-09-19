@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
-
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -55,6 +56,46 @@ namespace Rock.Model
                 var qry = fileService.Queryable()
                     .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
                 return qry;
+            }
+        }
+
+        /// <summary>
+        /// Gets the cache control header.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+                return _cacheControlHeader;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether to allow caching on any <see cref="Rock.Model.BinaryFile"/> child entities.
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching is allowed; otherwise, <c>false</c>.
+        /// </value>
+        [RockObsolete( "1.11" )]
+        [System.Obsolete( "Use CacheToServerFileSystem instead." )]
+        [NotMapped]
+        public bool AllowCaching
+        {
+            get
+            {
+                return CacheToServerFileSystem;
+            }
+            set
+            {
+                CacheToServerFileSystem = value;
             }
         }
 

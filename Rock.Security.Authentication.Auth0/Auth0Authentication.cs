@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Security.Authentication.Auth0
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Security.AuthenticationComponent" />
     [Description( "Auth0 Authentication Provider" )]
@@ -41,8 +41,9 @@ namespace Rock.Security.Authentication.Auth0
     [TextField( "Client ID", "The Auth0 Client ID", order: 1 )]
     [TextField( "Client Secret", "The Auth0 Client Secret", order: 2 )]
 
-    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
-    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", required: false, order: 4 )]
+    [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
+    [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 4 )]
+    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F")]
     public class Auth0Authentication : AuthenticationComponent
     {
         /// <summary>
@@ -205,7 +206,7 @@ namespace Rock.Security.Authentication.Auth0
 
             using ( var rockContext = new RockContext() )
             {
-                // Query for an existing user 
+                // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
 
@@ -323,18 +324,18 @@ namespace Rock.Security.Authentication.Auth0
         }
 
         /// <summary>
-        /// Gets the login button CSS class.
+        /// Gets the log in button CSS class.
         /// </summary>
         /// <value>
-        /// The login button CSS class.
+        /// The log in button CSS class.
         /// </value>
         public override string LoginButtonCssClass => this.GetAttributeValue( "LoginButtonCSSClass" );
 
         /// <summary>
-        /// Gets the login button text.
+        /// Gets the log in button text.
         /// </summary>
         /// <value>
-        /// The login button text.
+        /// The log in button text.
         /// </value>
         public override string LoginButtonText => this.GetAttributeValue( "LoginButtonText" );
 

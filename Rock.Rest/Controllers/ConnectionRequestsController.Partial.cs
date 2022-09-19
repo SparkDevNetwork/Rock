@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -89,6 +89,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/GetChildren/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "B69F20C1-E643-48FD-B4C3-387A87E04788" )]
         public IQueryable<TreeViewItem> GetChildren( string id )
         {
             // Enable proxy creation since child collections need to be navigated
@@ -174,6 +175,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured, HttpGet]
         [System.Web.Http.Route( "api/ConnectionRequests/DoesStatusChangeCauseWorkflows/{connectionOpportunityId}/{fromStatusId}/{toStatusId}" )]
+        [Rock.SystemGuid.RestActionGuid( "E97FA5BE-D87A-4BA4-B719-C527F8C079E4" )]
         public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int connectionOpportunityId, int fromStatusId, int toStatusId )
         {
             var connectionRequestService = Service as ConnectionRequestService;
@@ -198,6 +200,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardRequestViewModel/{connectionRequestId}" )]
+        [Rock.SystemGuid.RestActionGuid( "C867FECB-0491-438A-AB12-B37C356E3B82" )]
         public ConnectionRequestViewModel GetConnectionBoardStatusViewModel(
             int connectionRequestId,
             int? campusId = null,
@@ -261,6 +264,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException">errorResponse</exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardStatusViewModels/{connectionOpportunityId}" )]
+        [Rock.SystemGuid.RestActionGuid( "8BE5DFE1-CC4D-4119-93BE-E90302BE9D88" )]
         public List<ConnectionStatusViewModel> GetConnectionBoardStatusViewModels(
             int connectionOpportunityId,
             int? campusId = null,

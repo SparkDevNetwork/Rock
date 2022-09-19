@@ -83,6 +83,12 @@ namespace RockWeb.Blocks.Core
         Category = "CustomSetting",
         Key = AttributeKey.ExcludeCategories )]
 
+    [LinkedPage( "Search Results Page",
+        Description = "The age to display search results on",
+        IsRequired = false,
+        Key = AttributeKey.SearchResultsPage )]
+
+    [Rock.SystemGuid.BlockTypeGuid( "ADE003C7-649B-466A-872B-B8AC952E7841" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
         public static class AttributeKey
@@ -97,6 +103,7 @@ namespace RockWeb.Blocks.Core
             public const string DefaultIconCSSClass = "DefaultIconCSSClass";
             public const string RootCategory = "RootCategory";
             public const string ExcludeCategories = "ExcludeCategories";
+            public const string SearchResultsPage = "SearchResultsPage";
         }
 
         public const string CategoryNodePrefix = "C";
@@ -180,6 +187,7 @@ namespace RockWeb.Blocks.Core
             divTreeviewActions.Visible = canEditBlock;
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.DetailPage ) );
+            lbSearchCategories.Visible = IsSearchButtonVisible();
 
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
@@ -544,6 +552,32 @@ namespace RockWeb.Blocks.Core
             Block_BlockUpdated( sender, e );
 
             mdCategoryTreeConfig.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSearch_Click( object sender, EventArgs e )
+        {
+            var pageGuid = GetAttributeValue( AttributeKey.SearchResultsPage ).AsGuidOrNull();
+
+            if ( !pageGuid.HasValue ) return;
+
+            NavigateToPage( pageGuid.Value, new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
+        }
+
+        /// <summary>
+        /// Determines whether [is search button visible].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is search button visible]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsSearchButtonVisible()
+        {
+            var searchResultsPage = GetAttributeValue( AttributeKey.SearchResultsPage );
+            return !string.IsNullOrWhiteSpace( searchResultsPage );
         }
     }
 }

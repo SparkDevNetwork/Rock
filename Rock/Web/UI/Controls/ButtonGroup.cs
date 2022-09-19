@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// Use <see cref="ButtonGroup.SelectedItemClass"/> and <see cref="ButtonGroup.UnselectedItemClass"/> to set the style of the buttons.
     /// </summary>
     [ToolboxData( "<{0}:ButtonGroup runat=server></{0}:ButtonGroup>" )]
-    public class ButtonGroup : RadioButtonList, IRockControl 
+    public class ButtonGroup : RadioButtonList, IRockControl
     {
         #region IRockControl implementation
 
@@ -279,9 +279,9 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
 
             // If a radiobutton list has no items selected, then there is not anything included in
-            // the control state for this control, so on postback a value is not set, and the 
+            // the control state for this control, so on postback a value is not set, and the
             // creation of child controls will not be called.  this presents a problem when using
-            // validation since it is during the CreateChildControls that the validator is rewired 
+            // validation since it is during the CreateChildControls that the validator is rewired
             // to the control.  Because of this, always ensure child controls on a postback
             if ( Page.IsPostBack )
             {
@@ -326,11 +326,14 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             // ensure that btn-group and data-toggle get rendered
-            this.Attributes["class"] = "btn-group js-buttongroup";
-            this.Attributes["data-toggle"] = "buttons";
-            this.Attributes["data-selecteditemclass"] = this.SelectedItemClass;
-            this.Attributes["data-unselecteditemclass"] = this.UnselectedItemClass;
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
+            writer.AddAttribute( "class", "btn-group js-buttongroup" );
+            writer.AddAttribute( "data-toggle", "buttons" );
+            writer.AddAttribute( "data-selecteditemclass", this.SelectedItemClass );
+            writer.AddAttribute( "data-unselecteditemclass", this.UnselectedItemClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             base.RenderControl( writer );
+            writer.RenderEndTag();
 
             RegisterJavascript();
         }

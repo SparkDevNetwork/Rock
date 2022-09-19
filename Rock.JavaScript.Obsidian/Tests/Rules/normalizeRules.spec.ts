@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { normalizeRules, ValidationRule, ValidationRuleFunction, ValidationRuleReference } from "../../Framework/Rules/index";
+import { normalizeRules, ValidationRule, ValidationRuleFunction, ValidationRuleReference } from "../../Framework/ValidationRules/index";
 
 // This suite performs tests on normalizeRules function of the rules.
 describe("normalizeRules Suite", () => {

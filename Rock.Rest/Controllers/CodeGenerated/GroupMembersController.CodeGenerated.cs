@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// GroupMembers REST API
     /// </summary>
+    [RestControllerGuid( "3FF0343E-2EEC-4AB7-871C-10F86C1FF7BF" )]
     public partial class GroupMembersController : Rock.Rest.ApiController<Rock.Model.GroupMember>
     {
         /// <summary>

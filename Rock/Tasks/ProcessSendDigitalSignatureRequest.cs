@@ -50,7 +50,7 @@ namespace Rock.Tasks
                     var signatureDocumentTemplate = documentTypeService.Get( message.SignatureDocumentTemplateId );
 
                     var errorMessages = new List<string>();
-                    if ( documentTypeService.SendDocument( signatureDocumentTemplate, appliesPerson, assignedPerson, message.DocumentName, message.Email, out errorMessages ) )
+                    if ( documentTypeService.SendLegacyProviderDocument( signatureDocumentTemplate, appliesPerson, assignedPerson, message.DocumentName, message.Email, out errorMessages ) )
                     {
                         rockContext.SaveChanges();
                     }

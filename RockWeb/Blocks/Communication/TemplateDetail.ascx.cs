@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1,
         Key = AttributeKey.AttachmentBinaryFileType )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "BFDCA2E2-DAA1-4FA6-B33C-C53C7CF23C5D" )]
     public partial class TemplateDetail : RockBlock
     {
         #region Attribute Keys

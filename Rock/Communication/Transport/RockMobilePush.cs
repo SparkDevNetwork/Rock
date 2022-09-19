@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading.Tasks;
 
 using FCM.Net;
 
@@ -38,7 +39,8 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Rock Mobile Push" )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
-    class RockMobilePush : TransportComponent, IRockMobilePush
+    [Rock.SystemGuid.EntityTypeGuid( "AB86881F-4A9C-4138-A0B4-252B4E00C145")]
+    public class RockMobilePush : TransportComponent, IRockMobilePush
     {
         /// <summary>
         /// The keys that can be present in the notification payload data.
@@ -237,6 +239,11 @@ namespace Rock.Communication.Transport
 
                                         ResponseContent response = Utility.AsyncHelpers.RunSync( () => sender.SendAsync( notification ) );
 
+                                        if ( response.MessageResponse.Failure > 0 )
+                                        {
+                                            DeactivateNotRegisteredDevices( notification.RegistrationIds, response.MessageResponse );
+                                        }
+
                                         bool failed = response.MessageResponse.Failure == devices.Count || response.MessageResponse.Success == 0;
                                         var status = failed ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
 
@@ -327,7 +334,15 @@ namespace Rock.Communication.Transport
                 Data = GetPushNotificationData( emailMessage.OpenAction, emailMessage.Data, null )
             };
 
-            AsyncHelpers.RunSync( () => sender.SendAsync( notification ) );
+            AsyncHelpers.RunSync( async () =>
+            {
+                var response = await sender.SendAsync( notification );
+
+                if ( response.MessageResponse.Failure > 0 )
+                {
+                    DeactivateNotRegisteredDevices( notification.RegistrationIds, response.MessageResponse );
+                }
+            } );
         }
 
         /// <summary>
@@ -395,6 +410,78 @@ namespace Rock.Communication.Transport
             }
 
             return notificationData;
+        }
+
+        /// <summary>
+        /// Scans the message response data for any errors that indicate the device
+        /// is no longer registered to receive push notifications. This happens when
+        /// the application has been uninstalled.
+        /// </summary>
+        /// <param name="recipients">The ordered list of recipient device registration identifiers that were sent the message.</param>
+        /// <param name="response">The response object that contains any errors.</param>
+        private static void DeactivateNotRegisteredDevices( List<string> recipients, MessageResponse response )
+        {
+            var notRegisteredDeviceIds = new List<string>();
+
+            // Results are in the same order as the recipients. Loop through
+            // the results looking for any NotRegistered errors and add the
+            // corresponding Firebase device identifier to a list.
+            for ( int i = 0; i < response.Results.Count; i++ )
+            {
+                if ( response.Results[i].Error == "NotRegistered" )
+                {
+                    if ( i < recipients.Count )
+                    {
+                        notRegisteredDeviceIds.Add( recipients[i] );
+                    }
+                }
+            }
+
+            // If we found any devices that are no longer registered then start
+            // a background task to find them all and update them in the database
+            // to be inactive.
+            if ( notRegisteredDeviceIds.Any() )
+            {
+                Task.Run( () =>
+                {
+                    var rockContext = new RockContext();
+                    var personalDeviceService = new PersonalDeviceService( rockContext );
+                    int contextCount = 0;
+
+                    while ( notRegisteredDeviceIds.Any() )
+                    {
+                        // Work with 25 devices at a time so we don't overload the
+                        // sql IN operator.
+                        var registrationIds = notRegisteredDeviceIds.Take( 25 ).ToList();
+                        notRegisteredDeviceIds = notRegisteredDeviceIds.Skip( 25 ).ToList();
+
+                        var devices = personalDeviceService.Queryable()
+                            .Where( d => d.IsActive && registrationIds.Contains( d.DeviceRegistrationId ) )
+                            .ToList();
+
+                        if ( devices.Any() )
+                        {
+                            devices.ForEach( d => d.IsActive = false );
+                        }
+
+                        contextCount += devices.Count;
+
+                        // Create a new database context after 250 so that the change
+                        // tracker doesn't get too slow.
+                        if ( contextCount >= 250 )
+                        {
+                            rockContext.SaveChanges();
+                            rockContext.Dispose();
+
+                            rockContext = new RockContext();
+                            personalDeviceService = new PersonalDeviceService( rockContext );
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                    rockContext.Dispose();
+                } );
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,10 +35,11 @@ namespace RockWeb.Blocks.Checkin
     /// Block for displaying the attendance history of a person or a group.
     /// </summary>
     [DisplayName( "Attendance History" )]
-    [Category( "Checkin" )]
+    [Category( "Check-in" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
     [BooleanField( "Filter Attendance By Default", "Sets the default display of Attended to Did Attend instead of [All]", false )]
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "21FFA70E-18B3-4148-8FC4-F941100B49B8" )]
     public partial class AttendanceHistoryList : RockBlock, ICustomGridColumns
     {
         #region Fields

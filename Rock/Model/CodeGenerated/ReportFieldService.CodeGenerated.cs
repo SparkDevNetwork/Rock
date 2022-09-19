@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ReportField View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ReportField ) )]
-    public partial class ReportFieldViewModelHelper : ViewModelHelper<ReportField, Rock.ViewModel.ReportFieldViewModel>
+    public partial class ReportFieldViewModelHelper : ViewModelHelper<ReportField, ReportFieldBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ReportFieldViewModel CreateViewModel( ReportField model, Person currentPerson = null, bool loadAttributes = true )
+        public override ReportFieldBag CreateViewModel( ReportField model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ReportFieldViewModel
+            var viewModel = new ReportFieldBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ColumnHeaderText = model.ColumnHeaderText,
                 ColumnOrder = model.ColumnOrder,
                 DataSelectComponentEntityTypeId = model.DataSelectComponentEntityTypeId,
@@ -190,7 +190,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ReportFieldViewModel ToViewModel( this ReportField model, Person currentPerson = null, bool loadAttributes = false )
+        public static ReportFieldBag ToViewModel( this ReportField model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ReportFieldViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

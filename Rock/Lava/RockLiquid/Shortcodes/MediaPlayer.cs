@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
@@ -29,12 +30,12 @@ namespace Rock.Lava.Shortcodes
     /// Lava shortcode for displaying scripture links
     /// </summary>
     [LavaShortcodeMetadata(
-        name: "Media Player",
-        tagName: "mediaplayer",
-        description: "Media Player displays a single URL or a Media Element in a player that can also record metric data.",
-        documentation: MediaPlayerShortcode.DocumentationMetadata,
-        parameters: MediaPlayerShortcode.ParameterNamesMetadata,
-        enabledCommands: "" )]
+        Name = "Media Player",
+        TagName = "mediaplayer",
+        Description = "Media Player displays a single URL or a Media Element in a player that can also record metric data.",
+        Documentation = MediaPlayerShortcode.DocumentationMetadata,
+        Parameters = MediaPlayerShortcode.ParameterNamesMetadata,
+        Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]
     public class MediaPlayer : RockLavaShortcodeBlockBase
     {
         #region Methods
@@ -67,8 +68,19 @@ namespace Rock.Lava.Shortcodes
         {
             var currentPerson = GetCurrentPerson( context );
             var parms = ParseMarkup( Markup, context );
+            Guid? sessionGuid;
 
-            MediaPlayerShortcode.RenderToWriter( parms, currentPerson, result );
+            // Attempt to get the session guid
+            try
+            {
+                sessionGuid = ( HttpContext.Current.Handler as Web.UI.RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+            }
+            catch
+            {
+                sessionGuid = null;
+            }
+
+            MediaPlayerShortcode.RenderToWriter( parms, currentPerson, sessionGuid, result );
         }
 
         /// <summary>

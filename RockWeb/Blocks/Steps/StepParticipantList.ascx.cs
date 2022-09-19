@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Participant List" )]
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -62,7 +63,8 @@ namespace RockWeb.Blocks.Steps
 
     #endregion
 
-    public partial class StepParticipantList : RockBlock, ISecondaryBlock, ICustomGridColumns
+    [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
+    public partial class StepParticipantList : ContextEntityBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Attribute Keys
 
@@ -412,6 +414,20 @@ namespace RockWeb.Blocks.Steps
             {
                 // No change
             }
+            else if ( e.Key == FilterKey.Campus )
+            {
+                var campus = CampusCache.Get( e.Value.ToIntSafe() );
+                var campusContext = ContextEntity<Campus>();
+
+                if ( campus != null && campusContext == null )
+                {
+                    e.Value = campus.Name;
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
             else
             {
                 // Find a matching Attribute.
@@ -688,7 +704,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void GetAvailableAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             this.AvailableAttributes = new List<AttributeCache>();
 
             if ( _stepType != null )
@@ -721,6 +737,7 @@ namespace RockWeb.Blocks.Steps
             AddAttributeColumns();
             AddAttributeFilterFields();
             AddGridRowButtons();
+            ConditionallyHideCampusFilter();
         }
 
         /// <summary>
@@ -812,6 +829,18 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Hides the campus filter, if a context campus has been selected
+        /// </summary>
+        private void ConditionallyHideCampusFilter()
+        {
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                cpCampusFilter.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Removes the "delete" row button columns and any HyperLinkField/LinkButtonField columns.
         /// </summary>
         private void RemoveRowButtons()
@@ -887,7 +916,7 @@ namespace RockWeb.Blocks.Steps
                     ss =>
                         "<span class='label label-default' style='background-color: " +
                         ss.StatusColorOrDefault +
-                        ";'>" +
+                        ";color:#fff;'>" +
                         ss.Name +
                         "</span>" );
 
@@ -1012,7 +1041,8 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => m.Note.Contains( note ) );
             }
 
-            var campusId = cpCampusFilter.SelectedCampusId;
+            var campusContext = ContextEntity<Campus>();
+            var campusId = campusContext == null ? cpCampusFilter.SelectedCampusId : campusContext.Id;
             if ( campusId != null )
             {
                 qry = qry.Where( m => m.CampusId == campusId );
