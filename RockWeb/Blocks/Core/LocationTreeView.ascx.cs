@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,13 +106,13 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-
+             
 
             if ( !string.IsNullOrWhiteSpace( _LocationId ) )
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
-                Location Location = ( new LocationService( new RockContext() ) ).Get( int.Parse( _LocationId ) );
+                Location Location = ( new LocationService( new RockContext() ) ).Get( _LocationId, true );
 
                 lbAddLocationChild.Enabled = Location != null && canEditBlock;
 

@@ -61,6 +61,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
@@ -140,6 +141,10 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\locationDetail.ts" />
+    <TypeScriptCompile Include="src\Core\LocationDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\LocationDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\LocationDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\noteTypeDetail.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\types.d.ts" />
