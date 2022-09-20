@@ -28,6 +28,9 @@ using Quartz.Impl.Matchers;
 using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
+using Rock.Web.Cache;
+using System.Collections.Generic;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
@@ -289,6 +292,51 @@ namespace Rock.Model
             {
                 return "Invalid Cron Expression";
             }
+        }
+
+        /// <summary>
+        /// Get the job types
+        /// </summary>
+        public static List<ListItemBag> GetJobTypes()
+        {
+            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+            var jobsList = jobs.ToList();
+            foreach ( var job in jobs )
+            {
+                try
+                {
+                    ServiceJobService.UpdateAttributesIfNeeded( job );
+                }
+                catch ( Exception ex )
+                {
+                    jobsList.Remove( job );
+                }
+            }
+
+            var jobTypes = new List<ListItemBag>();
+            foreach ( var job in jobsList.OrderBy( a => a.FullName ) )
+            {
+                jobTypes.Add( new ListItemBag { Text = CreateJobTypeFriendlyName( job.FullName ), Value = job.FullName } );
+            }
+
+            return jobTypes;
+        }
+
+        /// <summary>
+        /// Create Job Type Friendly Name
+        /// </summary>
+        private static string CreateJobTypeFriendlyName( string jobType )
+        {
+            string friendlyName;
+            if ( jobType.Contains( "Rock.Jobs." ) )
+            {
+                friendlyName = jobType.Replace( "Rock.Jobs.", string.Empty ).SplitCase();
+            }
+            else
+            {
+                friendlyName = string.Format( "{0} (Plugin)", jobType.Split( '.' ).Last().SplitCase() );
+            }
+            return friendlyName;
         }
 
         /// <summary>

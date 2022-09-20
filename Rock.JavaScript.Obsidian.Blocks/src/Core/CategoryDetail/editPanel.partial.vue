@@ -38,6 +38,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker";
     import TextBox from "@Obsidian/Controls/textBox";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";

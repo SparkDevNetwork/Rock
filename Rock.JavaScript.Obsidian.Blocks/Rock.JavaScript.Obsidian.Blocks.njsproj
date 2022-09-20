@@ -38,6 +38,9 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\serviceJobDetail.vue" />
+    <Content Include="src\Core\ServiceJobDetail\editPanel.partial.vue" />
+    <Content Include="src\Core\ServiceJobDetail\viewPanel.partial.vue" />
     <Content Include="src\Reporting\mergeTemplateDetail.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\editPanel.partial.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
@@ -63,6 +66,7 @@
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
+    <Folder Include="src\Core\ServiceJobDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
     <Folder Include="src\Crm\PersonDetail\" />
@@ -149,6 +153,7 @@
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\ServiceJobDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />
