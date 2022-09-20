@@ -4375,6 +4375,7 @@ FROM (
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
+            AND gm.IsArchived = 0
             AND gm.PersonId = p.Id
         ORDER BY gm.GroupOrder
             ,gm.GroupId
