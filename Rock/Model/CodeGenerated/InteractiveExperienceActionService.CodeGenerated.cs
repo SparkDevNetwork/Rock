@@ -55,6 +55,12 @@ namespace Rock.Model
         public bool CanDelete( InteractiveExperienceAction item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.InteractiveExperienceActionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractiveExperienceAction.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
