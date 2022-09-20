@@ -196,17 +196,11 @@
     <TypeScriptCompile Include="Framework\Controls\categoryPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldTypeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeValuesContainer.ts" />
-    <TypeScriptCompile Include="Framework\Controls\blockActionSourcedGrid.ts" />
     <TypeScriptCompile Include="Framework\Controls\componentFromUrl.ts" />
     <TypeScriptCompile Include="Framework\Controls\dialog.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldFilterEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldFilterRuleRow.ts" />
     <TypeScriptCompile Include="Framework\Controls\gatewayControl.ts" />
-    <TypeScriptCompile Include="Framework\Controls\grid.ts" />
-    <TypeScriptCompile Include="Framework\Controls\gridColumn.ts" />
-    <TypeScriptCompile Include="Framework\Controls\gridProfileLinkColumn.ts" />
-    <TypeScriptCompile Include="Framework\Controls\gridRow.ts" />
-    <TypeScriptCompile Include="Framework\Controls\gridSelectColumn.ts" />
     <TypeScriptCompile Include="Framework\Controls\loading.ts" />
     <TypeScriptCompile Include="Framework\Controls\myWellGatewayControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\nmiGatewayControl.ts" />

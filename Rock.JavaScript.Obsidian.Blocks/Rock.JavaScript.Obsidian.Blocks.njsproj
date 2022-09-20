@@ -133,7 +133,6 @@
     <TypeScriptCompile Include="src\Event\RegistrationEntry\utils.partial.ts" />
     <TypeScriptCompile Include="src\Example\controlGallery.ts" />
     <TypeScriptCompile Include="src\Example\fieldTypeGallery.ts" />
-    <TypeScriptCompile Include="src\Example\largeDatasetGrid.ts" />
     <TypeScriptCompile Include="src\Example\personDetail.ts" />
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
