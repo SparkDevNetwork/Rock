@@ -56,6 +56,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<GroupRequirement>( Context ).Queryable().Any( a => a.DueDateAttributeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, GroupRequirement.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelAttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, MediaFolder.FriendlyTypeName );
