@@ -39,6 +39,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Utility;
+using Rock.Workflow;
 
 namespace Rock.Rest.v2
 {
@@ -2327,6 +2328,47 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Report Picker
+
+        /// <summary>
+        /// Gets the reports and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which reports to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of reports.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReportPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
+        public IHttpActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Report>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
+                    ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
+                    ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get(options.EntityTypeGuid.Value).Id.ToString() : "",
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Save Financial Account Form
 
         /// <summary>
@@ -2495,6 +2537,45 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Schedule Picker
+
+        /// <summary>
+        /// Gets the schedules and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which schedules to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of schedules.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SchedulePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
+        public IHttpActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Schedule>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeInactiveItems = options.IncludeInactiveItems,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Step Program Picker
 
         /// <summary>
@@ -2636,6 +2717,95 @@ namespace Rock.Rest.v2
             }
 
             return Ok( items );
+        }
+
+        #endregion
+
+        #region Workflow Action Type Picker
+
+        /// <summary>
+        /// Gets the workflow action types and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflow action types to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of workflow action types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowActionTypePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4275ae7f-16ab-4720-a79f-bf7b5ca979e8" )]
+        public IHttpActionResult WorkflowActionTypePickerGetChildren( [FromBody] WorkflowActionTypePickerGetChildrenOptionsBag options )
+        {
+            var list = new List<TreeItemBag>();
+
+            // Folders
+            if ( options.ParentId == 0 )
+            {
+                // Root
+                foreach ( var category in ActionContainer.Instance.Categories )
+                {
+                    var item = new TreeItemBag();
+                    item.Value = category.Key.ToString();
+                    item.Text = category.Value;
+                    item.HasChildren = true;
+                    item.IconCssClass = "fa fa-folder";
+                    list.Add( item );
+                }
+            }
+            // Action Types
+            else if ( options.ParentId < 0 && ActionContainer.Instance.Categories.ContainsKey( options.ParentId ) )
+            {
+                string categoryName = ActionContainer.Instance.Categories[options.ParentId];
+                var categorizedActions = GetCategorizedWorkflowActions();
+                if ( categorizedActions.ContainsKey( categoryName ) )
+                {
+                    foreach ( var entityType in categorizedActions[categoryName].OrderBy( e => e.FriendlyName ) )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = entityType.Guid.ToString();
+                        item.Text = ActionContainer.GetComponentName( entityType.Name );
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-cube";
+                        list.Add( item );
+                    }
+                }
+            }
+
+            return Ok(list.OrderBy( i => i.Text ));
+        }
+
+        /// <summary>
+        /// Gets the categorized workflow actions.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, List<EntityTypeCache>> GetCategorizedWorkflowActions()
+        {
+            var categorizedActions = new Dictionary<string, List<EntityTypeCache>>();
+
+            foreach ( var action in ActionContainer.Instance.Dictionary.Select( d => d.Value.Value ) )
+            {
+                string categoryName = "Uncategorized";
+
+                var actionType = action.GetType();
+                var obj = actionType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true ).FirstOrDefault();
+                if ( obj != null )
+                {
+                    var actionCategory = obj as ActionCategoryAttribute;
+                    if ( actionCategory != null )
+                    {
+                        categoryName = actionCategory.CategoryName;
+                    }
+                }
+
+                // "HideFromUser" is a special category name that is used to hide
+                // workflow actions from showing up to the user. System user only.
+                if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
+                {
+                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions[categoryName].Add( action.EntityType );
+                }
+            }
+
+            return categorizedActions;
         }
 
         #endregion

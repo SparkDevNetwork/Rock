@@ -82,7 +82,7 @@ namespace Rock.Model
                             }
 
                             History.EvaluateChange( HistoryChangeList, "Gateway Schedule Id", Entry.OriginalValues[nameof( Entity.GatewayScheduleId )].ToStringSafe(), Entity.GatewayScheduleId );
-                            History.EvaluateChange( HistoryChangeList, "Transaction Code", Entry.OriginalValues[nameof( Entity.TransactionCode) ].ToStringSafe(), Entity.TransactionCode );
+                            History.EvaluateChange( HistoryChangeList, "Transaction Code", Entry.OriginalValues[nameof( Entity.TransactionCode )].ToStringSafe(), Entity.TransactionCode );
                             History.EvaluateChange( HistoryChangeList, "Summary", Entry.OriginalValues[nameof( Entity.Summary )].ToStringSafe(), Entity.Summary );
                             History.EvaluateChange( HistoryChangeList, "Type", Entry.OriginalValues[nameof( Entity.TransactionTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.TransactionTypeValue, Entity.TransactionTypeValueId );
                             History.EvaluateChange( HistoryChangeList, "Source", Entry.OriginalValues[nameof( Entity.SourceTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.SourceTypeValue, Entity.SourceTypeValueId );
@@ -101,10 +101,6 @@ namespace Rock.Model
                     case EntityContextState.Deleted:
                         {
                             HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
-
-                            // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it.
-                            var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                            financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
 
                             break;
                         }
@@ -127,6 +123,19 @@ namespace Rock.Model
                         HistoryChangeList,
                         true,
                         Entity.ModifiedByPersonAliasId );
+                }
+
+                if ( Entry.State == EntityContextState.Deleted || Entry.State == EntityContextState.Modified )
+                {
+                    // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it
+                    var rockContext = ( RockContext ) DbContext;
+                    var originalFinancialPaymentDetailId = Entry.OriginalValues[nameof( FinancialScheduledTransaction.FinancialPaymentDetailId )] as int?;
+                    if ( originalFinancialPaymentDetailId.HasValue && Entity.FinancialPaymentDetailId != originalFinancialPaymentDetailId.Value )
+                    {
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 base.PostSave();

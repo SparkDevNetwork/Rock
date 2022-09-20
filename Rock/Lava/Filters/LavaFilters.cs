@@ -4908,7 +4908,13 @@ namespace Rock.Lava
                 queryParameterValues = allParameters.Where( x => !routeParameterNames.Contains( x.Key ) )
                     .ToDictionary( k => k.Key, v => v.Value );
 
-                uriBuilder.Path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                var path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                if ( string.IsNullOrEmpty( path ) )
+                {
+                    path = $"/page/{outputPageId}";
+                }
+
+                uriBuilder.Path = path;
             }
             else
             {

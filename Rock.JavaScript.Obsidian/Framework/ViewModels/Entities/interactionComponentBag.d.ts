@@ -45,7 +45,7 @@ export type InteractionComponentBag = {
      * 
      * 
      *     <term>Page Views</term>
-     *     <description><see cref="T:Rock.Model.Site" /> Id</description>
+     *     <description><see cref="T:Rock.Model.Page" /> Id</description>
      * 
      *     <term>Communication Recipient Activity</term>
      *     <description><see cref="T:Rock.Model.Communication" /> Id</description>

@@ -77,15 +77,16 @@ WHERE o.type = 'V'
                 var metricEntityPartitions = metric.MetricPartitions.Where( a => a.EntityTypeId.HasValue ).OrderBy( a => a.Order ).ThenBy( a => a.Label ).Select( a => new
                 {
                     a.Label,
-                    a.EntityTypeId
+                    PartitionEntityTypeId = a.EntityTypeId.Value,
+                    PartitionId = a.Id
                 } );
 
-                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.EntityTypeId}] as [{a.Label.RemoveSpecialCharacters().RemoveSpaces()}Id]" ).ToList().AsDelimited( "\n" );
+                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.PartitionId}] as [{a.Label.RemoveSpecialCharacters().RemoveSpaces()}Id]" ).ToList().AsDelimited( "\n" );
                 List<string> partitionEntityLookupSELECTs = new List<string>();
                 List<string> partitionEntityLookupJOINs = new List<string>();
                 foreach ( var metricPartition in metricEntityPartitions )
                 {
-                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId.Value );
+                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.PartitionEntityTypeId );
                     if ( metricPartitionEntityType != null )
                     {
                         var tableAttribute = metricPartitionEntityType.GetEntityType().GetCustomAttribute<TableAttribute>();
@@ -93,19 +94,19 @@ WHERE o.type = 'V'
                         {
                             if ( metricPartitionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Value [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.PartitionId}.Value [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
                             else if ( metricPartitionEntityType.GetEntityType().GetProperty( "Name" ) != null )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Name [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.PartitionId}.Name [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
 
-                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.EntityTypeId} ON p.{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Id = j{metricPartition.EntityTypeId}.Id" );
+                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.PartitionId} ON p.{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Id = j{metricPartition.PartitionId}.Id" );
                         }
                     }
                 }
 
-                var viewPIVOTInClauses = metricEntityPartitions.Select( a => $"  [{a.EntityTypeId}]" ).ToList().AsDelimited( ",\n" );
+                var viewPIVOTInClauses = metricEntityPartitions.Select( a => $"  [{a.PartitionId}]" ).ToList().AsDelimited( ",\n" );
                 if ( string.IsNullOrEmpty( viewPIVOTInClauses ) )
                 {
                     // This metric only has the default partition, and with no EntityTypeId, so put in a dummy Pivot Clause 
@@ -142,13 +143,13 @@ FROM (
           ,mv.YValue
           ,mv.MetricValueDateTime
           ,mvp.EntityId
-          ,mp.EntityTypeId
+          ,mp.Id [PartitionId]
         FROM MetricValue mv
         JOIN MetricValuePartition mvp ON mvp.MetricValueId = mv.Id
         JOIN MetricPartition mp ON mvp.MetricPartitionId = mp.Id
         WHERE mv.MetricId = {metric.Id}
         ) src
-    pivot(min(EntityId) FOR EntityTypeId IN ({viewPIVOTInClauses})) pvt
+    pivot(min(EntityId) FOR PartitionId IN ({viewPIVOTInClauses})) pvt
 ) p
 {viewJoinsFROM}
 ";
@@ -173,6 +174,7 @@ FROM (
                 catch ( Exception ex )
                 {
                     // silently log the exception
+                    Debug.WriteLine( ex.Message );
                     ExceptionLogService.LogException( new Exception( "Error creating Analytics view for " + metric.Title, ex ), System.Web.HttpContext.Current );
                 }
             }

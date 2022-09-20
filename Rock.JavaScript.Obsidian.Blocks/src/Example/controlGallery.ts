@@ -168,6 +168,12 @@ import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOw
 import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
 import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
 import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
+import ReportPicker from "@Obsidian/Controls/reportPicker";
+import SchedulePicker from "@Obsidian/Controls/schedulePicker";
+import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
+import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.vue";
 
 // #region Gallery Support
 
@@ -5639,6 +5645,219 @@ const registrationTemplatePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates report picker */
+const reportPickerGallery = defineComponent({
+    name: "ReportPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        ReportPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("reportPicker"),
+            exampleCode: `<ReportPicker label="Report" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ReportPicker label="Report"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates schedule picker */
+const schedulePickerGallery = defineComponent({
+    name: "SchedulePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        SchedulePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("schedulePicker"),
+            exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <SchedulePicker label="Schedule"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates workflow action type picker */
+const workflowActionTypePickerGallery = defineComponent({
+    name: "WorkflowActionTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        WorkflowActionTypePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("workflowActionTypePicker"),
+            exampleCode: `<WorkflowActionTypePicker label="Workflow Action Type" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <WorkflowActionTypePicker label="Workflow Action Type"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a day of week picker */
+const dayOfWeekPickerGallery = defineComponent({
+    name: "DayOfWeekPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        DayOfWeekPicker
+    },
+    setup() {
+        return {
+            showBlankItem: ref(false),
+            multiple: ref(false),
+            columns: ref(1),
+            value: ref(null),
+            importCode: getControlImportPath("dayOfWeekPicker"),
+            exampleCode: `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+            <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a month/day picker */
+const monthDayPickerGallery = defineComponent({
+    name: "MonthDayPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthDayPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, day: 0 }),
+            importCode: getControlImportPath("monthDayPicker"),
+            exampleCode: `<MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a month/year picker */
+const monthYearPickerGallery = defineComponent({
+    name: "MonthYearPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthYearPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, year: 0 }),
+            importCode: getControlImportPath("monthYearPicker"),
+            exampleCode: `<MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5746,6 +5965,12 @@ const controlGalleryComponents: Record<string, Component> = [
     metricCategoryPickerGallery,
     metricItemPickerGallery,
     registrationTemplatePickerGallery,
+    reportPickerGallery,
+    schedulePickerGallery,
+    workflowActionTypePickerGallery,
+    dayOfWeekPickerGallery,
+    monthDayPickerGallery,
+    monthYearPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

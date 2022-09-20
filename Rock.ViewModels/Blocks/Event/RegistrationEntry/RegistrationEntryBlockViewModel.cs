@@ -303,6 +303,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public bool StartAtBeginning { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether or not this is an existing registration.
+        /// </summary>
+        /// <value>
+        /// The value indicating whether or not this is an existing registration.
+        /// </value>
+        public bool IsExistingRegistration { get; set; }
+
+        /// <summary>
         /// Gets or sets the gateway unique identifier.
         /// </summary>
         /// <value>

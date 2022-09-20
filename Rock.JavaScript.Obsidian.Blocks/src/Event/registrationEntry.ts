@@ -399,6 +399,14 @@ export default defineComponent({
             return this.viewModel.spotsRemaining < 1 && !this.viewModel.waitListEnabled;
         },
 
+        preventNewRegistration(): boolean {
+            if (!this.viewModel) {
+                return this.isFull;
+            }
+
+            return this.isFull && !this.viewModel.isExistingRegistration;
+        },
+
         registrationTerm(): string {
             return (this.viewModel?.registrationTerm || "registration").toLowerCase();
         },
@@ -562,7 +570,7 @@ export default defineComponent({
         <strong>Incorrect Configuration</strong>
         <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
     </Alert>
-    <Alert v-else-if="isFull" class="text-left" alertType="warning">
+    <Alert v-else-if="preventNewRegistration" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.

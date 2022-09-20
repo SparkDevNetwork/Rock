@@ -18,34 +18,18 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// The status of a communication
+    /// Represents and indicates the participation type or mode used in a Fundraising Opportunity <see cref="Rock.Model.GroupType"/> to determine the way contributions and participants are displayed.
     /// </summary>
-    public enum CommunicationStatus
+    public enum ParticipationType
     {
         /// <summary>
-        /// Communication was created, but not yet edited by a user. (i.e. from data grid or report)
-        /// Transient communications more than a few hours old may be deleted by clean-up job.
+        /// Participation for this fundraising opportunity is for individuals.
         /// </summary>
-        Transient = 0,
+        Individual = 1,
 
         /// <summary>
-        /// Communication is currently being drafted
+        /// Participation for this fundraising opportunity is for families.
         /// </summary>
-        Draft = 1,
-
-        /// <summary>
-        /// Communication has been submitted but not yet approved or denied
-        /// </summary>
-        PendingApproval = 2,
-
-        /// <summary>
-        /// Communication has been approved for sending
-        /// </summary>
-        Approved = 3,
-
-        /// <summary>
-        /// Communication has been denied
-        /// </summary>
-        Denied = 4,
+        Family = 2
     }
 }

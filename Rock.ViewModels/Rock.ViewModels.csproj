@@ -364,6 +364,9 @@
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\WorkflowActionTypePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\RegistrationTemplatePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeTemplatePickerGetMergeTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// <list type="bullet">
         /// <item>
         ///     <term>Page Views</term>
-        ///     <description><see cref="Rock.Model.Site" /> Id</description></item>
+        ///     <description><see cref="Rock.Model.Page" /> Id</description></item>
         /// <item>
         ///     <term>Communication Recipient Activity</term>
         ///     <description><see cref="Rock.Model.Communication" /> Id</description></item>

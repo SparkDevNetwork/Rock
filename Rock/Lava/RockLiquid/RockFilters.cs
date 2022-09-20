@@ -5032,6 +5032,18 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Sets a parameter in the input URL and returns a modified URL in the specified format.
+        /// </summary>
+        /// <param name="inputUrl">The input URL to be modified.</param>
+        /// <param name="parameterName">The name of the URL parameter to modify.</param>
+        /// <param name="parameterValue">The new value parameter value.</param>
+        /// <returns></returns>
+        public static string SetUrlParameter( object inputUrl, object parameterName = null, object parameterValue = null )
+        {
+            return LavaFilters.SetUrlParameter( inputUrl, parameterName, parameterValue, null );
+        }
+
+        /// <summary>
         /// Converts a lava property to a key value pair
         /// </summary>
         /// <param name="input">The input.</param>

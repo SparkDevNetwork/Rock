@@ -349,6 +349,8 @@ namespace Rock.Model
             var calEvent = GetICalEvent();
             if ( calEvent == null )
             {
+                EffectiveEndDate = null;
+                EffectiveStartDate = null;
                 return false;
             }
 
