@@ -423,7 +423,7 @@ namespace Rock.Model
             var result = new List<PersonGroupRequirementStatus>();
             foreach ( var groupRequirement in this.GetGroupRequirements( rockContext ).OrderBy( a => a.GroupRequirementType.Name ) )
             {
-                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, this.Id, groupRoleId );
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( rockContext, personId, this.Id, groupRoleId );
                 result.Add( requirementStatus );
             }
 
