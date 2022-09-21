@@ -128,6 +128,9 @@ namespace Rock.PayFlowPro.Reporting
             webRequest.Method = "POST";
             webRequest.ContentType = "text/plain";
             webRequest.ContentLength = postData.Length;
+            webRequest.Timeout = 200000;
+            webRequest.ReadWriteTimeout = 200000;
+
             var requestStream = webRequest.GetRequestStream();
             requestStream.Write( postData, 0, postData.Length );
             requestStream.Close();
