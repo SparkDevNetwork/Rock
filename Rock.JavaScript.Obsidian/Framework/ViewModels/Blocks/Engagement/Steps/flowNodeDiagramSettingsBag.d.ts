@@ -34,4 +34,7 @@ export type FlowNodeDiagramSettingsBag = {
 
     /** Gets or sets the chart height */
     chartHeight?: number | null;
+
+    /** Gets or sets the legend HTML */
+    legendHtml?: string | null;
 };

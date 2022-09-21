@@ -351,6 +351,31 @@ namespace Rock.Web.UI
         protected const string FILTER_ATTRIBUTE_PREFIX = "filterAttribute_";
 
         /// <summary>
+        /// The address grid column identifier
+        /// </summary>
+        protected const string ADDRESS_GRID_COLUMN_ID = "lGroupPlacementsAddress";
+
+        /// <summary>
+        /// The mobile phone grid column identifier
+        /// </summary>
+        protected const string MOBILE_PHONE_GRID_COLUMN_ID = "lMobile";
+
+        /// <summary>
+        /// The home phone grid column identifier
+        /// </summary>
+        protected const string HOME_PHONE_GRID_COLUMN_ID = "lHomePhone";
+
+        /// <summary>
+        /// The work phone grid column identifier
+        /// </summary>
+        protected const string WORK_PHONE_GRID_COLUMN_ID = "lWorkPhone";
+
+        /// <summary>
+        /// The campus grid column identifier
+        /// </summary>
+        protected const string CAMPUS_GRID_COLUMN_ID = "lRegistrantsCampus";
+
+        /// <summary>
         /// The active RegistrationInstance in this context.
         /// </summary>
         public RegistrationInstance RegistrationInstance
@@ -525,7 +550,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( ddlCampus );
 
                                     var templateField = new RockLiteralField();
-                                    templateField.ID = "lRegistrantsCampus";
+                                    templateField.ID = CAMPUS_GRID_COLUMN_ID;
                                     templateField.HeaderText = "Campus";
                                     grid.Columns.Add( templateField );
                                 }
@@ -753,7 +778,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
 
                                     var phoneNumbersField = new RockLiteralField();
-                                    phoneNumbersField.ID = "lMobile";
+                                    phoneNumbersField.ID = MOBILE_PHONE_GRID_COLUMN_ID;
                                     phoneNumbersField.HeaderText = mobileLabel;
                                     grid.Columns.Add( phoneNumbersField );
                                 }
@@ -777,7 +802,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( tbHomePhoneFilter );
 
                                     var homePhoneNumbersField = new RockLiteralField();
-                                    homePhoneNumbersField.ID = "lHomePhone";
+                                    homePhoneNumbersField.ID = HOME_PHONE_GRID_COLUMN_ID;
                                     homePhoneNumbersField.HeaderText = homePhoneLabel;
                                     grid.Columns.Add( homePhoneNumbersField );
                                 }
@@ -801,7 +826,7 @@ namespace Rock.Web.UI
                                     filterFieldsContainer.Controls.Add( tbWorkPhoneFilter );
 
                                     var workPhoneNumbersField = new RockLiteralField();
-                                    workPhoneNumbersField.ID = "lWorkPhone";
+                                    workPhoneNumbersField.ID = WORK_PHONE_GRID_COLUMN_ID;
                                     workPhoneNumbersField.HeaderText = workLabel;
                                     grid.Columns.Add( workPhoneNumbersField );
                                 }
@@ -819,7 +844,7 @@ namespace Rock.Web.UI
                                         addressField.ExcelExportBehavior = ExcelExportBehavior.NeverInclude;
                                     }
 
-                                    addressField.ID = "lGroupPlacementsAddress";
+                                    addressField.ID = ADDRESS_GRID_COLUMN_ID;
                                     grid.Columns.Add( addressField );
                                 }
 

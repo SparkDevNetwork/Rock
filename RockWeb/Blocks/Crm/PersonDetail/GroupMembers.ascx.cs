@@ -145,8 +145,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             _IsFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
-            rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
-
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             _showCounty = GetAttributeValue( AttributeKey.ShowCounty ).AsBoolean();
         }
@@ -302,6 +300,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .ThenBy( m => m.Person.LastName )
                         .ThenBy( m => m.Person.NickName )
                         .ToList();
+                }
+
+                if ( orderedMembers.Count == 0 )
+                {
+                    var pnlMembersDiv = e.Item.FindControl( "pnlMembersDiv" ) as Control;
+                    pnlMembersDiv.Visible = false;
                 }
 
                 rptrMembers.DataSource = orderedMembers;

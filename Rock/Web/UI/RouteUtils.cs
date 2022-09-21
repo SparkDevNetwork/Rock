@@ -48,9 +48,12 @@ namespace Rock.Web.UI
         public static List<string> ParseRouteParameters( string routeUrl )
         {
             var routeParms = new List<string>();
-            foreach ( Match match in _routeParametersRegEx.Matches( routeUrl ) )
+            if ( !string.IsNullOrWhiteSpace( routeUrl ) )
             {
-                routeParms.Add( match.Groups[1].Value );
+                foreach ( Match match in _routeParametersRegEx.Matches( routeUrl ) )
+                {
+                    routeParms.Add( match.Groups[1].Value );
+                }
             }
 
             return routeParms;

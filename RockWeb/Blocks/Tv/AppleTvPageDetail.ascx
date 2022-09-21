@@ -12,7 +12,12 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlblPageGuid" runat="server" LabelType="Default"  />
+                    <button id="btnCopyToClipboard" runat="server"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
+                        class="btn btn-info btn-xs btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
                 </div>
             </div>
 

@@ -502,7 +502,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
                         <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
-                        <i class=""fa fa-lock""></i>
+                        <i class=""fa fa-fw fa-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
                     </div>";
 
                 litAccountProtectionLevel.Text = acctProtectionLevel;

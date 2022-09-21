@@ -283,5 +283,10 @@ namespace Rock.SystemKey
         /// Security Settings (Account Protection profiles)
         /// </summary>
         public const string ROCK_SECURITY_SETTINGS = "core_RockSecuritySettings";
+
+        /// <summary>
+        /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
+        /// </summary>
+        public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
     }
 }

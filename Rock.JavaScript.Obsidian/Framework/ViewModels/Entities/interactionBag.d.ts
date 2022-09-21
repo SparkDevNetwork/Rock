@@ -45,16 +45,16 @@ export type InteractionBag = {
      * 
      * 
      *     <term>Page Views</term>
-     *     <description>null, Page is the Component, Site is the Channel</description>
+     *     <description>EntityId is left null, Page is the Component, Site is the Channel</description>
      * 
      *     <term>Communication Recipient Activity</term>
-     *     <description><see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description>
+     *     <description>EntityId is the <see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description>
      * 
      *     <term>Content Channel Activity</term>
-     *     <description>null, ContentChannel is the Component, single Channel</description>
+     *     <description>EntityId is left null, ContentChannel is the Component, single Channel</description>
      * 
      *     <term>Workflow Form Entry</term>
-     *     <description><see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description>
+     *     <description>EntityId is the <see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description>
      */
     entityId?: number | null;
 

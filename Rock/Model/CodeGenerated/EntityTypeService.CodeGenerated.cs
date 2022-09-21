@@ -248,6 +248,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperienceAction>( Context ).Queryable().Any( a => a.ActionEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractiveExperienceAction.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceAction>( Context ).Queryable().Any( a => a.ResponseVisualEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractiveExperienceAction.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MediaAccount.FriendlyTypeName );

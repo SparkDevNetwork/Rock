@@ -30,11 +30,12 @@ namespace Rock.Tests
     /// </summary>
     public static class ScheduleTestHelper
     {
-        public static Schedule GetScheduleWithDailyRecurrence( DateTimeOffset? startDateTime = null, DateTimeOffset? endDate = null, TimeSpan? eventDuration = null, int? occurrenceCount = null )
+        public static Schedule GetScheduleWithDailyRecurrence( DateTime? startDateTime = null, DateTime? endDateTime = null, TimeSpan? eventDuration = null, int? occurrenceCount = null )
         {
-            var calendarEvent = GetCalendarEvent( startDateTime ?? RockDateTime.Today, eventDuration );
+            startDateTime = startDateTime ?? new DateTime( RockDateTime.Today.Ticks, DateTimeKind.Unspecified );
+            var calendarEvent = GetCalendarEvent( startDateTime.Value, eventDuration );
 
-            var recurrence = GetDailyRecurrencePattern( endDate, occurrenceCount );
+            var recurrence = GetDailyRecurrencePattern( endDateTime, occurrenceCount );
 
             var calendar = GetCalendar( calendarEvent, recurrence );
 
@@ -70,15 +71,47 @@ namespace Rock.Tests
             return calendar;
         }
 
+        public static CalendarEvent GetCalendarEvent( DateTime eventStartDate, TimeSpan? eventDuration )
+        {
+            if ( eventStartDate.Kind != DateTimeKind.Unspecified )
+            {
+                throw new Exception( "The Event Start Date must have a Kind of Unspecified. Calendar Events do not store timezone information." );
+            }
+
+            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+
+            var dtStart = new CalDateTime( eventStartDate );
+            dtStart.HasTime = true;
+
+            var dtEnd = dtStart.Add( eventDuration.Value );
+            dtEnd.HasTime = true;
+
+            var calendarEvent = new CalendarEvent
+            {
+                DtStart = dtStart,
+                DtEnd = dtEnd,
+                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
+            };
+
+            return calendarEvent;
+        }
+
         public static CalendarEvent GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
         {
             // Convert the start date to Rock time.
             var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
+            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+
+            var dtStart = new CalDateTime( startDate.DateTime );
+            dtStart.HasTime = true;
+
+            var dtEnd = dtStart.Add( eventDuration.Value );
+            dtEnd.HasTime = true;
 
             var calendarEvent = new CalendarEvent
             {
-                DtStart = new CalDateTime( startDate.DateTime ),
-                Duration = eventDuration ?? new TimeSpan( 1, 0, 0 ),
+                DtStart = dtStart,
+                DtEnd = dtEnd,
                 DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
             };
 

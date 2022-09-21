@@ -23,9 +23,10 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CS1591
+
 namespace Rock.Client.Enums
 {
-    #pragma warning disable CS1591
     /// <summary>
     /// </summary>
     public enum AccountHierarchyDirection
@@ -654,6 +655,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ParticipationType
+    {
+        Individual = 0x1,
+        Family = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,
@@ -1075,5 +1084,118 @@ namespace Rock.Client.Enums
         ValueEqual = 0x1,
     }
 
-    #pragma warning restore CS1591
 }
+
+namespace Rock.Client.Enums.Cms
+{
+    /// <summary>
+    /// </summary>
+    public enum ContentCollectionFilterControl
+    {
+        Pills = 0x0,
+        Dropdown = 0x1,
+        Boolean = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Controls
+{
+    /// <summary>
+    /// </summary>
+    public enum DayOfWeek
+    {
+        Sunday = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x3,
+        Thursday = 0x4,
+        Friday = 0x5,
+        Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MergeTemplateOwnership
+    {
+        Global = 0x0,
+        Personal = 0x1,
+        PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SlidingDateRangeType
+    {
+        Last = 0x0,
+        Current = 0x1,
+        DateRange = 0x2,
+        Previous = 0x4,
+        Next = 0x8,
+        Upcoming = 0x10,
+        All = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TimeUnitType
+    {
+        Hour = 0x0,
+        Day = 0x1,
+        Week = 0x2,
+        Month = 0x3,
+        Year = 0x4,
+    }
+
+}
+
+namespace Rock.Client.Enums.Reporting
+{
+    /// <summary>
+    /// </summary>
+    public enum FieldFilterSourceType
+    {
+        Attribute = 0x0,
+    }
+
+}
+
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
+{
+    /// <summary>
+    /// </summary>
+    public enum SearchOrder
+    {
+        Relevance = 0x0,
+        Newest = 0x1,
+        Oldest = 0x2,
+        Trending = 0x3,
+        Alphabetical = 0x4,
+    }
+
+}
+
+#pragma warning restore CS1591

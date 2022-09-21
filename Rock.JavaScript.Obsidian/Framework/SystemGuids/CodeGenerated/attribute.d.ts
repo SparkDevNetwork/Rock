@@ -219,6 +219,10 @@ export const enum Attribute {
     CountryAddressPostcodeRequirement = "0037453D-0D26-4F02-8AB3-6AD675D85AAE",
     /** The defined value attribute for storing a fundraising opportunity type's donation button text. */
     DefinedValueFundraisingDonateButtonText = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E",
+    /** The group attribute for the type of participation in a Fundraising Opportunity group. */
+    ParticipationType = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC",
+    /** The attribute for Transaction Header in the Fundraising Transaction Entry block. */
+    FundraisingTransactionHeader = "65FB0B9A-670E-4AB9-9666-77959B4B702E",
     /** The bio block's workflow action attribute Guid */
     BioWorkflowaction = "7197A0FB-B330-43C4-8E62-F3C14F649813",
     /** Global attribute of image file type extensions that should be allowed. */

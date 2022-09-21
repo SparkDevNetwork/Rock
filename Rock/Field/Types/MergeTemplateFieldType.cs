@@ -56,19 +56,21 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            string formattedValue = value;
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( value.IsNullOrWhiteSpace() )
             {
-                using ( var rockContext = new RockContext() )
+                return value;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
+                if ( mergeTemplate != null )
                 {
-                    var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
-                    if ( mergeTemplate != null )
-                    {
-                        formattedValue = mergeTemplate.Name;
-                    }
+                    return mergeTemplate.Name;
                 }
             }
-            return formattedValue;
+            
+            return value;
         }
 
         #endregion
