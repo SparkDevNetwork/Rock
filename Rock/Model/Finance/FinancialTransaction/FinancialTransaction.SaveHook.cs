@@ -163,10 +163,6 @@ namespace Rock.Model
                                 FinancialTransactionImage.SaveHook.ProcessImageDeletion( image, rockContext );
                             }
 
-                            // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
-                            var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                            financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
-
                             break;
                         }
                 }
@@ -219,6 +215,18 @@ namespace Rock.Model
                 {
                     // The data context operation doesn't need to wait for this to compelete
                     Task.Run( () => StreakTypeService.HandleFinancialTransactionRecord( Entity.Id ) );
+                }
+
+                if ( Entry.State == EntityContextState.Deleted || Entry.State == EntityContextState.Modified )
+                {
+                    // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it
+                    var originalFinancialPaymentDetailId = Entry.OriginalValues[nameof( FinancialTransaction.FinancialPaymentDetailId )] as int?;
+                    if ( originalFinancialPaymentDetailId.HasValue && Entity.FinancialPaymentDetailId != originalFinancialPaymentDetailId.Value )
+                    {
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 base.PostSave();

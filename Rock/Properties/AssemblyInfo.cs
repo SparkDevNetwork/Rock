@@ -47,3 +47,6 @@ using System.Runtime.InteropServices;
 
 // The following type forwardings were setup in Rock 1.14.0
 [assembly: TypeForwardedTo( typeof( Rock.Model.Gender ) )]
+
+// The following type forwardings were setup in Rock 1.15.0
+[assembly: TypeForwardedTo( typeof( Rock.Model.CommunicationStatus ) )]

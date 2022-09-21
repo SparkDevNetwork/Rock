@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import CodeEditor from "@Obsidian/Controls/codeEditor";

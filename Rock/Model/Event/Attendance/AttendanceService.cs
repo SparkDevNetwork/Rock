@@ -1697,7 +1697,8 @@ namespace Rock.Model
                 // sort the ResourceList first by the GroupRole.Order (so that Leaders are listed at the top, followed by Members, followed by non-group members)
                 // then sort by LastName/FirstName
                 schedulerResourceList = schedulerResourceList
-                    .OrderBy( a => a.GroupRole?.Order ?? int.MaxValue )
+                    .OrderBy( a => a.BlackoutDates?.Count ?? 0 )
+                    .ThenBy( a => a.GroupRole?.Order ?? int.MaxValue )
                     .ThenBy( a => a.PersonLastName )
                     .ThenBy( a => a.PersonNickName )
                     .ThenBy( a => a.PersonId ).ToList();

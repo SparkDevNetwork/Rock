@@ -49,6 +49,26 @@ namespace Rock.Model
                     t.Transaction.AuthorizedPersonAlias.Person != null );
         }
 
+        /// <summary>
+        /// Gets financial transaction details from a list of group member ids.
+        /// Note: This could throw a SQL complexity exception if the list of ids is longer than a couple of thousand.
+        /// </summary>
+        /// <param name="entityTypeIdForGroupMember"></param>
+        /// <param name="groupMemberIds"></param>
+        /// <returns></returns>
+        public decimal GetContributionsForGroupMemberList( int? entityTypeIdForGroupMember, List<int> groupMemberIds )
+        {
+            if ( groupMemberIds.Count() == 0 )
+            {
+                return 0;
+            }
+            return Queryable()
+        .Where( d => d.EntityTypeId == entityTypeIdForGroupMember
+                && d.EntityId.HasValue
+                && groupMemberIds.Contains( d.EntityId.Value ) )
+        .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+        }
+
         #region Stored Procedure Queries
 
         /// <summary>

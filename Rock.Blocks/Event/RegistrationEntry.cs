@@ -850,7 +850,7 @@ namespace Rock.Blocks.Event
             if ( campusId.HasValue )
             {
                 context.Registration.CampusId = campusId;
-                History.EvaluateChange( registrationChanges, "Campus", string.Empty, linkage.Campus.Name );
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -2216,8 +2216,25 @@ namespace Rock.Blocks.Event
             }
 
             // If the registration is existing, then add the args that describe it to the view model
-            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+
+            /*
+	            9/7/2022 - SMC / DSH / NA
+                
+                isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
+                RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
+                (like Pushpay) may not return the RegistrationId parameter.
+
+                This will result loading the registration from the database, which previously caused a security error if the
+                currently logged in person (i.e., CurrentPerson) does not match the person who created the Registration (the
+                "registrar").  This error seems to have been related to the protection profiles and the creation of new person
+                records (for the registrar).  We no longer believe this is happening, so it should be okay to set the
+                RegistrationGuid argument.
+
+                Reason:  Resolving errors when processing additional payments from redirection gateways.
+            */
+
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
@@ -2230,18 +2247,9 @@ namespace Rock.Blocks.Event
                     FieldValues = session.FieldValues,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
-                    RegistrationGuid = null,
+                    RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
-
-                // Only populate the RegistrationGuid if this is an existing registration.
-                // Otherwise a security check on the current person will be performed
-                // which may throw an incorrect error since the current person may not
-                // match the person that was created as the registrar.
-                if ( isExistingRegistration )
-                {
-                    args.RegistrationGuid = session.RegistrationGuid;
-                }
 
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
@@ -2559,6 +2567,7 @@ namespace Rock.Blocks.Event
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
+                IsExistingRegistration = isExistingRegistration,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
                 Campuses = campusClientService.GetCampusesAsListItems(),

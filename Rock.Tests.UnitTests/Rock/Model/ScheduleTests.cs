@@ -151,7 +151,7 @@ namespace Rock.Tests.Rock.Model
         [TestMethod]
         public void Schedule_SingleDayEventWithInfiniteRecurrencePattern_GetOccurrencesObservesRequestedEndDate()
         {
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( endDate: null, eventDuration: null );
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence();
 
             var endDate = RockDateTime.Now.Date.AddMonths( 3 );
 
@@ -169,7 +169,7 @@ namespace Rock.Tests.Rock.Model
         [TestMethod]
         public void Schedule_GetOccurrencesForPeriodStartingDuringMultiDayEvent_DoesNotIncludeInProgressEvent()
         {
-            var inProgressEventStartDate = RockDateTime.Today.AddDays( -1 );
+            var inProgressEventStartDate = GetRockNowDateTimeAsUnspecifiedKind().Date.AddDays( -1 );
 
             // Get a calendar that includes a multi-day event that started yesterday and repeats every 7 days.
             var calendar = ScheduleTestHelper.GetCalendar( ScheduleTestHelper.GetCalendarEvent( inProgressEventStartDate, new TimeSpan( 25, 0, 0 ) ),
@@ -196,7 +196,7 @@ namespace Rock.Tests.Rock.Model
         [TestMethod]
         public void Schedule_GetOccurrencesForPeriodEndingDuringMultiDayEvent_IncludesInProgressEvent()
         {
-            var eventStartDate = RockDateTime.Now.AddDays( -1 );
+            var eventStartDate = GetRockNowDateTimeAsUnspecifiedKind().AddDays( -1 );
 
             // Get a calendar that includes a multi-day event that started yesterday and repeats daily.
             var calendar = ScheduleTestHelper.GetCalendar( ScheduleTestHelper.GetCalendarEvent( eventStartDate, new TimeSpan( 25, 0, 0 ) ),
@@ -225,9 +225,10 @@ namespace Rock.Tests.Rock.Model
         public void Schedule_CreatedWithFiniteDateRecurrence_EffectiveEndDateMatchesRecurrenceEndDate()
         {
             // Create a daily recurring calendar that has an end date of today +3 months.
-            var endDate = RockDateTime.Now.AddMonths( 3 );
+            var startDate = GetRockNowDateTimeAsUnspecifiedKind();
+            var endDate = startDate.AddMonths( 3 );
 
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( endDate: endDate, eventDuration: null );
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDate, endDateTime: endDate );
 
             Assert.That.AreEqualDate( schedule.EffectiveEndDate, endDate.Date );
         }
@@ -304,7 +305,8 @@ namespace Rock.Tests.Rock.Model
             // Create a daily recurring calendar that has an end date of today +3 months.
             var scheduleEndDate = RockDateTime.Now.AddMonths( 3 );
 
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( endDate: scheduleEndDate, eventDuration: null );
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( GetRockNowDateTimeAsUnspecifiedKind(),
+                endDateTime: scheduleEndDate );
 
             Assert.That.AreEqualDate( scheduleEndDate, schedule.EffectiveEndDate );
 
@@ -318,6 +320,39 @@ namespace Rock.Tests.Rock.Model
             var specificEndDate = _specificDates.Last();
 
             Assert.That.AreEqualDate( specificEndDate, schedule.EffectiveEndDate );
+        }
+
+        [TestMethod]
+        public void Schedule_UpdatedFromCustomToWeekly_EffectiveEndDateAndEffectiveStartDateIsNull()
+        {
+            // Create a daily recurring calendar that has an end date of today +3 months.
+            var scheduleEndDate = RockDateTime.Now.AddMonths( 3 );
+
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( GetRockNowDateTimeAsUnspecifiedKind(),
+                endDateTime: scheduleEndDate );
+
+            Assert.That.IsNotNull( schedule.EffectiveStartDate );
+            Assert.That.IsNotNull( schedule.EffectiveEndDate );
+
+            // Modify schedule to a weekly scheduleType
+            schedule.iCalendarContent = null;
+            schedule.WeeklyDayOfWeek = DayOfWeek.Friday;
+            schedule.WeeklyTimeOfDay = new TimeSpan( 19, 0, 0 );
+
+            schedule.EnsureEffectiveStartEndDates();
+
+            Assert.That.IsNull( schedule.EffectiveStartDate );
+            Assert.That.IsNull( schedule.EffectiveEndDate );
+        }
+
+        /// <summary>
+        /// Get the current Rock date and time as an Unspecified DateTime type.
+        /// </summary>
+        /// <returns></returns>
+        private DateTime GetRockNowDateTimeAsUnspecifiedKind()
+        {
+            var now = DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Unspecified );
+            return now;
         }
     }
 }

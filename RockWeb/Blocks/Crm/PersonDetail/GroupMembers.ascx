@@ -20,15 +20,15 @@
 
                         <asp:Literal ID="lGroupHeader" runat="server" />
 
-                        <div class="card-section pb-0">
-                            <div class="d-flex flex-wrap">
+                        <asp:Panel class="card-section pb-0" ID="pnlMembersDiv" runat="server">
+                            <div class="family-grid">
                                 <asp:Repeater ID="rptrMembers" runat="server" OnItemDataBound="rptrMembers_ItemDataBound">
                                     <ItemTemplate>
                                         <asp:Literal ID="litGroupMemberInfo" runat="server"></asp:Literal>
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </div>
-                        </div>
+                        </asp:Panel>
 
                         <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section js-group-attribute-section">
                             <div class="pull-right">
@@ -77,46 +77,51 @@
 
         <script>
             Sys.Application.add_load(function () {
+                <%-- This script should only be loaded once per page.
+                     Set a global flag during initialization to prevent repeat executions for multiple block instances --%>
+                if (typeof window.isGroupMembersBlockInitialized === 'undefined') {
+                    window.isGroupMembersBlockInitialized = true;
 
-                var fixHelper = function (e, ui) {
-                    ui.children().each(function () {
-                        $(this).width($(this).width());
+                    var fixHelper = function (e, ui) {
+                        ui.children().each(function () {
+                            $(this).width($(this).width());
+                        });
+                        return ui;
+                    };
+
+                    // javascript to make the Reorder buttons work on the panel-widget controls
+                    $('.js-grouplist-sort-container').sortable({
+                        helper: fixHelper,
+                        handle: '.panel-widget-reorder',
+                        containment: 'parent',
+                        tolerance: 'pointer',
+                        start: function (event, ui) {
+                            {
+                                var start_pos = ui.item.index();
+                                ui.item.data('start_pos', start_pos);
+                            }
+                        },
+                        update: function (event, ui) {
+                            {
+                                var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
+                                var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
+                                window.location = "javascript:__doPostBack('<%=upGroupMembers.ClientID %>', '" +  postbackArg + "')";
+                            }
+                        }
                     });
-                    return ui;
-                };
 
-                // javascript to make the Reorder buttons work on the panel-widget controls
-                $('.js-grouplist-sort-container').sortable({
-                    helper: fixHelper,
-                    handle: '.panel-widget-reorder',
-                    containment: 'parent',
-                    tolerance: 'pointer',
-                    start: function (event, ui) {
-                        {
-                            var start_pos = ui.item.index();
-                            ui.item.data('start_pos', start_pos);
+                    $('.js-show-more-family-attributes').on('click', function (e) {
+                        var $pnl = $(this).closest('.js-group-attribute-section');
+                        var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
+                        if ($moreAttributes.is(':visible')) {
+                            $moreAttributes.slideUp();
+                            $(this).html('<i class="fa fa-chevron-down"></i>');
+                        } else {
+                            $moreAttributes.slideDown();
+                            $(this).html('<i class="fa fa-chevron-up"></i>');
                         }
-                    },
-                    update: function (event, ui) {
-                        {
-                            var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
-                            var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
-                            window.location = "javascript:__doPostBack('<%=upGroupMembers.ClientID %>', '" +  postbackArg + "')";
-                        }
-                    }
-                });
-
-                $('.js-show-more-family-attributes').on('click', function (e) {
-                    var $pnl = $(this).closest('.js-group-attribute-section');
-                    var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
-                    if ($moreAttributes.is(':visible')) {
-                        $moreAttributes.slideUp();
-                        $(this).html('<i class="fa fa-chevron-down"></i>');
-                    } else {
-                        $moreAttributes.slideDown();
-                        $(this).html('<i class="fa fa-chevron-up"></i>');
-                    }
-                });
+                    });
+                }
             });
         </script>
 

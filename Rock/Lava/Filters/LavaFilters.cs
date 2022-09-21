@@ -1146,7 +1146,7 @@ namespace Rock.Lava
         /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
         private static List<DateTimeOffset> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false, DateTimeOffset? startDateTime = null )
         {
-            // Construct a calendar for the Rock timezone, and read the occurrence dates.
+            // Convert the start and end dates to the Rock timezone.
             if ( startDateTime == null )
             {
                 startDateTime = LavaDateTime.NowOffset;
@@ -1158,29 +1158,29 @@ namespace Rock.Lava
 
             var endDate = startDateTime.Value.AddYears( 1 );
 
+            // Load the calendar definition.
+            // The calendar has no specified timezone, so dates and times are interpreted for the current Rock timezone.
             var calendar = CalendarCollection.Load( new StringReader( iCalString ) ).First();
             var calendarEvent = calendar.Events[0];
 
-            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
+            // Get the UTC offset of the start date, expressed in the Rock timezone.
+            // We apply this to the list of occurrence dates to ensure that the scheduled event time remains the same
+            // even if the sequence of dates crosses a Daylight Saving Time (DST) boundary.
             List<DateTimeOffset> dates;
 
-            // Get the UTC offset of the start date, and apply that offset to all of the dates in the sequence.
-            // This ensures that the scheduled event time remains the same if the sequence of dates crosses
-            // a Daylight Saving Time (DST) boundary.
-            // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
-            // express the start and end dates for the occurrence period in UTC.
             var tsOffset = startDateTime.Value.Offset;
-
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
+                // The GetOccurrences() method returns a list of dates, to which we add the offset
+                // for the Rock timezone.
+                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.StartTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
+                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.EndTime.Ticks, tsOffset ) )
                     .ToList();
@@ -4908,7 +4908,13 @@ namespace Rock.Lava
                 queryParameterValues = allParameters.Where( x => !routeParameterNames.Contains( x.Key ) )
                     .ToDictionary( k => k.Key, v => v.Value );
 
-                uriBuilder.Path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                var path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                if ( string.IsNullOrEmpty( path ) )
+                {
+                    path = $"/page/{outputPageId}";
+                }
+
+                uriBuilder.Path = path;
             }
             else
             {

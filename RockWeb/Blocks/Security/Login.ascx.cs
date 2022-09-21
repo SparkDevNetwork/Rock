@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
+        DefaultValue = @"We couldn't find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
         Order = 9 )]
 
     [CodeEditorField(
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Security
 
         #region Constants
         private const string ConfirmCaptionDefaultValue = @"
-Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
+Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ";
 
         private const string LockedOutCaptionDefaultValue = @"

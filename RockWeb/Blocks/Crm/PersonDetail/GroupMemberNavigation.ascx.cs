@@ -66,6 +66,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             this.BlockUpdated += Block_BlockUpdated;
+            RockPage.SaveSharedItem( AttributeKey.GroupType, GetAttributeValue( AttributeKey.GroupType ) );
+            RockPage.SaveSharedItem( AttributeKey.ShowOnlyPrimaryGroupMembers, GetAttributeValue( AttributeKey.ShowOnlyPrimaryGroupMembers ) );
         }
 
         protected override void OnLoad( EventArgs e )
@@ -122,60 +124,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupTypeId = GroupTypeCache.GetId( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             var showOnlyPrimaryGroup = GetAttributeValue( AttributeKey.ShowOnlyPrimaryGroupMembers ).AsBoolean();
 
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-            var orderedGroupMemberList = new List<GroupMember>();
-            var groupMemberList = new List<GroupMember>();
-            var groupIds = new List<int>();
-
-            if ( showOnlyPrimaryGroup )
-            {
-                groupIds.Add( new GroupMemberService( rockContext )
-                    .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
-                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                    .ToList()
-                    .Select( m => m.GroupId )
-                    .FirstOrDefault() );
-            }
-            else
-            {
-                groupIds = groupMemberService
-                    .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
-                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                    .ToList()
-                    .Select( m => m.GroupId )
-                    .Distinct()
-                    .ToList();
-            }
-
-            foreach ( var groupId in groupIds )
-            {
-                var members = new GroupMemberService( rockContext )
-                    .Queryable( "GroupRole,Person", true )
-                    .Where( m => m.GroupId == groupId && m.PersonId != this.Person.Id )
-                    .OrderBy( m => m.GroupRole.Order )
-                    .ThenBy( m => m.Id )
-                    .ToList();
-
-                // Add adult males
-                orderedGroupMemberList.AddRange( members
-                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender == Gender.Male )
-                    .OrderByDescending( m => m.Person.Age ) );
-
-                // Add adult females
-                orderedGroupMemberList.AddRange( members
-                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender != Gender.Male )
-                    .OrderByDescending( m => m.Person.Age ) );
-
-                // Add non-adults
-                orderedGroupMemberList.AddRange( members
-                    .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
-                    .OrderByDescending( m => m.Person.Age ) );
-            }
-
-            return orderedGroupMemberList;
+            var groupMemberService = new GroupMemberService( new RockContext() );
+            return groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, groupTypeId.Value, showOnlyPrimaryGroup ).ToList();
         }
 
         protected string FormatPersonLink( string personId )

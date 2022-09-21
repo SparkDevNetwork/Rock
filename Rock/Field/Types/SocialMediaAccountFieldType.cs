@@ -228,6 +228,11 @@ namespace Rock.Field.Types
                     {
                         template = privateConfigurationValues[TEXT_TEMPLATE];
                     }
+                    if ( string.IsNullOrWhiteSpace( template ) )
+                    {
+                        // If an output template is not specified, use a default.
+                        template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
+                    }
                     if ( privateConfigurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                     {
 

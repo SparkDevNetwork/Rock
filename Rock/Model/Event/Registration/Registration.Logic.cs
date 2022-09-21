@@ -308,7 +308,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                     note.IsAlert = false;
                                     note.IsPrivateNote = false;
                                     note.EntityId = registrantPerson.Id;
-                                    note.Caption = string.Empty;
+                                    note.Caption = registrationInstance.Name;
                                     note.Text = noteText.ToString();
                                     if ( registrar == null )
                                     {
@@ -360,7 +360,7 @@ Registration By: {0} Total Cost/Fees:{1}
                             note.IsAlert = false;
                             note.IsPrivateNote = false;
                             note.EntityId = registrar.Id;
-                            note.Caption = string.Empty;
+                            note.Caption = registrationInstance.Name;
                             note.Text = string.Format( "Registered {0} for {1}", namesText, registrationInstance.Name );
                             noteService.Add( note );
 

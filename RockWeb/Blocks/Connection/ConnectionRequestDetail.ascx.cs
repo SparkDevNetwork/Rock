@@ -538,6 +538,12 @@ namespace RockWeb.Blocks.Connection
             int connectionRequestId = hfConnectionRequestId.ValueAsInt();
             if ( connectionRequestId > 0 )
             {
+                /*
+                 SK - 09/04/2022
+                 Technically Show Add as well as IsDeleteEnabled will always be true here as User with Edit access can only reach to Edit Panel and invoke the current event.
+                 */
+                gConnectionRequestActivities.Actions.ShowAdd = true;
+                gConnectionRequestActivities.IsDeleteEnabled = true;
                 ShowReadonlyDetails( new ConnectionRequestService( new RockContext() ).Get( connectionRequestId ) );
                 pnlReadDetails.Visible = true;
                 pnlConnectionRequestActivities.Visible = true;
@@ -639,6 +645,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectorPersonAliasId = newConnectorPersonAliasId;
                     connectionRequest.PersonAlias = personAliasService.Get( ppRequestor.PersonAliasId.Value );
 
+                    var oldState = connectionRequest.ConnectionState;
                     var state = rblState.SelectedValueAsEnumOrNull<ConnectionState>();
 
                     // If a value is selected in the radio button list, use it, otherwise use "Active".
@@ -654,12 +661,14 @@ namespace RockWeb.Blocks.Connection
 
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
 
-                    connectionRequest.CampusId = cpCampus.SelectedCampusId;
-
-                    connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
-                    connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
-                    connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-                    connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    if ( oldState != ConnectionState.Connected )
+                    {
+                        connectionRequest.CampusId = cpCampus.SelectedCampusId;
+                        connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
+                        connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
+                        connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+                        connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    }
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
 
@@ -2584,7 +2593,16 @@ namespace RockWeb.Blocks.Connection
             }
 
             CheckGroupRequirement();
-            BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            var enableConnectionRelatedControl = connectionRequest.ConnectionState != ConnectionState.Connected;
+            ddlPlacementGroup.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupStatus.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupRole.Enabled = enableConnectionRelatedControl;
+            phGroupMemberAttributes.Visible = enableConnectionRelatedControl;
+            cpCampus.Enabled = enableConnectionRelatedControl;
+            if ( enableConnectionRelatedControl )
+            {
+                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            }
         }
 
         private void CheckGroupRequirement()
@@ -2635,7 +2653,6 @@ namespace RockWeb.Blocks.Connection
         {
             phGroupMemberAttributes.Controls.Clear();
             phGroupMemberAttributesView.Controls.Clear();
-
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
                 using ( var rockContext = new RockContext() )

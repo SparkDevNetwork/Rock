@@ -94,7 +94,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ConfigurationKey.ShouldRequireTrailingForwardSlash, new ConfigurationValue( "Ensure Trailing Forward Slash",
                 "When set, the URL must end with a forward slash (/) to be valid.", "false" ) );
 
@@ -144,23 +144,43 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
-
             if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return string.Empty;
             }
+
+            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            if ( shouldAlwaysShowCondensed )
+            {
+                return privateValue;
+            }
+
+            // Try to create a valid absolute Uri.
+            Uri uri;
+            if ( privateValue.StartsWith( "/" ) )
+            {
+                // Process as a relative Uri.
+                Uri.TryCreate( privateValue, UriKind.Relative, out uri );
+            }
             else
             {
-                if ( shouldAlwaysShowCondensed )
+                // Try to process as an absolute Uri...
+                if ( !Uri.TryCreate( privateValue, UriKind.Absolute, out uri ) )
                 {
-                    return privateValue;
-                }
-                else
-                {
-                    return string.Format( "<a href='{0}'>{0}</a>", privateValue );
+                    // ... but if not, try adding a default "http://" prefix.
+                    Uri.TryCreate( "http://" + privateValue, UriKind.Absolute, out uri );
                 }
             }
+
+            // If we have a valid Uri create a link, otherwise just display the unformatted value.
+            if ( uri != null )
+            {
+                return string.Format( "<a href='{0}'>{1}</a>",
+                    uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString,
+                    privateValue );
+            }
+
+            return privateValue;
         }
 
         /// <inheritdoc/>
@@ -207,8 +227,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                Uri validatedUri;
-                if ( Uri.TryCreate( value, UriKind.Absolute, out validatedUri ) )
+                if ( Uri.TryCreate( value, UriKind.Absolute, out Uri _ ) )
                 {
                     message = "The link provided is not valid";
                     return true;

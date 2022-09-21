@@ -9,7 +9,9 @@
     <div class='well margin-t-md'>
         <div class='row'>
             <div class='col-md-12'>
-
+                <h4>
+                    {{ ProgressTitle }}
+                </h4>
                 <label>
                     Fundraising Progress
                 </label>

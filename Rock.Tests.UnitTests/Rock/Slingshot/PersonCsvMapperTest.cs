@@ -31,7 +31,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( MaritalStatus.Unknown, person.MaritalStatus );
-            Assert.IsTrue( parserErrors.Contains( "Marital Status Engaged is invalid defaulting to Unknown" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( Gender.Unknown, person.Gender );
-            Assert.IsTrue( parserErrors.Contains( "Gender InvalidGender is invalid defaulting to Unknown" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -75,7 +75,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsFalse( person.IsDeceased );
-            Assert.IsTrue( parserErrors.Contains( "Could not set Is Deceased to Invalid defaulting to \'False\'" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsNull( person.Birthdate );
-            Assert.IsTrue( parserErrors.Contains( "Birthdate Invalid Date String could not be read" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -105,7 +105,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsTrue( string.IsNullOrEmpty( person.Email ) );
-            Assert.IsTrue( parserErrors.Contains( "Email Address Invalid Email could not be read" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( RecordStatus.Active, person.RecordStatus );
-            Assert.IsTrue( parserErrors.Contains( "Record Status invalidRecordStatus is invalid defaulting to Active" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -150,7 +150,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( EmailPreference.EmailAllowed, person.EmailPreference );
-            Assert.IsTrue( parserErrors.Contains( "Email Preference invalidemailPreference is invalid defaulting to EmailAllowed" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -165,7 +165,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( FamilyRole.Adult, person.FamilyRole );
-            Assert.IsTrue( parserErrors.Contains( "Family Role C is invalid defaulting to Adult" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         [TestMethod]
@@ -180,7 +180,7 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsNull( person.GiveIndividually );
-            Assert.IsTrue( parserErrors.Contains( "Could not set Give Individually to Invalid defaulting to \'\'" ) );
+            Assert.IsTrue( parserErrors.Count == 1 );
         }
 
         private static Dictionary<string, string> RequiredHeaderMapperDictionary()

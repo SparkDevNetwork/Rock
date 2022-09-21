@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,12 +63,19 @@ namespace Rock.Financial
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [BooleanField( "Mark Fake Payments as Failed.",
+        Key = AttributeKey.GenerateFakeGetPaymentsAsFailed,
+        Description = "Set this to true to pretend the scheduled transactions were declined.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 4 )]
+
     [BooleanField(
         "Prompt for Name on Card",
         Description = "This will tell the Gateway to prompt for the name on card.",
         Key = AttributeKey.PromptForNameOnCard,
         DefaultBooleanValue = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [EnumsField(
         "Gateway Mode",
@@ -76,15 +83,15 @@ namespace Rock.Financial
         Key = AttributeKey.GatewayMode,
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",
-        Order = 5 )]
+        Order = 6 )]
 
     [DecimalField(
         "Credit Card Fee Coverage Percentage",
         Key = AttributeKey.CreditCardFeeCoveragePercentage,
-        Description = @"The credit card fee percentage that will be used to determine what to add to the person's donation, if they want to cover the fee.",
+        Description = "The credit card fee percentage that will be used to determine what to add to the person's donation, if they want to cover the fee.",
         IsRequired = false,
         DefaultValue = null,
-        Order = 6 )]
+        Order = 7 )]
 
     [CurrencyField(
         "ACH Transaction Fee Coverage Amount",
@@ -92,7 +99,7 @@ namespace Rock.Financial
         Description = "The  dollar amount to add to an ACH transaction, if they want to cover the fee.",
         IsRequired = false,
         DefaultValue = null,
-        Order = 7 )]
+        Order = 8 )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
@@ -106,6 +113,7 @@ namespace Rock.Financial
         {
             public const string DeclinedCardNumbers = "DeclinedCardNumbers";
             public const string GenerateFakeGetPayments = "GenerateFakeGetPayments";
+            public const string GenerateFakeGetPaymentsAsFailed = "GenerateFakeGetPaymentsAsFailed";
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
@@ -380,9 +388,9 @@ namespace Rock.Financial
                 {
                     ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
                     ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
-                    CurrencyTypeValueId = DefinedValueCache.GetId(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()),
+                    CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
                     AccountNumberMasked = paymentInfo.MaskedNumber,
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber(paymentInfo.MaskedNumber)?.Id ?? DefinedValueCache.GetId(Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid())
+                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
                 };
 
                 return scheduledTransaction;
@@ -472,7 +480,6 @@ namespace Rock.Financial
             }
 
             var fakePayments = new List<Payment>();
-            var randomNumberOfPayments = new Random().Next( 1, 1000 );
             var rockContext = new Rock.Data.RockContext();
             var scheduledTransactionList = new FinancialScheduledTransactionService( rockContext ).Queryable().Where( a => a.FinancialGatewayId == financialGateway.Id ).ToList();
             if ( !scheduledTransactionList.Any() )
@@ -480,23 +487,27 @@ namespace Rock.Financial
                 return fakePayments;
             }
 
-            var transactionDateTime = startDate;
-            for ( int paymentNumber = 0; paymentNumber < randomNumberOfPayments; paymentNumber++ )
+            bool isFailure = this.GetAttributeValue( financialGateway, AttributeKey.GenerateFakeGetPaymentsAsFailed ).AsBoolean();
+
+            foreach ( var scheduledTransaction in scheduledTransactionList )
             {
                 // get a random scheduled Transaction (if any)
-                var scheduledTransaction = scheduledTransactionList.OrderBy( a => Guid.NewGuid() ).FirstOrDefault();
                 if ( scheduledTransaction == null )
                 {
                     return new List<Payment>();
                 }
 
+                var transactionCode = $"{scheduledTransaction.GatewayScheduleId}_{startDate.ToString( "yyyyMMdd" )}";
+
                 var fakePayment = new Payment
                 {
                     Amount = scheduledTransaction.TotalAmount,
+                    IsFailure = isFailure,
+                    Status = isFailure ? "Test Failed" : string.Empty,
                     TransactionDateTime = startDate,
                     CreditCardTypeValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues.OrderBy( a => Guid.NewGuid() ).First(),
                     CurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
-                    TransactionCode = Guid.NewGuid().ToString( "N" ),
+                    TransactionCode = transactionCode,
                     GatewayScheduleId = scheduledTransaction.GatewayScheduleId,
                     GatewayPersonIdentifier = scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier
                 };
@@ -689,7 +700,7 @@ namespace Rock.Financial
         /// </value>
         public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
         {
-            return  this.GetAttributeValue( financialGateway, AttributeKey.GatewayMode )
+            return this.GetAttributeValue( financialGateway, AttributeKey.GatewayMode )
                 .SplitDelimitedValues()
                 .Select( a => a.ConvertToEnum<HostedGatewayMode>() )?
                 .ToArray()
@@ -850,7 +861,7 @@ namespace Rock.Financial
 
             Controls.Add( _lbSubmit );
 
-            if ( CurrencyTypeChange != null)
+            if ( CurrencyTypeChange != null )
             {
                 // do nothing
             }

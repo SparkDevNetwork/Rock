@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
@@ -32,7 +32,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
@@ -847,12 +847,24 @@
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleCampusService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.cs" />
+    <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Group\GroupRequirementType\DueDateType.cs" />
     <Compile Include="Model\Group\GroupRequirement\AppliesToAgeClassification.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
+    <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
+    <Compile Include="Model\Group\GroupType\ParticipationType.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -982,7 +994,6 @@
     <Compile Include="Model\Communication\Communication\Communication.Logic.cs" />
     <Compile Include="Model\Communication\Communication\Communication.SaveHook.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationExtensionMethods.cs" />
-    <Compile Include="Model\Communication\Communication\CommunicationStatus.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
@@ -1812,6 +1823,8 @@
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
+    <Compile Include="Web\UI\Controls\GroupMemberRequirementCard.cs" />
+    <Compile Include="Web\UI\Controls\GroupMemberRequirementsContainer.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\IDisallowReturnUrlBlock.cs" />
@@ -3835,6 +3848,7 @@
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\GroupGetChildGroupForCampus.cs" />
+    <Compile Include="Workflow\Action\Groups\GroupMemberRequirementMet.cs" />
     <Compile Include="Workflow\Action\Groups\PostAttendanceToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroupAttribute.cs" />

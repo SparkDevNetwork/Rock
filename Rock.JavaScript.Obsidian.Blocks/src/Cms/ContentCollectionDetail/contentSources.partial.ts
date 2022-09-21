@@ -479,6 +479,8 @@ export default defineComponent({
                 rules="gte:1" />
         </div>
     </div>
+
+    <div style="margin-bottom: 40px;"></div>
 </Modal>
 `
 });

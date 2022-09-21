@@ -192,7 +192,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if (EnableJavascript)
+            if ( EnableJavascript )
             {
                 RegisterJavascript();
             }
@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected date.
+        /// Gets or sets the selected date.
         /// </summary>
         /// <value>
         /// The selected date.
@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
                     }
                     else
                     {
-                        if ( !(this.DisplayCurrentOption && this.IsCurrentDateOffset) )
+                        if ( !( this.DisplayCurrentOption && this.IsCurrentDateOffset ) )
                         {
                             ShowErrorMessage( Rock.Constants.WarningMessage.DateTimeFormatInvalid( this.PropertyName ) );
                         }
@@ -411,7 +411,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
-            if ( DisplayCurrentOption)
+            if ( DisplayCurrentOption )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-date-picker-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -419,7 +419,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                if (IsCurrentDateOffset)
+                if ( IsCurrentDateOffset )
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
@@ -460,7 +460,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
-            if ( eventArgument == "SelectDate")
+            if ( eventArgument == "SelectDate" )
             {
                 EnsureChildControls();
                 SelectDate?.Invoke( this, new EventArgs() );
