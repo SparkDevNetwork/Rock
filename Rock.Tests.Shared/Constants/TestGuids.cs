@@ -25,6 +25,9 @@ namespace Rock.Tests.Shared
     /// </summary>
     public static class TestGuids
     {
+        // A Guid Reference that does not match any entity in a Rock database.
+        public const string NoMatch = "00000000-0000-0000-0000-000000000001";
+
         public static class Category
         {
             public const string PrayerRequestAllChurch = "5A94E584-35F0-4214-91F1-D72531CC6325";
