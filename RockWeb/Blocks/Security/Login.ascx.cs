@@ -250,6 +250,12 @@ Thank you for logging in, however, we need to confirm the email associated with 
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
                 if ( userLogin != null && userLogin.EntityType != null )
                 {
+                    // Check to see if this user is locked out.
+                    if ( CheckUserLockout( userLogin ) )
+                    {
+                        return;
+                    }
+
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
@@ -260,14 +266,6 @@ Thank you for logging in, however, we need to confirm the email associated with 
                         {
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
-                        }
-                        else if ( component.Authenticate( userLogin, tbPassword.Text ) )
-                        {
-                            // If the password authenticates, check to see if this user is locked out.
-                            if ( CheckUserLockout( userLogin ) )
-                            {
-                                return;
-                            }
                         }
                     }
                 }

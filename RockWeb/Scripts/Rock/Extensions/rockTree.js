@@ -408,16 +408,17 @@
 				    }
 
                     // ensure we only get Text for the tooltip
-				    var tmp = document.createElement("DIV");
-				    tmp.innerHTML = node.name;
-				    var nodeText = tmp.textContent || tmp.innerText || "";
+                    var tmp = document.createElement("DIV");
+                    tmp.innerHTML = node.name;
+                    var nodeText = tmp.textContent || tmp.innerText || "";
+                    var titleText = self.escapeHtml(nodeText.trim());
 
 				    var countInfoHtml = '';
 				    if (typeof (node.countInfo) != 'undefined' && node.countInfo != null) {
 				        countInfoHtml = '<span class="label label-tree margin-l-sm">' + node.countInfo + '</span>';
 				    }
 
-				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
+				    $li.append('<span class="rocktree-name" title="' + titleText + '"> ' + node.name + countInfoHtml + '</span>');
 				    var $rockTreeNameNode = $li.find('.rocktree-name');
 
                     if (!self.options.categorySelection && node.isCategory) {
@@ -477,6 +478,23 @@
             });
 
             this.$el.trigger('rockTree:rendered');
+        },
+
+        escapeHtml: function (unencodedString) {
+            // This method is based on he.js (https://github.com/mathiasbynens/he).
+            var regexEscape = /["&'<>`]/g;
+            var escapeMap = {
+                '"': '&quot;',
+                '&': '&amp;',
+                '\'': '&#x27;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '`': '&#x60;'
+            };
+
+            return unencodedString.replace(regexEscape, function ($0) {
+                return escapeMap[$0];
+            });
         },
 
         // clear the error message
