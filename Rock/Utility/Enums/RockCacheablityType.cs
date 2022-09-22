@@ -18,6 +18,7 @@ namespace Rock.Utility
 {
     /// <summary>
     /// The type of cache that a cache-header should be.
+    /// **Copied to Rock.JavaScript.Obsidian/Framework/Enums/Controls/rockCacheabilityType.d.ts**: Please keep in sync.
     /// </summary>
     public enum RockCacheablityType
     {

@@ -174,6 +174,8 @@ import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicke
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
 import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
 import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.vue";
+import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
+import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
 
 // #region Gallery Support
 
@@ -5858,6 +5860,37 @@ const monthYearPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a cacheability picker */
+const cacheabilityPickerGallery = defineComponent({
+    name: "CacheabilityPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        CacheabilityPicker
+    },
+    setup() {
+        return {
+            value: ref<RockCacheability | null>(null),
+            importCode: getControlImportPath("cacheabilityPicker"),
+            exampleCode: `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <CacheabilityPicker label="Cacheability" v-model="value" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5971,6 +6004,7 @@ const controlGalleryComponents: Record<string, Component> = [
     dayOfWeekPickerGallery,
     monthDayPickerGallery,
     monthYearPickerGallery,
+    cacheabilityPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
