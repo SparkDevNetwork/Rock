@@ -89,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
+    <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />

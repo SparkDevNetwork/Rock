@@ -114,6 +114,9 @@
     <Compile Include="Blocks\IValidPropertiesBox.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmMetricBag.cs" />
+    <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeBag.cs" />
+    <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />
