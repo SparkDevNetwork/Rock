@@ -50,6 +50,9 @@
     <Content Include="src\Core\signatureDocumentTemplateDetail.vue" />
     <Content Include="src\Core\SignatureDocumentTemplateDetail\editPanel.partial.vue" />
     <Content Include="src\Core\SignatureDocumentTemplateDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\tagDetail.vue" />
+    <Content Include="src\Core\TagDetail\editPanel.partial.vue" />
+    <Content Include="src\Core\TagDetail\viewPanel.partial.vue" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +77,7 @@
     <Folder Include="src\Core\NoteTypeDetail\" />
     <Folder Include="src\Core\ServiceJobDetail\" />
     <Folder Include="src\Core\SignatureDocumentTemplateDetail\" />
+    <Folder Include="src\Core\TagDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
     <Folder Include="src\Crm\PersonDetail\" />
@@ -164,6 +168,7 @@
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\ServiceJobDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\SignatureDocumentTemplateDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\TagDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />

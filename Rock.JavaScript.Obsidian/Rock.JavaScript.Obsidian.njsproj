@@ -110,6 +110,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ServiceJobDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\TagDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
@@ -499,6 +500,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ServiceJobDetail\serviceJobDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\signatureDocumentTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\signatureDocumentTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\TagDetail\tagBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\TagDetail\tagDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
