@@ -92,6 +92,8 @@
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ServiceJobDetail\ServiceJobBag.cs" />
     <Compile Include="Blocks\Core\ServiceJobDetail\ServiceJobDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\SignatureDocumentTemplateBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\SignatureDocumentTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />

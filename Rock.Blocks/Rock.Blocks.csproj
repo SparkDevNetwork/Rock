@@ -76,6 +76,7 @@
     <Compile Include="Core\LocationDetail.cs" />
     <Compile Include="Core\NoteTypeDetail.cs" />
     <Compile Include="Core\ServiceJobDetail.cs" />
+    <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
