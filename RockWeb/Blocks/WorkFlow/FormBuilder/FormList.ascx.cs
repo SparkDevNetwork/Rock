@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -96,7 +96,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         #endregion User Preference Keys
 
+        #region Fields
+
+        private bool _isAuthorizedToEdit = false;
         public const string CategoryNodePrefix = "C";
+
+        #endregion
 
         /// <summary>
         /// The RestParams (used by the Markup)
@@ -523,6 +528,45 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
+        /// Handles when items are bound to the rForms repeater.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rForms_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var lbBuilder = e.Item.FindControl( "lbBuilder" ) as LinkButton;
+            var lbCommunications = e.Item.FindControl( "lbCommunications" ) as LinkButton;
+            var lbSettings = e.Item.FindControl( "lbSettings" ) as LinkButton;
+            var lbCopy = e.Item.FindControl( "lbCopy" ) as LinkButton;
+            var lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
+
+            if ( lbBuilder != null )
+            {
+                lbBuilder.Enabled = _isAuthorizedToEdit;
+            }
+
+            if ( lbCommunications != null )
+            {
+                lbCommunications.Enabled = _isAuthorizedToEdit;
+            }
+
+            if ( lbSettings != null )
+            {
+                lbSettings.Enabled = _isAuthorizedToEdit;
+            }
+
+            if ( lbCopy != null )
+            {
+                lbCopy.Visible = _isAuthorizedToEdit;
+            }
+
+            if ( lbDelete != null )
+            {
+                lbDelete.Visible = _isAuthorizedToEdit;
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rForms control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -631,6 +675,15 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var category = new CategoryService( new RockContext() ).Get( categoryId );
             if ( category != null )
             {
+                // Hide security button if individual does not have ADMINISTRATE on the category
+                btnSecurity.Visible = category.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                // Hide add (and edit) button if not authorized to EDIT this category
+                _isAuthorizedToEdit = category.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                lbAddForm.Visible = _isAuthorizedToEdit;
+                btnEdit.Visible = _isAuthorizedToEdit;
+                btnDeleteCategory.Visible = _isAuthorizedToEdit;
+
                 lTitle.Text = $"{category.Name} Form List";
                 lDescription.Text = $"Below are a list of forms for the {category.Name} Category";
                 btnSecurity.EntityId = category.Id;
@@ -649,6 +702,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var workflowTypeQry = new WorkflowTypeService( rockContext )
                                 .Queryable()
                                 .Where( a => a.CategoryId == categoryId );
+
+            var category = CategoryCache.Get( categoryId );
+            if ( category != null )
+            {
+                _isAuthorizedToEdit = category.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
 
             btnDeleteCategory.Enabled = !workflowTypeQry.Any();
             if ( workflowTypeQry.Any() )
@@ -781,7 +840,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             if ( workflowType != null )
             {
-                if ( !workflowType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !workflowType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this workflow type.", ModalAlertType.Information );
                     return;
