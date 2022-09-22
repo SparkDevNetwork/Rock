@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
+        <div class="form-group range-slider">
+            <Slider v-model="value" :max="maxValue" showValueBar isIntegerOnly />
+        </div>
+        <div class="text-right margin-b-md">
+            <ButtonGroup v-model="unit" :items="options" :btnSize="btnSize" :unselectedBtnType="unselectedBtnType" :selectedBtnType="selectedBtnType" />
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import Slider from "@Obsidian/Controls/slider";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
+    import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TimeInterval | null>,
+            required: true
+        },
+
+        unselectedBtnType: {
+            type: String as PropType<BtnType>,
+            default: BtnType.Default
+        },
+
+        selectedBtnType: {
+            type: String as PropType<BtnType>,
+            default: BtnType.Primary
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: TimeInterval): void
+    }>();
+
+    function defaultValue(): TimeInterval {
+        return { unit: TimeIntervalUnit.Minutes, value: 1 };
+    }
+
+    const internalValue = computed<TimeInterval>({
+        get() {
+            return props.modelValue ?? defaultValue();
+        },
+        set(newValue) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    if (props.modelValue == null) {
+        internalValue.value = defaultValue();
+    }
+
+    const value = computed<NonNullable<TimeInterval["value"]>>({
+        get() {
+            return internalValue.value.value ?? 1;
+        },
+        set(newValue) {
+            internalValue.value = {
+                unit: internalValue.value.unit,
+                value: newValue ?? 1
+            };
+        }
+    });
+
+    const unit = computed<`${TimeInterval["unit"]}`>({
+        get() {
+            return internalValue.value.unit?.toString() ?? TimeIntervalUnit.Minutes.toString();
+        },
+        set(newValue) {
+            internalValue.value = {
+                unit: toNumber(newValue),
+                value: internalValue.value.value
+            };
+        }
+    });
+
+    const options = [
+        { text: "Mins", value: TimeIntervalUnit.Minutes.toString() },
+        { text: "Hours", value: TimeIntervalUnit.Hours.toString() },
+        { text: "Days", value: TimeIntervalUnit.Days.toString() },
+    ];
+
+    const maxValue = computed(() => {
+        if (unit.value == TimeIntervalUnit.Minutes.toString()) {
+            return 59;
+        }
+        if (unit.value == TimeIntervalUnit.Hours.toString()) {
+            return 23;
+        }
+
+        return 31;
+    });
+
+    watch(maxValue, () => {
+        if (value.value > maxValue.value) {
+            value.value = maxValue.value;
+        }
+    });
+
+    const btnSize = BtnSize.ExtraSmall;
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+</script>
