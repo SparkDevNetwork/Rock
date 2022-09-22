@@ -1431,6 +1431,15 @@ namespace RockWeb.Blocks.Groups
 
                     rockContext.SaveChanges();
                     Rock.Security.Authorization.Clear();
+
+                    // Copy the group-specific requirements.
+                    foreach ( var groupRequirement in group.GroupRequirements )
+                    {
+                        GroupRequirement newGroupRequirement = groupRequirement.CloneWithoutIdentity();
+                        newGroup.GroupRequirements.Add( newGroupRequirement );
+                    }
+
+                    rockContext.SaveChanges();
                 } );
 
                 NavigateToCurrentPage( new Dictionary<string, string> { { PageParameterKey.GroupId, newGroup.Id.ToString() } } );
