@@ -181,7 +181,7 @@
                                 </div>
                                 <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 " OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
                             </div>
-                            <asp:Repeater ID="rForms" runat="server" OnItemCommand="rForms_ItemCommand">
+                            <asp:Repeater ID="rForms" runat="server" OnItemDataBound="rForms_ItemDataBound" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
                                     <div class="card card-sm group-hover mb-3">
                                         <div class="card-body d-flex">

@@ -20,6 +20,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" Required="true" />
+                            <Rock:DataTextBox ID="tbScheduleAbbreviatedName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="AbbreviatedName" Required="false" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
