@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using Ical.Net;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -118,12 +119,25 @@ namespace Rock.Rest.Controllers
                 }
 
                 // Add Location title.
-                if ( Occurrence.Location != null )
+                if ( Occurrence.LocationId.HasValue )
+                {
+                    var location = NamedLocationCache.Get( Occurrence.LocationId.Value );
+                    if ( location != null )
+                    {
+                        DisplayTitle = string.Format(
+                            "{0} - {1}",
+                            DisplayTitle,
+                            location.ToString() );
+                    }
+                }
+
+                // Add Name if it has one
+                if ( ! string.IsNullOrEmpty( Occurrence.Name ) )
                 {
                     DisplayTitle = string.Format(
-                        "{0} - {1}",
+                        "{0} ({1})",
                         DisplayTitle,
-                        Occurrence.Location.EntityStringValue );
+                        Occurrence.Name );
                 }
             }
 
