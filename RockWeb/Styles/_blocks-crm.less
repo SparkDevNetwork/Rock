@@ -773,6 +773,7 @@
   padding: 0;
   margin: 0;
   list-style: none;
+  color: @persondetails-badge-color;
 
   &-sm {
     height: 20px;
@@ -783,7 +784,7 @@
 
     li span {
       width: ~"calc(100% - 3px)";
-      background: @brand-info !important;
+      color: @brand-info;
     }
   }
 
@@ -819,8 +820,7 @@
       min-width: 2px;
       min-height: 1px;
       max-height: 100%;
-      background: @persondetails-badge-color;
-      // border-radius: 2px 2px 0 0;
+      background: currentColor;
 
       .animate & {
         animation: bar-grow 1s ease-in-out;

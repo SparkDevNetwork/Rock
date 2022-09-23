@@ -34,6 +34,15 @@ namespace Rock.ViewModels.Entities
     public partial class ScheduleBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        public string AbbreviatedName { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [auto inactivate when complete].
         /// </summary>
         /// <value>

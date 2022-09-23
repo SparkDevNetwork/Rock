@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Schedule View Model */
 export type ScheduleBag = {
+    /**
+     * Gets or sets the shortened name of the attribute.
+     * If null or whitespace then the full name is returned.
+     */
+    abbreviatedName?: string | null;
+
     /** Gets or sets a value indicating whether [auto inactivate when complete]. */
     autoInactivateWhenComplete: boolean;
 
