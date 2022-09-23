@@ -61,6 +61,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.DoesNotMeetWorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.WarningWorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

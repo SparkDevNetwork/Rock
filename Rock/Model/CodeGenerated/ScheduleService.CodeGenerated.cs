@@ -132,6 +132,7 @@ namespace Rock.Model
             var viewModel = new ScheduleBag
             {
                 IdKey = model.IdKey,
+                AbbreviatedName = model.AbbreviatedName,
                 AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
@@ -213,6 +214,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Schedule target, Schedule source )
         {
             target.Id = source.Id;
+            target.AbbreviatedName = source.AbbreviatedName;
             target.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             target.CategoryId = source.CategoryId;
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;

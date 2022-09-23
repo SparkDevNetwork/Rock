@@ -890,6 +890,30 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ContentCollection>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollection.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollection>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollection.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollectionSource>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollectionSource.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollectionSource>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollectionSource.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, DataView.FriendlyTypeName );
@@ -1592,7 +1616,19 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.ManuallyCompletedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.OverriddenByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
                 return false;
@@ -2204,6 +2240,20 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring PersonAliasPersonalization,PersonAliasId
+
+            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<PersonalLink>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalLink.FriendlyTypeName );
@@ -2627,6 +2677,18 @@ namespace Rock.Model
             if ( new Service<ReportField>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ReportField.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<RequestFilter>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RequestFilter.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<RequestFilter>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RequestFilter.FriendlyTypeName );
                 return false;
             }
 

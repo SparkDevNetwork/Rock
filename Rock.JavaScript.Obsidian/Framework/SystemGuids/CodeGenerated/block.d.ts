@@ -79,4 +79,6 @@ export const enum Block {
     DataviewSearchResults = "F1AADFDD-7F43-4B31-A0FD-318064F4C9CC",
     /** The report search results block type */
     ReportSearchResults = "2DA8AA89-0DAA-4A50-B65B-CA721932B8A9",
+    /** The Fundraising Transaction Entry block. */
+    FundraisingTransactionEntry = "1BAD904E-2F79-4488-B8BE-EECD67AE2925",
 }
