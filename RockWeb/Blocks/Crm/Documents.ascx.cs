@@ -112,7 +112,8 @@ namespace RockWeb.Blocks.Crm
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( this.ContextEntity() != null )
             {
-                securityColumn.EntityTypeId = this.ContextEntity().TypeId;
+                // Set the security on the document and not the entity the document is for.
+                securityColumn.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT ).Value;
             }
         }
 
