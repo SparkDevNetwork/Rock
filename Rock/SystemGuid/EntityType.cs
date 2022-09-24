@@ -204,6 +204,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.Document
+        /// </summary>
+        public const string DOCUMENT = "7CEFA340-9D98-4B2C-B462-313C61944B6C";
+
+        /// <summary>
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
