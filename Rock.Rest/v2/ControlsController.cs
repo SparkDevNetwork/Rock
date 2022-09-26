@@ -713,6 +713,64 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Save a new Defined Value
+        /// </summary>
+        /// <param name="options">The options the new defined value</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
+        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get(options.DefinedTypeGuid);
+                var definedTypeId = definedType.Id;
+                DefinedValue definedValue;
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+
+                definedValue = new DefinedValue { Id = 0 };
+                definedValue.DefinedTypeId = definedTypeId;
+                definedValue.IsSystem = false;
+
+                var orders = definedValueService.Queryable()
+                    .Where( d => d.DefinedTypeId == definedTypeId )
+                    .Select( d => d.Order )
+                    .ToList();
+
+                definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
+
+                definedValue.Value = options.Value;
+                definedValue.Description = options.Description;
+
+                if ( !definedValue.IsValid )
+                {
+                    return InternalServerError();
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    if ( definedValue.Id.Equals( 0 ) )
+                    {
+                        definedValueService.Add( definedValue );
+                    }
+
+                    rockContext.SaveChanges();
+
+                    definedValue.SaveAttributeValues( rockContext );
+                } );
+
+                return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
+            }
+        }
+
         #endregion
 
         #region Entity Tag List

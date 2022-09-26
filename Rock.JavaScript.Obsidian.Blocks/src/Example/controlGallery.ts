@@ -21,6 +21,7 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
+ * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
@@ -47,7 +48,6 @@
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
 import { ObjectUtils } from "@Obsidian/Utility";
 import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
-import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -99,7 +99,7 @@ import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderP
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
 import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
