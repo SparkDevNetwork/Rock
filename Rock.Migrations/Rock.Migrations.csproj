@@ -68,6 +68,10 @@
     <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
+      <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1324,6 +1328,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
+      <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>

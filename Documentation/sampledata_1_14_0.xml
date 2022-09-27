@@ -1307,4 +1307,12 @@
       </members>
     </group>
   </securityRoles>
+
+  <financialGateways>
+    <financialGateway entityTypeName="Rock.Financial.TestRedirectionGateway"
+     name="Test Redirection Gateway"
+     guid="1053E89B-EF9C-41C9-88B8-2C575E115BA3"
+     isActive="true">
+    </financialGateway>
+  </financialGateways>
 </data>

@@ -319,26 +319,10 @@ namespace Rock.Model
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.14" )]
-        [Obsolete( "Does not pass the RockContext into subsequent method calls.  Use PersonMeetsGroupRequirement( RockContext rockContext...) instead.", true )]
+        [Obsolete( "Does not pass the RockContext into subsequent method calls.  Use PersonMeetsGroupRequirement( RockContext rockContext...) instead.", false )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int groupId, int? groupRoleId )
         {
-            var rockContext = new RockContext();
-            var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
-            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupId, groupRoleId ).FirstOrDefault();
-            if ( result == null )
-            {
-                // no result. probably because personId was zero
-                return new PersonGroupRequirementStatus
-                {
-                    GroupRequirement = this,
-                    MeetsGroupRequirement = MeetsGroupRequirement.NotMet,
-                    PersonId = personId
-                };
-            }
-            else
-            {
-                return result;
-            }
+            return PersonMeetsGroupRequirement( null, personId, groupId, groupRoleId );
         }
 
         /// <summary>

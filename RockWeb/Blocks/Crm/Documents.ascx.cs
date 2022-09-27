@@ -111,18 +111,9 @@ namespace RockWeb.Blocks.Crm
 
             // Configure security button
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
-            if ( securityColumn != null )
-            {
-                /*
-                    2/22/2022 - KA
-                    this.ContextEntity().TypeId is not being used as the securityColumn.EntityTypeId because in the case where the
-                    DocumentsBlock was displayed in the Person page the context entity was Person.cs, thUs the service instance
-                    generated in the Security.cs block when the security button was clicked was a PersonService not DocumentService, 
-                    since we know gFileList will always display documents we can set the securityColumn.EntityTypeId to the typeId
-                    of the Document.cs model.
-                */
-                securityColumn.EntityTypeId = new Document().TypeId;
-            }
+
+            // Set the security on the document and not the entity the document is for.
+            securityColumn.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT ).Value;
         }
 
         protected override void OnLoad( EventArgs e )
