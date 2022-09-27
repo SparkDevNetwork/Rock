@@ -447,12 +447,21 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses( RockContext rockContext )
         {
+            /*
+                9/26/2022 - CWR
+                The logic for the group requirement status:
+                #1) If the Requirement has a Met DateTime or was manually completed or was overridden, then the MeetsGroupRequirement status is "Meets".
+                #2) If not that, then if the Requirement has a Warning DateTime, its status is "Meets With Warning".
+                #3) If neither #1 or #2, then the status is considered "Not Met".
+
+                Without this order, a Group Member Requirement that was once set as "Meets with Warning" with a DateTime could prevent the status from ever being set as "Met".
+             */
+
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
                 GroupRequirementId = a.GroupRequirement.Id,
-                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden
-                    ? a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
-                    : MeetsGroupRequirement.NotMet,
+                MeetsGroupRequirement = ( a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden )
+                    ? MeetsGroupRequirement.Meets : a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet,
                 a.RequirementWarningDateTime,
                 a.LastRequirementCheckDateTime,
                 GroupMemberRequirementId = a.Id
