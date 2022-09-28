@@ -117,7 +117,7 @@
                     <hr class="margin-t-sm">
                     <div class="row">
                         <div class="col-md-4">
-                            <Rock:WorkflowTypePicker ID="wtpDoesNotMeetWorkflowType" runat="server" Label="Does Not Meet Requirement Workflow" />
+                            <Rock:WorkflowTypePicker ID="wtpDoesNotMeetWorkflowType" runat="server" Label="Does Not Meet Requirement Workflow" Help="The workflow type to configure for requirements that are not met. These workflows can help an individual complete requirements." />
                         </div>
                         <div class="col-md-2">
                             <Rock:RockCheckBox ID="cbAutoInitiateDoesNotMeetRequirementWorkflow" runat="server" Label="Auto initiate" Help="Determines if the workflow should be automatically launched at the time of not being met, or if the workflow should be manually launched by the individual." />
@@ -128,7 +128,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-4">
-                            <Rock:WorkflowTypePicker ID="wtpWarningWorkflowType" runat="server" Label="Warning Requirement Workflow" />
+                            <Rock:WorkflowTypePicker ID="wtpWarningWorkflowType" runat="server" Label="Warning Requirement Workflow" Help="The workflow type to configure for requirements that are in a warning state. These workflows can help an individual complete requirements." />
                         </div>
                         <div class="col-md-2">
                             <Rock:RockCheckBox ID="cbAutoInitiateWarningRequirementWorkflow" runat="server" Label="Auto initiate" Help="Determines if the workflow should be automatically launched at the time of warning, or if the workflow should be manually launched by the individual." />
