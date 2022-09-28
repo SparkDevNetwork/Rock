@@ -33,12 +33,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "System Configuration" )]
     [Category( "Administration" )]
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E2D423B8-10F0-49E2-B2A6-D62892379429" )]
     public partial class SystemConfiguration : Rock.Web.UI.RockBlock
     {
         #region Defaults
@@ -49,9 +47,14 @@ namespace RockWeb.Blocks.Administration
         private static class SettingDefault
         {
             /// <summary>
-            /// The cookie timeout
+            /// The visitor cookie timeout days
             /// </summary>
-            public const int CookieTimeout = 43200;
+            public const int VisitorCookieTimeoutDays = 365;
+
+            /// <summary>
+            /// The login cookie timeout (in minutes)
+            /// </summary>
+            public const int LoginCookieTimeoutMinutes = 43200;
         }
 
         #endregion Defaults
@@ -112,7 +115,7 @@ namespace RockWeb.Blocks.Administration
 
             BindOtherAppSettings();
             BindMaxFileSize();
-            BindCookieTimeout();
+            BindLoginCookieTimeout();
 
             BindExperimentalSettings();
 
@@ -150,6 +153,9 @@ namespace RockWeb.Blocks.Administration
             // Save General
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER, cbIncludeBusinessInPersonPicker.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_KEEP_ALIVE, cbEnableKeepAlive.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, tbPDFExternalRenderEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, nbVisitorCookiePersistenceLengthDays.Text );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
             nbGeneralMessage.Title = string.Empty;
@@ -176,7 +182,7 @@ namespace RockWeb.Blocks.Administration
 
             var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
-            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numCookieTimeout.IntegerValue ?? SettingDefault.CookieTimeout );
+            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numLoginCookieTimeout.IntegerValue ?? SettingDefault.LoginCookieTimeoutMinutes );
 
             rockWebConfig.Save();
 
@@ -217,6 +223,9 @@ namespace RockWeb.Blocks.Administration
         {
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
             cbIncludeBusinessInPersonPicker.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
+            cbEnableKeepAlive.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
+            tbPDFExternalRenderEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
+            nbVisitorCookiePersistenceLengthDays.Text = (Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays).ToString();
         }
 
         /// <summary>
@@ -260,20 +269,20 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Binds the cookie timeout.
+        /// Binds the login cookie timeout.
         /// </summary>
-        private void BindCookieTimeout()
+        private void BindLoginCookieTimeout()
         {
             var rockWebConfig = WebConfigurationManager.OpenWebConfiguration( "~" );
             var systemWebSection = ( SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
 
             if ( systemWebSection == null )
             {
-                numCookieTimeout.IntegerValue = SettingDefault.CookieTimeout;
+                numLoginCookieTimeout.IntegerValue = SettingDefault.LoginCookieTimeoutMinutes;
                 return;
             }
 
-            numCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
+            numLoginCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
         }
 
         /// <summary>
@@ -387,16 +396,20 @@ namespace RockWeb.Blocks.Administration
             nbStartDayOfWeekSaveMessage.Title = string.Empty;
             nbStartDayOfWeekSaveMessage.Text = "This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'.";
             dowpStartingDayOfWeek.SelectedDayOfWeek = RockDateTime.FirstDayOfWeek;
+
+            nbSecurityGrantTokenDuration.IntegerValue = Math.Max( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION )?.AsIntegerOrNull() ?? 4320, 60 );
         }
 
         #endregion
 
+        #region Event Handlers
+
         /// <summary>
-        /// Handles the Click event of the btnSaveStartDayOfWeek control.
+        /// Handles the Click event of the btnSaveExperimental control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSaveStartDayOfWeek_Click( object sender, EventArgs e )
+        protected void btnSaveExperimental_Click( object sender, EventArgs e )
         {
             if ( dowpStartingDayOfWeek.SelectedDayOfWeek != RockDateTime.FirstDayOfWeek )
             {
@@ -417,6 +430,25 @@ namespace RockWeb.Blocks.Administration
                 nbStartDayOfWeekSaveMessage.Title = string.Empty;
                 nbStartDayOfWeekSaveMessage.Text = string.Format( "Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString() );
             }
+
+            var oldSecurityGrantTokenDuration = Math.Max( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION ).AsInteger(), 60 );
+            var newSecurityGrantTokenDuration = Math.Max( nbSecurityGrantTokenDuration.IntegerValue ?? 0, 60 );
+
+            if ( oldSecurityGrantTokenDuration != newSecurityGrantTokenDuration )
+            {
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION, newSecurityGrantTokenDuration.ToString() );
+                nbSecurityGrantTokenDurationSaveMessage.Text = "Security grant token duration has been successfully updated.";
+                nbSecurityGrantTokenDurationSaveMessage.Visible = true;
+            }
         }
+
+        protected void btnRevokeSecurityGrants_Click( object sender, EventArgs e )
+        {
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SECURITY_GRANT_TOKEN_EARLIEST_DATE, RockDateTime.Now.ToString( "O" ) );
+            nbSecurityGrantTokenDurationSaveMessage.Text = "All existing security grant tokens have been revoked.";
+            nbSecurityGrantTokenDurationSaveMessage.Visible = true;
+        }
+
+        #endregion
     }
 }

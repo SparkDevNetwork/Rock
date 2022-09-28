@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -86,7 +87,7 @@ namespace Rock.Model
     /// FinancialGateway View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( FinancialGateway ) )]
-    public partial class FinancialGatewayViewModelHelper : ViewModelHelper<FinancialGateway, Rock.ViewModel.FinancialGatewayViewModel>
+    public partial class FinancialGatewayViewModelHelper : ViewModelHelper<FinancialGateway, FinancialGatewayBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -95,17 +96,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.FinancialGatewayViewModel CreateViewModel( FinancialGateway model, Person currentPerson = null, bool loadAttributes = true )
+        public override FinancialGatewayBag CreateViewModel( FinancialGateway model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.FinancialGatewayViewModel
+            var viewModel = new FinancialGatewayBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 EntityTypeId = model.EntityTypeId,
                 IsActive = model.IsActive,
@@ -200,7 +200,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.FinancialGatewayViewModel ToViewModel( this FinancialGateway model, Person currentPerson = null, bool loadAttributes = false )
+        public static FinancialGatewayBag ToViewModel( this FinancialGateway model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new FinancialGatewayViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

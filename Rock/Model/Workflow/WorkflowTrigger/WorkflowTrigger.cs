@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowTrigger" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "3781C82A-7F40-4D88-B3DB-1B9589D73D3D")]
     public partial class WorkflowTrigger : Entity<WorkflowTrigger>
     {
         #region Entity Properties

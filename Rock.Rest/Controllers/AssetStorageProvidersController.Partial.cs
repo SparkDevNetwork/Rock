@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetChildren" )]
+        [Rock.SystemGuid.RestActionGuid( "4D7B4AE1-82F3-46B9-99E3-BAE03B2EDFAA" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
             var assetStorageService = new AssetStorageProviderService( new RockContext() );
@@ -48,7 +49,7 @@ namespace Rock.Rest.Controllers
                     var rootFolder = component.GetRootFolder( assetStorageProvider );
 
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}");
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}" );
                     treeViewItem.IconCssClass = component.IconCssClass;
                     treeViewItem.Name = assetStorageProvider.Name;
                     treeViewItem.HasChildren = true;
@@ -57,16 +58,26 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                var assetFolderIdParts = assetFolderId.Split(',').ToArray();
+                var assetFolderIdParts = assetFolderId.Split( ',' ).ToArray();
                 if ( assetFolderIdParts.Length > 0 )
                 {
                     int assetStorageProviderId = assetFolderIdParts[0].AsInteger();
                     var assetStorageProvider = assetStorageService.GetNoTracking( assetStorageProviderId );
 
                     Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
-                    if ( assetFolderIdParts.Length > 1 )
+                    if ( assetFolderIdParts.Length > 1 && assetFolderIdParts[1].Length > 0 )
                     {
-                        asset.Key = assetFolderIdParts[1];
+                        var scrubbedFileName = System.Text.RegularExpressions.Regex.Replace( assetFolderIdParts[1], "[" + System.Text.RegularExpressions.Regex.Escape( string.Concat( System.IO.Path.GetInvalidPathChars() ) ) + "]", string.Empty, System.Text.RegularExpressions.RegexOptions.CultureInvariant );
+                        var scrubbedFilePath = System.IO.Path.GetDirectoryName( scrubbedFileName ).Replace( '\\', '/' );
+                        scrubbedFileName = System.IO.Path.GetFileName( scrubbedFileName );
+                        scrubbedFileName = System.Text.RegularExpressions.Regex.Replace( scrubbedFileName, "[" + System.Text.RegularExpressions.Regex.Escape( string.Concat( System.IO.Path.GetInvalidFileNameChars() ) ) + "]", string.Empty, System.Text.RegularExpressions.RegexOptions.CultureInvariant );
+
+                        var scrubbedFileNameAndPath = $"{scrubbedFilePath}/{scrubbedFileName}";
+                        asset.Key = scrubbedFileNameAndPath;
+                    }
+                    else
+                    {
+                        asset.Key = string.Empty;
                     }
 
                     var component = assetStorageProvider.GetAssetStorageComponent();
@@ -101,6 +112,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFolders" )]
+        [Rock.SystemGuid.RestActionGuid( "8A2E7EC6-2A38-41AC-9A83-B74FF4B7FD45" )]
         public List<Asset> GetFolders( int assetStorageProviderId, string path )
         {
             var assetStorageProviderService = ( AssetStorageProviderService ) Service;
@@ -123,6 +135,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFiles" )]
+        [Rock.SystemGuid.RestActionGuid( "40DEFE35-2196-4A11-BD08-BCFFCE1C4240" )]
         public List<Asset> GetFiles( int assetStorageProviderId, string path )
         {
 

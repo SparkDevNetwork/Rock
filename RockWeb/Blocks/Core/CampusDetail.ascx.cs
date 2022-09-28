@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E30354A1-A1B8-4BE5-ADCE-43EEDDEF6C65" )]
     public partial class CampusDetail : RockBlock
     {
         #region PageParameterKeys
@@ -1026,6 +1027,7 @@ namespace RockWeb.Blocks.Core
         private void ShowCampusScheduleEdit( Guid campusScheduleGuid )
         {
             hfCampusScheduleGuid.Value = campusScheduleGuid.ToString();
+            dvpScheduleType.DefinedTypeId = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.SCHEDULE_TYPE.AsGuid()).Id;
             dlgSchedule.Show();
 
             if ( campusScheduleGuid == Guid.Empty )

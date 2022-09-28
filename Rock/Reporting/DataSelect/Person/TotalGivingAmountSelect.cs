@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the total giving amount of the person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Total Giving Amount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "680C50EC-2815-4390-9BCD-6EE0D2496E34")]
     public class TotalGivingAmountSelect : DataSelectComponent
     {
         /// <summary>

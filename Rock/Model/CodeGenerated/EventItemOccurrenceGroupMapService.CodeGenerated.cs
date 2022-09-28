@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// EventItemOccurrenceGroupMap View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( EventItemOccurrenceGroupMap ) )]
-    public partial class EventItemOccurrenceGroupMapViewModelHelper : ViewModelHelper<EventItemOccurrenceGroupMap, Rock.ViewModel.EventItemOccurrenceGroupMapViewModel>
+    public partial class EventItemOccurrenceGroupMapViewModelHelper : ViewModelHelper<EventItemOccurrenceGroupMap, EventItemOccurrenceGroupMapBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,17 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.EventItemOccurrenceGroupMapViewModel CreateViewModel( EventItemOccurrenceGroupMap model, Person currentPerson = null, bool loadAttributes = true )
+        public override EventItemOccurrenceGroupMapBag CreateViewModel( EventItemOccurrenceGroupMap model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.EventItemOccurrenceGroupMapViewModel
+            var viewModel = new EventItemOccurrenceGroupMapBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
+                CampusId = model.CampusId,
                 EventItemOccurrenceId = model.EventItemOccurrenceId,
                 GroupId = model.GroupId,
                 PublicName = model.PublicName,
@@ -156,6 +157,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EventItemOccurrenceGroupMap target, EventItemOccurrenceGroupMap source )
         {
             target.Id = source.Id;
+            target.CampusId = source.CampusId;
             target.EventItemOccurrenceId = source.EventItemOccurrenceId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -178,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.EventItemOccurrenceGroupMapViewModel ToViewModel( this EventItemOccurrenceGroupMap model, Person currentPerson = null, bool loadAttributes = false )
+        public static EventItemOccurrenceGroupMapBag ToViewModel( this EventItemOccurrenceGroupMap model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new EventItemOccurrenceGroupMapViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

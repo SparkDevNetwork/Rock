@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "5464F6B3-E0E4-4F9F-8FBA-44A18DB83F44" )]
     public partial class PersonAttributeForms : RockBlockCustomSettings
     {
         #region Attribute Keys and Categories
@@ -262,7 +263,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMain.Title = "Sorry";
-                nbMain.Text = "You need to login before entering information on this page.";
+                nbMain.Text = "You need to log in before entering information on this page.";
                 nbMain.NotificationBoxType = NotificationBoxType.Warning;
                 nbMain.Visible = true;
             }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to Children" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Children Transformation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C4440BAA-AEFC-455B-983D-9D6CCFA8C5D9")]
     public class ChildrenTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>

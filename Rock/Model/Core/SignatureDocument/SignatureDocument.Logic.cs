@@ -23,6 +23,34 @@ namespace Rock.Model
 {
     public partial class SignatureDocument
     {
+        private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
+
+        /// <summary>
+        /// Gets the formatted user agent.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetFormattedUserAgent()
+        {
+            var userAgent = this.SignedClientUserAgent ?? string.Empty;
+            var deviceOs = uaParser.ParseOS( userAgent ).ToString();
+            var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
+            var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+
+            return $@"{deviceApplication}
+{deviceOs}
+{deviceClientType}";
+        }
+
+        /// <summary>
+        /// Returns true of this document was generated using a legacy document provider.
+        /// </summary>
+        /// <returns><c>true</c> if the template uses a legacy document provider, <c>false</c> otherwise.</returns>
+        public bool UsesLegacyDocumentProvider()
+        {
+            bool isLegacyProvider = this.SignatureDocumentTemplate?.ProviderEntityTypeId != null;
+            return isLegacyProvider;
+        }
+
         /// <summary>
         /// The data that was collected during a drawn signature type.
         /// This is an img data url. Example:
@@ -55,7 +83,7 @@ namespace Rock.Model
 
             set
             {
-                this.SignatureDataEncrypted = Rock.Security.Encryption.EncryptString( this.SignatureData );
+                this.SignatureDataEncrypted = Rock.Security.Encryption.EncryptString( value );
             }
         }
     }

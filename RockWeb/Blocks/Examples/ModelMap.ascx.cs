@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Displays details about each model classes in Rock.Model." )]
     [KeyValueListField( "Category Icons", "The Icon Class to use for each category.", false, "", "Category", "Icon Css Class" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA2AAD13-209B-4885-8739-B7BE99F6510D" )]
     public partial class ModelMap : RockBlock
     {
         #region Fields
@@ -248,10 +249,12 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            foreach ( var entity in EntityTypeCache.All().Where( t => t.IsEntity ) )
+            RegisterIncludeForModelMapTypes();
+
+            foreach ( var entity in EntityTypeCache.All() )
             {
                 var type = entity.GetEntityType();
-                if ( type != null && type.InheritsOrImplements( typeof( Rock.Data.Entity<> )) || type.GetCustomAttribute(typeof( IncludeForModelMapAttribute )) != null ) 
+                if ( type != null && (entity.IsEntity || type.GetCustomAttribute( typeof( IncludeForModelMapAttribute ) ) != null) ) 
                 {
                     string category = "Other";
                     var domainAttr = type.GetCustomAttribute<RockDomainAttribute>( false );
@@ -276,6 +279,26 @@ namespace RockWeb.Blocks.Examples
 
             EntityCategories = new List<MCategory>( entityCategories.Where( c => c.Name != "Other" ).OrderBy( c => c.Name ) );
             EntityCategories.AddRange( entityCategories.Where( c => c.Name == "Other" ) );
+        }
+
+        /// <summary>
+        /// Registers the <see cref="IncludeForModelMapAttribute"/> model types.
+        /// </summary>
+        private void RegisterIncludeForModelMapTypes()
+        {
+            var modelMapAssembly = Assembly.GetAssembly( typeof( IncludeForModelMapAttribute ) );
+            var modelMapTypes = from type in modelMapAssembly.GetTypes()
+                                where System.Attribute.IsDefined( type, typeof( IncludeForModelMapAttribute ) )
+                                select type;
+
+            if ( modelMapTypes?.Count() > 0 )
+            {
+                foreach ( var modelMapType in modelMapTypes )
+                {
+                    // Call EntityTypeCache.Get to register the modelMapType if it isn't already registered
+                    EntityTypeCache.Get( modelMapType, true, new RockContext() );
+                }
+            }
         }
 
         private void ShowData( Guid? categoryGuid, int? entityTypeId )

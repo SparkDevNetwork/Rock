@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,6 +52,7 @@ namespace Rock.Storage.Provider
         Order = 3,
         Key = AttributeKey.RootFolder )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "153371D6-8841-4707-98C9-4E6ED2478855")]
     public class GoogleCloudStorageProvider : ProviderComponent
     {
         #region Keys
@@ -98,6 +99,11 @@ namespace Rock.Storage.Provider
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveContent( BinaryFile binaryFile, out long? fileSize )
         {
+            /*
+               SK - 12/11/2021
+               Path should always be reset while saving content otherwise new storage provider may still be refering the older path.
+           */
+            binaryFile.Path = null;
             var googleObject = TranslateBinaryFileToGoogleObject( binaryFile );
 
             using ( var client = GetStorageClient() )

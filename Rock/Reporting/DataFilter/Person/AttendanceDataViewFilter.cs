@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select Person by their Attendance from an Attendance Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Attendance Data View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "4823A27E-3E65-490A-BA46-98D0529806CF")]
     public class AttendanceDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.Attendance>
     {
         #region Overrides

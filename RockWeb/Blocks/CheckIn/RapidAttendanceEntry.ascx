@@ -14,7 +14,7 @@
                     $('#<%= hfPersonDirty.ClientID %>').val('true')
                 });
 
-                 $('.js-person-item-checkbox').find('input').change(function () {
+                $('.js-person-item-checkbox').find('input').change(function () {
                     $('#<%= hfPersonDirty.ClientID %>').val('true')
                 });
 
@@ -55,7 +55,7 @@
         <asp:Panel ID="pnlStart" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -72,6 +72,9 @@
                             </asp:Panel>
                             <Rock:DatePicker ID="dpAttendanceDate" runat="server" Required="true" Label="Attendance Date" ValidationGroup="AttendanceSetting" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="True" />
+                        </div>
                     </div>
                     <div class="actions">
                         <Rock:BootstrapButton ID="lbStart" runat="server" Text="Start" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbStart_Click" ValidationGroup="AttendanceSetting" />
@@ -82,7 +85,7 @@
         <asp:Panel ID="pnlMainPanel" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
                         <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />
@@ -97,7 +100,7 @@
                                 <div class="d-flex width-full padding-all-sm">
                                     <div class="resource-search js-resource-search flex-grow-1 input-group">
                                         <span class="input-group-addon"><i class='fa fa-search'></i></span>
-                                        <Rock:RockTextBox ID="tbSearch" runat="server"  Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
+                                        <Rock:RockTextBox ID="tbSearch" runat="server" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
                                         <span class="input-group-btn">
                                             <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
                                         </span>

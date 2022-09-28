@@ -32,7 +32,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the signature documents
     /// </summary>
-    [DisplayName( "Process Signature Documents" )]
+    [DisplayName( "Process Signature Documents (Legacy Document Providers)" )]
     [Description( "Sends any digital signature invites that need to be sent for groups that require a signed document." )]
 
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
@@ -99,7 +99,7 @@ namespace Rock.Jobs
                     var updateErrorMessages = new List<string>();
                     var status = document.Status;
                     int? binaryFileId = document.BinaryFileId;
-                    if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
+                    if ( docTypeService.UpdateLegacyProviderDocumentStatus( document, folderPath, out updateErrorMessages ) )
                     {
                         if ( status != document.Status || !binaryFileId.Equals( document.BinaryFileId )  )
                         {
@@ -168,11 +168,11 @@ namespace Rock.Jobs
                         var sendErrorMessages = new List<string>();
                         if ( document != null )
                         {
-                            docTypeService.SendDocument( document, gm.Person.Email, out sendErrorMessages );
+                            docTypeService.SendLegacyProviderDocument( document, gm.Person.Email, out sendErrorMessages );
                         }
                         else
                         {
-                            docTypeService.SendDocument( gm.DocumentType, gm.Person, gm.Person, documentName, gm.Person.Email, out sendErrorMessages );
+                            docTypeService.SendLegacyProviderDocument( gm.DocumentType, gm.Person, gm.Person, documentName, gm.Person.Email, out sendErrorMessages );
                         }
 
                         if ( !errorMessages.Any() )

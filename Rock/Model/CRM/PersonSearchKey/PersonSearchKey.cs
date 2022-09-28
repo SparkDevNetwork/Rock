@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [Table( "PersonSearchKey" )]
     [NotAudited]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "914FE998-4F61-4005-ACCC-A8D0433CAD47")]
     public partial class PersonSearchKey : Model<PersonSearchKey>
     {
         #region Entity Properties

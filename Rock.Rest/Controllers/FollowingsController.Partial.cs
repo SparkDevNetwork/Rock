@@ -14,14 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.ModelBinding.Binders;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -31,14 +33,15 @@ namespace Rock.Rest.Controllers
     public partial class FollowingsController
     {
         /// <summary>
-        /// Deletes the following record(s).
+        /// Deletes following of the specified entity by the specified user.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId:int}" )]
+        [Rock.SystemGuid.RestActionGuid( "386BCB43-5F2A-4034-9032-850440CBAB7F" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -72,14 +75,41 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Deletes the following record(s).
+        /// Deletes following of the specified entity by the specified user.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity identifier.</param>
+        /// <param name="personGuid">The person identifier.</param>
+        /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "1071DB79-DB8D-4310-B11C-2637F1A6A630" )]
+        public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, Guid personGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
+        {
+            // Convert and validate the input parameters.
+            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityTypeId != 0, "Entity Type", nameof( entityTypeGuid ), entityTypeGuid );
+
+            var entityId = Reflection.GetEntityIdForEntityType( entityTypeGuid, entityGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityId != 0, "Entity", nameof( entityTypeGuid ), entityTypeGuid );
+
+            var personId = Reflection.GetEntityIdForEntityType( SystemGuid.EntityType.PERSON.AsGuid(), personGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( personId != 0, "Person", nameof( entityTypeGuid ), entityTypeGuid );
+
+            // Process the action.
+            Delete( entityTypeId, entityId, personId, purposeKey );
+        }
+
+        /// <summary>
+        /// Deletes following of the specified entity by the current user.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpDelete]
+        [Rock.SystemGuid.RestActionGuid( "AAB5800B-A429-40D2-A402-D3DE7E15776E" )]
         public virtual void Delete( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -115,14 +145,37 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Follows the specified entity.
+        /// Deletes following of the specified entity by the current user.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity identifier.</param>
+        /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "A3358897-942F-4332-B060-12718DC87CE6" )]
+        public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
+        {
+            // Convert and validate the input parameters.
+            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityTypeId != 0, "Entity Type", nameof( entityTypeGuid ), entityTypeGuid );
+
+            var entityId = Reflection.GetEntityIdForEntityType( entityTypeGuid, entityGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityId != 0, "Entity", nameof( entityTypeGuid ), entityTypeGuid );
+
+            // Process the action.
+            Delete( entityTypeId, entityId, purposeKey );
+        }
+
+        /// <summary>
+        /// Adds a Following of the specified entity for the current user.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "1C1F80FE-2567-463E-8BFE-E49ECB8450C7" )]
         public virtual HttpResponseMessage Follow( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -165,5 +218,49 @@ namespace Rock.Rest.Controllers
 
             return response;
         }
+
+        /// <summary>
+        /// Adds a Following of the specified entity for the current user.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity identifier.</param>
+        /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "3D09FD68-06F9-4860-9110-60A015004071" )]
+        [System.Web.Http.HttpPost]
+        public virtual HttpResponseMessage Follow( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
+        {
+            // Convert and validate the input parameters.
+            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityTypeId != 0, "Entity Type", nameof( entityTypeGuid ), entityTypeGuid );
+
+            var entityId = Reflection.GetEntityIdForEntityType( entityTypeGuid, entityGuid ) ?? 0;
+            AssertEntityIdentifierParameterIsValid( entityId != 0, "Entity", nameof( entityGuid ), entityGuid );
+
+            // Process the action.
+            var response = Follow( entityTypeId, entityId, purposeKey );
+            return response;
+        }
+
+        #region Support methods
+
+        /// <summary>
+        /// Verify that the specified input parameter refers to a valid entity.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="entityTypeName"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="parameterValue"></param>
+        private void AssertEntityIdentifierParameterIsValid( bool predicate, string entityTypeName, string parameterName, object parameterValue )
+        {
+            if ( !predicate )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"Invalid parameter value. No matching {entityTypeName} can be found for '{parameterName}={parameterValue}'." );
+                throw new HttpResponseException( errorResponse );
+            }
+        }
+
+        #endregion
     }
 }

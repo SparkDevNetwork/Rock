@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Workflow Complete" )]
 
     [WorkflowTextOrAttribute( "Status", "Status Attribute", "The status to set the workflow to when marking the workflow complete. <span class='tip tip-lava'></span>", false, "Completed", "", 0, "Status")]   
+    [Rock.SystemGuid.EntityTypeGuid( "EEDA4318-F014-4A46-9C76-4C052EF81AA1")]
     public class CompleteWorkflow : ActionComponent
     {
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FollowingSuggestionTypes REST API
     /// </summary>
+    [RestControllerGuid( "09990667-D61D-42A3-9523-8F256F5E80C7" )]
     public partial class FollowingSuggestionTypesController : Rock.Rest.ApiController<Rock.Model.FollowingSuggestionType>
     {
         /// <summary>

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Data.Entity;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -24,24 +23,6 @@ namespace Rock.Model
     public partial class StepType
     {
         #region Methods
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = base.SupportedActions;
-                    _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to

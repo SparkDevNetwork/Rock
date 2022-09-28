@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Core
 
     // Context Aware will limit the list to watchers that are equal to the Person or Group context
     [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "E8718774-3DCA-4AFF-9F4C-FBA50A00BB57" )]
     public partial class NoteWatchList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

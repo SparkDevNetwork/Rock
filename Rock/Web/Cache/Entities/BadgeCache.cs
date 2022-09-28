@@ -16,10 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Badge;
 using Rock.Data;
+using Rock.Model;
+using Rock.ViewModels.Crm;
 
 namespace Rock.Web.Cache
 {
@@ -167,6 +170,67 @@ namespace Rock.Web.Cache
         {
             var allBadges = All();
             return allBadges.Where( b => !b.EntityTypeId.HasValue || b.EntityTypeId.Value == entityTypeId ).ToList();
+        }
+
+        /// <summary>
+        /// Renders the badge for the specified entity. No security checks are
+        /// performed.
+        /// </summary>
+        /// <param name="entity">The entity to use when rendering the badge.</param>
+        /// <returns>An instance of <see cref="RenderedBadgeBag"/> that contains the HTML and JavaScript rendered by the badge.</returns>
+        internal RenderedBadgeBag RenderBadge( IEntity entity )
+        {
+            // If the entity is null or the badge does not apply to it then
+            // return an empty result.
+            if ( entity == null || !BadgeService.DoesBadgeApplyToEntity( this, entity ) )
+            {
+                return new RenderedBadgeBag();
+            }
+
+            try
+            {
+                var component = BadgeComponent;
+                var textWriter = new StringWriter();
+
+                component.Render( this, entity, textWriter );
+
+                using ( var htmlTextWriter = new System.Web.UI.HtmlTextWriter( textWriter ) )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    component.ParentContextEntityBlock = null;
+                    component.Entity = entity;
+                    component.Render( this, htmlTextWriter );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                var script = component.GetWrappedJavaScript( this, entity );
+
+                if ( script.IsNullOrWhiteSpace() )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    script = component.GetWrappedJavaScript( this );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                return new RenderedBadgeBag
+                {
+                    Html = textWriter.ToString(),
+                    JavaScript = script
+                };
+            }
+            catch ( Exception ex )
+            {
+                var errorMessage = $"An error occurred rendering badge: {Name }, badge-id: {Id}";
+                ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
+                var badgeNameClass = Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
+
+                return new RenderedBadgeBag
+                {
+                    Html = $@"<div class='rockbadge rockbadge-{badgeNameClass} rockbadge-id-{Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>
+    <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>
+</div>"
+                };
+            }
         }
 
         /// <summary>

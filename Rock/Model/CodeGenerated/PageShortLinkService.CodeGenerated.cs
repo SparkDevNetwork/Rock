@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PageShortLink View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PageShortLink ) )]
-    public partial class PageShortLinkViewModelHelper : ViewModelHelper<PageShortLink, Rock.ViewModel.PageShortLinkViewModel>
+    public partial class PageShortLinkViewModelHelper : ViewModelHelper<PageShortLink, PageShortLinkBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PageShortLinkViewModel CreateViewModel( PageShortLink model, Person currentPerson = null, bool loadAttributes = true )
+        public override PageShortLinkBag CreateViewModel( PageShortLink model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PageShortLinkViewModel
+            var viewModel = new PageShortLinkBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 SiteId = model.SiteId,
                 Token = model.Token,
                 Url = model.Url,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PageShortLinkViewModel ToViewModel( this PageShortLink model, Person currentPerson = null, bool loadAttributes = false )
+        public static PageShortLinkBag ToViewModel( this PageShortLink model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PageShortLinkViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

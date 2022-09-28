@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace Rock.Follow.Event
 
     [BooleanField( "Negate Person", "Changes the Person match to a NOT Person match. If you want to trigger events only when it is NOT the specified person making the change then turn this option on.", category: "Changed By", order: 0 )]
     [PersonField( "Person", "Filter by the person who changed the value. This is always an AND condition with the two value changes. If the Negate Changed By option is also set then this becomes and AND NOT condition.", false, category: "Changed By", order: 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "21737773-F15A-4338-9020-13EB0FF00E80")]
     public class PersonHistory : EventComponent
     {
         /// <summary>

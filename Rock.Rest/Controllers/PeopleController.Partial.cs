@@ -94,6 +94,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
+        [Rock.SystemGuid.RestActionGuid( "2A3BE8FB-0A64-4096-9AFA-D11AEB6E169D" )]
         public IQueryable<Person> Get( bool includeDeceased )
         {
             var rockContext = this.Service.Context as RockContext;
@@ -110,6 +111,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetCurrentPerson" )]
+        [Rock.SystemGuid.RestActionGuid( "D1F55DCD-AE00-4C82-B35A-F4C59496D3E8" )]
         public Person GetCurrentPerson()
         {
             var rockContext = new Rock.Data.RockContext();
@@ -132,6 +134,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByEmail/{email}" )]
         [System.Web.Http.Route( "api/People/GetByEmail" )]
+        [Rock.SystemGuid.RestActionGuid( "A6D9B02B-814C-4A92-9D6A-723B168CFABB" )]
         public IQueryable<Person> GetByEmail( string email )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -147,6 +150,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByPhoneNumber/{number}" )]
+        [Rock.SystemGuid.RestActionGuid( "4470749A-9F47-46AB-B89E-ADABE9517A2A" )]
         public IQueryable<Person> GetByPhoneNumber( string number )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -161,6 +165,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByToken/{token}" )]
+        [Rock.SystemGuid.RestActionGuid( "22AC8710-A6C1-4E1D-8C36-D4FF8DC0C7FD" )]
         public Person GetByToken( string token )
         {
             if ( token.IsNullOrWhiteSpace() )
@@ -187,6 +192,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByUserName/{username}" )]
+        [Rock.SystemGuid.RestActionGuid( "C482EF4E-2A9A-47C7-82A0-65EB974C6275" )]
         public Person GetByUserName( string username )
         {
             int? personId = new UserLoginService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
@@ -213,6 +219,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetPotentialDuplicates" )]
+        [Rock.SystemGuid.RestActionGuid( "4136C8EB-2295-4A0C-B184-7F45E08CF655" )]
         public IEnumerable<DuplicatePersonInfo> GetPotentialDuplicates( string lastName, string emailAddress )
         {
             // return a limited number of fields so that this endpoint could be made available to a wider audience
@@ -299,6 +306,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByPersonAliasId/{personAliasId}" )]
+        [Rock.SystemGuid.RestActionGuid( "DD2D2F23-F674-4FB3-8B6C-03AD7032DF30" )]
         public Person GetByPersonAliasId( int personAliasId )
         {
             int? personId = new PersonAliasService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
@@ -320,6 +328,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetGraduationYear/{gradeOffset}" )]
+        [Rock.SystemGuid.RestActionGuid( "08D951D2-F731-452B-A3CD-C612C530D4FA" )]
         public int GetGraduationYear( int gradeOffset )
         {
             int? graduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
@@ -344,6 +353,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetInteractionStatistics/{personId?}" )]
+        [Rock.SystemGuid.RestActionGuid( "BC12A776-BFE9-487D-AEBA-1099D2DB5C6B" )]
         public virtual PersonInteractionStatistics InteractionStatistics(
             int? personId = null,
             [FromUri] DateTime? date = null,
@@ -434,7 +444,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        ///
         public override System.Net.Http.HttpResponseMessage Post( Person person )
         {
             SetProxyCreation( true );
@@ -474,6 +483,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/People/AddNewPersonToFamily/{familyId}" )]
+        [Rock.SystemGuid.RestActionGuid( "5280CFDB-C02E-44AD-822D-53472D004EB6" )]
         public System.Net.Http.HttpResponseMessage AddNewPersonToFamily( Person person, int familyId, int groupRoleId )
         {
             SetProxyCreation( true );
@@ -505,6 +515,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/People/AddExistingPersonToFamily" )]
+        [Rock.SystemGuid.RestActionGuid( "307B6DA5-9D19-4E0A-AE76-92C9BA0F740B" )]
         public System.Net.Http.HttpResponseMessage AddExistingPersonToFamily( int personId, int familyId, int groupRoleId, bool removeFromOtherFamilies )
         {
             SetProxyCreation( true );
@@ -532,6 +543,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "3AB8A7BF-A614-46A8-A6DD-2FF574F4D79E" )]
         public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody] ConfigureTextToGiveArgs args )
         {
             var personService = Service as PersonService;
@@ -560,6 +572,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [System.Web.Http.Route( "api/People/UpdateProfilePhoto" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "DA70741A-30DF-4E63-AD26-0444E2E10689" )]
         public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
         {
             var personId = GetPerson()?.Id;
@@ -626,6 +639,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [System.Web.Http.Route( "api/People/SetUserPreference" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "E6ED42BF-701C-4C06-822D-ED9FBA2F2E5F" )]
         public void SetUserPreference( string userPreferenceKey, string value )
         {
             var currentPerson = GetPerson();
@@ -641,10 +655,34 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [System.Web.Http.Route( "api/People/SetBlockUserPreference" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "B7380EB9-81E5-4ED0-8488-EBEE04991902" )]
         public void SetBlockUserPreference( int blockId, string userPreferenceKey, string value )
         {
             var currentPerson = GetPerson();
             PersonService.SaveUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey, value );
+        }
+
+        /// <summary>
+        /// Saves the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/SetBlockUserPreference/{blockGuid}" )]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "223827C2-3731-4C3F-A3F0-C8CCAF8BECE6" )]
+        public IHttpActionResult SetBlockUserPreference( Guid blockGuid, string userPreferenceKey, string value )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+
+            if ( blockId == null )
+            {
+                return BadRequest( "Unable to find the specific block." );
+            }
+
+            SetBlockUserPreference( blockId.Value, userPreferenceKey, value );
+            return Ok();
         }
 
         /// <summary>
@@ -656,6 +694,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [System.Web.Http.Route( "api/People/GetUserPreference" )]
         [HttpGet]
+        [Rock.SystemGuid.RestActionGuid( "E3A05482-ADAF-46DF-9047-B95B8950EBCE" )]
         public string GetUserPreference( string userPreferenceKey )
         {
             var currentPerson = GetPerson();
@@ -672,11 +711,33 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [System.Web.Http.Route( "api/People/GetBlockUserPreference" )]
         [HttpGet]
+        [Rock.SystemGuid.RestActionGuid( "66B32878-DED4-4847-8FA6-21FFD51E4094" )]
         public string GetBlockUserPreference( int blockId, string userPreferenceKey )
         {
             var currentPerson = GetPerson();
             var userPreferenceValue = PersonService.GetUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey );
             return userPreferenceValue;
+        }
+
+        /// <summary>
+        /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/GetBlockUserPreference/{blockGuid}" )]
+        [HttpGet]
+        [Rock.SystemGuid.RestActionGuid( "B6AB08EF-2962-48EA-87F5-30153BCC35CC" )]
+        public string GetBlockUserPreference( Guid blockGuid, string userPreferenceKey )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+            if ( blockId == null )
+            {
+                return string.Empty;
+            }
+
+            return GetBlockUserPreference( blockId.Value, userPreferenceKey );
         }
 
         #endregion
@@ -697,6 +758,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search" )]
+        [Rock.SystemGuid.RestActionGuid( "D9FC468F-03DF-4ABC-844F-DD3EB40E2B6B" )]
         public IQueryable<PersonSearchResult> Search(
             string name = null,
             bool includeDetails = false,
@@ -706,6 +768,8 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
+            // Enable Proxy Creation so that LazyLoading will work. 
+            SetProxyCreation( true );
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
 
@@ -814,13 +878,13 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails" )]
+        [Rock.SystemGuid.RestActionGuid( "55A6B73A-3F29-4CCB-A227-3B77530F4B12" )]
         public string GetSearchDetails( int id )
         {
+            SetProxyCreation( true );
             PersonSearchResult personSearchResult = new PersonSearchResult();
 
             var person = this.Get()
-                .Include( a => a.PhoneNumbers )
-                .Include( "PrimaryFamily.GroupLocations.Location" )
                 .Where( a => a.Id == id )
                 .FirstOrDefault();
 
@@ -848,8 +912,6 @@ namespace Rock.Rest.Controllers
             var phoneNumbersQry = new PhoneNumberService( rockContext ).Queryable();
 
             var sortedPersonList = sortedPersonQry
-                .Include( a => a.PhoneNumbers )
-                .Include( "PrimaryFamily.GroupLocations.Location" )
                 .AsNoTracking()
                 .ToList();
 
@@ -861,6 +923,7 @@ namespace Rock.Rest.Controllers
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Id = person.Id;
                 personSearchResult.Guid = person.Guid;
+                personSearchResult.PrimaryAliasGuid = person.PrimaryAlias.Guid;
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
@@ -894,7 +957,6 @@ namespace Rock.Rest.Controllers
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
 
             // figure out Family, Address, Spouse
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
@@ -917,7 +979,14 @@ namespace Rock.Rest.Controllers
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
-            personSearchResult.PhoneNumbers = person.PhoneNumbers
+            var phoneNumbers = new PhoneNumberService( rockContext ).Queryable().Where( a => a.PersonId == person.Id ).Select( a => new
+            {
+                a.NumberTypeValueId,
+                a.IsUnlisted,
+                a.NumberFormatted
+            } ).ToList();
+
+            personSearchResult.PhoneNumbers = phoneNumbers
                 .Select( p => new PersonSearchPhoneNumber
                 {
                     Type = DefinedValueCache.Get( p.NumberTypeValueId ?? 0 )?.Value ?? string.Empty,
@@ -979,27 +1048,31 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            var primaryLocation = person.PrimaryFamily?.GroupLocations
-                .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId )
-                .Select( a => a.Location )
-                .FirstOrDefault();
-
-            if ( primaryLocation != null )
+            if ( person.PrimaryFamilyId.HasValue )
             {
-                var fullStreetAddress = primaryLocation.GetFullStreetAddress();
-                string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
-                personSearchResult.Address = fullStreetAddress;
-                personInfoHtmlBuilder.Append( addressHtml );
+                var primaryLocation = new GroupService( rockContext ).GetSelect( person.PrimaryFamilyId.Value, s => s.GroupLocations
+                       .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId )
+                       .Select( a => a.Location )
+                       .FirstOrDefault() );
+
+                if ( primaryLocation != null )
+                {
+                    var fullStreetAddress = primaryLocation.GetFullStreetAddress();
+                    string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
+                    personSearchResult.Address = fullStreetAddress;
+                    personInfoHtmlBuilder.Append( addressHtml );
+                }
             }
 
             // Generate the HTML for Email and PhoneNumbers
-            if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
+            if ( !string.IsNullOrWhiteSpace( person.Email ) || phoneNumbers.Any() )
             {
                 StringBuilder sbEmailAndPhoneHtml = new StringBuilder();
                 sbEmailAndPhoneHtml.Append( "<div class='margin-t-sm'>" );
                 sbEmailAndPhoneHtml.Append( "<span class='email'>" + person.Email + "</span>" );
                 string phoneNumberList = "<ul class='phones list-unstyled'>";
-                foreach ( var phoneNumber in person.PhoneNumbers )
+
+                foreach ( var phoneNumber in phoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
@@ -1049,6 +1122,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetImpersonationParameter" )]
+        [Rock.SystemGuid.RestActionGuid( "D1A585F7-A272-4DAC-8400-839B3219C062" )]
         public string GetImpersonationParameter( int personId, DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
         {
             string result = string.Empty;
@@ -1079,6 +1153,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
+        [Rock.SystemGuid.RestActionGuid( "A4765A37-043B-49CE-AA9F-C3FFF055176C" )]
         public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
         {
             var currentPerson = GetPerson();
@@ -1099,6 +1174,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/PopupHtml/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "5231C211-9517-4C8E-8934-1BFB74A392E4" )]
         public PersonSearchResult GetPopupHtml( int personId )
         {
             return GetPopupHtml( personId, true );
@@ -1113,6 +1189,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/PopupHtml/{personId}/{emailAsLink}" )]
+        [Rock.SystemGuid.RestActionGuid( "EB110632-B6B3-4AE4-8A0F-9711B8C85F4C" )]
         public PersonSearchResult GetPopupHtml( int personId, bool emailAsLink )
         {
             var result = new PersonSearchResult();
@@ -1217,6 +1294,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Export" )]
+        [Rock.SystemGuid.RestActionGuid( "B32254A7-18CA-4548-8946-92CEA9E3D47A" )]
         public PeopleExport Export(
             int page = 1,
             int pageSize = 1000,
@@ -1259,6 +1337,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/People/VCard/{personGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "C4D4BCBD-B65B-4BAA-AEE0-9B7266EA9B02" )]
         public HttpResponseMessage GetVCard( Guid personGuid )
         {
             var rockContext = ( Rock.Data.RockContext ) Service.Context;
@@ -1312,6 +1391,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <value>Gets or sets the unique identifier of the person.</value>
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the person's primary alias.
+        /// </summary>
+        /// <value>Gets or sets the unique identifier of the person's primary alias.</value>
+        public Guid PrimaryAliasGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the full name last first.
@@ -1475,6 +1560,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// A phone number that will be included in the search results.
     /// </summary>
+    [RockClientInclude( "Search result PersonSearchResult.PhoneNumbers from api/People/Search" )]
     public class PersonSearchPhoneNumber
     {
         /// <summary>
@@ -1503,7 +1589,7 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ConfigureTextToGiveArgs
     {

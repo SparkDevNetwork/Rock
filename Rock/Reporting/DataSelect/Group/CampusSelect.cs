@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select the Campus of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group's Campus" )]
+    [Rock.SystemGuid.EntityTypeGuid( "90FDBE43-4321-4D4D-AFBB-7E8D74DE89CE")]
     public class CampusSelect : DataSelectComponent
     {
         #region Properties

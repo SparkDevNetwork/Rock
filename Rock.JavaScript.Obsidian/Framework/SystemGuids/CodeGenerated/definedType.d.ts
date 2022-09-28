@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum DefinedType {
     /** Background check package types */
     BackgroundCheckTypes = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
@@ -42,12 +43,14 @@ export const enum DefinedType {
     CommunicationMedium = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F",
     /** The domains that are safe to send from */
     CommunicationSafeSenderDomains = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED",
-    /** The list of values that SMS messages can be sent from.  Depending on provider, these may
-be phone numbers or short codes.
-
-The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
-
-The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'. */
+    /**
+     * The list of values that SMS messages can be sent from.  Depending on provider, these may
+     * be phone numbers or short codes.
+     * 
+     * The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
+     * 
+     * The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
+     */
     CommunicationSmsFrom = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
     /** The list of phone country code formats and how to format their numbers  */
     CommunicationPhoneCountryCode = "45E9EF7C-91C7-45AB-92C1-1D6219293847",
@@ -195,7 +198,8 @@ The DefinedValue.Description will just be any description, such as 'Rock Solid C
     MapMarkers = "80DC21DE-A2C2-42DF-880B-FA9CABD504A0",
     /** Languages */
     Languages = "6060ba8b-4085-4a29-bf19-a4862b95556a",
+    /** The apple device models */
+    AppleDeviceModels = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** The statement generator lava template (Legacy) */
     StatementGeneratorLavaTemplateLegacy = "74A23516-A20A-40C9-93B5-1AB5FDFF6750",
 }
-

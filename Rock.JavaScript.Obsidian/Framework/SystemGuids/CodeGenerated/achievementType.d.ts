@@ -27,4 +27,3 @@ export const enum AchievementType {
     /** Twenty Weeks in a Year */
     TwentyWeeksInAYear = "67EA551D-C3A6-4339-9F39-F6F4E4DAB4EA",
 }
-

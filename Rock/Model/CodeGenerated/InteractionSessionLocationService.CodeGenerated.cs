@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// InteractionSessionLocation View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( InteractionSessionLocation ) )]
-    public partial class InteractionSessionLocationViewModelHelper : ViewModelHelper<InteractionSessionLocation, Rock.ViewModel.InteractionSessionLocationViewModel>
+    public partial class InteractionSessionLocationViewModelHelper : ViewModelHelper<InteractionSessionLocation, InteractionSessionLocationBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.InteractionSessionLocationViewModel CreateViewModel( InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = true )
+        public override InteractionSessionLocationBag CreateViewModel( InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.InteractionSessionLocationViewModel
+            var viewModel = new InteractionSessionLocationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CountryCode = model.CountryCode,
                 CountryValueId = model.CountryValueId,
                 GeoPoint = model.GeoPoint,
@@ -194,7 +194,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.InteractionSessionLocationViewModel ToViewModel( this InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = false )
+        public static InteractionSessionLocationBag ToViewModel( this InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new InteractionSessionLocationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

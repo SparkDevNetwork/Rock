@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -43,6 +43,7 @@ namespace Rock.Badge.Component
         IncludeInactive = false,
         IsRequired = false,
         Order = 0 )]
+    [Rock.SystemGuid.EntityTypeGuid( "C10B68B3-A13C-4B1A-9C56-91F0630AED90")]
     public class Assessment : BadgeComponent
     {
         private class AttributeKeys
@@ -77,7 +78,7 @@ namespace Rock.Badge.Component
             /// The class will be named using this prefix and then the assessment title in all lower case
             /// with no spaces. e.g. "Spiritual Gifts" will get the "assessment-spiritualgifts" CSS class
             /// </summary>
-            public const string AssessmentTypePrefix = "badge-assessment assessment-";
+            public const string AssessmentTypePrefix = "rockbadge-assessment assessment-";
         }
 
         /// <summary>
@@ -90,14 +91,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -128,7 +125,7 @@ namespace Rock.Badge.Component
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.PersonAlias != null
-                             && a.PersonAlias.PersonId == Person.Id
+                             && a.PersonAlias.PersonId == person.Id
                              && availableTypes.Contains( a.AssessmentTypeId ) )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
@@ -150,7 +147,7 @@ namespace Rock.Badge.Component
                 badgeIcons = i % 2 == 0 ? badgeRow1 : badgeRow2;
 
                 var assessmentType = assessmentTypes[i];
-                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={this.Person.GetPersonActionIdentifier( "Assessment" ) }" );
+                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" ) }" );
                 var assessmentTitle = assessmentType.Title;
                 var mergeFields = new Dictionary<string, object>();
                 var mergedBadgeSummaryLava = "Not requested";
@@ -161,9 +158,9 @@ namespace Rock.Badge.Component
 
                         var conflictsThemes = new Dictionary<string, decimal>
                         {
-                            { "Winning", Person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 },
-                            { "Solving", Person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 },
-                            { "Accommodating", Person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 }
+                            { "Winning", person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 },
+                            { "Solving", person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 },
+                            { "Accommodating", person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 }
                         };
 
                         string highestScoringTheme = conflictsThemes.Where( x => x.Value == conflictsThemes.Max( v => v.Value ) ).Select( x => x.Key ).FirstOrDefault() ?? string.Empty;
@@ -214,16 +211,16 @@ namespace Rock.Badge.Component
                     {
                         badgeColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};' " : string.Empty;
 
-                        badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                        badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='rockbadge {assessmentTypeClass} {assessmentStatusClass}'>" );
                         badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
-                        mergeFields.Add( "Person", Person );
+                        mergeFields.Add( "Person", person );
                         mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
                     }
 
                     if ( assessmentTest.Status == AssessmentRequestStatus.Pending && previouslyCompletedAssessmentTest == null )
                     {
-                        badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                        badgeIcons.AppendLine( $@"<div class='rockbadge {assessmentTypeClass} {assessmentStatusClass}'>" );
 
                         // set the request string and requested datetime to the merged lava
                         mergedBadgeSummaryLava = $"Requested: {assessmentTest.RequestedDateTime.ToShortDateString()}";
@@ -231,7 +228,7 @@ namespace Rock.Badge.Component
                 }
                 else
                 {
-                    badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                    badgeIcons.AppendLine( $@"<div class='rockbadge {assessmentTypeClass} {assessmentStatusClass}'>" );
                 }
 
                 badgeIcons.AppendLine( $@"
@@ -250,15 +247,18 @@ namespace Rock.Badge.Component
 
                 string badgeToolTipColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};'" : string.Empty;
                 toolTipText.AppendLine( $@"
-                    <p class='margin-b-sm'>
+                    <div class='assessment-tooltip-item'>
                         <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
                             <span class='fa-stack'>
                                 <i class='fa fa-circle fa-stack-2x'></i>
                                 <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                             </span>
                         </span>
-                        <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
-                    </p>" );
+                        <span class='assessment-tooltip-value'>
+                            <span class='assessment-name'>{assessmentTitle}</span>
+                            <span class='assessment-summary'>{mergedBadgeSummaryLava}</span>
+                        </span>
+                    </div>" );
             }
 
             badgeRow1.AppendLine( $@"</div>" );
@@ -268,20 +268,16 @@ namespace Rock.Badge.Component
                 badgeRow2.AppendLine( $@"</div>" );
             }
 
-            writer.Write( $@" <div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
+            writer.Write( $@" <div class='rockbadge rockbadge-grid rockbadge-id-{badge.Id}' data-toggle='tooltip' data-html='true' data-placement='bottom' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeRow1.ToString() );
             writer.Write( badgeRow2.ToString() );
-            writer.Write( "</div></div>" );
+            writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            return $"$('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});";
+            return $"$('.rockbadge-id-{badge.Id}').tooltip({{ sanitize: false }});";
         }
 
         /// <summary>

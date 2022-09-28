@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -161,6 +161,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_EDIT_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "FEC66374-E38F-4651-BAA6-AC658409D9BD")]
     public class GroupEdit : RockMobileBlockType
     {
         /// <summary>

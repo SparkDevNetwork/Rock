@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Streaks
         IsRequired = false,
         Order = 3 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D9D4AF22-7743-478A-9D21-AEA4F1A0C5F6" )]
     public partial class StreakTypeDetail : RockBlock
     {
         #region Keys

@@ -89,8 +89,16 @@ namespace Rock.Rest.Filters
             var controllerClassName = controller.ControllerType.FullName;
             var actionMethod = actionContext.Request.Method.Method;
 
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
-            ISecured item = RestActionCache.Get( apiId );
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out Guid? restActionGuid );
+            ISecured item;
+            if ( restActionGuid.HasValue )
+            {
+                item = RestActionCache.Get( restActionGuid.Value );
+            }
+            else
+            {
+                item = RestActionCache.Get( apiId );
+            }
 
             if ( item == null )
             {

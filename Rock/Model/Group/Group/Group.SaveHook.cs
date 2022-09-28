@@ -71,7 +71,7 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             var originalIsActive = OriginalValues[nameof( Group.IsActive )].ToStringSafe().AsBoolean();
-                            DateTime? originalInactiveDateTime = OriginalValues["InactiveDateTime"].ToStringSafe().AsDateTime();
+                            DateTime? originalInactiveDateTime = OriginalValues[nameof( Entity.InactiveDateTime )].ToStringSafe().AsDateTime();
 
                             var originalIsArchived = OriginalValues[nameof( Group.IsArchived )].ToStringSafe().AsBoolean();
                             DateTime? originalArchivedDateTime = OriginalValues[nameof( Group.ArchivedDateTime )].ToStringSafe().AsDateTime();
@@ -130,7 +130,7 @@ namespace Rock.Model
                             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
                             _FamilyCampusIsChanged = ( group.GroupTypeId == familyGroupTypeId
-                                                       && group.CampusId.GetValueOrDefault( 0 ) != OriginalValues["CampusId"].ToStringSafe().AsInteger() );
+                                                       && group.CampusId.GetValueOrDefault( 0 ) != OriginalValues[nameof( Entity.CampusId )].ToStringSafe().AsInteger() );
 
                             break;
                         }

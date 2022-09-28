@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,8 +56,8 @@ namespace RockWeb.Blocks.Cms
 
     [ContentChannelField(
         "Content Channel",
-        Description = "Limits content channel items to a specific channel.",
-        IsRequired = true,
+        Description = "Limits content channel items to a specific channel. In most cases you'll want to provide a Content Channel to limit which channel is shown — especially if you're using non-globally unique slugs.",
+        IsRequired = false,
         DefaultValue = "",
         Category = "CustomSetting",
         Key = AttributeKey.ContentChannel )]
@@ -218,6 +218,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.TwitterCard )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_ITEM_VIEW )]
     public partial class ContentChannelItemView : RockBlockCustomSettings
     {
         #region Attribute Keys
@@ -583,6 +584,14 @@ Guid - ContentChannelItem Guid";
         /// </summary>
         private void ShowView()
         {
+            // Disable content rendering for configuration mode to improve efficiency.
+            // This is also necessary to avoid an issue where Lava content may fail to render if the template
+            // uses {% include %} to reference files that do not exist in the filesystem of the current theme.
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                return;
+            }
+
             int? outputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
 
             string outputContents = null;

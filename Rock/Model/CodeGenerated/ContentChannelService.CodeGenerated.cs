@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -74,7 +75,7 @@ namespace Rock.Model
     /// ContentChannel View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ContentChannel ) )]
-    public partial class ContentChannelViewModelHelper : ViewModelHelper<ContentChannel, Rock.ViewModel.ContentChannelViewModel>
+    public partial class ContentChannelViewModelHelper : ViewModelHelper<ContentChannel, ContentChannelBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -83,22 +84,22 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ContentChannelViewModel CreateViewModel( ContentChannel model, Person currentPerson = null, bool loadAttributes = true )
+        public override ContentChannelBag CreateViewModel( ContentChannel model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ContentChannelViewModel
+            var viewModel = new ContentChannelBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ChannelUrl = model.ChannelUrl,
                 ChildItemsManuallyOrdered = model.ChildItemsManuallyOrdered,
                 ContentChannelTypeId = model.ContentChannelTypeId,
                 ContentControlType = ( int ) model.ContentControlType,
                 Description = model.Description,
+                EnablePersonalization = model.EnablePersonalization,
                 EnableRss = model.EnableRss,
                 IconCssClass = model.IconCssClass,
                 IsIndexEnabled = model.IsIndexEnabled,
@@ -186,6 +187,7 @@ namespace Rock.Model
             target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.ContentControlType = source.ContentControlType;
             target.Description = source.Description;
+            target.EnablePersonalization = source.EnablePersonalization;
             target.EnableRss = source.EnableRss;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -216,7 +218,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ContentChannelViewModel ToViewModel( this ContentChannel model, Person currentPerson = null, bool loadAttributes = false )
+        public static ContentChannelBag ToViewModel( this ContentChannel model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ContentChannelViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

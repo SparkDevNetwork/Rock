@@ -432,12 +432,12 @@ $('.template-form > .panel-body').on('validation-error', function() {
             RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
             if ( field != null && literal != null )
             {
-                if ( field.FieldSource != RegistrationFieldSource.PersonField && field.AttributeId.HasValue )
+                if ( field.FieldSource != RegistrationFieldSource.PersonField && field.Attribute.FieldTypeId != 0 )
                 {
-                    var attribute = AttributeCache.Get( field.AttributeId.Value );
-                    if ( attribute != null )
+                    var fieldType = FieldTypeCache.Get( field.Attribute.FieldTypeId );
+                    if ( fieldType != null )
                     {
-                        literal.Text = attribute.FieldType.Name;
+                        literal.Text = fieldType.Name;
                     }
                 }
             }

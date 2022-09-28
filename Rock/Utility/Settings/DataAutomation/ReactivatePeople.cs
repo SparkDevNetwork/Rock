@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace Rock.Utility.Settings.DataAutomation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ReactivatePeople
     {
@@ -133,15 +133,15 @@ namespace Rock.Utility.Settings.DataAutomation
         public int AttendanceInGroupTypeDays { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is site login enabled.
+        /// Gets or sets a value indicating whether this instance is site log in enabled.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is site login enabled; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is site log in enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsSiteLoginEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the site login period.
+        /// Gets or sets the sitelog in period.
         /// </summary>
         /// <value>
         /// The site login period.

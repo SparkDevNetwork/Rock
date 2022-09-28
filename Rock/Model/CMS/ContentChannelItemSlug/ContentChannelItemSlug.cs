@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemSlug" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "2FF2F1C3-A440-4D24-8FB8-2B0D9436EA75")]
     public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>
     {
         #region Entity Properties

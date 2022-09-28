@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionRequest" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_REQUEST )]
     public partial class ConnectionRequest : Model<ConnectionRequest>, IOrdered
     {
         #region Entity Properties
@@ -147,6 +148,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ConnectorPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int ConnectionTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -281,7 +292,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            if ( PersonAlias != null )
+            {
+                return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            }
+            else
+            {
+                return $"{ ConnectionOpportunity } Connection Request";
+            }
+
         }
 
         #endregion

@@ -19,7 +19,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Email Templates
+    /// Guids for EntityTypes
     /// </summary>
     public static class EntityType
     {
@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         /// The achievement type prerequisite
         /// </summary>
         public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
+
+        /// <summary>
+        /// The  guid for the Rock.Model.AssessmentType entity.
+        /// </summary>
+        public const string ASSESSMENT_TYPE = "D17A28AC-F529-4AB0-A790-C21F9E74AC89";
 
         /// <summary>
         /// The guid for the Rock.Model.Attendance entity.
@@ -69,9 +74,9 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
         /// <summary>
-        /// The benevolence type
+        /// The guid for the <seealso cref="Rock.Model.BenevolenceType"/> entity.
         /// </summary>
-        public const string BENEVOLENCE_TYPE = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46";
+        public const string BENEVOLENCE_TYPE = "9DB5D35A-F2DF-4AFF-AB9F-06C2EB587C0D";
 
         /// <summary>
         /// The Block entity type
@@ -127,42 +132,61 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.ConnectionOpportunity entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY = "79F64363-BC90-4109-9D31-A5EEB397CB2F";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionOpportunityCampus entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_CAMPUS = "E656E8B3-12AB-476E-AA63-5F9B76F64A08";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionOpportunityGroup entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_GROUP = "CD3F425C-9B36-4433-9C38-D58DE42C9F65";
+
         /// <summary>
-        /// The guid for the Rock.Model.ConnectionOpportunityConnectorGroup entity
+        /// The EntityType Guid for <see cref="Rock.Model.ConnectionOpportunityConnectorGroup"/> 
         /// </summary>
-        public const string CONNECTION_OPPORTUNITY_CONNECTOR_GROUP = "4CB430B1-0F32-482F-9C95-164A09332CC1";
+        public const string CONNECTION_OPPORTUNITY_CONNECTOR_GROUP = "2ADBE499-C9EC-479B-B33B-6E92BDE09FD1";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequest entity
         /// </summary>
         public const string CONNECTION_REQUEST = "36B0D0C7-8125-48FA-9DA2-729AAA65F718";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequestActivity entity
         /// </summary>
         public const string CONNECTION_REQUEST_ACTIVITY = "3248F40D-7661-42CC-AD9B-EF63322937B7";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequestWorkflow entity
         /// </summary>
         public const string CONNECTION_REQUEST_WORKFLOW = "C69D1C9F-5521-4C83-8FE9-5044ECC2CE65";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionStatus entity
         /// </summary>
         public const string CONNECTION_STATUS = "F3840C8B-63BF-4F98-AC4A-9336896E589B";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionType entity
         /// </summary>
         public const string CONNECTION_TYPE = "B1E52EAD-65BD-4C4D-BCCD-73368067621D";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionWorkflow entity
         /// </summary>
         public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentCollection entity
+        /// </summary>
+        public const string CONTENT_COLLECTION = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentCollectionSource entity
+        /// </summary>
+        public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.
@@ -180,9 +204,19 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.Document
+        /// </summary>
+        public const string DOCUMENT = "7CEFA340-9D98-4B2C-B462-313C61944B6C";
+
+        /// <summary>
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
+
+        /// <summary>
+        /// The guid for Rock.Model.EventCalendar entity.
+        /// </summary>
+        public const string EVENT_CALENDAR = "E67D8D6D-4FE6-48D5-A940-A39213047314";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
@@ -233,6 +267,26 @@ namespace Rock.SystemGuid
         /// The guid for <see cref="Rock.Model.Interaction"/>
         /// </summary>
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
+        /// </summary>
+        public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
+
+        /// <summary>
+        /// The EntityType Guid for LavaShortcodeCategory 'joiner' table <see cref="Rock.Model.LavaShortcodeConfiguration"/>
+        /// </summary>
+        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Layout"/>
+        /// </summary>
+        public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.MediaAccount"/> 
+        /// </summary>
+        public const string MEDIA_ACCOUNT = "CD35F034-AC18-40D5-B703-6BF16D79C51C";
 
         /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
@@ -567,6 +621,11 @@ namespace Rock.SystemGuid
         public const string SIGNAL_TYPE = "0BA03B9B-E974-4526-9B21-5037424B6D16";
 
         /// <summary>
+        /// The Step Flow entity type
+        /// </summary>
+        public const string STEP_FLOW = "308D8252-7712-4A45-8DE4-737C3EEAEA8F";
+
+        /// <summary>
         /// The guid for the database storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
@@ -607,6 +666,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
+        /// The EntityType Guid for Tag.
+        /// </summary>
+        public const string TAG = "d34258d0-d366-4efb-aa76-84b059fb5434";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
         /// </summary>
         public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
@@ -625,6 +689,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowActionType"/>
         /// </summary>
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowFormBuilderTemplate"/>.
+        /// </summary>
+        public const string WORKFLOW_FORM_BUILDER_TEMPLATE = "65fa3078-9d42-4857-b78a-f32a05f7a4c1";
 
         /// <summary>
         /// The guid for the Test Financial Gateway entity type
@@ -675,5 +744,25 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.MediaFolder"/> 
+        /// </summary>
+        public const string MEDIA_FOLDER = "B28FC79F-9FEE-4BE4-801D-96B9246E6043";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersistedDataset"/> 
+        /// </summary>
+        public const string PERSISTED_DATASET = "9C3064C0-CF9C-4549-9A80-022514B7FF83";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersonalLinkSection"/> 
+        /// </summary>
+        public const string PERSONAL_LINK_SECTION = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
+        /// </summary>
+        public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
     }
 }

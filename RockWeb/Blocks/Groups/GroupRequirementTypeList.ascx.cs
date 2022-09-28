@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "List of Group Requirement Types" )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "1270E3F7-5ACB-4044-94CD-E2B4368FF391" )]
     public partial class GroupRequirementTypeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

@@ -25,7 +25,14 @@ using Rock.Web.Cache;
 
 namespace Rock.Tasks
 {
-    /* 06/29/2021 MDP
+    /* 7/12/2022 MDP
+     
+     We finally figured out cause of mysterious issue ( see note below ) and it is fixed with https://github.com/sparkdevnetwork/rock/commit/c18afb7cf9775b55d329a05d78042cecdeaebf4e.
+     
+     */
+
+
+    /* 06/29/2021 MDP (Outdated, see above note)
 
        We ran into mysterious issue where Payment Emails would have the message body for the wrong recipient. For example, Ted Decker would get a payment email
        for Bill Marble's scheduled transaction! This problem appeared when switched to use the bus ProcessSendPaymentReceiptEmails task, and went away
@@ -36,8 +43,6 @@ namespace Rock.Tasks
     /// <summary>
     /// Uses the bus to send payment receipts for scheduled transaction payments that got downloaded from the Financial Gateway.
     /// </summary>
-    [Obsolete( "The bus shouldn't be used for this. Use SendPaymentReceipts Transaction instead." )]
-    [RockObsolete( "1.13" )]
     public sealed class ProcessSendPaymentReceiptEmails : BusStartedTask<ProcessSendPaymentReceiptEmails.Message>
     {
         /// <summary>

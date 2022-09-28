@@ -217,12 +217,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to search by.</param>
         /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c>
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who match the criteria.</returns>
         public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
         {
-            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId );
+            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId ); 
         }
 
         /// <summary>
@@ -305,6 +305,67 @@ namespace Rock.Model
             return GetLeaders( groupId )
                 .Where( m => !string.IsNullOrEmpty( m.Person.Email ) )
                 .Where( m => m.Person.IsEmailActive );
+        }
+
+        /// <summary>
+        /// Gets the sorted group member list for person.
+        /// Ordered by adult males oldest to youngest, adult females oldest to youngest, and then children oldest to youngest.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="showOnlyPrimaryGroup">if set to <c>true</c> [show only primary group].</param>
+        /// <returns>IEnumerable&lt;GroupMember&gt;.</returns>
+        public IEnumerable<GroupMember> GetSortedGroupMemberListForPerson( int personId, int groupTypeId, bool showOnlyPrimaryGroup )
+        {
+            var orderedGroupMemberList = new List<GroupMember>();
+            var groupMemberList = new List<GroupMember>();
+            var groupIds = new List<int>();
+
+            if ( showOnlyPrimaryGroup )
+            {
+                groupIds.Add( Queryable( true )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == personId )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
+                    .Select( m => m.GroupId )
+                    .FirstOrDefault() );
+            }
+            else
+            {
+                groupIds = Queryable( true )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == personId )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
+                    .Select( m => m.GroupId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            foreach ( var groupId in groupIds )
+            {
+                var members = Queryable( "GroupRole,Person", true )
+                    .Where( m => m.GroupId == groupId && m.PersonId != personId )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ThenBy( m => m.Id )
+                    .ToList();
+
+                // Add adult males
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender == Gender.Male )
+                    .OrderByDescending( m => m.Person.Age ) );
+
+                // Add adult females
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender != Gender.Male )
+                    .OrderByDescending( m => m.Person.Age ) );
+
+                // Add non-adults
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                    .OrderByDescending( m => m.Person.Age ) );
+            }
+
+            return orderedGroupMemberList;
         }
 
         /// <summary>

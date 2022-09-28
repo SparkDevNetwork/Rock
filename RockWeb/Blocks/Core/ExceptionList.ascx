@@ -26,8 +26,8 @@
                     <%-- Exceptions Chart --%>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:LineChart ID="lcExceptions" runat="server" DataSourceUrl="~/api/ExceptionLogs/GetChartData" ChartHeight="280px" />
-                            <Rock:BarChart ID="bcExceptions" runat="server" DataSourceUrl="~/api/ExceptionLogs/GetChartData" ChartHeight="280px" />
+                            <Rock:RockLineChart ID="lcExceptions" runat="server" ChartHeight="280px" />
+                            <Rock:RockBarChart ID="bcExceptions" runat="server" ChartHeight="280px" />
                         </div>
                     </div>
 

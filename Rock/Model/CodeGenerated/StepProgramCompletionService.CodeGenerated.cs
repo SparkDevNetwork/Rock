@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// StepProgramCompletion View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( StepProgramCompletion ) )]
-    public partial class StepProgramCompletionViewModelHelper : ViewModelHelper<StepProgramCompletion, Rock.ViewModel.StepProgramCompletionViewModel>
+    public partial class StepProgramCompletionViewModelHelper : ViewModelHelper<StepProgramCompletion, StepProgramCompletionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.StepProgramCompletionViewModel CreateViewModel( StepProgramCompletion model, Person currentPerson = null, bool loadAttributes = true )
+        public override StepProgramCompletionBag CreateViewModel( StepProgramCompletion model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.StepProgramCompletionViewModel
+            var viewModel = new StepProgramCompletionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 EndDateTime = model.EndDateTime,
                 PersonAliasId = model.PersonAliasId,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.StepProgramCompletionViewModel ToViewModel( this StepProgramCompletion model, Person currentPerson = null, bool loadAttributes = false )
+        public static StepProgramCompletionBag ToViewModel( this StepProgramCompletion model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new StepProgramCompletionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

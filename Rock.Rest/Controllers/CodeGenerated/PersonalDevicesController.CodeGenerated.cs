@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersonalDevices REST API
     /// </summary>
+    [RestControllerGuid( "D75BBDDA-3CCD-4C0F-8771-8A5AF84A41EE" )]
     public partial class PersonalDevicesController : Rock.Rest.ApiController<Rock.Model.PersonalDevice>
     {
         /// <summary>

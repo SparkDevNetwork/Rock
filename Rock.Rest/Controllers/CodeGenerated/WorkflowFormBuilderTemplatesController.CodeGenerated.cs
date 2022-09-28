@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// WorkflowFormBuilderTemplates REST API
     /// </summary>
+    [RestControllerGuid( "49976482-64AE-43E2-BA45-4CF148851ED6" )]
     public partial class WorkflowFormBuilderTemplatesController : Rock.Rest.ApiController<Rock.Model.WorkflowFormBuilderTemplate>
     {
         /// <summary>

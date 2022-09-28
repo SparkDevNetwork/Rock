@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -64,7 +65,7 @@ namespace Rock.Model
     /// ConnectionRequest View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionRequest ) )]
-    public partial class ConnectionRequestViewModelHelper : ViewModelHelper<ConnectionRequest, Rock.ViewModel.ConnectionRequestViewModel>
+    public partial class ConnectionRequestViewModelHelper : ViewModelHelper<ConnectionRequest, ConnectionRequestBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -73,17 +74,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionRequestViewModel CreateViewModel( ConnectionRequest model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionRequestBag CreateViewModel( ConnectionRequest model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionRequestViewModel
+            var viewModel = new ConnectionRequestBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AssignedGroupId = model.AssignedGroupId,
                 AssignedGroupMemberAttributeValues = model.AssignedGroupMemberAttributeValues,
                 AssignedGroupMemberRoleId = model.AssignedGroupMemberRoleId,
@@ -93,6 +93,7 @@ namespace Rock.Model
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ConnectionState = ( int ) model.ConnectionState,
                 ConnectionStatusId = model.ConnectionStatusId,
+                ConnectionTypeId = model.ConnectionTypeId,
                 ConnectorPersonAliasId = model.ConnectorPersonAliasId,
                 FollowupDate = model.FollowupDate,
                 Order = model.Order,
@@ -175,6 +176,7 @@ namespace Rock.Model
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionState = source.ConnectionState;
             target.ConnectionStatusId = source.ConnectionStatusId;
+            target.ConnectionTypeId = source.ConnectionTypeId;
             target.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
             target.FollowupDate = source.FollowupDate;
             target.ForeignGuid = source.ForeignGuid;
@@ -196,7 +198,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionRequestViewModel ToViewModel( this ConnectionRequest model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionRequestBag ToViewModel( this ConnectionRequest model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionRequestViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

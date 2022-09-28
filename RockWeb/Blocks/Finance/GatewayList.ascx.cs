@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial gateways." )]
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "32E89BAE-C085-40B3-B872-B62E25A62BDB" )]
     public partial class GatewayList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

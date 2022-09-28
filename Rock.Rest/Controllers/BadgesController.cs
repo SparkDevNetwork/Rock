@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class BadgesController
     {
@@ -44,6 +44,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/InGroupOfType/{personId}/{groupTypeGuid}" )]
         [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "BF5E550B-A516-4392-BB0D-01DD9924CB51" )]
         public GroupOfTypeResult GetInGroupOfType( int personId, Guid groupTypeGuid )
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
@@ -104,6 +105,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/InGroupWithPurpose/{personId}/{definedValueGuid}" )]
         [System.Web.Http.Route( "api/PersonBadges/InGroupWithPurpose/{personId}/{definedValueGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "42E14515-EB74-4792-8C2D-2D59977D0670" )]
         public GroupWithPurposeResult GetGroupWithPurpose( int personId, Guid definedValueGuid )
         {
             GroupWithPurposeResult result = new GroupWithPurposeResult();
@@ -157,6 +159,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
         [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "3E3A0048-33CE-48E5-92A6-D2F1537AB5F7" )]
         public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = ( Rock.Data.RockContext ) Service.Context;
@@ -193,6 +196,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/WeeksAttendedInDuration/{personId}/{weekCount}" )]
         [System.Web.Http.Route( "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}" )]
+        [Rock.SystemGuid.RestActionGuid( "85BC0AF8-AA65-454D-BD3F-6289F5E96A9E" )]
         public int GetWeeksAttendedInDuration( int personId, int weekCount )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -218,6 +222,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/LastVisitOnSite/{personId}/{siteId}" )]
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
+        [Rock.SystemGuid.RestActionGuid( "5B2CA298-B318-44A4-A071-2597F91A73C7" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
             int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
@@ -255,6 +260,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/PersonalDevicesNumber/{personId}" )]
         [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "9EB3DD74-4B8A-41D3-AC04-3E929EB89AFA" )]
         public int GetPersonalDevicesNumber( int personId )
         {
             int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
@@ -276,6 +282,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/FamilyAttendance/{personId}/{monthCount}" )]
         [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}" )]
+        [Rock.SystemGuid.RestActionGuid( "B4D861ED-1B7A-49F8-BEFF-79A8886DC1DB" )]
         public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance( int personId, int monthCount )
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
@@ -314,6 +321,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/Badges/InteractionsInRange/{personId}/{interactionChannelId}/{delimitedDateRange}" )]
         [System.Web.Http.Route( "api/PersonBadges/InteractionsInRange/{personId}/{interactionChannelId}/{delimitedDateRange}" )]
+        [Rock.SystemGuid.RestActionGuid( "29930905-936F-46BE-818C-25BE683DD48C" )]
         public int InteractionsInRange( int personId, int interactionChannelId, string delimitedDateRange )
         {
             var interactionQry = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()

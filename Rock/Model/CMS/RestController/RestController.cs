@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "RestController" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "65CDFD5B-A9AA-48FA-8D22-669612D5EA7D")]
     public partial class RestController : Model<RestController>, ICacheable
     {
         #region Entity Properties

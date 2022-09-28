@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
     [ConnectionStatusField( "Connection Status", "The connection status to use (if Connection Status Attribute is not specified).", false, "", "", 2 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "60AFBB6A-B210-4C56-8AD5-2DA3311EDAA8")]
     public class SetConnectionRequestStatus : ActionComponent
     {
         /// <summary>

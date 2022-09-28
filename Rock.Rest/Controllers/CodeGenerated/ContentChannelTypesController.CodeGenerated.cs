@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ContentChannelTypes REST API
     /// </summary>
+    [RestControllerGuid( "D149D409-8A59-4FAB-96F2-427CEA6235F1" )]
     public partial class ContentChannelTypesController : Rock.Rest.ApiController<Rock.Model.ContentChannelType>
     {
         /// <summary>

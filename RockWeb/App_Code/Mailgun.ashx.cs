@@ -334,7 +334,9 @@ public class Mailgun : IHttpHandler
                     break;
 
                 case "complained":
+                    Rock.Communication.Email.ProcessSpamComplaint( mailgunRequestPayload.Recipient, timeStamp, true );
                     break;
+
                 case "unsubscribed":
                     break;
 
@@ -370,6 +372,12 @@ public class Mailgun : IHttpHandler
                                     Rock.Communication.BounceType.HardBounce,
                                     mailgunRequestPayload.Description,
                                     timeStamp );
+                                break;
+
+                            case "suppress-complaint":
+                                communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                                communicationRecipient.StatusNote = mailgunRequestPayload.Description;
+                                Rock.Communication.Email.ProcessSpamComplaint( mailgunRequestPayload.Recipient, timeStamp, false );
                                 break;
 
                             default:

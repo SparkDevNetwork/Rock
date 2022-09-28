@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,7 @@ namespace Rock.Workflow.Action.CheckIn
          DefaultValue = @"
 {{ Person.FullName }} was not able to be checked into {{ Group.Name }} in {{ Location.Name }} at {{ Schedule.Name }} due to a capacity limit. Please re-check {{ Person.NickName }} in to a new room.",
         Order = 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "50B2FEE6-DB7A-43C0-9DCF-19F61CD02BC6")]
     public class SaveAttendance : CheckInActionComponent
     {
         private static class AttributeKey
@@ -151,7 +152,11 @@ namespace Rock.Workflow.Action.CheckIn
                                     // we need to check the location-schedule's current count.
                                     if ( GetAttributeValue( action, AttributeKey.EnforceStrictLocationThreshold ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
                                     {
-                                        EnforceStrictLocationThreshold( action, checkInState, attendanceService, currentOccurrences, person, group, location, schedule, startDateTime );
+                                        if ( !EnforceStrictLocationThreshold( action, checkInState, attendanceService, currentOccurrences, person, group, location, schedule, startDateTime ) )
+                                        {
+                                            // the Strict Threshold is over the threshold, so move on the next item in the GetSchedules loop instead of adding the attendance
+                                            continue;
+                                        }
                                     }
 
                                     // Only create one attendance record per day for each person/schedule/group/location
@@ -309,7 +314,8 @@ namespace Rock.Workflow.Action.CheckIn
         }
 
         /// <summary>
-        /// Enforces the strict location threshold by removing attendances that would have ended up going into full location+schedules.
+        /// Checks to see if this attendance would exceed the the strict location threshold, and returns true if it is OK to add the attendance.
+        /// If it is over the threshold, the attendance should not be added, and a message should be returned.
         /// Note: The is also checked earlier in the check-in process, so this catches ones that might have just gotten full in the last few seconds.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -321,7 +327,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="location">The location.</param>
         /// <param name="schedule">The schedule.</param>
         /// <param name="startDateTime">The start date time.</param>
-        private void EnforceStrictLocationThreshold( WorkflowAction action, CheckInState checkInState, AttendanceService attendanceService, List<OccurrenceRecord> currentOccurrences, CheckInPerson person, CheckInGroup group, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
+        private bool EnforceStrictLocationThreshold( WorkflowAction action, CheckInState checkInState, AttendanceService attendanceService, List<OccurrenceRecord> currentOccurrences, CheckInPerson person, CheckInGroup group, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
         {
             var thresHold = location.Location.SoftRoomThreshold.Value;
             if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
@@ -363,7 +369,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                     // Now add it to the check-in state message list for others to see.
                     checkInState.Messages.Add( message );
-                    return;
+                    return false;
                 }
                 else
                 {
@@ -376,13 +382,14 @@ namespace Rock.Workflow.Action.CheckIn
                             LocationId = location.Location.Id,
                             ScheduleId = schedule.Schedule.Id
                         };
-
                         currentOccurrences.Add( currentOccurrence );
                     }
 
                     currentOccurrence.Count += 1;
                 }
             }
+
+            return true;
         }
 
         private class OccurrenceRecord

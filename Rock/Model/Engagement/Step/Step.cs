@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "Step" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STEP )]
     public partial class Step : Model<Step>, IOrdered
     {
         /* Custom Indexes:
@@ -101,15 +102,6 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public int? StepProgramCompletionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the caption.
-        /// </summary>
-        /// <value>
-        /// The caption.
-        /// </value>
-        [NotMapped]
-        public virtual string Caption { get; set; }
 
         /// <summary>
         /// Gets the start date key.

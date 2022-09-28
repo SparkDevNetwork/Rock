@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfPersonId;
         private DefinedValuePicker _dvpPersonTitle;
-        private RockTextBox _tbPersonFirstName;
+        private FirstNameTextBox _tbPersonFirstName;
         private RockTextBox _tbPersonLastName;
         private DefinedValuePicker _dvpPersonSuffix;
         private DefinedValuePicker _dvpPersonConnectionStatus;
@@ -797,16 +797,18 @@ namespace Rock.Web.UI.Controls
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ),
                 Label = "Title",
                 CssClass = "input-width-md",
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-title"
             };
 
-            _tbPersonFirstName = new RockTextBox
+            _tbPersonFirstName = new FirstNameTextBox
             {
                 ID = "tbPersonFirstName",
                 Label = "First Name",
                 Required = true,
                 AutoCompleteType = AutoCompleteType.None,
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-firstname"
             };
 
             _tbPersonLastName = new RockTextBox
@@ -815,7 +817,8 @@ namespace Rock.Web.UI.Controls
                 Label = "Last Name",
                 Required = true,
                 AutoCompleteType = AutoCompleteType.None,
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-lastname"
             };
 
             _dvpPersonSuffix = new DefinedValuePicker
@@ -824,7 +827,8 @@ namespace Rock.Web.UI.Controls
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ),
                 Label = "Suffix",
                 CssClass = "input-width-md",
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-suffix"
             };
 
             // Have Email and PhoneNumber hidden by default
@@ -833,14 +837,16 @@ namespace Rock.Web.UI.Controls
                 ID = "ebPersonEmail",
                 Label = "Email",
                 ValidationGroup = ValidationGroup,
-                Visible = false
+                Visible = false,
+                FormGroupCssClass = "field-email"
             };
 
             _pnbMobilePhoneNumber = new PhoneNumberBox
             {
                 Label = "Mobile Phone",
                 ID = "pnbMobilePhoneNumber",
-                Visible = false
+                Visible = false,
+                FormGroupCssClass = "field-mobilephone"
             };
 
             _dvpPersonConnectionStatus = new DefinedValuePicker
@@ -849,7 +855,8 @@ namespace Rock.Web.UI.Controls
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 Label = "Connection Status",
                 Required = true,
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-connectionstatus"
             };
 
             _rblPersonRole = new RockRadioButtonList
@@ -860,7 +867,8 @@ namespace Rock.Web.UI.Controls
                 DataTextField = "Name",
                 DataValueField = "Id",
                 Required = true,
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-role"
             };
 
             _rblPersonGender = new RockRadioButtonList
@@ -870,14 +878,16 @@ namespace Rock.Web.UI.Controls
                 RepeatDirection = RepeatDirection.Horizontal,
                 Required = this.RequireGender,
                 ValidationGroup = this.RequireGender == true ? ValidationGroup : string.Empty,
-                ShowNoneOption = false
+                ShowNoneOption = false,
+                FormGroupCssClass = "field-gender"
             };
 
             _bdpPersonBirthDate = new BirthdayPicker
             {
                 ID = "bdpPersonBirthDate",
                 Label = "Birthdate",
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-birthdate"
             };
 
             _ddlGradePicker = new GradePicker
@@ -886,7 +896,8 @@ namespace Rock.Web.UI.Controls
                 Label = "Grade",
                 UseAbbreviation = true,
                 UseGradeOffsetAsValue = true,
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-grade"
             };
 
             _dvpPersonMaritalStatus = new DefinedValuePicker
@@ -894,7 +905,8 @@ namespace Rock.Web.UI.Controls
                 ID = "dvpPersonMaritalStatus",
                 Label = "Marital Status",
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ),
-                ValidationGroup = ValidationGroup
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-maritalstatus"
             };
 
             var groupType = GroupTypeCache.GetFamilyGroupType();

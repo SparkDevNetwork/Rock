@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
         /// <summary>
@@ -695,7 +696,7 @@ btnCopyToClipboard.ClientID );
             var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
 
-            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( GroupSchedulerResourceListSourceType ) ).OfType<GroupSchedulerResourceListSourceType>().ToList();
+            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = typeof( GroupSchedulerResourceListSourceType ).GetOrderedValues<GroupSchedulerResourceListSourceType>().ToList();
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
@@ -1275,6 +1276,7 @@ btnCopyToClipboard.ClientID );
                 .Where( a => a.Attendees.Any( x => x.RequestedToAttend == true || x.ScheduledToAttend == true ) )
                 .Select( a => new AttendanceOccurrenceRowItem
                 {
+                    OccurrenceDisplayMode = occurrenceDisplayMode,
                     LocationName = "No Location Preference",
                     GroupLocationOrder = 0,
                     LocationId = null,
@@ -1695,11 +1697,16 @@ btnCopyToClipboard.ClientID );
 
             var pnlMultiGroupModePanelHeading = e.Item.FindControl( "pnlMultiGroupModePanelHeading" ) as Panel;
             var lMultiGroupModeLocationTitle = e.Item.FindControl( "lMultiGroupModeLocationTitle" ) as Literal;
-            lMultiGroupModeLocationTitle.Text = attendanceOccurrenceRowItem.LocationName;
+            lMultiGroupModeLocationTitle.Text = $"<span class=\"location\">{attendanceOccurrenceRowItem.LocationName}</span>";
             if ( attendanceOccurrenceRowItem.ScheduledDateTime.HasValue )
             {
                 var lMultiGroupModeOccurrenceScheduledDate = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledDate" ) as Literal;
                 var lMultiGroupModeOccurrenceScheduledTime = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledTime" ) as Literal;
+
+                if ( !attendanceOccurrenceRowItem.LocationId.HasValue )
+                {
+                    lMultiGroupModeLocationTitle.Text = $"<span class=\"location resource-no-location-preference\">{attendanceOccurrenceRowItem.LocationName}</span>";
+                }
 
                 // show date in 'Sunday, June 15' format
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
@@ -2303,7 +2310,7 @@ btnCopyToClipboard.ClientID );
                 nbGroupScheduleAssignmentUpdatePreferenceInformation.Text = string.Empty;
             }
 
-            mdGroupScheduleAssignmentPreference.SubTitle = string.Format( "{0}, {1} - {2} ", groupMemberPerson.Person, attendanceOccurrence.Schedule.Name, attendanceOccurrence.Location.Name );
+            mdGroupScheduleAssignmentPreference.SubTitle = string.Format( "{0}, {1} - {2} ", groupMemberPerson.Person, attendanceOccurrence.Schedule?.Name ?? "No Schedule", attendanceOccurrence.Location?.Name ?? "No Location Preference" );
 
             nbGroupScheduleAssignmentUpdatePreferenceInformation.Visible = rblGroupScheduleAssignmentUpdateOption.SelectedValue == "UpdatePreference";
 

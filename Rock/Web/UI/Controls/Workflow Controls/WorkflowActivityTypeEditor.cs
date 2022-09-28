@@ -310,6 +310,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
                     a.Guid,
                     a.Name,
                     a.Description,
+                    a.Key,
                     FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
@@ -455,6 +456,11 @@ javascript:
             descField.DataField = "Description";
             descField.HeaderText = "Description";
             _gAttributes.Columns.Add( descField );
+
+            var keyField = new BoundField();
+            keyField.DataField = "Key";
+            keyField.HeaderText = "Key";
+            _gAttributes.Columns.Add( keyField );
 
             var fieldTypeField = new BoundField();
             fieldTypeField.DataField = "FieldType";

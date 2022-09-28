@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemAssociation" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "7C86EED3-C3F9-4B25-887B-F732FE3C35F0")]
     public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered
     {
         #region Entity Properties

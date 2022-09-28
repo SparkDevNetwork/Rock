@@ -17,7 +17,7 @@
                             <p>
                                 Already have an account on our website?
                                 <br />
-                                Login Instead.
+                                Log in instead.
                             </p>
                             <asp:LinkButton ID="btnLogin" CssClass="btn btn-default" runat="server" Text="Login" OnClick="btnLogin_Click" />
                         </asp:Panel>

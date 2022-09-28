@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// AttributeValue View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AttributeValue ) )]
-    public partial class AttributeValueViewModelHelper : ViewModelHelper<AttributeValue, Rock.ViewModel.AttributeValueViewModel>
+    public partial class AttributeValueViewModelHelper : ViewModelHelper<AttributeValue, AttributeValueBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,20 +72,24 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AttributeValueViewModel CreateViewModel( AttributeValue model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttributeValueBag CreateViewModel( AttributeValue model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AttributeValueViewModel
+            var viewModel = new AttributeValueBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttributeId = model.AttributeId,
                 EntityId = model.EntityId,
+                IsPersistedValueDirty = model.IsPersistedValueDirty,
                 IsSystem = model.IsSystem,
+                PersistedCondensedHtmlValue = model.PersistedCondensedHtmlValue,
+                PersistedCondensedTextValue = model.PersistedCondensedTextValue,
+                PersistedHtmlValue = model.PersistedHtmlValue,
+                PersistedTextValue = model.PersistedTextValue,
                 Value = model.Value,
                 ValueAsNumeric = model.ValueAsNumeric,
                 CreatedDateTime = model.CreatedDateTime,
@@ -160,7 +165,12 @@ namespace Rock.Model
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsPersistedValueDirty = source.IsPersistedValueDirty;
             target.IsSystem = source.IsSystem;
+            target.PersistedCondensedHtmlValue = source.PersistedCondensedHtmlValue;
+            target.PersistedCondensedTextValue = source.PersistedCondensedTextValue;
+            target.PersistedHtmlValue = source.PersistedHtmlValue;
+            target.PersistedTextValue = source.PersistedTextValue;
             target.Value = source.Value;
             target.ValueAsNumeric = source.ValueAsNumeric;
             target.CreatedDateTime = source.CreatedDateTime;
@@ -178,7 +188,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AttributeValueViewModel ToViewModel( this AttributeValue model, Person currentPerson = null, bool loadAttributes = false )
+        public static AttributeValueBag ToViewModel( this AttributeValue model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttributeValueViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

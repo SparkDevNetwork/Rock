@@ -16,8 +16,8 @@
 //
 
 import { Component, defineComponent, markRaw, PropType } from "vue";
-import Alert from "../Elements/alert";
-import LoadingIndicator from "../Elements/loadingIndicator";
+import Alert from "./alert";
+import LoadingIndicator from "./loadingIndicator";
 
 export default defineComponent({
     name: "ComponentFromUrl",

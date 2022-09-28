@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.14,12.29h-.69L8.78,2.56A.85.85,0,0,0,8,2a.86.86,0,0,0-.81.56L3.55,12.29H2.86a.86.86,0,1,0,0,1.71H5.43a.86.86,0,1,0,0-1.71h0L5.84,11h4.27l.46,1.29h0a.86.86,0,1,0,0,1.71h2.57a.86.86,0,1,0,0-1.71Zm-6.63-3L8,5.3l1.5,4Z""/></svg>" )]
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.TEXT )]
     public class TextFieldType : FieldType
     {
 
@@ -233,8 +234,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Event
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
     [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
+    [Rock.SystemGuid.BlockTypeGuid( "3ABC7007-CE3E-4092-900F-C907948CA8C2" )]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {
         #region Fields

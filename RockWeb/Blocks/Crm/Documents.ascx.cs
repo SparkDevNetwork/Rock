@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Crm
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "A8456E2D-1930-4FF7-8A46-FB0800AC31E0" )]
     public partial class Documents : RockBlock, ISecondaryBlock
     {
         private static class AttributeKeys
@@ -110,10 +111,9 @@ namespace RockWeb.Blocks.Crm
 
             // Configure security button
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
-            if ( this.ContextEntity() != null )
-            {
-                securityColumn.EntityTypeId = this.ContextEntity().TypeId;
-            }
+
+            // Set the security on the document and not the entity the document is for.
+            securityColumn.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT ).Value;
         }
 
         protected override void OnLoad( EventArgs e )

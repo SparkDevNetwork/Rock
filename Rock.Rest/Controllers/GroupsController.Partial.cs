@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,7 +35,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupsController
     {
@@ -57,6 +57,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "65FEAFC4-1145-40E1-8FCF-3465B2D43DEA" )]
         public IQueryable<TreeViewItem> GetChildren(
             int id,
             int rootGroupId = 0,
@@ -151,8 +152,8 @@ namespace Rock.Rest.Controllers
 
                         This should help avoid any performance issues.
                         ----
-                        
-                        2020-05-01 BJW 
+
+                        2020-05-01 BJW
 
                         This hierarchy query was timing out on some Rock instances with a large amount of groups. I removed the
                         limitToSchedulingEnabled=true param from the group scheduling block because of it. This logic will remain here
@@ -222,20 +223,20 @@ namespace Rock.Rest.Controllers
                 // if there a IconCssClass is assigned, use that as the Icon.
                 treeViewItem.IconCssClass = groupType?.IconCssClass;
 
-                        if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
-                        {
-                            int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active ).Count();
-                            treeViewItem.CountInfo = groupMemberCount;
-                        }
-                        else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
-                        {
-                            treeViewItem.CountInfo = groupService
-                                .Queryable()
-                                .Where( a => a.ParentGroupId.HasValue &&
-                                    a.ParentGroupId == group.Id &&
-                                    ( a.IsActive || includeInactiveGroups ) )
-                                .Count();
-                        }
+                if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
+                {
+                    int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    treeViewItem.CountInfo = groupMemberCount;
+                }
+                else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
+                {
+                    treeViewItem.CountInfo = groupService
+                        .Queryable()
+                        .Where( a => a.ParentGroupId.HasValue &&
+                            a.ParentGroupId == group.Id &&
+                            ( a.IsActive || includeInactiveGroups ) )
+                        .Count();
+                }
 
                 groupNameList.Add( treeViewItem );
             }
@@ -279,6 +280,7 @@ namespace Rock.Rest.Controllers
         [EnableQuery( MaxExpansionDepth = 4 )]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamilies/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "800717CC-45F6-4B34-833F-656F20339F8E" )]
         public IQueryable<Group> GetFamilies( int personId )
         {
             return new PersonService( ( RockContext ) Service.Context ).GetFamilies( personId );
@@ -293,6 +295,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GroupTypeCheckinConfiguration/{groupTypeGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "E43F11A8-BAE8-4629-945B-C551D9AAFEC4" )]
         public HttpResponseMessage GroupTypeCheckinConfiguration( Guid groupTypeGuid )
         {
             int groupTypeId = GroupTypeCache.Get( groupTypeGuid ).Id;
@@ -390,6 +393,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamiliesByPersonNameSearch/{searchString}" )]
+        [Rock.SystemGuid.RestActionGuid( "80859B18-B623-44AA-A7FB-22AC90BEB89F" )]
         public IQueryable<FamilySearchResult> GetFamiliesByPersonNameSearch( string searchString )
         {
             return GetFamiliesByPersonNameSearch( searchString, 20 );
@@ -404,6 +408,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamiliesByPersonNameSearch/{searchString}/{maxResults}" )]
+        [Rock.SystemGuid.RestActionGuid( "D61F338B-6DE6-4926-AF5E-190E379AF6AB" )]
         public IQueryable<FamilySearchResult> GetFamiliesByPersonNameSearch( string searchString, int maxResults = 20 )
         {
             bool reversed;
@@ -457,6 +462,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamily/{familyId}" )]
+        [Rock.SystemGuid.RestActionGuid( "16370925-9F92-4894-8994-A03AF978664D" )]
         public FamilySearchResult GetFamily( int familyId )
         {
             RockContext rockContext = new RockContext();
@@ -490,6 +496,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetGuestsForFamily/{groupId}" )]
+        [Rock.SystemGuid.RestActionGuid( "9A2FAFCB-CD67-4F4A-9C6B-68DF64D691B0" )]
         public IQueryable<GuestFamily> GetGuestsForFamily( int groupId )
         {
             Guid knownRelationshipGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
@@ -570,6 +577,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLocation" )]
+        [Rock.SystemGuid.RestActionGuid( "763E23C9-C12E-4290-AB46-3187632D39E5" )]
         public IQueryable GetByLocation( int groupTypeId, int locationId, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
         {
             // Get the location record
@@ -597,6 +605,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLatLong" )]
+        [Rock.SystemGuid.RestActionGuid( "4292A228-FA48-4E12-803A-335C87F2B4C5" )]
         public IQueryable GetByLatLong( int groupTypeId, double latitude, double longitude, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
         {
             string geoText = string.Format( "POINT({0} {1})", longitude, latitude );
@@ -648,7 +657,7 @@ namespace Rock.Rest.Controllers
                         fenceGroupLocation.Group = null;
 
                         // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
-                        // within the fence 
+                        // within the fence
                         foreach ( var group in Service
                             .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
                             .Where( g =>
@@ -733,6 +742,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "DA6F3D1D-0E40-4303-B9C4-5AE766AF058C" )]
         public virtual void SaveAddress( int groupId, int locationTypeId, string street1 = "", string street2 = "", string city = "", string state = "", string postalCode = "", string country = "" )
         {
             SetProxyCreation( true );
@@ -762,6 +772,7 @@ namespace Rock.Rest.Controllers
         /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}" )]
+        [Rock.SystemGuid.RestActionGuid( "2967A28D-28EC-4E40-83B2-7194C05BD84B" )]
         public IQueryable<MapItem> GetMapInfo( int groupId )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -814,6 +825,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Children" )]
+        [Rock.SystemGuid.RestActionGuid( "C08CA60D-AE76-4375-9A28-0FE639B9FF3E" )]
         public IQueryable<MapItem> GetChildMapInfo( int groupId, string groupTypeIds = null, bool includeDescendants = false )
         {
             var person = GetPerson();
@@ -891,6 +903,7 @@ namespace Rock.Rest.Controllers
         /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members/{groupMemberStatus?}" )]
+        [Rock.SystemGuid.RestActionGuid( "ED536F08-AB5B-42E0-ADCA-9417FBDFA647" )]
         public IQueryable<MapItem> GetMemberMapInfo( int groupId, GroupMemberStatus? groupMemberStatus = null )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -961,6 +974,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
+        [Rock.SystemGuid.RestActionGuid( "386C4A5B-4E39-440B-8F1C-8F1DCFF2E904" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
         {
             return GetFamiliesMapInfo( groupId, statusId, null );
@@ -978,6 +992,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
+        [Rock.SystemGuid.RestActionGuid( "998A85AE-CC81-4A3F-B138-3EA4FEC66E9B" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId, string campusIds )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -1072,6 +1087,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Groups/GetMapInfoWindow/{groupId}/{locationId}" )]
+        [Rock.SystemGuid.RestActionGuid( "2D5859DF-84C8-4237-80D1-2CC6F70663F9" )]
         public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -1226,7 +1242,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class GuestFamilyMember
         {
@@ -1358,7 +1374,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class InfoWindowRequest
         {
@@ -1638,7 +1654,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class InfoWindowResult
         {

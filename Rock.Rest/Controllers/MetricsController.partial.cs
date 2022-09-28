@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class MetricsController
     {
@@ -40,6 +40,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
+        [Rock.SystemGuid.RestActionGuid( "B67ED75B-94AB-49B7-9E36-84B845FB20D3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
@@ -99,22 +100,22 @@ namespace Rock.Rest.Controllers
                         // get a sum of the values that for whole 24 hour day of the last Date
                         DateTime lastValueDateEnd = metricYTDData.LastValueDate.AddDays( 1 );
                         var lastMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.LastValueDate && a.MetricValueDateTime.Value < lastValueDateEnd );
-                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : (decimal?)null;
+                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
                     }
 
-                    var previousMetricValue = qryMeasureValues.OrderByDescending(a => a.MetricValueDateTime).Skip(1).FirstOrDefault();
+                    var previousMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).Skip( 1 ).FirstOrDefault();
                     if ( previousMetricValue != null )
                     {
                         metricYTDData.PreviousValueDate = previousMetricValue.MetricValueDateTime.HasValue ? previousMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
 
                         // get a sum of the values that for whole 24 hour day of the previous Date
-                        DateTime previousValueDateEnd = metricYTDData.PreviousValueDate.AddDays(1);
-                        var previousMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.PreviousValueDate && a.MetricValueDateTime.Value < previousValueDateEnd);
-                        metricYTDData.PreviousValue = previousMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(previousMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
+                        DateTime previousValueDateEnd = metricYTDData.PreviousValueDate.AddDays( 1 );
+                        var previousMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.PreviousValueDate && a.MetricValueDateTime.Value < previousValueDateEnd );
+                        metricYTDData.PreviousValue = previousMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( previousMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
                     }
 
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
-                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
+                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
 
                     // figure out goal as of current date time by figuring out the slope of the goal
                     var qryGoalValuesCurrentYear = metricValueService.Queryable()
@@ -176,9 +177,10 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Reporting" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7C878AFD-DF74-4CDF-8491-31671559BD30" )]
     public class MetricYTDData : Metric
     {
         /// <summary>

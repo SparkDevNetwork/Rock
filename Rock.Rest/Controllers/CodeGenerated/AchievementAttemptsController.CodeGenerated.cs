@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AchievementAttempts REST API
     /// </summary>
+    [RestControllerGuid( "1EA220B0-FE81-44B5-AD23-050117B4622A" )]
     public partial class AchievementAttemptsController : Rock.Rest.ApiController<Rock.Model.AchievementAttempt>
     {
         /// <summary>

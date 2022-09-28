@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><defs><style>.cls-1,.cls-2{fill:#343a40;}.cls-2{stroke:#343a40;}</style></defs><path d=""M12.89,2.75H11.56V1.33A.34.34,0,0,0,11.22,1H10.11a.33.33,0,0,0-.33.33V2.75H6.22V1.33A.33.33,0,0,0,5.89,1H4.78a.34.34,0,0,0-.34.33V2.75H3.11A1.33,1.33,0,0,0,1.78,4.06v9.63A1.33,1.33,0,0,0,3.11,15h9.78a1.33,1.33,0,0,0,1.33-1.31V4.06A1.33,1.33,0,0,0,12.89,2.75Zm-.17,10.94H3.28a.18.18,0,0,1-.17-.17V5.37h9.78v8.15A.18.18,0,0,1,12.72,13.69Z""/><path class=""cls-2"" d=""M9.75,12a.43.43,0,0,1-.44.44H6.69a.44.44,0,1,1,0-.87h.87v-4L6.93,8a.44.44,0,1,1-.49-.73l1.32-.88a.48.48,0,0,1,.45,0,.45.45,0,0,1,.23.39V11.6h.87A.43.43,0,0,1,9.75,12Z""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MONTH_DAY )]
     public class MonthDayFieldType : FieldType
     {
         #region Edit Control
@@ -57,13 +59,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
             var valueAsDateTime = value.MonthDayStringAsDateTime();
             if ( valueAsDateTime.HasValue )
             {
                 return valueAsDateTime.Value.ToMonthDayString();
             }
 
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return value;
         }
 
         /// <summary>

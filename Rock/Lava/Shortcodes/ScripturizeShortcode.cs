@@ -29,13 +29,18 @@ namespace Rock.Lava.Shortcodes
     /// Lava shortcode for displaying scripture links
     /// </summary>
     [LavaShortcodeMetadata(
-        "Scripturize ",
-        "scripturize",
-        "Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
-        @"<p>Many blog posts and articles contain references to scriptures. Using this
-            shortcode you can easily convert those references to links to popular Bible
-            websites. Let's take a look at how simple this shortcode is to use.
-         </p>
+        Name = "Scripturize ",
+        TagName = "scripturize",
+        Description ="Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
+        Documentation = DocumentationMetadata,
+        Parameters = "defaulttranslation,landingsite,cssclass",
+        Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]
+    public class ScripturizeShortcode : LavaShortcodeBase, ILavaBlock
+    {
+        string _markup = string.Empty;
+
+        internal const string DocumentationMetadata = @"<p>Many blog posts and articles contain references to scriptures. Using this
+shortcode you can easily convert those references to links to popular Bible websites. Let's take a look at how simple this shortcode is to use.</p>
          <pre>{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}
 {{ item.Title }}
 
@@ -64,12 +69,7 @@ namespace Rock.Lava.Shortcodes
 
         <ul>
             <li>AMP</li><li>ASV</li><li>CEB</li><li>CEV</li><li>CEVUS06</li><li>CPDV</li><li>DARBY</li><li>DRA</li><li>ESV</li><li>GNBDC</li><li>GWT</li><li>GNB</li><li>GNT</li><li>HCSB</li><li>KJV</li><li>MSG</li><li>NASB</li><li>NCV</li><li>NIV</li><li>NET</li><li>NIRV</li><li>NKJV</li><li>NLT</li><li>OJB</li><li>RSV</li><li>TLV</li><li>WEB</li>
-        </ul>",
-        "defaulttranslation,landingsite,cssclass",
-        "" )]
-    public class ScripturizeShortcode : LavaShortcodeBase, ILavaBlock
-    {
-        string _markup = string.Empty;
+        </ul>";
 
         /// <summary>
         /// Specifies the type of Liquid element for this shortcode.

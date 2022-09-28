@@ -13,12 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rock.Model
 {
+    public partial class SignatureDocumentTemplate
+    {
+        /// <summary>
+        /// The default <see cref="LavaTemplate"/>
+        /// </summary>
+        public const string DefaultLavaTemplate = @"
+<p>## Insert your legal disclaimer here ##</p>
+<br>
+";
+    }
+
     /// <summary>
     /// Entity Set Item POCO Entity.
     /// </summary>

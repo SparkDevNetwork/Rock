@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,7 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ContentChannelItemSlugsController
     {
@@ -36,6 +36,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/SaveContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
+        [Rock.SystemGuid.RestActionGuid( "378CB619-2BF6-41CB-8951-FB75E756246F" )]
         public SaveSlugResponse SaveContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
             SaveSlugResponse response = new SaveSlugResponse();
@@ -58,11 +59,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
-        [RockObsolete("1.9")]
+        [RockObsolete( "1.9" )]
         [System.Obsolete( "Uniqueness is now based on the content channel. Use the override GetUniqueContentSlug( contentChannelItemId, slug, contentChannelItemSlugId ) instead.", true )]
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{slug}/{contentChannelItemSlugId?}" )]
+        [Rock.SystemGuid.RestActionGuid( "059F1F4B-65C6-488F-B208-3EC4238F29AA" )]
         public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId = null )
         {
             string uniquieSlug = string.Empty;
@@ -86,6 +88,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
+        [Rock.SystemGuid.RestActionGuid( "98C1DB14-6693-4AE5-91BF-E2580BA44451" )]
         public string GetUniqueContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
             string uniqueSlug = string.Empty;

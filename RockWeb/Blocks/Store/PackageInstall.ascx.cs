@@ -18,57 +18,70 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Microsoft.Web.XmlTransform;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Store;
-using System.Text;
 using Rock.Utility;
-using System.Net;
-using System.IO.Compression;
-using Microsoft.Web.XmlTransform;
 using Rock.VersionInfo;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Store
 {
     /// <summary>
-    /// Lists packages that have been purchased in the Rock Store.
+    /// Installs a package that has been downloaded in the Rock Shop.
     /// </summary>
     [DisplayName( "Package Install" )]
     [Category( "Store" )]
     [Description( "Installs a package." )]
-    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "")]
+
+    #region Block Attributes
+
+    [LinkedPage( "Link Organization Page",
+        Key = AttributeKey.LinkOrganizationPage,
+        Description = "Page to allow the user to link an organization to the store.",
+        IsRequired = false,
+        Order = 0 )]
+
+    #endregion Block Attributes
+
+    [Rock.SystemGuid.BlockTypeGuid( "EA60C1AB-ADAB-4EDF-94F8-B0FE214B6F15" )]
     public partial class PackageInstall : Rock.Web.UI.RockBlock
     {
+        #region Constants
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string LinkOrganizationPage = "LinkOrganizationPage";
+        }
+
+        #endregion Attribute Keys
+
+        private const string INSTALL_PURCHASE_MESSAGE = "Log in below with your Rock Store account to install the <em>{0}</em> package. Your credit card on file will be charged ${1}.";
+        private const string INSTALL_FREE_MESSAGE = "Log in below with your Rock Store account to install free <em>{0}</em> package.";
+        private const string UPDATE_MESSAGE = "Log in below with your Rock Store account to upgrade this package.";
+        private const string INSTALL_PREVIOUS_MESSAGE = "Log in below with your Rock Store account to install this previously purchased package.";
+        private const string XDT_EXTENSION = ".rock.xdt";
+
+        #endregion Constants
+
         #region Fields
 
-        // used for private variables
-        private string _installPurchaseMessage = "<p>Log in below with your Rock Store account to install the <em>{0}</em> package. Your credit card on file will be charged ${1}.</p>";
-        private string _installFreeMessage = "<p>Log in below with your Rock Store account to install free <em>{0}</em> package.</p>";
-        private string _updateMessage = "<p>Log in below with your Rock Store account to upgrade this package.</p>";
-        private string _installPreviousPurchase = "<p>Log in below with your Rock Store account to install this previously purchased package.</p>";
+        private int _packageId = -1;
 
-        const string _xdtExtension = ".rock.xdt";
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        int packageId = -1;
-
-        #endregion
+        #endregion Fields
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -94,7 +107,7 @@ namespace RockWeb.Blocks.Store
             // get package id
             if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
             {
-                packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
+                _packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
             }
 
             if ( !Page.IsPostBack )
@@ -103,17 +116,20 @@ namespace RockWeb.Blocks.Store
             }
         }
 
+        #endregion Base Control Methods
+
+        #region Events
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbAgreeToTerms control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbAgreeToTerms_CheckedChanged( object sender, EventArgs e )
         {
             CheckBox cbAgreeToTerms = sender as CheckBox;
             btnInstall.Enabled = cbAgreeToTerms.Checked;
         }
-
-        #endregion
-
-        #region Events
-
-        // handlers called by the controls on your block
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -125,12 +141,17 @@ namespace RockWeb.Blocks.Store
             DisplayPackageInfo();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnInstall control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnInstall_Click( object sender, EventArgs e )
         {
             StoreService storeService = new StoreService();
 
             string errorResponse = string.Empty;
-            var installResponse = storeService.Purchase( txtUsername.Text, txtPassword.Text, packageId, out errorResponse );
+            var installResponse = storeService.Purchase( txtUsername.Text, txtPassword.Text, _packageId, out errorResponse );
             if ( installResponse != null )
             {
                 switch ( installResponse.PurchaseResult )
@@ -161,10 +182,15 @@ namespace RockWeb.Blocks.Store
             }
         }
 
-        #endregion
+        #endregion Events
 
-        #region Methods
+        #region Private Methods
 
+        /// <summary>
+        /// Gets the version of the currently installed package.
+        /// </summary>
+        /// <param name="packageName"></param>
+        /// <returns>-1 if the package is not installed, otherwise the version id of the installed package.</returns>
         private int GetCurrentlyInstalledPackageVersion( string packageName )
         {
             var installedPackages = InstalledPackageService.GetInstalledPackages().OrderBy( p => p.PackageName ).OrderByDescending( p => p.InstallDateTime );
@@ -178,190 +204,300 @@ namespace RockWeb.Blocks.Store
             return -1;
         }
 
+        /// <summary>
+        /// Process the package install.
+        /// </summary>
+        /// <param name="purchaseResponse">The <see cref="PurchaseResponse"/> object from the Rock Shop.</param>
         private void ProcessInstall( PurchaseResponse purchaseResponse )
         {
-            var currentlyInstalledPackageVersion = GetCurrentlyInstalledPackageVersion( purchaseResponse.PackageName );
-
-            if ( purchaseResponse.PackageInstallSteps != null )
+            if ( purchaseResponse.PackageInstallSteps == null )
             {
-                RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
+                lMessages.Text = "<div class='alert alert-warning margin-t-md'><strong>Error</strong> Install package was not valid. Please try again later.";
+                return;
+            }
 
-                var packageInstallSteps = purchaseResponse.PackageInstallSteps
-                    .Where( s => s.RequiredRockSemanticVersion <= rockVersion )
-                    .Where( s => s.VersionId > currentlyInstalledPackageVersion );
+            var currentlyInstalledPackageVersion = GetCurrentlyInstalledPackageVersion( purchaseResponse.PackageName );
+            RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
 
-                foreach ( var installStep in packageInstallSteps )
+            // Get package install steps that are newer than the currently installed package and apply to this
+            // version of Rock.
+            var packageInstallSteps = purchaseResponse.PackageInstallSteps
+                .Where( s => s.RequiredRockSemanticVersion <= rockVersion )
+                .Where( s => s.VersionId > currentlyInstalledPackageVersion );
+
+            string appRoot = Server.MapPath( "~/" );
+
+            // check that the RockShop directory exists
+            string rockShopWorkingDir = appRoot + "App_Data/RockShop";
+            EnsureDirectoryExists( rockShopWorkingDir );
+
+            foreach ( var installStep in packageInstallSteps )
+            {
+                var wasStepInstalled = InstallPackageStep( installStep, purchaseResponse, appRoot, rockShopWorkingDir );
+
+                if ( !wasStepInstalled )
                 {
-                    string appRoot = Server.MapPath( "~/" );
-                    string rockShopWorkingDir = appRoot + "App_Data/RockShop";
-                    string packageDirectory = string.Format( "{0}/{1} - {2}", rockShopWorkingDir, purchaseResponse.PackageId, purchaseResponse.PackageName );
-                    string sourceFile = installStep.InstallPackageUrl;
-                    string destinationFile = string.Format("{0}/{1} - {2}.plugin", packageDirectory, installStep.VersionId, installStep.VersionLabel);
+                    // If an install step failed, exit the loop to stop processing.  InstallPackageStep() should
+                    // have already notified the user of the problem by adding a message to the lMessages control.
+                    break;
+                }
+            }
+        }
 
-                    // check that the RockShop directory exists
-                    if ( !Directory.Exists( rockShopWorkingDir ) )
+        /// <summary>
+        /// Checks that a directory exists and creates it if it doesn't.
+        /// </summary>
+        /// <param name="directoryPath">The directory path.</param>
+        private void EnsureDirectoryExists( string directoryPath )
+        {
+            if ( !Directory.Exists( directoryPath ) )
+            {
+                Directory.CreateDirectory( directoryPath );
+            }
+        }
+
+        /// <summary>
+        /// Process a package install step.
+        /// </summary>
+        /// <param name="installStep">The <see cref="PackageInstallStep"/>.</param>
+        /// <param name="purchaseResponse">The <see cref="PurchaseResponse"/>.</param>
+        /// <param name="appRoot">The application root directory path.</param>
+        /// <param name="rockShopWorkingDir">The Rock Shop working directory path.</param>
+        /// <returns>True if the installation was successful.</returns>
+        private bool InstallPackageStep( PackageInstallStep installStep, PurchaseResponse purchaseResponse, string appRoot, string rockShopWorkingDir )
+        {
+            bool wasActionTaken = false;
+
+            // create package directory
+            string packageDirectory = string.Format( "{0}/{1} - {2}", rockShopWorkingDir, purchaseResponse.PackageId, purchaseResponse.PackageName );
+            EnsureDirectoryExists( packageDirectory );
+
+            string destinationFile = string.Format( "{0}/{1} - {2}.plugin", packageDirectory, installStep.VersionId, installStep.VersionLabel );
+
+            // download file
+            try
+            {
+                string sourceFile = installStep.InstallPackageUrl;
+                WebClient wc = new WebClient();
+                wc.DownloadFile( sourceFile, destinationFile );
+            }
+            catch ( Exception ex )
+            {
+                CleanUpPackage( destinationFile );
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {0}</em></div>", ex.Message );
+                return false;
+            }
+
+            // process zip folder
+            try
+            {
+                using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
+                {
+                    // unzip content folder and process xdts
+                    foreach ( ZipArchiveEntry entry in packageZip.Entries )
                     {
-                        Directory.CreateDirectory( rockShopWorkingDir );
+                        wasActionTaken = ProcessZipEntry( entry, appRoot ) || wasActionTaken;
                     }
 
-                    // create package directory
-                    if ( !Directory.Exists( packageDirectory ) )
-                    {
-                        Directory.CreateDirectory( packageDirectory );
-                    }
+                    // process run.sql
+                    wasActionTaken = ProcessRunSQL( packageZip ) || wasActionTaken;
 
-                    // download file
-                    try
-                    {
-                        WebClient wc = new WebClient();
-                        wc.DownloadFile( sourceFile, destinationFile );
-                    }
-                    catch ( Exception ex )
-                    {
-                        CleanUpPackage( destinationFile );
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {0}</em></div>", ex.Message );
-                        return;
-                    }
+                    // process deletefile.lst
+                    wasActionTaken = ProcessDeleteFileList( packageZip, appRoot ) || wasActionTaken;
+                }
+            }
+            catch ( Exception ex )
+            {
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {0}</em></div>", ex.Message );
+                return false;
+            }
 
-                   // process zip folder
-                    try
+            if ( !wasActionTaken )
+            {
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Package Installation Error</strong> Package version {0} was installed without completing any action.  Please contact the package administrator for support.</div>", installStep.VersionLabel );
+                return false;
+            }
+
+            // update package install json file
+            InstalledPackageService.SaveInstall( purchaseResponse.PackageId, purchaseResponse.PackageName, installStep.VersionId, installStep.VersionLabel, purchaseResponse.VendorId, purchaseResponse.VendorName, purchaseResponse.InstalledBy );
+
+            // Clear all cached items
+            RockCache.ClearAllCachedItems();
+
+            // Hide store login on success
+            lInstallMessage.Visible = false;
+            txtUsername.Visible = false;
+            txtPassword.Visible = false;
+            cbAgreeToTerms.Visible = false;
+            btnInstall.Visible = false;
+            // show result message
+            lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Process the ZIP entry and extract the content folder and apply any XML data transformations (from
+        /// content/*.rock.xdt files).
+        /// </summary>
+        /// <param name="packageZip">The <see cref="ZipArchive"/>.</param>
+        /// <param name="appRoot">The application root directory path.</param>
+        /// <returns>True if some action was successfully taken.</returns>
+        private bool ProcessZipEntry( ZipArchiveEntry entry, string appRoot )
+        {
+            bool wasActionTaken = false;
+
+            // if entry is a directory ignore it
+            if ( entry.Length == 0 )
+            {
+                return false;
+            }
+
+            // replace backslashes with forward slashes in case the ZIP file entries were encoded incorrectly.
+            var fullName = entry.FullName.Replace( "\\", "/" );
+            if ( !fullName.StartsWith( "content/", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return false;
+            }
+
+            if ( fullName.EndsWith( XDT_EXTENSION, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // process xdt
+                string filename = fullName.ReplaceFirstOccurrence( "content/", string.Empty );
+                string transformTargetFile = appRoot + filename.Substring( 0, filename.LastIndexOf( XDT_EXTENSION ) );
+
+                // process transform
+                using ( XmlTransformableDocument document = new XmlTransformableDocument() )
+                {
+                    document.PreserveWhitespace = true;
+                    document.Load( transformTargetFile );
+
+                    using ( XmlTransformation transform = new XmlTransformation( entry.Open(), null ) )
                     {
-                        using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
+                        if ( transform.Apply( document ) )
                         {
-                            // unzip content folder and process xdts
-                            foreach ( ZipArchiveEntry entry in packageZip.Entries.Where(e => e.FullName.StartsWith( "content/", StringComparison.OrdinalIgnoreCase ) ) )
-                            {
-                               if ( entry.FullName.EndsWith( _xdtExtension, StringComparison.OrdinalIgnoreCase ) )
-                                {
-                                    // process xdt
-                                    string filename = entry.FullName.ReplaceFirstOccurrence( "content/", string.Empty );
-                                    string transformTargetFile = appRoot + filename.Substring( 0, filename.LastIndexOf( _xdtExtension ) );
-
-                                    // process transform
-                                    using ( XmlTransformableDocument document = new XmlTransformableDocument() )
-                                    {
-                                        document.PreserveWhitespace = true;
-                                        document.Load( transformTargetFile );
-
-                                        using ( XmlTransformation transform = new XmlTransformation( entry.Open(), null ) )
-                                        {
-                                            if ( transform.Apply( document ) )
-                                            {
-                                                document.Save( transformTargetFile );
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    // process all content files
-                                    string fullpath = Path.Combine( appRoot, entry.FullName.ReplaceFirstOccurrence( "content/", string.Empty ) );
-                                    string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( "content/", string.Empty );
-
-                                    // if entry is a directory ignore it
-                                    if ( entry.Length != 0 )
-                                    {
-                                        if ( !Directory.Exists( directory ) )
-                                        {
-                                            Directory.CreateDirectory( directory );
-                                        }
-
-                                        entry.ExtractToFile( fullpath, true );
-                                    }
-
-                                }
-                            }
-
-                            // process install.sql
-                            try
-                            {
-                                var sqlInstallEntry = packageZip.Entries.Where( e => e.FullName == "install/run.sql" ).FirstOrDefault();
-                                if (sqlInstallEntry != null) {
-                                    string sqlScript = System.Text.Encoding.Default.GetString(sqlInstallEntry.Open().ReadBytesToEnd());
-
-                                    if ( !string.IsNullOrWhiteSpace( sqlScript ) )
-                                    {
-                                        using ( var context = new RockContext() )
-                                        {
-                                            context.Database.ExecuteSqlCommand( sqlScript );
-                                        }
-                                    }
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {0}</em></div>", ex.Message );
-                                return;
-                            }
-
-                            // process deletefile.lst
-                            try
-                            {
-                                var deleteListEntry = packageZip.Entries.Where( e => e.FullName == "install/deletefile.lst" ).FirstOrDefault();
-                                if ( deleteListEntry != null )
-                                {
-
-                                    string deleteList = System.Text.Encoding.Default.GetString( deleteListEntry.Open().ReadBytesToEnd() );
-
-                                    string[] itemsToDelete = deleteList.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
-
-                                    foreach ( string deleteItem in itemsToDelete )
-                                    {
-                                        if ( !string.IsNullOrWhiteSpace( deleteItem ) )
-                                        {
-                                            string deleteItemFullPath = appRoot + deleteItem;
-
-                                            if ( Directory.Exists( deleteItemFullPath ) )
-                                            {
-                                                Directory.Delete( deleteItemFullPath, true);
-                                            }
-
-                                            if ( File.Exists( deleteItemFullPath ) )
-                                            {
-                                                File.Delete( deleteItemFullPath );
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {0}</em></div>", ex.Message );
-                                return;
-                            }
-
+                            document.Save( transformTargetFile );
+                            wasActionTaken = true;
                         }
                     }
-                    catch ( Exception ex )
-                    {
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {0}</em></div>", ex.Message );
-                        return;
-                    }
-
-                    // update package install json file
-                    InstalledPackageService.SaveInstall( purchaseResponse.PackageId, purchaseResponse.PackageName, installStep.VersionId, installStep.VersionLabel, purchaseResponse.VendorId, purchaseResponse.VendorName, purchaseResponse.InstalledBy );
-
-                    // Clear all cached items
-                    RockCache.ClearAllCachedItems();
-
-                    // Hide store login on success
-                    lInstallMessage.Visible = false;
-                    txtUsername.Visible = false;
-                    txtPassword.Visible = false;
-                    cbAgreeToTerms.Visible = false;
-                    btnInstall.Visible = false;
-                    // show result message
-                    lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
                 }
             }
             else
             {
-                lMessages.Text = "<div class='alert alert-warning margin-t-md'><strong>Error</strong> Install package was not valid. Please try again later.";
+                // process content files
+                string fullpath = Path.Combine( appRoot, fullName.ReplaceFirstOccurrence( "content/", string.Empty ) );
+                string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( "content/", string.Empty );
+
+                EnsureDirectoryExists( directory );
+                entry.ExtractToFile( fullpath, true );
+                wasActionTaken = true;
             }
+
+            return wasActionTaken;
         }
 
-        private void CleanUpPackage(string packageFile)
+        /// <summary>
+        /// Process the run.sql file.
+        /// </summary>
+        /// <param name="packageZip">The <see cref="ZipArchive"/>.</param>
+        /// <returns>True if some action was taken.</returns>
+        private bool ProcessRunSQL( ZipArchive packageZip )
+        {
+            bool wasActionTaken = false;
+
+            try
+            {
+                // Find the run.sql file, if it exists.  (Note: look for either forward or back slashes, in case the ZIP file is encoded incorrectly.)
+                var sqlInstallEntry = packageZip.Entries.Where( e => e.FullName == "install/run.sql" || e.FullName == "install\\run.sql" ).FirstOrDefault();
+                if ( sqlInstallEntry == null )
+                {
+                    return false; // file is not present, nothing to do.
+                }
+
+                string sqlScript = Encoding.Default.GetString( sqlInstallEntry.Open().ReadBytesToEnd() );
+                if ( string.IsNullOrWhiteSpace( sqlScript ) )
+                {
+                    return false; // nothing to run.
+                }
+
+                wasActionTaken = true;
+
+                using ( var context = new RockContext() )
+                {
+                    context.Database.ExecuteSqlCommand( sqlScript );
+                }
+            }
+            catch ( Exception ex )
+            {
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {0}</em></div>", ex.Message );
+                return false;
+            }
+
+            return wasActionTaken;
+        }
+
+        /// <summary>
+        /// Process the delete file list.
+        /// </summary>
+        /// <param name="packageZip">The <see cref="ZipArchive"/>.</param>
+        /// <param name="appRoot">The application root directory path.</param>
+        /// <returns>True if some action was taken.</returns>
+        private bool ProcessDeleteFileList( ZipArchive packageZip, string appRoot )
+        {
+            bool wasActionTaken = false;
+
+            try
+            {
+                // Find the delete list file, if it exists.  (Note: look for either forward or back slashes, in case the ZIP file is encoded incorrectly.)
+                var deleteListEntry = packageZip.Entries.Where( e => e.FullName == "install/deletefile.lst" || e.FullName == "install\\deletefile.lst" ).FirstOrDefault();
+                if ( deleteListEntry == null )
+                {
+                    return false; // file is not present, nothing to do.
+                }
+
+                string deleteList = Encoding.Default.GetString( deleteListEntry.Open().ReadBytesToEnd() );
+
+                string[] itemsToDelete = deleteList.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+
+                foreach ( string deleteItem in itemsToDelete )
+                {
+                    if ( string.IsNullOrWhiteSpace( deleteItem ) )
+                    {
+                        continue; // empty line, nothing to delete, ignore it.
+                    }
+
+                    // We will assume an action was taken at this point so that the install step does not get
+                    // flagged as invalid, even if the file does not actually get deleted, in case files were
+                    // removed manually.
+                    wasActionTaken = true;
+
+                    string deleteItemFullPath = appRoot + deleteItem;
+
+                    if ( Directory.Exists( deleteItemFullPath ) )
+                    {
+                        Directory.Delete( deleteItemFullPath, true );
+                    }
+
+                    if ( File.Exists( deleteItemFullPath ) )
+                    {
+                        File.Delete( deleteItemFullPath );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {0}</em></div>", ex.Message );
+                return false;
+            }
+
+            return wasActionTaken;
+        }
+
+        /// <summary>
+        /// Cleans up/removes the package file.
+        /// </summary>
+        /// <param name="packageFile">The package file path.</param>
+        private void CleanUpPackage( string packageFile )
         {
             try
             {
@@ -369,13 +505,17 @@ namespace RockWeb.Blocks.Store
                 {
                     File.Delete( packageFile );
                 }
-
-            } catch(Exception ex){
+            }
+            catch( Exception ex )
+            {
                 lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {0}</em></div>", ex.Message );
                 return;
             }
         }
 
+        /// <summary>
+        /// Display the package info.
+        /// </summary>
         private void DisplayPackageInfo()
         {
             string errorResponse = string.Empty;
@@ -383,9 +523,8 @@ namespace RockWeb.Blocks.Store
             // check that store is configured
             if ( StoreService.OrganizationIsConfigured() )
             {
-
                 PackageService packageService = new PackageService();
-                var package = packageService.GetPackage( packageId, out errorResponse );
+                var package = packageService.GetPackage( _packageId, out errorResponse );
 
                 // check for errors
                 ErrorCheck( errorResponse );
@@ -393,16 +532,15 @@ namespace RockWeb.Blocks.Store
                 //lPackageName.Text = package.Name;
                 imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
 
-
                 if ( package.IsFree )
                 {
                     //lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
-                    lInstallMessage.Text = string.Format(_installFreeMessage, package.Name);
+                    lInstallMessage.Text = string.Format( INSTALL_FREE_MESSAGE, package.Name );
                 }
                 else
                 {
                     //lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
-                    lInstallMessage.Text = string.Format( _installPurchaseMessage, package.Name, package.Price.ToString() );
+                    lInstallMessage.Text = string.Format( INSTALL_PURCHASE_MESSAGE, package.Name, package.Price.ToString() );
                 }
 
                 if ( package.IsPurchased )
@@ -414,26 +552,31 @@ namespace RockWeb.Blocks.Store
                     if ( installedPackage == null )
                     {
                         //lCost.Visible = false;
-                        lInstallMessage.Text = _installPreviousPurchase;
+                        lInstallMessage.Text = INSTALL_PREVIOUS_MESSAGE;
                     }
                     else
                     {
                         //lCost.Visible = false;
-                        lInstallMessage.Text = _updateMessage;
+                        lInstallMessage.Text = UPDATE_MESSAGE;
                         btnInstall.Text = "Update";
                     }
-
                 }
             }
             else
             {
-                var queryParams = new Dictionary<string, string>();
-                queryParams.Add( "ReturnUrl", Request.RawUrl );
+                var queryParams = new Dictionary<string, string>
+                {
+                    { "ReturnUrl", Request.RawUrl }
+                };
 
-                NavigateToLinkedPage( "LinkOrganizationPage", queryParams );
+                NavigateToLinkedPage( AttributeKey.LinkOrganizationPage, queryParams );
             }
         }
 
+        /// <summary>
+        /// Displays an error to the user if appropriate.
+        /// </summary>
+        /// <param name="errorResponse">The error response string.</param>
         private void ErrorCheck( string errorResponse )
         {
             if ( errorResponse != string.Empty )
@@ -444,6 +587,6 @@ namespace RockWeb.Blocks.Store
             }
         }
 
-        #endregion
+        #endregion Private Methods
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Search.Finance
     [Description( "Financial Account Search" )]
     [Export( typeof( SearchComponent ) )]
     [ExportMetadata( "ComponentName", "Account" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A1511DF5-7B3B-4E0D-BDEE-E4C4B56AACA7")]
     public class FinancialAccount : SearchComponent
     {
         /// <summary>

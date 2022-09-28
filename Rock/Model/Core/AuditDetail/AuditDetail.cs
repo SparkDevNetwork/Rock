@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [Table( "AuditDetail" )]
     [DataContract]
     [HideFromReporting]
+    [Rock.SystemGuid.EntityTypeGuid( "00A4323F-4A05-4E6A-8480-35D8B7BB6615")]
     public partial class AuditDetail : Entity<AuditDetail>
     {
 

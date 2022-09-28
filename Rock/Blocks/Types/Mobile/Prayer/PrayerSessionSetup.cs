@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "4A3B0D13-FC32-4354-A224-9D450F860BE9")]
     public class PrayerSessionSetup : RockMobileBlockType
     {
         #region Block Attributes

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
     [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, "GroupAndRole" )]
     [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true, "1", "", 2 )]
     [BooleanField("Update Existing", "If the selected person already belongs to the selected group, should their current role and status be updated to reflect the configured values above.", true, "", 3)]
+    [Rock.SystemGuid.EntityTypeGuid( "DF0167A1-6928-4FBC-893B-5826A28AAC83")]
     public class AddPersonToGroup : ActionComponent
     {
         /// <summary>
@@ -94,6 +95,11 @@ namespace Rock.Workflow.Action
                 errorMessages.Add( "No group was provided" );
             }
 
+            if ( group.IsArchived )
+            {
+                errorMessages.Add( "Group provided was archived." );
+            }
+
             if ( !groupRoleId.HasValue )
             {
                 errorMessages.Add( "No group role was provided and group doesn't have a default group role" );
@@ -141,9 +147,8 @@ namespace Rock.Workflow.Action
             if ( !errorMessages.Any() )
             {
                 var status = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
-
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                var groupMember = GetByGroupIdAndPersonIdAndPreferredGroupRoleId( groupMemberService, group.Id, person.Id, groupRoleId.Value );
                 bool isNew = false;
                 if ( groupMember == null )
                 {
@@ -156,11 +161,13 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
+                    groupMember.IsArchived = false;
                     if ( GetAttributeValue( action, "UpdateExisting" ).AsBoolean() )
                     {
                         groupMember.GroupRoleId = groupRoleId.Value;
                         groupMember.GroupMemberStatus = status;
                     }
+
                     action.AddLogEntry( $"{person.FullName} was already a member of the selected group.", true );
                 }
 
@@ -184,5 +191,25 @@ namespace Rock.Workflow.Action
             return true;
         }
 
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.GroupMember"/> that matches the Id of the <see cref="Rock.Model.Group"/>,
+        /// the Id of the <see cref="Rock.Model.Person"/>, and the Id of the <see cref="Rock.Model.GroupTypeRole"/>. If a 
+        /// GroupMember cannot be found with a matching GroupTypeRole, the first GroupMember that matches the Group Id and 
+        /// Person Id will be returned (with a different role id).
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <param name="groupMemberService">The group member service.</param>
+        /// <returns></returns>
+        public GroupMember GetByGroupIdAndPersonIdAndPreferredGroupRoleId(GroupMemberService groupMemberService, int groupId, int personId, int groupRoleId )
+        {
+            var members = groupMemberService
+                .Queryable( "Person,GroupRole", false, true )
+                .Where( t => t.GroupId == groupId && t.PersonId == personId )
+                .OrderBy( g => g.GroupRole.Order )
+                .ToList();
+            return members.Where( t => t.GroupRoleId == groupRoleId ).FirstOrDefault() ?? members.FirstOrDefault();
+        }
     }
 }

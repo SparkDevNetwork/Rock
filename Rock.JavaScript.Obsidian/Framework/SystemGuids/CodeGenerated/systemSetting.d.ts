@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Guids for System Settings. NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum SystemSetting {
     /** Do Not Disturb Start Setting */
     DoNotDisturbStart = "4A558666-32C7-4490-B860-0F41358E14CA",
@@ -29,4 +30,3 @@ export const enum SystemSetting {
     /** Do Not Disturb Active Setting */
     DoNotDisturbActive = "1BE30413-5C90-4B78-B324-BD31AA83C002",
 }
-

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [BooleanField( "Ignore If Connector Exists", "If the connection request already has a connector set, this action will not change the connector.", true, "", 2, "Ignore" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "47A50700-93CC-4B30-9A44-B16C2D31762F")]
     public class SetConnectionRequestConnector : ActionComponent
     {
         /// <summary>

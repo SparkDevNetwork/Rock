@@ -44,12 +44,13 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Media Element Detail" )]
     [Category( "CMS" )]
     [Description( "Edit details of a Media Element" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "881DC0D1-FF98-4A5E-827F-49DD5CD0BD32" )]
     public partial class MediaElementDetail : RockBlock, IRockBlockType
     {
         #region Properties
@@ -552,6 +553,7 @@ namespace RockWeb.Blocks.Cms
             pnlViewFile.Visible = false;
             lbMediaFiles.Visible = true;
             lbMediaAnalytics.Visible = false;
+            hlDuration.Visible = true;
 
             var rockContext = new RockContext();
             var mediaElementService = new MediaElementService( rockContext );
@@ -589,6 +591,7 @@ namespace RockWeb.Blocks.Cms
             pnlViewAnalytics.Visible = true;
 
             lActionTitle.Text = mediaElement.Name.FormatAsHtmlTitle();
+            hlDuration.Text = mediaElement.DurationSeconds.ToFriendlyDuration();
             mpMedia.MediaElementId = mediaElement.Id;
 
             RegisterStartupScript( mediaElement );
@@ -760,7 +763,7 @@ namespace RockWeb.Blocks.Cms
             var kpiMetrics = new List<string>();
 
             var engagement = interactions.Sum( a => a.WatchMap.WatchedPercentage ) / interactions.Count();
-            kpiMetrics.Add( GetKpiMetricLava( "blue-400", "fa fa-broadcast-tower", $"{engagement:n1}%", "Engagement", $"On average, people played {engagement:n1}% of the video." ) );
+            kpiMetrics.Add( GetKpiMetricLava( "blue-400", "fa fa-broadcast-tower", $"{engagement:n1}%", "Engagement", $"The total minutes played divided by the length of the video times the total number of plays." ) );
 
             var playCount = interactions.Count();
             var playCountText = GetFormattedNumber( playCount );
@@ -945,6 +948,7 @@ namespace RockWeb.Blocks.Cms
             bool isExistingElement = ( mediaElement != null );
 
             lbMediaAnalytics.Visible = isExistingElement;
+            hlDuration.Visible = isExistingElement;
             lbMediaFiles.Visible = false;
             pnlViewAnalytics.Visible = false;
 
@@ -1018,6 +1022,7 @@ namespace RockWeb.Blocks.Cms
             SetEditMode( false );
 
             lActionTitle.Text = mediaElement.Name.FormatAsHtmlTitle();
+            hlDuration.Text = mediaElement.DurationSeconds.ToFriendlyDuration();
 
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Folder", mediaElement.MediaFolder.Name );
@@ -1338,16 +1343,20 @@ namespace RockWeb.Blocks.Cms
             var interactionQuery = new InteractionService( rockContext ).Queryable()
                 .Include( i => i.PersonAlias.Person )
                 .Include( i => i.InteractionSession )
+                .Include( i => i.InteractionSession.InteractionSessionLocation )
+                .Include( i => i.InteractionSession.DeviceType )
                 .Where( i => i.InteractionComponent.InteractionChannelId == interactionChannelId
                     && i.Operation == "WATCH"
                     && i.InteractionComponent.EntityId == mediaElementId );
+
+            var filteredQuery = interactionQuery;
 
             if ( context != null )
             {
                 // Query for the next page of results.
                 // If the dates are the same, then take only older Ids.
                 // If dates are not the same, then only take older dates.
-                interactionQuery = interactionQuery
+                filteredQuery = filteredQuery
                     .Where( i => ( i.InteractionDateTime == context.LastDate && i.Id < context.LastId ) || i.InteractionDateTime < context.LastDate );
             }
 
@@ -1356,7 +1365,7 @@ namespace RockWeb.Blocks.Cms
             // Load the next 25 results.
             DateTimeParameterInterceptor.UseWith( rockContext, () =>
             {
-                interactions = interactionQuery
+                interactions = filteredQuery
                     .OrderByDescending( i => i.InteractionDateTime )
                     .ThenByDescending( i => i.Id )
                     .Take( 25 )
@@ -1387,7 +1396,13 @@ namespace RockWeb.Blocks.Cms
                     FullName = i.PersonAlias?.Person?.FullName ?? "Unknown",
                     PhotoUrl = i.PersonAlias?.Person?.PhotoUrl ?? "/Assets/Images/person-no-photo-unknown.svg",
                     Platform = "Unknown",
-                    Data = i.InteractionData.FromJsonDynamicOrNull()
+                    Data = i.InteractionData.FromJsonDynamicOrNull(),
+                    Location = i.InteractionSession?.InteractionSessionLocation?.Location,
+                    ClientType = i.InteractionSession?.DeviceType.ClientType,
+                    Isp = i.InteractionSession?.InteractionSessionLocation?.ISP,
+                    OperatingSystem = i.InteractionSession?.DeviceType?.OperatingSystem,
+                    Application = i.InteractionSession?.DeviceType?.Application,
+                    InteractionsCount = interactionQuery.Where( m => m.PersonAliasId == i.PersonAliasId ).Count()
                 } );
 
             return new BlockActionResult( System.Net.HttpStatusCode.OK, new {

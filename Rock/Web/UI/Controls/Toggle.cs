@@ -445,7 +445,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format( @"Rock.controls.toggleButton.initialize({{ id: '{0}', activeButtonCssClass: '{1}', onButtonCssClass: '{2}', offButtonCssClass: '{3}' }});", this.ClientID, this.ActiveButtonCssClass, this.OnCssClass, this.OffCssClass );
+            var script = $@"Rock.controls.toggleButton.initialize({{ id: '{this.ClientID}', activeButtonCssClass: '{this.ActiveButtonCssClass}', onButtonCssClass: '{this.OnCssClass}', offButtonCssClass: '{this.OffCssClass}'}});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "toggle-script" + this.ClientID, script, true );
         }
 

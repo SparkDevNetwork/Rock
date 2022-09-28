@@ -1,0 +1,131 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+import { defineComponent, PropType, ref, watch } from "vue";{% if UseAttributeValues == true %}
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}{% if UseIsActive == true %}
+import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescription == true or UseName == true %}
+import TextBox from "@Obsidian/Controls/textBox";{% endif %}
+import { updateRefValue } from "@Obsidian/Utility/util";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+
+export default defineComponent({
+    name: "Core.{{ EntityName }}Detail.EditPanel",
+
+    props: {
+        modelValue: {
+            type: Object as PropType<{{ EntityName }}Bag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<{{ EntityName }}DetailOptionsBag>,
+            required: true
+        }
+    },
+
+    components: {{ '{' }}{% if UseAttributeValues == true %}
+        AttributeValuesContainer,{% endif %}{% if UseIsActive == true %}
+        CheckBox,{% endif %}{% if UseDescription == true or UseName == true %}
+        TextBox{% endif %}
+    },
+
+    emits: {
+        "update:modelValue": (_value: {{ EntityName }}Bag) => true
+    },
+
+    setup(props, { emit }) {
+        // #region Values
+{% if UseAttributeValues == true %}
+        const attributes = ref(props.modelValue.attributes ?? []);
+        const attributeValues = ref(props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
+        const description = ref(props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
+        const isActive = ref(props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}
+        const name = ref(props.modelValue.name ?? "");{% endif %}
+
+        // #endregion
+
+        // #region Computed Values
+
+        // #endregion
+
+        // #region Functions
+
+        // #endregion
+
+        // #region Event Handlers
+
+        // #endregion
+
+        // Watch for changes in our model value and update all our values.
+        watch(() => props.modelValue, () => {{ '{' }}{% if UseAttributeValues == true %}
+            updateRefValue(attributes, props.modelValue.attributes ?? []);
+            updateRefValue(attributeValues, props.modelValue.attributeValues ?? []);{% endif %}{% if UseDescription == true %}
+            updateRefValue(description, props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
+            updateRefValue(isActive, props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}
+            updateRefValue(name, props.modelValue.name ?? "");{% endif %}
+        });
+
+        {% assign propNames = '' -%}
+        {% if UseAttributeValues == true %}{% assign propNames = propNames | AddToArray:'attributeValues' %}{% endif -%}
+        {% if UseDescription == true %}{% assign propNames = propNames | AddToArray:'description' %}{% endif -%}
+        {% if UseIsActive == true %}{% assign propNames = propNames | AddToArray:'isActive' %}{% endif -%}
+        {% if UseName == true %}{% assign propNames = propNames | AddToArray:'name' %}{% endif -%}
+        watch([{{ propNames | Join:', ' }}], () => {
+            const newValue: {{ EntityName }}Bag = {
+                ...props.modelValue,{% if UseAttributeValues == true %}
+                attributeValues: attributeValues.value,{% endif %}{% if UseDescription == true %}
+                description: description.value,{% endif %}{% if UseIsActive == true %}
+                isActive: isActive.value,{% endif %}{% if UseName == true %}
+                name: name.value{% endif %}
+            };
+
+            emit("update:modelValue", newValue);
+        });
+
+        return {{ '{' }}{% if UseAttributeValues == true %}
+            attributes,
+            attributeValues,{% endif %}{% if UseDescription == true %}
+            description,{% endif %}{% if UseIsActive == true %}
+            isActive,{% endif %}{% if UseName == true %}
+            name{% endif %}
+        };
+    },
+
+    template: `
+<fieldset>{% if UseName == true or UseIsActive == true %}
+    <div class="row">{% if UseName == true %}
+        <div class="col-md-6">
+            <TextBox v-model="name"
+                label="Name"
+                rules="required" />
+        </div>{% endif %}
+{% if UseIsActive == true %}
+        <div class="col-md-6">
+            <CheckBox v-model="isActive"
+                label="Active" />
+        </div>{% endif %}
+    </div>{% endif %}{% if UseDescription == true %}
+
+    <TextBox v-model="description"
+        label="Description"
+        textMode="multiline" />{% endif %}{% if UseAttributeValues == true %}
+
+    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />{% endif %}
+</fieldset>
+`
+});

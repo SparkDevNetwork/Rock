@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// SmsActions REST API
     /// </summary>
+    [RestControllerGuid( "5ABB22A3-1D17-4CFE-9F5D-3A25AFA47802" )]
     public partial class SmsActionsController : Rock.Rest.ApiController<Rock.Model.SmsAction>
     {
         /// <summary>

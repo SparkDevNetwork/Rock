@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// BenevolenceType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( BenevolenceType ) )]
-    public partial class BenevolenceTypeViewModelHelper : ViewModelHelper<BenevolenceType, Rock.ViewModel.BenevolenceTypeViewModel>
+    public partial class BenevolenceTypeViewModelHelper : ViewModelHelper<BenevolenceType, BenevolenceTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,17 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.BenevolenceTypeViewModel CreateViewModel( BenevolenceType model, Person currentPerson = null, bool loadAttributes = true )
+        public override BenevolenceTypeBag CreateViewModel( BenevolenceType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.BenevolenceTypeViewModel
+            var viewModel = new BenevolenceTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
+                AdditionalSettingsJson = model.AdditionalSettingsJson,
                 Description = model.Description,
                 IsActive = model.IsActive,
                 Name = model.Name,
@@ -162,6 +163,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BenevolenceType target, BenevolenceType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -184,7 +186,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.BenevolenceTypeViewModel ToViewModel( this BenevolenceType model, Person currentPerson = null, bool loadAttributes = false )
+        public static BenevolenceTypeBag ToViewModel( this BenevolenceType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new BenevolenceTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

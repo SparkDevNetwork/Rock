@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Top Signal of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Top Signal" )]
+    [Rock.SystemGuid.EntityTypeGuid( "63A79A4D-A3B0-4B97-B5AB-CE93FC3C03C7")]
     public class SignalSelect : DataSelectComponent
     {
         #region Properties

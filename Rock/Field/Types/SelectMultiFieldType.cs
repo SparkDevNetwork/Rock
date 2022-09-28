@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M13,1H3A2,2,0,0,0,1,3V13a2,2,0,0,0,2,2H13a2,2,0,0,0,2-2V3A2,2,0,0,0,13,1Zm.5,12a.5.5,0,0,1-.5.5H3a.5.5,0,0,1-.5-.5V3A.5.5,0,0,1,3,2.5H13a.5.5,0,0,1,.5.5Zm-3-7.53L7,8.94,5.5,7.47A.75.75,0,0,0,4.44,8.53l2,2a.87.87,0,0,0,.56.22.74.74,0,0,0,.53-.22l4-4a.75.75,0,0,0-1.06-1.06Z""/></g></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MULTI_SELECT )]
     public class SelectMultiFieldType : FieldType
     {
         #region Configuration
@@ -265,9 +266,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -531,6 +532,44 @@ namespace Rock.Field.Types
             }
 
             return comparison;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            var oldSqlQuery = oldValues.ToUpper().Contains( "SELECT" ) && oldValues.ToUpper().Contains( "FROM" );
+            var newSqlQuery = newValues.ToUpper().Contains( "SELECT" ) && newValues.ToUpper().Contains( "FROM" );
+
+            if ( oldValues != newValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var options = new Lava.CommonMergeFieldsOptions
+            {
+                GetLegacyGlobalMergeFields = false
+            };
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
+            var listSource = values.ResolveMergeFields( mergeFields );
+
+            // If the source is a SQL query then it is volatile since the results
+            // of the query might change at any time.
+            return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
         }
 
         #endregion

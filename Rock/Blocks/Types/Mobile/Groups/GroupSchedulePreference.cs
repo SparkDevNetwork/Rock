@@ -24,9 +24,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Blocks.Groups;
-using Rock.ViewModel.Blocks.Groups.GroupSchedulePreference;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Groups;
+using Rock.ViewModels.Blocks.Groups.GroupSchedulePreference;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -51,6 +51,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE )]
     public class GroupSchedulePreference : RockMobileBlockType
     {
 
@@ -203,10 +205,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 } )
                 .ToList();
 
-            var scheduleListItems = new List<ListItemViewModel>();
+            var scheduleListItems = new List<ListItemBag>();
             foreach ( var scheduleKey in groupMemberScheduleTemplates )
             {
-                scheduleListItems.Add( new ListItemViewModel
+                scheduleListItems.Add( new ListItemBag
                 {
                     Value = scheduleKey.Value.ToStringSafe(),
                     Text = scheduleKey.Text
@@ -242,8 +244,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Returns an individual's unique assignment schedule list.
         /// </summary>
         /// <param name="groupGuid"></param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> to be passed into mobile.</returns>
-        private List<ListItemViewModel> GetSpecificAssignmentScheduleList( Guid groupGuid )
+        /// <returns>A list of <see cref="ListItemBag"/> to be passed into mobile.</returns>
+        private List<ListItemBag> GetSpecificAssignmentScheduleList( Guid groupGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -287,11 +289,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     .Where( a => !configuredScheduleIds.Contains( a.Id ) )
                     .ToList();
 
-                var scheduleListItems = new List<ListItemViewModel>();
+                var scheduleListItems = new List<ListItemBag>();
 
                 foreach ( var value in sortedScheduleList )
                 {
-                    var scheduleListItem = new ListItemViewModel
+                    var scheduleListItem = new ListItemBag
                     {
                         Value = value.Guid.ToStringSafe(),
                         Text = value.Name
@@ -357,13 +359,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 // Loop through each assignment in the list.
                 foreach ( var groupMemberAssignment in groupMemberAssignmentList )
                 {
-                    var scheduleListItem = new ListItemViewModel
+                    var scheduleListItem = new ListItemBag
                     {
                         Value = groupMemberAssignment.Schedule.Guid.ToStringSafe(),
                         Text = groupMemberAssignment.Schedule.Name
                     };
 
-                    var locationListItem = new ListItemViewModel
+                    var locationListItem = new ListItemBag
                     {
                         Value = groupMemberAssignment.Location != null ? groupMemberAssignment.Location.Guid.ToStringSafe() : string.Empty,
                         Text = groupMemberAssignment.Location != null ? groupMemberAssignment.Location.Name : "No Location Preference"
@@ -409,7 +411,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var locations = new LocationService( rockContext ).GetByGroupSchedule( schedule.Id, group.Id )
                     .OrderBy( a => a.Name )
                     .AsEnumerable()
-                    .Select( a => new ListItemViewModel
+                    .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToStringSafe(),
                         Text = a.Name

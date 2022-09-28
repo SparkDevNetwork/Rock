@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MergeTemplates REST API
     /// </summary>
+    [RestControllerGuid( "1C9AA8B5-643B-4711-A47F-2D7262969154" )]
     public partial class MergeTemplatesController : Rock.Rest.ApiController<Rock.Model.MergeTemplate>
     {
         /// <summary>

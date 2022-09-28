@@ -47,19 +47,21 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
-        /// Gets the rock context from lava context or returns a new one if one does not exist.
+        /// Gets the current data context from the specified lava context or returns a new data context if either context does not exist.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
         public static RockContext GetRockContextFromLavaContext( ILavaRenderContext context )
         {
-            var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
+            var rockContext = context?.GetInternalField( "rock_context", null ) as RockContext;
 
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
-
-                context.SetInternalField( "rock_context", rockContext );
+                if ( context != null )
+                {
+                    context.SetInternalField( "rock_context", rockContext );
+                }
             }
 
             return rockContext;
@@ -167,6 +169,12 @@ namespace Rock.Lava
                 {
                     mergeFields.Add( "CurrentPerson", currentPerson );
                 }
+            }
+
+            if ( options.GetCurrentVisitor && rockPage != null )
+            {
+                var currentVisitor = rockPage.CurrentVisitor ?? rockPage.CurrentPersonAlias;
+                mergeFields.Add( "CurrentVisitor", currentVisitor );
             }
 
             if ( options.GetCampuses )
@@ -327,6 +335,78 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets a Person object from a Lava input parameter containing a person reference.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static Person GetPersonFromInputParameter( object input, ILavaRenderContext context )
+        {
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            // Parse the input object for a Person.
+            if ( input is Person p )
+            {
+                return p;
+            }
+            else if ( input is PersonAlias pa )
+            {
+                return pa?.Person;
+            }
+            else if ( input is string s )
+            {
+                var inputAsGuid = s.AsGuidOrNull();
+                if ( inputAsGuid != null )
+                {
+                    // If the input is a Guid, retrieve the corresponding Person.
+                    var personService = new PersonService( rockContext );
+                    var person = personService.Get( inputAsGuid.Value );
+                    return person;
+                }
+
+                var inputAsInt = s.AsIntegerOrNull();
+                if ( inputAsInt != null )
+                {
+                    // If the input is an integer, retrieve the corresponding Person.
+                    var personService = new PersonService( rockContext );
+                    var person = personService.Get( inputAsInt.Value );
+                    return person;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a PersonAlias representing the current visitor for whom a request is being processed.
+        /// </summary>
+        /// <param name="context">The Lava context.</param>
+        /// <returns></returns>
+        public static PersonAlias GetCurrentVisitorInContext( ILavaRenderContext context )
+        {
+            // If an override value is available in the Lava context, use it.
+            var currentVisitor = context.GetMergeField( "CurrentVisitor", null ) as PersonAlias;
+
+            // ... or try to get a value from the current HttpRequest.
+            if ( currentVisitor == null )
+            {
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentVisitor" ) )
+                {
+                    currentVisitor = httpContext.Items["CurrentVisitor"] as PersonAlias;
+                }
+            }
+
+            // ... or use the primary alias of the current person.
+            if ( currentVisitor == null )
+            {
+                var person = GetCurrentPerson( context );
+                currentVisitor = person?.PrimaryAlias;
+            }
+
+            return currentVisitor;
+        }
+
+        /// <summary>
         /// Parses the Lava Command markup, first resolving merge fields and then harvesting any provided parameters.
         /// </summary>
         /// <param name="markup">The Lava Command markup.</param>
@@ -436,6 +516,7 @@ namespace Rock.Lava
         private static string LavaTokenLineComment = @"//-";
 
         private static Regex _lavaCommentMatchGroupsRegex = null;
+        private static Regex _lavaLineCommentRegex = null;
 
         /// <summary>
         /// Build the regular expression that will be used to remove Lava-style comments from the template.
@@ -445,15 +526,14 @@ namespace Rock.Lava
             const string doubleQuotedString = @"(""[^""]*"")+";
             const string singleQuotedString = @"('[^']*')+";
 
-            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
-
-            var blockCommentElement = Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd );
-
+            var lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
+            var blockCommentElement = @"(?<!/)" + Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd ) + @"( *)([\r\n]*)";
             var rawBlock = @"\{%\sraw\s%\}(.*?)\{%\sendraw\s%\}";
 
             var templateElementMatchGroups = rawBlock + "|" + singleQuotedString + "|" + doubleQuotedString + "|" + blockCommentElement + "|" + lineCommentElement;
 
             // Create and compile the Regex, because it will be used very frequently.
+            _lavaLineCommentRegex = new Regex( lineCommentElement, RegexOptions.Compiled | RegexOptions.Singleline );
             _lavaCommentMatchGroupsRegex = new Regex( templateElementMatchGroups, RegexOptions.Compiled | RegexOptions.Singleline );
         }
 
@@ -477,14 +557,32 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
-            // Remove comments from the content.
+            // Remove comments from the lava template text.
+            // This is achieved using a RegEx replace operation as follows:
+            // 1. Identify and ignore content enclosed in a "{% raw %}" tag.
+            // 2. Identify any text enclosed in quotes (single or double).
+            //    If the quoted text spans multiple lines and contains a single-line comment, remove the comment.
+            // 4. Identify and remove any short-form comments not enclosed in quotes.
+            // 5. Leave all other text unchanged.
             var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
                 me =>
                 {
-                    // If the match group is a line comment, retain the end-of-line marker.
-                    if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) || me.Value.StartsWith( LavaTokenLineComment ) )
+                    if ( me.Value.StartsWith( LavaTokenLineComment ) )
                     {
-                        return me.Value.StartsWith( LavaTokenLineComment ) ? Environment.NewLine : string.Empty;
+                        // If the match is a line comment, retain the end-of-line marker.
+                        return Environment.NewLine;
+                    }
+                    else if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) )
+                    {
+                        return string.Empty;
+                    }
+                    else if ( me.Value.StartsWith( "'" ) || me.Value.StartsWith( "\"" ) )
+                    {
+                        // If the match is a quoted string, remove any single-line comments.
+                        // This may cause unexpected behavior in some literal text, but it ensures that
+                        // these comments are never unintentionally exposed as output.
+                        // (refer https://github.com/SparkDevNetwork/Rock/issues/4975)
+                        return _lavaLineCommentRegex.Replace( me.Value, Environment.NewLine );
                     }
 
                     // If the match group is not a comment, return a literal string.

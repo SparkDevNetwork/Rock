@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Lists interactions with a particular page." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "38C775A7-5CDC-415E-9595-76221354A999" )]
     public partial class PageViews : RockBlock, ICustomGridColumns
     {
         #region Keys

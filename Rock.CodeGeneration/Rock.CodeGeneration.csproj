@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,6 +12,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,32 +38,44 @@
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\Rock.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DocXml, Version=3.4.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\LoxSmoke.DocXml.3.4.5\lib\netstandard2.0\DocXml.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="Rock, Version=1.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
+      <HintPath>..\RockWeb\bin\Rock.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Blocks">
+      <HintPath>..\RockWeb\Bin\Rock.Blocks.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\RockWeb\Bin\Rock.Common.dll</HintPath>
+      <HintPath>..\RockWeb\bin\Rock.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Enums, Version=1.14.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\bin\Rock.Enums.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Lava">
+      <HintPath>..\RockWeb\Bin\Rock.Lava.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Lava.DotLiquid">
+      <HintPath>..\RockWeb\Bin\Rock.Lava.DotLiquid.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Lava.Fluid">
+      <HintPath>..\RockWeb\bin\Rock.Lava.Fluid.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Lava.Shared">
+      <HintPath>..\RockWeb\Bin\Rock.Lava.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Rest">
-      <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
+      <HintPath>..\RockWeb\bin\Rock.Rest.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.ViewModel">
-      <HintPath>..\RockWeb\Bin\Rock.ViewModel.dll</HintPath>
+    <Reference Include="Rock.ViewModels">
+      <HintPath>..\RockWeb\bin\Rock.ViewModels.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -76,19 +91,73 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Utility\CodeGenHelpers.cs" />
+    <Compile Include="Controls\Alert.xaml.cs">
+      <DependentUpon>Alert.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Program.cs" />
+    <Compile Include="Controls\NavigationFrame.xaml.cs">
+      <DependentUpon>NavigationFrame.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SelectEntityDialog.xaml.cs">
+      <DependentUpon>SelectEntityDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\FrameworkElementExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="FileGenerators\CSharpViewModelGenerator.cs" />
+    <Compile Include="FileGenerators\Generator.cs" />
+    <Compile Include="FileGenerators\TypeScriptViewModelGenerator.cs" />
+    <Compile Include="Lava\CustomLavaFilters.cs" />
+    <Compile Include="Lava\LavaDynamic.cs" />
+    <Compile Include="Lava\LavaHelper.cs" />
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\GeneratedFilePreviewPage.xaml.cs">
+      <DependentUpon>GeneratedFilePreviewPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MenuPage.xaml.cs">
+      <DependentUpon>MenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ModelGenerationPage.xaml.cs">
+      <DependentUpon>ModelGenerationPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ObsidianDetailBlockPage.xaml.cs">
+      <DependentUpon>ObsidianDetailBlockPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ObsidianEnumsPage.xaml.cs">
+      <DependentUpon>ObsidianEnumsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ObsidianSystemGuidsPage.xaml.cs">
+      <DependentUpon>ObsidianSystemGuidsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ObsidianViewModelsPage.xaml.cs">
+      <DependentUpon>ObsidianViewModelsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="Utility\GeneratedFileSaveState.cs" />
+    <Compile Include="Utility\RockGuidCodeGenerator.cs" />
+    <Compile Include="Utility\AlertType.cs" />
+    <Compile Include="Utility\BindingBase.cs" />
+    <Compile Include="Utility\EntityProperty.cs" />
+    <Compile Include="Utility\GeneratedFile.cs" />
+    <Compile Include="Utility\INavigation.cs" />
+    <Compile Include="Utility\InverseBooleanConverter.cs" />
+    <Compile Include="Utility\PropertyDeclaration.cs" />
+    <Compile Include="Utility\SolutionHelper.cs" />
+    <Compile Include="Utility\SupportTools.cs" />
+    <Compile Include="Utility\TypeScriptImport.cs" />
+    <Compile Include="ViewModels\AlertViewModel.cs" />
+    <Compile Include="XmlDoc\Comment.cs" />
+    <Compile Include="XmlDoc\Comments.cs" />
+    <Compile Include="XmlDoc\XmlDocId.cs" />
+    <Compile Include="XmlDoc\XmlDocReader.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -99,7 +168,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
+    <None Include="App.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -109,14 +178,98 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <EmbeddedResource Include="Resources\EditPanel-ts.lava" />
+    <EmbeddedResource Include="Resources\EntityDetailBlock-cs.lava" />
+    <EmbeddedResource Include="Resources\EntityDetailBlock-ts.lava" />
+    <EmbeddedResource Include="Resources\ViewPanel-ts.lava" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EntityFramework">
+      <Version>6.4.4</Version>
+    </PackageReference>
+    <PackageReference Include="FontAwesome.WPF">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core">
+      <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="DiffPlex.Wpf">
+      <Version>1.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="FontAwesome.Sharp">
+      <Version>5.15.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build">
+      <Version>17.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core">
+      <Version>17.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop">
+      <Version>17.1.32210.191</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="Controls\Alert.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\NavigationFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogs\SelectEntityDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\GeneratedFilePreviewPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\MenuPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\ModelGenerationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\ObsidianDetailBlockPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\ObsidianEnumsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\ObsidianSystemGuidsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\ObsidianViewModelsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Rock.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

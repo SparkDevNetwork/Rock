@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class NotesController
     {
@@ -34,13 +34,14 @@ namespace Rock.Rest.Controllers
         // NOTE: Intentionally don't use the [Secured] attribute on this Controller method since security depends on which Note they are attempting to Edit
         [HttpGet]
         [System.Web.Http.Route( "api/Notes/GetNoteEditData" )]
+        [Rock.SystemGuid.RestActionGuid( "D7DA6AB3-CCCD-4ABB-AD25-83EE092A5DD5" )]
         public Rock.Model.Note GetNoteEditData( int noteId )
         {
             // Enable proxy creation since Note security may need to lazy load some child properties (for example, note.CreatedByPersonAlias)
             SetProxyCreation( true );
 
             var noteData = this.Get( noteId );
-            
+
             // So, we'll manually check security here instead
             CheckCanEdit( noteData );
             return noteData;

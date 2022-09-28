@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Url", "Url Attribute", "The full URL to redirect to, for example: http://www.rockrms.com  <span class='tip tip-lava'></span>", true, "", "", 0, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType", "Rock.Field.Types.AudioUrlFieldType", "Rock.Field.Types.VideoUrlFieldType" } )]
     [CustomDropdownListField( "Processing Options", "How should workflow continue processing?", "0^Always continue,1^Only continue on redirect,2^Never continue", true, "0", "", 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "E2F3DFC1-415D-45C9-B84E-D91562139FDA")]
     public class Redirect : ActionComponent
     {
         /// <summary>

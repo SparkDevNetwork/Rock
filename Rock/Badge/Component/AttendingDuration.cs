@@ -17,9 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Humanizer;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -31,7 +33,8 @@ namespace Rock.Badge.Component
     [Description( "Badge that summarizes how long someone has been attending." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attending Duration" )]
-    
+
+    [Rock.SystemGuid.EntityTypeGuid( "B50090B4-9424-4963-B34F-957394FFBB3E")]
     public class AttendingDuration : BadgeComponent
     {
 
@@ -48,19 +51,15 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
 
-            DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();
+            DateTime? firstVisit = person.GetAttributeValue( "FirstVisit" ).AsDateTime();
             if (firstVisit.HasValue)
             {
                 TimeSpan attendanceDuration = RockDateTime.Now - firstVisit.Value;
@@ -71,7 +70,7 @@ namespace Rock.Badge.Component
 
                 if (attendanceDuration.Days < _weeksPeriodInDays) // display value in weeks
                 {
-                    
+
                     if (attendanceDuration.Days < 7)
                     {
                         spanValue = "New";
@@ -98,23 +97,17 @@ namespace Rock.Badge.Component
 
                 if (spanValue == "New")
                 {
-                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} is new this week.'>", Person.NickName));
+                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {1}' data-toggle='tooltip' data-original-title='{0} is new this week.'>", person.NickName, cssClass));
                 }
                 else
                 {
-                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", Person.NickName, spanUnit.ToQuantity(spanValue.AsInteger())));
+                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {2}' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", person.NickName, spanUnit.ToQuantity(spanValue.AsInteger()), cssClass));
                 }
 
-                writer.Write(String.Format("<div class='duration-metric {0}'>", cssClass));
-                writer.Write(String.Format("<span class='metric-value'>{0}<span class='metric-unit'>{1}</span></span>", spanValue, spanUnit));
-                writer.Write("</div>");
+                writer.Write(String.Format("<span class='metric-value'>{0}</span><span class='metric-unit'>{1}</span>", spanValue, spanUnit));
 
                 writer.Write("</div>");
             }
-            
-
         }
-
-
     }
 }

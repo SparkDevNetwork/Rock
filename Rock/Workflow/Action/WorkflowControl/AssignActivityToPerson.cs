@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activity Assign to Person" )]
 
     [PersonField( "Person", "The person to assign this activity to.")]
+    [Rock.SystemGuid.EntityTypeGuid( "FB2981B7-7922-42E1-8ACF-7F63BB7989E6")]
     public class AssignActivityToPerson : ActionComponent
     {
         /// <summary>

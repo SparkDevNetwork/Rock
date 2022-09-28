@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 
 using Rock.Data;
@@ -711,11 +712,13 @@ namespace Rock.Financial
 
                     if ( pledgeSettings.IncludeGiftsToChildAccounts )
                     {
-                        // If PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
+                        // If PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge
+                        var childAccountIds = FinancialAccountCache.Get( pledgeSummary.AccountId )?.GetDescendentFinancialAccountIds() ?? new int[0];
+
                         pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
                             t.AccountId == pledgeSummary.AccountId
                             ||
-                            ( t.Account.ParentAccountId.HasValue && t.Account.ParentAccountId == pledgeSummary.AccountId ) );
+                            ( childAccountIds.Contains( t.AccountId ) ) );
                     }
                     else
                     {
@@ -852,7 +855,7 @@ namespace Rock.Financial
             else
             {
                 // NOTE: Only get the Pledges that were specifically pledged to the selected accounts
-                // If the PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
+                // If the PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge
                 var selectedAccountIds = pledgeSettings.AccountIds;
                 pledgeQry = pledgeQry.Where( a => a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) );
             }
@@ -1018,6 +1021,292 @@ namespace Rock.Financial
             }
 
             return financialTransactionQry;
+        }
+
+        /// <summary>
+        /// Uploads the giving statement document.
+        /// </summary>
+        /// <param name="uploadGivingStatementData">The upload giving statement data.</param>
+        /// <returns></returns>
+        public static FinancialStatementGeneratorUploadGivingStatementResult UploadGivingStatementDocument( FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData )
+        {
+            return UploadGivingStatementDocument( uploadGivingStatementData, out _ );
+        }
+
+        /// <summary>
+        /// Uploads the giving statement document, and returns the <see cref="Rock.Model.BinaryFile"/> Id
+        /// </summary>
+        /// <param name="uploadGivingStatementData">The upload giving statement data.</param>
+        /// <param name="firstBinaryFileId">Id of the first Binary File created for this upload.</param>
+        /// <returns></returns>
+        public static FinancialStatementGeneratorUploadGivingStatementResult UploadGivingStatementDocument( FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData, out int? firstBinaryFileId )
+        {
+            firstBinaryFileId = null;
+
+            if ( uploadGivingStatementData == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorUploadGivingStatementData must be specified" );
+            }
+
+            var saveOptions = uploadGivingStatementData?.FinancialStatementIndividualSaveOptions;
+
+            if ( saveOptions == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementIndividualSaveOptions must be specified" );
+            }
+
+            if ( !saveOptions.SaveStatementsForIndividuals )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementIndividualSaveOptions.SaveStatementsForIndividuals is not enabled." );
+            }
+
+            var documentTypeId = saveOptions.DocumentTypeId;
+
+            if ( !documentTypeId.HasValue )
+            {
+                throw new FinancialGivingStatementArgumentException( "Document Type must be specified" );
+            }
+
+            var rockContext = new RockContext();
+            var documentType = new DocumentTypeService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( dt => dt.Id == documentTypeId.Value )
+                    .FirstOrDefault();
+
+            if ( documentType == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "DocumentType must be specified" );
+            }
+
+            var pdfData = uploadGivingStatementData.PDFData;
+
+            var financialStatementGeneratorRecipient = uploadGivingStatementData.FinancialStatementGeneratorRecipient;
+            if ( financialStatementGeneratorRecipient == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorRecipient must be specified" );
+            }
+
+            var documentName = GetFinancialStatementDocumentName( uploadGivingStatementData, documentType );
+            var fileName = $"{documentName.ReplaceSpecialCharacters( "_" )}.pdf";
+
+            // In this case, we still need to create the document, but don't upload it to the Person
+            var doNotSave = ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.DoNotSave );
+
+            List<int> documentPersonIds;
+            if ( financialStatementGeneratorRecipient.PersonId.HasValue )
+            {
+                // If we are saving for a person that gives an individual, just give document to that person (ignore the FinancialStatementIndividualSaveOptionsSaveFor option)
+                // only upload the document to the individual person
+                documentPersonIds = new List<int>();
+                documentPersonIds.Add( financialStatementGeneratorRecipient.PersonId.Value );
+            }
+            else
+            {
+                var groupId = financialStatementGeneratorRecipient.GroupId;
+                var givingFamilyMembersQuery = new GroupMemberService( rockContext ).GetByGroupId( groupId, false );
+
+                // limit to family members within the same giving group
+                givingFamilyMembersQuery = givingFamilyMembersQuery.Where( a => a.Person.GivingGroupId.HasValue && a.Person.GivingGroupId == groupId );
+
+                if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup )
+                {
+                    documentPersonIds = givingFamilyMembersQuery
+                        .Where( a => a.Person.AgeClassification == AgeClassification.Adult ).Select( a => a.PersonId ).ToList();
+                }
+                else if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup )
+                {
+                    documentPersonIds = givingFamilyMembersQuery
+                        .Select( a => a.PersonId ).ToList();
+                }
+                else if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver ||
+                    saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.DoNotSave )
+                {
+                    // Set document for PrimaryGiver (aka Head of Household).
+                    // Note that HeadOfHouseHold would calculated based on family members within the same giving group
+                    var headOfHouseHoldPersonId = givingFamilyMembersQuery.GetHeadOfHousehold( s => ( int? ) s.PersonId );
+                    documentPersonIds = new List<int>();
+                    if ( headOfHouseHoldPersonId.HasValue )
+                    {
+                        documentPersonIds.Add( headOfHouseHoldPersonId.Value );
+                    }
+                }
+                else
+                {
+                    // shouldn't happen
+                    documentPersonIds = new List<int>();
+                }
+            }
+
+            var today = RockDateTime.Today;
+            var tomorrow = today.AddDays( 1 );
+
+            foreach ( var documentPersonId in documentPersonIds )
+            {
+                // Create the document, linking the entity and binary file.
+#pragma warning disable CS0618
+                // This is obsolete, but we'll still need to use it until it this option is completely remove
+                var overwriteDocumentsOfThisTypeCreatedOnSameDate = saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
+#pragma warning restore CS0618
+
+                if ( overwriteDocumentsOfThisTypeCreatedOnSameDate == true && doNotSave == false )
+                {
+                    using ( var deleteDocContext = new RockContext() )
+                    {
+                        var deleteDocumentService = new DocumentService( deleteDocContext );
+
+                        // See if there is an existing one.
+                        // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
+                        var existingDocument = deleteDocumentService.Queryable().Where(
+                            a => a.DocumentTypeId == documentTypeId.Value
+                            && a.EntityId == documentPersonId
+                            && a.CreatedDateTime.HasValue
+                            && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
+                            .Include( a => a.BinaryFile ).FirstOrDefault();
+
+                        // NOTE: Delete vs update since we normally don't change the contents of documents/binary files once they've been created
+                        if ( existingDocument != null )
+                        {
+                            deleteDocumentService.Delete( existingDocument );
+                            deleteDocContext.SaveChanges();
+                        }
+                    }
+                }
+
+                if ( saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey == true && doNotSave == false )
+                {
+                    using ( var deleteDocContext = new RockContext() )
+                    {
+                        var deleteDocumentService = new DocumentService( deleteDocContext );
+
+                        // See if there is an existing one.
+                        // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
+                        var existingDocument = deleteDocumentService.Queryable().Where(
+                            a => a.DocumentTypeId == documentTypeId.Value
+                            && a.EntityId == documentPersonId
+                            && a.PurposeKey == saveOptions.DocumentPurposeKey )
+                            .Include( a => a.BinaryFile ).FirstOrDefault();
+
+                        // NOTE: Delete vs update since we normally don't change the contents of documents/binary files once they've been created
+                        if ( existingDocument != null )
+                        {
+                            deleteDocumentService.Delete( existingDocument );
+                            deleteDocContext.SaveChanges();
+                        }
+                    }
+                }
+
+                // Create the binary file.
+                var binaryFile = new BinaryFile
+                {
+                    BinaryFileTypeId = documentType.BinaryFileTypeId,
+                    MimeType = "application/pdf",
+                    FileName = fileName,
+                    FileSize = pdfData.Length,
+                    IsTemporary = false,
+                    ContentStream = new MemoryStream( pdfData )
+                };
+
+                new BinaryFileService( rockContext ).Add( binaryFile );
+                rockContext.SaveChanges();
+
+                if ( firstBinaryFileId == null )
+                {
+                    firstBinaryFileId = binaryFile.Id;
+
+                    if ( doNotSave )
+                    {
+                        // Need the binary file for any workflow actions,
+                        // but we do not need to continue through this loop.
+                        break;
+                    }
+                }
+
+                if ( doNotSave )
+                {
+                    continue;
+                }
+
+                Document document = new Document
+                {
+                    DocumentTypeId = documentTypeId.Value,
+                    EntityId = documentPersonId,
+                    PurposeKey = saveOptions.DocumentPurposeKey,
+                    Name = documentName,
+                    Description = saveOptions.DocumentDescription
+                };
+
+                document.SetBinaryFile( binaryFile.Id, rockContext );
+
+                var documentService = new DocumentService( rockContext );
+
+                documentService.Add( document );
+            }
+
+            rockContext.SaveChanges();
+
+            return new FinancialStatementGeneratorUploadGivingStatementResult
+            {
+                NumberOfIndividuals = documentPersonIds.Count
+            };
+        }
+
+        /// <summary>
+        /// Gets the name of the financial statement document.
+        /// </summary>
+        /// <param name="uploadGivingStatementData">The upload giving statement data.</param>
+        /// <param name="documentType">Type of the document.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="T:Rock.Financial.FinancialGivingStatementArgumentException">FinancialStatementGeneratorUploadGivingStatementData must be specified</exception>
+        /// <exception cref="T:Rock.Financial.FinancialGivingStatementArgumentException">FinancialStatementIndividualSaveOptions must be specified</exception>
+        /// <exception cref="T:Rock.Financial.FinancialGivingStatementArgumentException">DocumentType must be specified</exception>
+        public static string GetFinancialStatementDocumentName( FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData, DocumentType documentType )
+        {
+            if ( uploadGivingStatementData == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorUploadGivingStatementData must be specified" );
+            }
+
+            var saveOptions = uploadGivingStatementData?.FinancialStatementIndividualSaveOptions;
+
+            if ( saveOptions == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "FinancialStatementIndividualSaveOptions must be specified" );
+            }
+
+            if ( documentType == null )
+            {
+                throw new FinancialGivingStatementArgumentException( "DocumentType must be specified" );
+            }
+
+            /*
+             * 9-MAY-2022 DMV
+             *
+             * If they didn't specify a document name we are going to set it
+             * based on the Default Document Name Template from the Document Type.
+             *
+             */
+
+            var documentName = saveOptions.DocumentName;
+            var documentNameTemplate = documentType.DefaultDocumentNameTemplate;
+            if ( documentName.IsNullOrWhiteSpace() &&
+                 documentNameTemplate.IsNotNullOrWhiteSpace() )
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
+                mergeFields.AddOrReplace( "NickName", uploadGivingStatementData.FinancialStatementGeneratorRecipient.NickName );
+                mergeFields.AddOrReplace( "LastName", uploadGivingStatementData.FinancialStatementGeneratorRecipient.LastName );
+                mergeFields.AddOrReplace( "DocumentPurposeKey", uploadGivingStatementData.FinancialStatementIndividualSaveOptions.DocumentPurposeKey );
+                mergeFields.AddOrReplace( "DocumentTypeName", documentType.Name );
+                documentName = documentNameTemplate.ResolveMergeFields( mergeFields );
+            }
+
+            if ( documentName.IsNullOrWhiteSpace() )
+            {
+                // If there isn't a DocumentName and the documentNameTemplate didn't result in a name, use Document Type name, or fail over to just "Document"
+                documentName = documentType?.Name ?? "Document";
+            }
+
+            return documentName;
         }
 
         private class AccountSummaryInfo : RockDynamic

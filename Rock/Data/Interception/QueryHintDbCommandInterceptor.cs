@@ -72,7 +72,7 @@ namespace Rock.Data
         /// <value>
         /// The database context.
         /// </value>
-        private Rock.Data.DbContext DbContext { get; set; }
+        private System.Data.Entity.DbContext DbContext { get; set; }
 
         /// <summary>
         /// Gets or sets the hint.

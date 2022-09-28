@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowTypeFieldType" }, order: 3 )]
     [KeyValueListField( "Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 4 )]
     [WorkflowAttribute( "Workflow Attribute", "The attribute to hold the new activated workflow. ", false, "", "", 5, null, new string[] { "Rock.Field.Types.WorkflowFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "9E3C42B5-792A-4694-8ACE-B84E5E87C800")]
     public class ActivateWorkflow : ActionComponent
     {
         /// <summary>

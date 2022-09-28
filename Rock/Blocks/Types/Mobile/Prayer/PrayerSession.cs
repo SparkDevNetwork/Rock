@@ -24,6 +24,7 @@ using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Events
@@ -97,8 +98,19 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 7 )]
 
+    [EnumField(
+        "Order",
+        Description = "The order that requests should be displayed.",
+        IsRequired = true,
+        EnumSourceType = typeof( PrayerRequestOrder ),
+        DefaultEnumValue = ( int ) PrayerRequestOrder.LeastPrayedFor,
+        Key = AttributeKeys.PrayerOrder,
+        Order = 8 )]
+
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_PRAYER_SESSION_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "420DEA5F-9ABC-4E59-A9BD-DCA972657B84" )]
     public class PrayerSession : RockMobileBlockType
     {
         #region Block Attributes
@@ -147,6 +159,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The include group requests key.
             /// </summary>
             public const string IncludeGroupRequests = "IncludeGroupRequests";
+
+            /// <summary>
+            /// The prayer order key.
+            /// </summary>
+            public const string PrayerOrder = "PrayerOrder";
         }
 
         /// <summary>
@@ -214,6 +231,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// A value that specifies if group requests should be included by default.
         /// </value>
         protected bool IncludeGroupRequests => GetAttributeValue( AttributeKeys.IncludeGroupRequests ).AsBoolean( false );
+
+        /// <summary>
+        /// Gets the order of the prayer requests.
+        /// </summary>
+        /// <value>
+        /// The order of the prayer requests.
+        /// </value>
+        protected PrayerRequestOrder PrayerOrder => GetAttributeValue( AttributeKeys.PrayerOrder ).ConvertToEnum<PrayerRequestOrder>( PrayerRequestOrder.LeastPrayedFor );
 
         #endregion
 
@@ -418,7 +443,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
 
             query = query.OrderByDescending( a => a.IsUrgent )
-                .ThenBy( a => a.PrayerCount );
+                .ThenBy( PrayerOrder );
 
             return query;
         }

@@ -49,12 +49,28 @@ namespace Rock.Model
         public DateTime? RequirementWarningDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirement due date.
+        /// </summary>
+        /// <value>
+        /// The requirement due date.
+        /// </value>
+        public DateTime? RequirementDueDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the last requirement check date time.
         /// </summary>
         /// <value>
         /// The last requirement check date time.
         /// </value>
         public DateTime? LastRequirementCheckDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member requirement id.
+        /// </summary>
+        /// <value>
+        /// The group member requirement id.
+        /// </value>
+        public int? GroupMemberRequirementId { get; set; }
 
         /// <summary>
         /// Gets or sets the calculation exception.

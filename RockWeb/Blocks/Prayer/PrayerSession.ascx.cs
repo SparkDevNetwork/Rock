@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.Prayer
         DefaultBooleanValue = true,
         IsRequired = true,
         Order = 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "FD294789-3B72-4D83-8006-FA50B5087D06" )]
     public partial class PrayerSession : RockBlock
     {
         #region Keys
@@ -125,6 +126,11 @@ namespace RockWeb.Blocks.Prayer
             public const string EnableCommunityFlagging = "EnableCommunityFlagging";
             public const string CategoryGuid = "CategoryGuid";
             public const string WelcomeIntroductionText = "WelcomeIntroductionText";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string GroupGuid = "GroupGuid";
         }
 
         #endregion
@@ -517,6 +523,17 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
+            var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            if ( groupGuidQryString.HasValue )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group != null && a.Group.Guid == groupGuidQryString.Value );
+            }
+            else
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.GroupId == null );
+            }
+
+            var seee = prayerRequestQuery.ToList();
             var limitToPublic = GetAttributeValue( PUBLIC_ONLY ).AsBoolean();
             var categoryList = prayerRequestQuery
                 .Where( p => p.Category != null && ( !limitToPublic || ( p.IsPublic ?? false ) ) )
@@ -592,6 +609,16 @@ namespace RockWeb.Blocks.Prayer
             if ( limitToPublic )
             {
                 prayerRequestQuery = prayerRequestQuery.Where( a => a.IsPublic.HasValue && a.IsPublic.Value );
+            }
+
+            var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            if ( groupGuidQryString.HasValue )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group != null && a.Group.Guid == groupGuidQryString.Value );
+            }
+            else
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.GroupId == null );
             }
 
             var prayerRequests = prayerRequestQuery.OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();

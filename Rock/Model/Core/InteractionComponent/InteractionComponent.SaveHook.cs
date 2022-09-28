@@ -45,11 +45,11 @@ namespace Rock.Model
                     {
                         if ( this.PreSaveState == EntityContextState.Added )
                         {
-                            channel.AddComponentId( Entity.Id );
+                            channel.AddComponentId( Entity.Id, this.RockContext );
                         }
                         else
                         {
-                            channel.RemoveComponentId( Entity.Id );
+                            channel.RemoveComponentId( Entity.Id, this.RockContext );
                         }
                     }
                 }

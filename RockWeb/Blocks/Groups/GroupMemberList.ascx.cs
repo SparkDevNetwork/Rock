@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
     [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
@@ -66,6 +67,9 @@ namespace RockWeb.Blocks.Groups
         private Dictionary<int, List<GroupMemberRegistrationItem>> _groupMembersWithRegistrations = new Dictionary<int, List<GroupMemberRegistrationItem>>();
         private int? _homePhoneTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
         private int? _cellPhoneTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+
+        private bool _allowInactiveGroupMembers = false;
+        private bool _hasInactiveGroupMembersSelected = false;
 
         private class GroupMemberRegistrationItem
         {
@@ -203,6 +207,17 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.GetRecipientMergeFields += gGroupMembers_GetRecipientMergeFields;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+
+                    // Add a custom button with an EventHandler that is only in this block.
+                    var customActionConfigEventButton = new CustomActionConfigEvent
+                    {
+                        IconCssClass = "fa fa-comment",
+                        HelpText = "Communicate",
+                        EventHandler = gGroupMembers_CommunicateClick
+                    };
+                    gGroupMembers.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
+                    gGroupMembers.Actions.ShowCommunicate = false;
+
                     gGroupMembers.RowItemText = _groupTypeCache.GroupTerm + " " + _groupTypeCache.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
@@ -824,6 +839,20 @@ namespace RockWeb.Blocks.Groups
             BindGroupMembersGrid( e.IsExporting, e.IsCommunication );
         }
 
+        protected void gGroupMembers_CommunicateClick( object sender, EventArgs e )
+        {
+            BindGroupMembersGrid();
+            if ( _hasInactiveGroupMembersSelected )
+            {
+                mdActiveRecords.Visible = true;
+                mdActiveRecords.Show();
+            }
+            else
+            {
+                gGroupMembers.Actions.InvokeCommunicateClick( sender, e );
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -1290,7 +1319,7 @@ namespace RockWeb.Blocks.Groups
                 .AsNoTracking()
                 .Where( m => m.GroupId == _group.Id );
 
-            if ( isCommunication )
+            if ( isCommunication && !_allowInactiveGroupMembers )
             {
                 qry = qry.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive );
             }
@@ -1568,6 +1597,19 @@ namespace RockWeb.Blocks.Groups
             _showNoteColumn = GetAttributeValue( "ShowNoteColumn" ).AsBoolean();
             gGroupMembers.ColumnsOfType<RockBoundField>().First( a => a.DataField == "Note" ).Visible = _showNoteColumn;
 
+            List<int> selectedGroupMemberIds = new List<int>();
+
+            // If any row is selected, use those selected, otherwise choose all of them.
+            selectedGroupMemberIds = !gGroupMembers.SelectedKeys.Any() ? qry.Select( gm => gm.Id ).ToList() : gGroupMembers.SelectedKeys.OfType<int>().ToList();
+
+            var hasInactiveGroupMembers = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
+
+            if ( selectedGroupMemberIds.Count > 0 && hasInactiveGroupMembers )
+            {
+                // Determine if the current query has inactive group members selected.
+                _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+            }
+
             gGroupMembers.SetLinqDataSource( qry );
             gGroupMembers.DataBind();
         }
@@ -1608,5 +1650,21 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        protected void lbActiveAndInactiveGroupMembers_Click( object sender, EventArgs e )
+        {
+            // Sets the query parameters to include active and inactive group members, and then triggers the communicate action.
+            _allowInactiveGroupMembers = true;
+            mdActiveRecords.Hide();
+            gGroupMembers.Actions.InvokeCommunicateClick( sender, e );
+        }
+
+        protected void lbActiveGroupMembersOnly_Click( object sender, EventArgs e )
+        {
+            // Sets the query parameters to include active group members only, and then triggers the communicate action.
+            _allowInactiveGroupMembers = false;
+            mdActiveRecords.Hide();
+            gGroupMembers.Actions.InvokeCommunicateClick( sender, e );
+        }
     }
 }

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -60,6 +61,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionType.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.ConnectionTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionType.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -68,7 +75,7 @@ namespace Rock.Model
     /// ConnectionType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionType ) )]
-    public partial class ConnectionTypeViewModelHelper : ViewModelHelper<ConnectionType, Rock.ViewModel.ConnectionTypeViewModel>
+    public partial class ConnectionTypeViewModelHelper : ViewModelHelper<ConnectionType, ConnectionTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +84,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionTypeViewModel CreateViewModel( ConnectionType model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionTypeBag CreateViewModel( ConnectionType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionTypeViewModel
+            var viewModel = new ConnectionTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConnectionRequestDetailPageId = model.ConnectionRequestDetailPageId,
                 ConnectionRequestDetailPageRouteId = model.ConnectionRequestDetailPageRouteId,
                 DaysUntilRequestIdle = model.DaysUntilRequestIdle,
@@ -206,7 +212,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionTypeViewModel ToViewModel( this ConnectionType model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionTypeBag ToViewModel( this ConnectionType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// AssessmentType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AssessmentType ) )]
-    public partial class AssessmentTypeViewModelHelper : ViewModelHelper<AssessmentType, Rock.ViewModel.AssessmentTypeViewModel>
+    public partial class AssessmentTypeViewModelHelper : ViewModelHelper<AssessmentType, AssessmentTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AssessmentTypeViewModel CreateViewModel( AssessmentType model, Person currentPerson = null, bool loadAttributes = true )
+        public override AssessmentTypeBag CreateViewModel( AssessmentType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AssessmentTypeViewModel
+            var viewModel = new AssessmentTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AssessmentPath = model.AssessmentPath,
                 AssessmentResultsPath = model.AssessmentResultsPath,
                 BadgeColor = model.BadgeColor,
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AssessmentTypeViewModel ToViewModel( this AssessmentType model, Person currentPerson = null, bool loadAttributes = false )
+        public static AssessmentTypeBag ToViewModel( this AssessmentType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AssessmentTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

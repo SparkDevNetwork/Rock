@@ -16,6 +16,8 @@
 //
 
 
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Media;
@@ -64,6 +66,26 @@ namespace Rock.Model
                     .FirstOrDefault()?.Link ?? string.Empty;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the media element file data. This contains all the
+        /// information about the different file URLs available for the user
+        /// to stream or download.
+        /// </summary>
+        /// <value>
+        /// The media element file data.
+        /// </value>
+        [NotMapped]
+        public virtual List<MediaElementFileData> FileData { get; set; } = new List<MediaElementFileData>();
+
+        /// <summary>
+        /// Gets or sets the thumbnail data.
+        /// </summary>
+        /// <value>
+        /// The thumbnail data.
+        /// </value>
+        [NotMapped]
+        public virtual List<MediaElementThumbnailData> ThumbnailData { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
     }

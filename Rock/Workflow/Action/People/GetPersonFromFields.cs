@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,7 @@ namespace Rock.Workflow.Action
         defaultValue: true, // "true" to preserve functionality before this setting was added
         order: 11 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "E5E7CA24-7030-4D48-9C39-04B5809E71A8")]
     public class GetPersonFromFields : ActionComponent
     {
         private const string FIRST_NAME_KEY = "FirstName";

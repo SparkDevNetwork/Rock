@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// RegistrationSessions REST API
     /// </summary>
+    [RestControllerGuid( "BC237620-DA0D-4AC0-BDAC-2D76F24E7BA1" )]
     public partial class RegistrationSessionsController : Rock.Rest.ApiController<Rock.Model.RegistrationSession>
     {
         /// <summary>

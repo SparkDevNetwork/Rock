@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "BenevolenceType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "9DB5D35A-F2DF-4AFF-AB9F-06C2EB587C0D")]
     public partial class BenevolenceType : Model<BenevolenceType>
     {
         #region Entity Properties
@@ -81,6 +82,16 @@ namespace Rock.Model
         /// <value><c>true</c> if [show financial results]; otherwise, <c>false</c>.</value>
         [DataMember]
         public bool ShowFinancialResults { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings json.
+        /// </summary>
+        /// <value>
+        /// The additional settings json.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

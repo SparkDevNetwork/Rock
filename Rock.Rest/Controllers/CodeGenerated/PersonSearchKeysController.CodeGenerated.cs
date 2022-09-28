@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersonSearchKeys REST API
     /// </summary>
+    [RestControllerGuid( "8AB250DE-D359-4650-8506-03DC84904B82" )]
     public partial class PersonSearchKeysController : Rock.Rest.ApiController<Rock.Model.PersonSearchKey>
     {
         /// <summary>

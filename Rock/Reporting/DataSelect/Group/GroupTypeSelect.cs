@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select the Group Type of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group's Group Type" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8800858A-C980-4EC0-83A6-29F2B51DBD4E")]
     public class GroupTypeSelect : DataSelectComponent
     {
         #region Properties

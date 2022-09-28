@@ -16,12 +16,14 @@
 //
 
 import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
-import { ListItem } from "../ViewModels";
-import RockFormField from "../Elements/rockFormField";
+import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import RockFormField from "./rockFormField";
 import Panel from "./panel";
-import TextBox from "../Elements/textBox";
+import TextBox from "./textBox";
 import { nextTick } from "vue";
-import { doApiCall } from "../Util/http";
+import { useHttp } from "@Obsidian/Utility/http";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 const enum AgeClassification {
     Unknown = 0,
@@ -33,6 +35,8 @@ const enum AgeClassification {
 
 type PersonSearchResult = {
     guid?: string | null;
+
+    primaryAliasGuid?: string | null;
 
     name?: string | null;
 
@@ -75,12 +79,6 @@ type PersonSearchPhoneNumber = {
     isUnlisted?: boolean;
 };
 
-const sleep = (ms: number): Promise<void> => {
-    return new Promise<void>(resolve => {
-        setTimeout(resolve, ms);
-    });
-};
-
 export default defineComponent({
     name: "PersonPicker",
 
@@ -92,11 +90,12 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItem>
+            type: Object as PropType<ListItemBag>
         }
     },
 
     setup(props, { emit }) {
+        const http = useHttp();
         const internalValue = ref(props.modelValue);
 
         /** Determines if the clear button should be shown. */
@@ -144,13 +143,13 @@ export default defineComponent({
                 return;
             }
 
-            const params = {
+            const options: Partial<PersonPickerSearchOptionsBag> = {
                 name: text,
                 includeDetails: true
             };
 
             // Make the API call to get the search results.
-            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPicker/Search", undefined, params);
+            const result = await http.doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, options);
 
             // Check again if we have been cancelled before we do the update.
             if (cancellationToken.value) {
@@ -218,7 +217,7 @@ export default defineComponent({
                 margin: "0px 20px 20px 0px"
             };
 
-            if (result.guid === selectedSearchResult.value) {
+            if (result.primaryAliasGuid === selectedSearchResult.value) {
                 styles["border"] = "2px solid var(--brand-color)";
             }
             else {
@@ -286,7 +285,7 @@ export default defineComponent({
          * @param result The result object that contains the details about the person.
          */
         const onCardClick = (result: PersonSearchResult): void => {
-            if (!result.guid || !result.name) {
+            if (!result.primaryAliasGuid || !result.name) {
                 return;
             }
 
@@ -307,11 +306,11 @@ export default defineComponent({
          * @param result The result object that contains the details about the person.
          */
         const onCardFocus = (result: PersonSearchResult): void => {
-            if (!result.guid || !result.name) {
+            if (!result.primaryAliasGuid || !result.name) {
                 return;
             }
 
-            selectedSearchResult.value = result.guid;
+            selectedSearchResult.value = result.primaryAliasGuid;
         };
 
         /**
@@ -321,11 +320,11 @@ export default defineComponent({
          * @param result The result object that contains the details about the person.
          */
         const onCardBlur = (result: PersonSearchResult): void => {
-            if (!result.guid || !result.name) {
+            if (!result.primaryAliasGuid || !result.name) {
                 return;
             }
 
-            if (selectedSearchResult.value === result.guid) {
+            if (selectedSearchResult.value === result.primaryAliasGuid) {
                 selectedSearchResult.value = "";
             }
         };
@@ -338,13 +337,13 @@ export default defineComponent({
          * @param result The result object that contains the details about the person.
          */
         const onCardKeyPress = (result: PersonSearchResult, ev: KeyboardEvent): void => {
-            if (!result.guid || !result.name) {
+            if (!result.primaryAliasGuid || !result.name) {
                 return;
             }
 
             const isEnterKey = ev.keyCode === 10 || ev.keyCode === 13;
 
-            if (selectedSearchResult.value === result.guid && isEnterKey) {
+            if (selectedSearchResult.value === result.primaryAliasGuid && isEnterKey) {
                 internalValue.value = {
                     value: selectedSearchResult.value,
                     text: result.name
@@ -407,8 +406,8 @@ export default defineComponent({
             <div class="picker picker-select person-picker">
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
-                    <span class="selected-name" v-text="selectedName"></span>
-                    <i class="fa fa-caret-down pull-right"></i>
+                    <span class="selected-name">{{ selectedName }}</span>
+                    <b class="fa fa-caret-down pull-right"></b>
                 </a>
 
                 <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
@@ -416,8 +415,8 @@ export default defineComponent({
                 </a>
 
                 <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
-                    <template #actionAside>
-                        <span class="panel-action" @click.prevent.stop="onCancel">
+                    <template #headerActions>
+                        <span class="action" @click.prevent.stop="onCancel">
                             <i class="fa fa-times"></i>
                         </span>
                     </template>
@@ -428,7 +427,7 @@ export default defineComponent({
                         </div>
 
                         <div style="display: flex;">
-                            <div v-for="result in searchResults" :key="result.guid" class="well cursor-pointer" :style="getCardStyle(result)" tabindex="0" @click="onCardClick(result)" @focus="onCardFocus(result)" @blur="onCardBlur(result)" @keypress="onCardKeyPress(result, $event)">
+                            <div v-for="result in searchResults" :key="result.primaryAliasGuid" class="well cursor-pointer" :style="getCardStyle(result)" tabindex="0" @click="onCardClick(result)" @focus="onCardFocus(result)" @blur="onCardBlur(result)" @keypress="onCardKeyPress(result, $event)">
                                 <div style="display: flex; min-width: 250px;">
                                     <div class="person-image" :style="getPersonImageStyle(result)"></div>
                                     <div>

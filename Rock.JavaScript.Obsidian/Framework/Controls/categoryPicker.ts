@@ -15,11 +15,11 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType, ref, watch } from "vue";
-import { Guid } from "../Util/guid";
-import { CategoryTreeItemProvider } from "../Util/treeItemProviders";
-import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
+import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TreeItemPicker from "./treeItemPicker";
 
 export default defineComponent({
@@ -31,7 +31,8 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItem | null>
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
         },
 
         rootCategoryGuid: {
@@ -48,26 +49,62 @@ export default defineComponent({
 
         entityTypeQualifierValue: {
             type: String as PropType<string>
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
-    setup(props, { emit }) {
-        const internalValue = ref(props.modelValue ? [props.modelValue] : []);
+    emits: {
+        "update:modelValue": (_value: ListItemBag | ListItemBag[] | null) => true
+    },
 
-        // Configure the item provider with our settings. These are not reactive
-        // since we don't do lazy loading so there is no point.
-        const itemProvider = new CategoryTreeItemProvider();
-        itemProvider.rootCategoryGuid = props.rootCategoryGuid;
-        itemProvider.entityTypeGuid = props.entityTypeGuid;
-        itemProvider.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
-        itemProvider.entityTypeQualifierValue = props.entityTypeQualifierValue;
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue ?? null);
+
+        // Configure the item provider with our settings.
+        const itemProvider = ref(new CategoryTreeItemProvider());
+        itemProvider.value.rootCategoryGuid = props.rootCategoryGuid;
+        itemProvider.value.entityTypeGuid = props.entityTypeGuid;
+        itemProvider.value.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
+        itemProvider.value.entityTypeQualifierValue = props.entityTypeQualifierValue;
+        itemProvider.value.securityGrantToken = props.securityGrantToken;
+
+        // Keep security token up to date, but don't need refetch data
+        watch(() => props.securityGrantToken, () => {
+            itemProvider.value.securityGrantToken = props.securityGrantToken;
+        });
+
+        // When this changes, we need to refetch the data, so reset the whole itemProvider
+        watch(() => props.entityTypeGuid, () => {
+            const oldProvider = itemProvider.value;
+            const newProvider = new CategoryTreeItemProvider();
+
+            // copy old provider's properties
+            newProvider.rootCategoryGuid = oldProvider.rootCategoryGuid;
+            newProvider.entityTypeQualifierColumn = oldProvider.entityTypeQualifierColumn;
+            newProvider.entityTypeQualifierValue = oldProvider.entityTypeQualifierValue;
+            newProvider.securityGrantToken = oldProvider.securityGrantToken;
+            // Use new value
+            newProvider.entityTypeGuid = props.entityTypeGuid;
+
+            // Set the provider to the new one
+            itemProvider.value = newProvider;
+        });
 
         watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value.length > 0 ? internalValue.value[0] : undefined);
+            emit("update:modelValue", internalValue.value);
         });
 
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? [props.modelValue] : []);
+            updateRefValue(internalValue, props.modelValue ?? null);
         });
 
         return {
@@ -81,6 +118,7 @@ export default defineComponent({
     formGroupClasses="category-picker"
     iconCssClass="fa fa-folder-open"
     :provider="itemProvider"
+    :multiple="multiple"
 />
 `
 });

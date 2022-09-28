@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Newtonsoft.Json;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
@@ -39,9 +39,10 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
         [System.Web.Http.Route( "api/userlogins/available" )]
+        [Rock.SystemGuid.RestActionGuid( "037C3806-0A80-4029-ACAE-269DFC702EA8" )]
         public bool Available( string username )
         {
-            return ( (UserLoginService)Service ).Exists( username ) == false;
+            return ( ( UserLoginService ) Service ).Exists( username ) == false;
         }
 
         /// <summary>
@@ -119,13 +120,14 @@ namespace Rock.Rest.Controllers
                 if ( !string.IsNullOrWhiteSpace( userLoginWithPlainTextPassword.PlainTextPassword ) )
                 {
                     ( this.Service as UserLoginService ).SetPassword( value, userLoginWithPlainTextPassword.PlainTextPassword );
+                    value.IsLockedOut = false; // unlock the user account if they reset their password.
                 }
             }
             else
             {
                 // since REST doesn't serialize Password, get the existing Password from the database so that it doesn't get NULLed out
                 var existingUserLoginRecord = this.Get( value.Id );
-                if (existingUserLoginRecord != null)
+                if ( existingUserLoginRecord != null )
                 {
                     value.Password = existingUserLoginRecord.Password;
                 }

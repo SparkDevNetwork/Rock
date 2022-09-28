@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PluginMigrations REST API
     /// </summary>
+    [RestControllerGuid( "CE170109-CEA1-435E-80CB-C97772A91B87" )]
     public partial class PluginMigrationsController : Rock.Rest.ApiController<Rock.Model.PluginMigration>
     {
         /// <summary>

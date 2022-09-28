@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -165,6 +165,7 @@ namespace RockWeb.Blocks.Reporting
         Order = 10 )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "6F8D3F32-ED4C-46A9-A8AD-8740BC3495D7" )]
     public partial class PageParameterFilter : RockBlockCustomSettings, IDynamicAttributesBlock
     {
         #region Enums

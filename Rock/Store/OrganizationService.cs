@@ -120,7 +120,7 @@ namespace Rock.Store
 
             var request = new RestRequest( requestUrl, Method.POST );
             request.RequestFormat = DataFormat.Json;
-            request.AddBody( averageWeeklyAttendance );
+            request.AddJsonBody( averageWeeklyAttendance );
 
             // deserialize to list of packages
             var response = client.Execute<Organization>( request );

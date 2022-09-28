@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Core
         Order = 4,
         Key = AttributeKey.LiquidTemplate )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED" )]
     public partial class DefinedValueListLiquid : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

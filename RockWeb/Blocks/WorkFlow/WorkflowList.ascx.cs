@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.WorkFlow
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]
     [LinkedPage( "Detail Page", "Page used to display details about a workflow." )]
     [WorkflowTypeField( "Default WorkflowType", "The default workflow type to use. If provided the query string will be ignored." )]
+    [Rock.SystemGuid.BlockTypeGuid( "C86C80DF-F2FD-47F8-81CF-7C5EA4100C3B" )]
     public partial class WorkflowList : RockBlock, ICustomGridColumns
     {
         #region Fields

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.Groups
         Order = 17,
         Key = AttributeKey.RootGroup )]
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" )]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {
         private int _groupTypesCount = 0;

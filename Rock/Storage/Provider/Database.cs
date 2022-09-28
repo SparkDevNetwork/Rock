@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Storage.Provider
     [Description( "Database-driven file storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE )]
     public class Database : ProviderComponent
     {
         /// <summary>

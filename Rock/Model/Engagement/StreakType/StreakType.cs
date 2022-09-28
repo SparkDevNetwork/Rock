@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -33,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "66203975-2A7A-4000-870E-76457DF3C920")]
     public partial class StreakType : Model<StreakType>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
@@ -115,6 +117,7 @@ namespace Rock.Model
         /// representative of the StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] OccurrenceMap { get; set; }
 
         /// <summary>
@@ -134,13 +137,6 @@ namespace Rock.Model
                 StructureSettings = value.FromJsonOrNull<Rock.Model.Engagement.StreakType.StreakTypeSettings>() ?? new Rock.Model.Engagement.StreakType.StreakTypeSettings();
             }
         }
-
-        /// <summary>
-        /// Gets or sets the structure settings.
-        /// </summary>
-        /// <value>The structure settings.</value>
-        [NotMapped]
-        public virtual Rock.Model.Engagement.StreakType.StreakTypeSettings StructureSettings { get; set; } = new Rock.Model.Engagement.StreakType.StreakTypeSettings();
 
         #endregion Entity Properties
 

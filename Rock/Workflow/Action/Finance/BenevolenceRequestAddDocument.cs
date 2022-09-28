@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Document", "Workflow attribute that contains the document to be added.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.FileFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "A965D3CA-D00A-42EC-8097-CF15108B2DB4")]
     public class BenevolenceRequestAddDocument : ActionComponent
     {
         /// <summary>

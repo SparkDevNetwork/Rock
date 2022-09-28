@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "SignatureDocumentTemplate" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "3F9828CC-8224-4AB0-98A5-6D60001EBE32")]
     public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>, IHasActiveFlag
     {
 
@@ -132,7 +133,8 @@ namespace Rock.Model
         public string DocumentTerm { get; set; }
 
         /// <summary>
-        /// This is used to define which kind of signature is being collected from the individual. (Ex: typed name, drawn, etc.)
+        /// This is used to define which kind of signature is being collected from the individual.
+        /// Ex: <see cref="SignatureType.Drawn"/> or <see cref="SignatureType.Typed"/>, etc.
         /// </summary>
         /// <value>
         /// The type of the signature.

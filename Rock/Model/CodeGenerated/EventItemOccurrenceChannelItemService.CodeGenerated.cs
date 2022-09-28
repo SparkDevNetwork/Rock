@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// EventItemOccurrenceChannelItem View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( EventItemOccurrenceChannelItem ) )]
-    public partial class EventItemOccurrenceChannelItemViewModelHelper : ViewModelHelper<EventItemOccurrenceChannelItem, Rock.ViewModel.EventItemOccurrenceChannelItemViewModel>
+    public partial class EventItemOccurrenceChannelItemViewModelHelper : ViewModelHelper<EventItemOccurrenceChannelItem, EventItemOccurrenceChannelItemBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.EventItemOccurrenceChannelItemViewModel CreateViewModel( EventItemOccurrenceChannelItem model, Person currentPerson = null, bool loadAttributes = true )
+        public override EventItemOccurrenceChannelItemBag CreateViewModel( EventItemOccurrenceChannelItem model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.EventItemOccurrenceChannelItemViewModel
+            var viewModel = new EventItemOccurrenceChannelItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContentChannelItemId = model.ContentChannelItemId,
                 EventItemOccurrenceId = model.EventItemOccurrenceId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -172,7 +172,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.EventItemOccurrenceChannelItemViewModel ToViewModel( this EventItemOccurrenceChannelItem model, Person currentPerson = null, bool loadAttributes = false )
+        public static EventItemOccurrenceChannelItemBag ToViewModel( this EventItemOccurrenceChannelItem model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new EventItemOccurrenceChannelItemViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

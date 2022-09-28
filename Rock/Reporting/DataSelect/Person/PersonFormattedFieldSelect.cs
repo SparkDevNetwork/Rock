@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select a field of the entity and format through Lava" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Person Formatted Field" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1C032497-7B09-45D4-B5E2-F72756B2F882")]
     public class PersonFormattedFieldSelect : FormattedFieldSelect<Rock.Model.Person>
     {
     }

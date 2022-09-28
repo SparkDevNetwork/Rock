@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -34,6 +37,7 @@ namespace Rock.Badge.Component
 
     [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
     [BooleanField( "Hide If None", "Should the badge be hidden if there are no devices registered to this person?", true, order: 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "C92E1D6C-EE4B-4BD6-B5C6-9E6071243341")]
     public class PersonalDevice : BadgeComponent
     {
         /// <summary>
@@ -46,48 +50,38 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-personaldevice badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-overlay rockbadge-personaldevice rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
 
             //  create url for link to details
-            string detailPageUrl = new PageReference( GetAttributeValue( badge, "PersonalDevicesDetail" ), new Dictionary<string, string> { { "PersonGuid", Person.Guid.ToString() } } ).BuildUrl();
+            string detailPageUrl = new PageReference( GetAttributeValue( badge, "PersonalDevicesDetail" ), new Dictionary<string, string> { { "PersonGuid", person.Guid.ToString() } } ).BuildUrl();
 
             string noneCss = GetAttributeValue( badge, "HideIfNone" ).AsBoolean() ? "none" : "";
 
             return $@"
                 $.ajax({{
                     type: 'GET',
-                    url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{Person.Id}' ,
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{person.Id}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
-                            var badgeHtml = '';
                             var devicesNumber = data;
-                            var cssClass = '';
                             var linkUrl = '{detailPageUrl}';
                             var badgeContent = '';
                             var labelContent = '';
@@ -98,21 +92,20 @@ namespace Rock.Badge.Component
                             }}
 
                             if ( devicesNumber !=1 ) {{
-                                labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';                                 
+                                labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';
                             }} else {{
                                 labelContent = 'There is 1 device linked to this individual.';
                             }}
-        
+
                             if (linkUrl != '') {{
-                                badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content \'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div></a>';
+                                badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content\'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></a>';
                             }} else {{
-                                badgeContent = '<div class=\'badge-content \'><i class=\''+ badgeClass +' fa  fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div>';
+                                badgeContent = '<div class=\'badge-content\'><i class=\'badge-icon '+ badgeClass +' fa  fa-mobile\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></div>';
                             }}
-                            $('.badge-personaldevice.badge-id-{badge.Id}').html(badgeContent);
-                            $('.badge-personaldevice.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+                            $('.rockbadge-personaldevice.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);
 
                             if (devicesNumber < 1) {{
-                                $('.badge-personaldevice.badge-id-{badge.Id}').css('display', '{noneCss}');
+                                $('.rockbadge-personaldevice.rockbadge-id-{badge.Id}').css('display', '{noneCss}');
                             }}
                         }}
                     }},

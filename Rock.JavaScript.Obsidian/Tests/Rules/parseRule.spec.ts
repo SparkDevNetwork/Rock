@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { parseRule } from "../../Framework/Rules/index";
+import { parseRule } from "../../Framework/ValidationRules/index";
 
 // This suite performs tests on parseRule function of the rules.
 describe("parseRule Suite", () => {

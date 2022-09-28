@@ -128,12 +128,6 @@ namespace Rock.Model
             ParameterExpression paramExpression = serviceInstance.ParameterExpression;
             Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
 
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-            if ( getMethod == null )
-            {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
-            }
-
             var sortProperty = dataViewGetQueryArgs.SortProperty;
 
             if ( sortProperty == null )
@@ -142,10 +136,31 @@ namespace Rock.Model
                 sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
             }
 
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
-            var qry = getResult as IQueryable<IEntity>;
+            IQueryable<IEntity> dataViewQuery;
+            var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+            if ( this.EntityTypeId.HasValue && this.EntityTypeId.Value == personEntityTypeId && serviceInstance is PersonService personService )
+            {
+                /* 05/25/2022 MDP
 
-            return qry;
+                We have a option in DataViews that are based on Person on whether Deceased individuals should be included. That requires the
+                PersonService.Querable( bool includeDeceased ) method, so we'll use that.
+
+                */
+
+                dataViewQuery = personService.Queryable( this.IncludeDeceased ).Where( paramExpression, whereExpression, sortProperty );
+            }
+            else
+            {
+                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
+                if ( getMethod == null )
+                {
+                    throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
+                }
+
+                dataViewQuery = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } ) as IQueryable<IEntity>;
+            }
+
+            return dataViewQuery;
         }
     }
 }

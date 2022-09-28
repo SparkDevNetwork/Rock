@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "FollowingSuggestionType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "CC7DF118-86A1-4F90-82D8-0DAE9CD37343")]
     public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties

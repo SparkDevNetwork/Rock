@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,7 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupMemberHistoricalsController
     {
@@ -40,6 +40,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/GroupMemberHistoricals/GetGroupHistoricalSummary" )]
+        [Rock.SystemGuid.RestActionGuid( "368A4EFB-47C6-426B-BF75-E244E886EE61" )]
         public List<GroupMemberHistoricalService.GroupHistoricalSummary> GetGroupHistoricalSummary(
             int personId,
             DateTime? startDateTime = null,
@@ -51,7 +52,7 @@ namespace Rock.Rest.Controllers
             {
                 var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
                 List<int> groupTypeIdList = groupTypeIds?.SplitDelimitedValues().AsIntegerList();
-                return groupMemberHistoricalService.GetGroupHistoricalSummary( personId, startDateTime, stopDateTime, groupTypeIdList );
+                return groupMemberHistoricalService.GetGroupHistoricalSummary( personId, startDateTime, stopDateTime, groupTypeIdList, GetPerson() );
             }
         }
     }

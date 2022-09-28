@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Attribute;
@@ -31,10 +32,25 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.25,12.37H11.5a1.74,1.74,0,0,1-1.75-1.75V5.38A1.74,1.74,0,0,1,11.5,3.63h1.75A1.74,1.74,0,0,1,15,5.38v5.24a1.74,1.74,0,0,1-1.75,1.75Zm-1.75-7v5.24h1.75V5.38Z""/><rect x=""7.12"" y=""10.62"" width=""1.75"" height=""1.75""/><path d=""M4.5,10.62v-7H2.75V4.5H1V6.25H2.75v4.37H1v1.75H6.25V10.62Z""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DECIMAL )]
     public class DecimalFieldType : FieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            decimal? decimalValue = privateValue.AsDecimalOrNull();
+            if ( decimalValue.HasValue )
+            {
+                // from http://stackoverflow.com/a/216705/1755417 (to trim trailing zeros)
+                return decimalValue.Value.ToString( "G29" );
+            }
+            else
+            {
+                return privateValue;
+            }
+        }
 
         /// <summary>
         /// Formats the value.
@@ -46,16 +62,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            decimal? decimalValue = value.AsDecimalOrNull();
-            if ( decimalValue.HasValue )
-            {
-                // from http://stackoverflow.com/a/216705/1755417 (to trim trailing zeros)
-                return base.FormatValue( parentControl, decimalValue.Value.ToString("G29"), configurationValues, condensed );
-            }
-            else
-            {
-                return base.FormatValue( parentControl, value, configurationValues, condensed );
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -233,6 +242,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }

@@ -16,15 +16,15 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import DropDownList from "../Elements/dropDownList";
-import TextBox from "../Elements/textBox";
-import { ComparisonValue } from "../Reporting/comparisonValue";
-import { areEqual } from "../Util/guid";
-import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
-import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../ViewModels/Reporting/fieldFilterSource";
+import DropDownList from "./dropDownList";
+import TextBox from "./textBox";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { areEqual } from "@Obsidian/Utility/guid";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import RockAttributeFilter from "./rockAttributeFilter";
 
 export const FieldFilterRuleRow = defineComponent({
@@ -38,11 +38,11 @@ export const FieldFilterRuleRow = defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldFilterRule>,
+            type: Object as PropType<FieldFilterRuleBag>,
             required: true
         },
         sources: {
-            type: Array as PropType<FieldFilterSource[]>,
+            type: Array as PropType<FieldFilterSourceBag[]>,
             required: true
         }
     },
@@ -58,20 +58,20 @@ export const FieldFilterRuleRow = defineComponent({
         const attributeGuid = ref(props.modelValue.attributeGuid);
         const comparisonValue = ref<ComparisonValue>({
             comparisonType: props.modelValue.comparisonType,
-            value: props.modelValue.value
+            value: props.modelValue.value ?? ""
         });
 
         // Current Selected Attribute/Property
-        const currentAttribute = computed<PublicFilterableAttribute>(() => {
+        const currentAttribute = computed<PublicAttributeBag>(() => {
             const source = props.sources.find(source => {
                 return areEqual(attributeGuid.value ?? "", source.attribute?.attributeGuid ?? "");
             }) || props.sources[0];
 
-            return source.attribute as PublicFilterableAttribute;
+            return source.attribute as PublicAttributeBag;
         });
 
         // Convert the list of sources into the options you can choose from the
-        const attributeList = computed<ListItem[]>(() => {
+        const attributeList = computed<ListItemBag[]>(() => {
             return props.sources.map(source => {
                 return {
                     text: source.attribute?.name as string,
@@ -92,7 +92,7 @@ export const FieldFilterRuleRow = defineComponent({
             updateRefValue(attributeGuid, props.modelValue.attributeGuid);
             updateRefValue(comparisonValue, {
                 comparisonType: props.modelValue.comparisonType,
-                value: props.modelValue.value
+                value: props.modelValue.value ?? ""
             });
 
             internalUpdate = false;
@@ -100,7 +100,7 @@ export const FieldFilterRuleRow = defineComponent({
 
         // Watch for changes to our internal values and update the model value.
         watch([attributeGuid, comparisonValue], () => {
-            const newValue: FieldFilterRule = {
+            const newValue: FieldFilterRuleBag = {
                 ...props.modelValue,
                 attributeGuid: attributeGuid.value,
                 comparisonType: comparisonValue.value.comparisonType ?? 0,
@@ -134,7 +134,7 @@ export const FieldFilterRuleRow = defineComponent({
     <div class="filter-rule">
         <div class="filter-rule-fields row form-row">
             <div class="filter-rule-comparefield col-xs-12 col-md-4">
-                <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
+                <DropDownList :items="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
             </div>
             <div class="filter-rule-fieldfilter col-xs-12 col-md-8">
                 <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />

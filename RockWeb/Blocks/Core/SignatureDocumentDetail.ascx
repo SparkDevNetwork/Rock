@@ -16,10 +16,10 @@
             </div>
             <div class="panel-body">
 
-                <div id="pnlEditDetails" runat="server">
+                <div id="pnlEditLegacyProviderDocumentDetails" runat="server">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" Visible="false" />
+                    <Rock:NotificationBox ID="nbLegacyProviderErrorMessage" runat="server" Visible="false" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -48,9 +48,9 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                        <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-default btn-sm pull-right" CausesValidation="false" OnClick="btnSend_Click" Visible="false" />
+                        <asp:LinkButton ID="btnSaveLegacyProviderDocument" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveLegacyProviderDocument_Click" />
+                        <asp:LinkButton ID="btnCancelLegacyProviderDocument" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelLegacyProviderDocument_Click" />
+                        <asp:LinkButton ID="btnSendLegacyProviderDocument" runat="server" Text="Send" CssClass="btn btn-default btn-sm pull-right" CausesValidation="false" OnClick="btnSendLegacyProviderDocument_Click" Visible="false" />
                     </div>
 
                 </div>
@@ -61,15 +61,27 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <asp:Literal ID="lLeftDetails" runat="server" />
+                            <Rock:RockLiteral ID="lSignedBy" runat="server" Label="Signed By" />
+                            <Rock:RockControlWrapper ID="rcwCompletionEmailInfo" runat="server" Label="Completion Email">
+                                <asp:Literal ID="lCompletionSignedByPersonEmailAddress" runat="server" /><br />
+                                <asp:Literal ID="lCompletionLastSentDateTime" runat="server" /><br />
+                                <asp:LinkButton ID="btnResendCompletionEmail" runat="server" CssClass="btn btn-xs btn-default" Text="Resend" OnClick="btnResendCompletionEmail_Click" />
+                                <Rock:NotificationBox ID="nbCompletionEmailResult" runat="server" Visible="false" />
+                            </Rock:RockControlWrapper>
+
+                            <Rock:RockLiteral ID="lAppliesTo" runat="server" Label="Applies To" />
+                            <Rock:RockLiteral ID="lLegacyDocumentLink" runat="server" Label="Document" />
                         </div>
                         <div class="col-md-6">
-                            <asp:Literal ID="lRightDetails" runat="server" />
+                            <Rock:RockLiteral ID="lSignedOnInformation" runat="server" Label="Signed On" />
+                            <Rock:RockLiteral ID="lRelatedEntity" runat="server" Label="Related Entity" />
                         </div>
                     </div>
 
+                    <Rock:PDFViewer ID="pdfSignatureDocument" runat="server" ViewerHeight="900px" />
+
                     <div class="actions">
-                        <asp:LinkButton ID="btnCancelView" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnEditLegacyProviderDocument" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEditLegacyProviderDocument_Click" />
                     </div>
 
                 </fieldset>

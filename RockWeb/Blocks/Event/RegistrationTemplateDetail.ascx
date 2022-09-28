@@ -60,7 +60,7 @@
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
                             <div class="col-md-4">
-                                <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" />
+                                <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" IsSortedByName="true" />
                                 <Rock:GroupRolePicker ID="rpGroupTypeRole" runat="server" Label="Group Member Role"
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status"
@@ -152,7 +152,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                        Help="The financial gateway to use for processing registration payments." ShowAll="true" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
+                                        Help="The financial gateway to use for processing registration payments." IncludeInactive="false" ShowAllGatewayComponents="true" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
                             </div>
@@ -292,10 +292,12 @@
                     </Rock:PanelWidget>
 
                     <%-- Show Communication Settings --%>
-                    <div class="clearfix" id="registration-detailscheckbox">
-                        <div class="pull-right">
-                            <input id="cb-showdetails" type="checkbox" />
-                            Show Communication Settings
+                    <div class="justify-content-end" id="registration-detailscheckbox" style="display:flex;">
+                        <div class="checkbox pull-right">
+                            <label>
+                                <input id="cb-showdetails" type="checkbox" />
+                                <span class="label-text">Show Communication Settings</span>
+                            </label>
                         </div>
                     </div>
 

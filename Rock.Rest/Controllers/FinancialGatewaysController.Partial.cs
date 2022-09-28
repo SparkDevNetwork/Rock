@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Financial;
 
 namespace Rock.Rest.Controllers
@@ -40,8 +40,9 @@ namespace Rock.Rest.Controllers
         /// </param>
         /// <returns></returns>
         [HttpPost]
-        [Route( "api/FinancialGateways/Webhook" )]
-        public HttpResponseMessage HandleWebhook( [FromUri]Guid guid )
+        [System.Web.Http.Route( "api/FinancialGateways/Webhook" )]
+        [Rock.SystemGuid.RestActionGuid( "130A3865-F090-4B4A-98AB-C23E2DB96500" )]
+        public HttpResponseMessage HandleWebhook( [FromUri] Guid guid )
         {
             if ( guid.IsEmpty() )
             {

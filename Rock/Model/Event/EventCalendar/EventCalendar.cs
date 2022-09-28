@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendar" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E67D8D6D-4FE6-48D5-A940-A39213047314")]
     public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable, ICampusFilterable
     {
         #region Entity Properties
@@ -99,6 +100,7 @@ namespace Rock.Model
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalenderItems = value; }
         }
+
         private ICollection<EventCalendarItem> _eventCalenderItems;
 
         /// <summary>
@@ -112,7 +114,21 @@ namespace Rock.Model
             get { return _contentChannels ?? ( _contentChannels = new Collection<EventCalendarContentChannel>() ); }
             set { _contentChannels = value; }
         }
+
         private ICollection<EventCalendarContentChannel> _contentChannels;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
+                return supportedActions;
+            }
+        }
 
         #endregion
         #region Public Methods
@@ -125,6 +141,12 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Name;
         }
 
         #endregion

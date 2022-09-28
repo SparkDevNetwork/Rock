@@ -48,10 +48,10 @@
                             <Rock:NumberBox ID="nbEngagementStrength" runat="server" Label="Engagement Strength" NumberType="Integer" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" />
+                            <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" AppendText="days" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbComponentCacheDuration" runat="server" Label="Component Cache Duration" NumberType="Integer" />
+                            <Rock:NumberBox ID="nbComponentCacheDuration" runat="server" Label="Component Cache Duration" NumberType="Integer" AppendText="minutes" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbChannelCustom1Label" runat="server"

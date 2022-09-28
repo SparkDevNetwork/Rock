@@ -1,0 +1,153 @@
+﻿<Page x:Class="Rock.CodeGeneration.Pages.GeneratedFilePreviewPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+      xmlns:dp="clr-namespace:DiffPlex.Wpf.Controls;assembly=DiffPlex.Wpf"
+      xmlns:local="clr-namespace:Rock.CodeGeneration.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="GeneratedFilePreview">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ListBox Name="FileListBox"
+                 Grid.Row="0"
+                 Grid.Column="0"
+                 SelectionMode="Single"
+                 SelectionChanged="FileListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Grid.Row="0"
+                                  Grid.Column="0"
+                                  Visibility="{Binding IsWriteNeeded, Converter={StaticResource BoolToVis}}"
+                                  IsChecked="{Binding IsExporting}" />
+
+                        <fa:IconBlock Grid.Row="0"
+                                      Grid.Column="0"
+                                      Icon="Check"
+                                      Foreground="Green"
+                                      Visibility="{Binding IsUpToDate, Converter={StaticResource BoolToVis}}"
+                                      ToolTip="This file is up to date."
+                                      Margin="0,0,4,0"/>
+
+                        <StackPanel Orientation="Horizontal"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0">
+                            <TextBlock HorizontalAlignment="Stretch"
+                                       IsEnabled="{Binding IsWriteNeeded}"
+                                       Text="{Binding File.FileName}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Grid Grid.Row="0"
+              Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Grid.Column="0">
+                <TextBlock Name="FilePreviewPath"
+                           Margin="4" />
+
+                <Rectangle Fill="#ccc" Height="1" />
+            </StackPanel>
+
+            <TextBox Name="FilePreviewContent"
+                     Grid.Row="1"
+                     Grid.Column="0"
+                     BorderThickness="0"
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Courier New"
+                     HorizontalScrollBarVisibility="Auto"
+                     VerticalScrollBarVisibility="Visible" />
+
+            <dp:DiffViewer Name="FilePreviewDiffView"
+                           Grid.Row="1"
+                           Grid.Column="1"
+                           Visibility="Hidden"
+                           OldTextHeader="Old Content"
+                           NewTextHeader="New Content" />
+        </Grid>
+
+        <Border Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Padding="8"
+                Background="#eee">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="0"
+                            Grid.Column="0">
+                    <Button Content="Save"
+                        Click="Save_Click"/>
+
+                    <ProgressBar x:Name="SaveProgressBar"
+                             Margin="8,0,0,0"
+                             Width="200"
+                             IsIndeterminate="True"
+                             Visibility="Collapsed" />
+                </StackPanel>
+
+                <Border Grid.Row="0"
+                        Grid.Column="1"
+                        BorderThickness="1"
+                        BorderBrush="#707070">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Name="ContentButton"
+                                Content="Content"
+                                BorderThickness="0"
+                                Padding="4,0"
+                                Click="ContentButton_Click"/>
+
+                        <Rectangle Width="1" Fill="#707070" />
+
+                        <Button Name="UnifiedDiffButton"
+                                Content="Unified Diff"
+                                BorderThickness="0"
+                                Padding="4,0"
+                                Click="UnifiedDiffButton_Click"/>
+
+                        <Rectangle Width="1" Fill="#707070" />
+
+                        <Button Name="SideBySideDiffButton"
+                                Content="Side by Side Diff"
+                                BorderThickness="0"
+                                Padding="4,0"
+                                Click="SideBySideDiffButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

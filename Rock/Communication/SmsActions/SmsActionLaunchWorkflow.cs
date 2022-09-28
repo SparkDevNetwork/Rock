@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -72,6 +72,7 @@ namespace Rock.Communication.SmsActions
         ValuePrompt = "Merge Template",
         Order = 5 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "D1528FAB-EEE5-4273-8EF9-69163483BA1B")]
     public class SmsActionLaunchWorkflow : SmsActionComponent
     {
         #region Attribute Keys

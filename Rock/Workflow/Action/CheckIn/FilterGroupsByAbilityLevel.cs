@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "54BF0279-1FBB-4537-A933-2BAD48C43063")]
     public class FilterGroupsByAbilityLevel : CheckInActionComponent
     {
         /// <summary>

@@ -257,13 +257,16 @@ namespace Rock.Web
                             }
                         }
                     }
-
+                    // Add route parameters.
                     foreach ( var routeParm in routeInfo.RouteData.Values )
                     {
                         Parameters.Add( routeParm.Key, ( string ) routeParm.Value );
                     }
                 }
             }
+
+            // Add query parameters.
+            QueryString = HttpUtility.ParseQueryString( uri.Query );
         }
 
         #endregion
@@ -669,6 +672,69 @@ namespace Rock.Web
             var key = BuildStorageKey( keySuffix );
 
             HttpContext.Current.Session[key] = pageReferences;
+        }
+
+        /// <summary>
+        /// Gets a reference for the specified page including the route that matches the greatest number of supplied parameters.
+        /// Parameters that do not match the route are included as query parameters.
+        /// </summary>
+        /// <param name="pageId">The target page.</param>
+        /// <param name="parameters">The set of parameters that are candidates for matching to the routes associated with the target page.</param>
+        /// <returns></returns>
+        public static PageReference GetBestMatchForParameters( int pageId, Dictionary<string, string> parameters )
+        {
+            // Get the definition of the specified page.
+            var outputPage = PageCache.Get( pageId );
+            if ( outputPage == null )
+            {
+                return null;
+            }
+
+            // Find a route associated with the page that contains the maximum number of available parameters.
+            int matchedRouteId = 0;
+            var routeParameters = new List<string>();
+            foreach ( var route in outputPage.PageRoutes )
+            {
+                if ( string.IsNullOrEmpty( route.Route ) )
+                {
+                    continue;
+                }
+
+                var matchedTokens = new List<string>();
+                foreach ( var parameterName in parameters.Keys )
+                {
+                    var token = "{" + parameterName + "}";
+                    if ( route.Route.IndexOf( token, StringComparison.OrdinalIgnoreCase ) > 0 )
+                    {
+                        matchedTokens.Add( parameterName );
+                        matchedRouteId = route.Id;
+                        break;
+                    }
+                }
+                if ( routeParameters.Count == 0 || matchedTokens.Count > routeParameters.Count )
+                {
+                    routeParameters = matchedTokens;
+                }
+            }
+
+            // Separate the query and route parameters.
+            var queryValues = new NameValueCollection();
+            var routeValues = new Dictionary<string, string>();
+            foreach ( var p in parameters )
+            {
+                if ( routeParameters.Contains( p.Key ) )
+                {
+                    routeValues.Add( p.Key, p.Value );
+                }
+                else
+                {
+                    queryValues.Add( p.Key, p.Value );
+                }
+            }
+
+            // Create and return a new page reference.
+            var pageReference = new PageReference( pageId, matchedRouteId, routeValues, queryValues );
+            return pageReference;
         }
 
         #endregion

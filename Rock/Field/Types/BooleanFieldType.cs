@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M1,5.18H2.67v6.67H3.78V5.18H5.44V4.07H1Z""/><path d=""M15,5.18V4.07H10.56v7.78h1.11V8.52h2.77V7.4H11.67V5.18Z""/><rect x=""7.44"" y=""3"" width=""1.11"" height=""10""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BOOLEAN )]
     public class BooleanFieldType : FieldType
     {
         /// <summary>
@@ -168,9 +169,9 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -179,9 +180,9 @@ namespace Rock.Field.Types
 
             if ( boolValue.Value )
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                 {
-                    return configurationValues[ConfigurationKey.TrueText];
+                    return privateConfigurationValues[ConfigurationKey.TrueText];
                 }
                 else
                 {
@@ -190,9 +191,9 @@ namespace Rock.Field.Types
             }
             else
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                 {
-                    return configurationValues[ConfigurationKey.FalseText];
+                    return privateConfigurationValues[ConfigurationKey.FalseText];
                 }
                 else
                 {
@@ -202,9 +203,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -214,6 +215,12 @@ namespace Rock.Field.Types
             // A condensed boolean value simply returns "Y" or "N" regardless
             // of the other configuration values.
             return boolValue.Value ? "Y" : "N";
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetCondensedTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
@@ -226,14 +233,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !condensed )
-            {
-                return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
-            else
-            {
-                return GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -728,5 +730,29 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldTrueText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var oldFalseText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+            var newTrueText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var newFalseText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+
+            if ( oldTrueText != newTrueText )
+            {
+                return true;
+            }
+
+            if ( oldFalseText != newFalseText )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

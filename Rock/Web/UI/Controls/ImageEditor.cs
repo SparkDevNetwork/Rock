@@ -169,6 +169,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the crop button should be displayed
+        /// </summary>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "false" ),
+        Description( "Enable crop button" )
+        ]
+        public bool EnableCrop
+        {
+            get { return ViewState["EnableCrop"] as bool? ?? false; }
+            set { ViewState["EnableCrop"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
         /// <value>
@@ -202,6 +217,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator.ValidationGroup;
             }
+
             set
             {
                 RequiredFieldValidator.ValidationGroup = value;
@@ -349,6 +365,7 @@ namespace Rock.Web.UI.Controls
         private Label _lSaveStatus;
         private LinkButton _lbShowModal;
         private LinkButton _lbUploadImage;
+        private LinkButton _lbCropImage;
 
         private HiddenField _hfCropBinaryFileId;
         private ModalDialog _mdImageDialog;
@@ -375,6 +392,7 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileTypeGuid = new HiddenField();
             _hfOriginalBinaryFileId = new HiddenField();
             _hfCropBinaryFileId = new HiddenField();
+            _lbUploadImage = new LinkButton();
         }
 
         #endregion
@@ -584,7 +602,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            //_hfBinaryFileId = new HiddenField();
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
@@ -607,6 +624,13 @@ namespace Rock.Web.UI.Controls
             _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             Controls.Add( _aRemove );
 
+            _lbCropImage = new LinkButton();
+            _lbCropImage.ID = this.ID + "_lbCropImage";
+            _lbCropImage.Text = "<i class='fa fa-crop'></i>";
+            _lbCropImage.Click += _lbShowModal_Click;
+            _lbCropImage.CausesValidation = false;
+            Controls.Add( _lbCropImage );
+
             _lbShowModal = new LinkButton();
             _lbShowModal.ID = this.ID + "_lbShowModal";
             _lbShowModal.CssClass = this.ButtonCssClass;
@@ -622,6 +646,7 @@ namespace Rock.Web.UI.Controls
             {
                 _aRemove.Visible = false;
                 _lbShowModal.Visible = false;
+                _lbCropImage.Visible = false;
             }
 
             _lbUploadImage = new LinkButton();
@@ -753,9 +778,11 @@ namespace Rock.Web.UI.Controls
                 return bitmapContent;
             }
 
-            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal() ).ToArray();
-            int x = photoCoords[0];
-            int y = photoCoords[1];
+            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => ( int ) a.AsDecimal() ).ToArray();
+
+            // If the crop square has gone outside the allowed range (into the negative), then set those coordinates to 0.
+            int x = photoCoords[0] < 0 ? 0 : photoCoords[0];
+            int y = photoCoords[1] < 0 ? 0 : photoCoords[1];
             int width = photoCoords[2];
             int height = photoCoords[3];
             int x2 = x + width;
@@ -763,7 +790,7 @@ namespace Rock.Web.UI.Controls
 
             System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( bitmapContent );
 
-            // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
+            // Intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
             var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
             var origLimit = sizingPlugin.Limits.TotalBehavior;
             sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
@@ -783,7 +810,7 @@ namespace Rock.Web.UI.Controls
                 sizingPlugin.Limits.TotalBehavior = origLimit;
             }
 
-            // Make sure Image is no bigger than maxwidth/maxheight.  Default to whatever imageresizer's limits are set to
+            // Make sure Image is no bigger than maxWidth/maxHeight.  Default to whatever ImageResizer's limits are set to.
             int maxWidth = this.MaxImageWidth ?? sizingPlugin.Limits.TotalSize.Width;
             int maxHeight = this.MaxImageHeight ?? sizingPlugin.Limits.TotalSize.Height;
             croppedStream.Seek( 0, SeekOrigin.Begin );
@@ -841,7 +868,7 @@ namespace Rock.Web.UI.Controls
             var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
-                _imgCropSource.ImageUrl = ( (RockPage)Page ).ResolveRockUrl( "~/GetImage.ashx?guid=" + binaryFile.Guid.ToString() );
+                _imgCropSource.ImageUrl = ( ( RockPage ) Page ).ResolveRockUrl( "~/GetImage.ashx?guid=" + binaryFile.Guid.ToString() );
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
                     using ( var stream = binaryFile.ContentStream )
@@ -876,7 +903,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                _imgCropSource.ImageUrl = "";
+                _imgCropSource.ImageUrl = string.Empty;
             }
 
             _mdImageDialog.Show();
@@ -915,7 +942,7 @@ namespace Rock.Web.UI.Controls
                 </div>" );
 
             string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1});background-size:cover;background-position:50%'></div>";
-            string imageDivHtml = "";
+            string imageDivHtml = string.Empty;
 
             if ( BinaryFileId != null )
             {
@@ -933,6 +960,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
             }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Always show the UploadImage button so we can pick and edit a new file.
@@ -944,6 +972,9 @@ namespace Rock.Web.UI.Controls
             _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.Attributes["onclick"] = "return false;";
             _lbUploadImage.RenderControl( writer );
+
+            _lbCropImage.Visible = EnableCrop && ( BinaryFileId ?? 0 ) > 0;
+            _lbCropImage.RenderControl( writer );
 
             // render the circle check status for when save happens
             writer.WriteLine();
@@ -1024,6 +1055,7 @@ Rock.controls.imageUploader.initialize({{
         // toggle the edit/upload buttons
         $('#{8}').hide();
         $('#{9}').show();
+        $('#{13}').show();
 
         // postback to show Modal after uploading new image
         {10}
@@ -1050,6 +1082,7 @@ $('#{8}').on('click', function (e, data) {{
 $('#{5}').on('click', function () {{
     $('#{8}').show();
     $('#{9}').hide();
+    $('#{13}').hide();
     $('#{5}').remove();
 }});
 
@@ -1066,7 +1099,8 @@ $('#{5}').on('click', function () {{
                 _lbShowModal.ClientID, // {9}
                 jsDoneFunction, // {10}
                 this.NoPictureUrl, // {11}
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null"  // {12}
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null",  // {12}
+                _lbCropImage.ClientID // {13}
                 );
 
             _lbUploadImage.Enabled = false;

@@ -127,6 +127,12 @@ namespace Rock.Web.UI.Controls
             set => ViewState["_hasAttributes"] = value;
         }
 
+        private string _noteTerm
+        {
+            get => ViewState["_noteTerm"] as string ?? "Note";
+            set => ViewState["_noteTerm"] = value;
+        }
+
         /// <summary>
         /// Sets the note.
         /// </summary>
@@ -260,7 +266,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the label for the note entry box
+        /// Gets or sets the label for the note entry box, and the html attributes data-note-term and data-placeholder.
         /// </summary>
         /// <value>
         /// The label.
@@ -274,10 +280,13 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                // This is going to be used seperately in editor attributes as "data-note-term"
+                _noteTerm = value;
+
                 ViewState["Label"] = value;
                 if ( value != null )
                 {
-                    _tbNote.Placeholder = string.Format( "Write a {0}...", value.ToLower() );
+                    _tbNote.Placeholder = string.Format( "Add a {0}...", value.ToLower() );
                 }
             }
         }
@@ -629,6 +638,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Called just before rendering begins on the page.
+        /// </summary>
+        /// <param name="e">The EventArgs that describe this event.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( IsEditing )
+            {
+                ScriptManager.GetCurrent( this.Page ).SetFocus( this._tbNote );
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -673,6 +696,8 @@ $@"Rock.controls.noteEditor.initialize({{
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, noteCss.ToString() );
+            writer.AddAttribute( "data-placeholder", this.Label );
+            writer.AddAttribute( "data-note-term", this._noteTerm );
             if ( this.Style[HtmlTextWriterStyle.Display] != null )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, this.Style[HtmlTextWriterStyle.Display] );
@@ -713,13 +738,22 @@ $@"Rock.controls.noteEditor.initialize({{
                 writer.RenderEndTag(); // meta-figure div
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body" );
+            if ( IsEditing )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within focus-within" );
+            }
+            else
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _vsEditNote.RenderControl( writer );
             _tbNote.RenderControl( writer );
+
             _avcNoteAttributes.RenderControl( writer );
 
             _hfNoteId.RenderControl( writer );
@@ -776,10 +810,13 @@ $@"Rock.controls.noteEditor.initialize({{
                 }
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.Write( "Cancel" );
-            writer.RenderEndTag();
+            if ( !NoteOptions.AddAlwaysVisible )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( "Cancel" );
+                writer.RenderEndTag();
+            }
 
             _lbSaveNote.Text = "Save " + Label;
             _lbSaveNote.CommandName = "SaveNote";

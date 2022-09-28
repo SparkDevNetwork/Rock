@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import { newGuid } from "../Util/guid";
+import LoadingIndicator from "./loadingIndicator";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
 import { CollectJSOptions, InputField, ResponseCallback, TimeoutCallback, TokenResponse, ValidationCallback } from "./nmiGatewayControlTypes";
 
@@ -655,7 +655,8 @@ export default defineComponent({
             <button type="button" style="display: none;" class="payment-button js-payment-button"></button>
         </div>
 
-        <div v-show="validationMessage" v-text="validationMessage" class="alert alert-validation">
+        <div v-show="validationMessage" class="alert alert-validation">
+            {{ validationMessage }}
         </div>
     </div>
 

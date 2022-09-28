@@ -28,7 +28,7 @@ using Rock;
 using Rock.Model;
 using Rock.Utility;
 
-[assembly: OwinStartup(typeof(RockWeb.Startup))]
+[assembly: OwinStartup( typeof( RockWeb.Startup ) )]
 namespace RockWeb
 {
     /// <summary>

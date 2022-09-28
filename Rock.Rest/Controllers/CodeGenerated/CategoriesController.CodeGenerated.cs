@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Categories REST API
     /// </summary>
+    [RestControllerGuid( "14863E90-9BA6-4769-9C91-B7B42C9296FB" )]
     public partial class CategoriesController : Rock.Rest.ApiController<Rock.Model.Category>
     {
         /// <summary>

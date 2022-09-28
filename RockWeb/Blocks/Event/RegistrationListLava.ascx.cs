@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Event
     [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/RegistrationListSidebar.lava' %}", "", 2, "LavaTemplate" )]
     [IntegerField( "Max Results", "The maximum number of results to display.", false, 5, order: 3 )]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Previous, Last, Current, Next, Upcoming, DateRange", order: 7 )]
-    [BooleanField("Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed")]
+    [BooleanField( "Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed" )]
+    [Rock.SystemGuid.BlockTypeGuid( "92E4BFE8-DF80-49D7-819D-417E579E282D" )]
     public partial class RegistrationListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -102,7 +103,7 @@ namespace RockWeb.Blocks.Event
 
             // only show Active registrations
             qryRegistrations = qryRegistrations
-                .Where( a => 
+                .Where( a =>
                     a.RegistrationInstance.IsActive == true &&
                     !a.IsTemporary );
 
@@ -111,9 +112,9 @@ namespace RockWeb.Blocks.Event
             qryRegistrations = qryRegistrations.Where( a => a.PersonAlias.PersonId == currentPersonId );
 
             // bring into a list so we can filter on non-database columns
-            var registrationList  = qryRegistrations.ToList();
-            
-            List<Registration> hasDates = registrationList.Where(a => a.RegistrationInstance.Linkages.Any(x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue)).ToList();
+            var registrationList = qryRegistrations.ToList();
+
+            List<Registration> hasDates = registrationList.Where( a => a.RegistrationInstance.Linkages.Any( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue ) ).ToList();
             List<Registration> noDates = registrationList.Where( a => !hasDates.Any( d => d.Id == a.Id ) ).OrderBy( x => x.RegistrationInstance.Name ).ToList();
 
             hasDates = hasDates
@@ -147,15 +148,14 @@ namespace RockWeb.Blocks.Event
                         .EventItemOccurrence.NextStartDateTime < requestDateRange.End )
                     .ToList();
             }
-            
+
             registrationList = hasDates;
-            registrationList.AddRange(noDates);
 
             if ( this.GetAttributeValue( "LimitToOwed" ).AsBooleanOrNull() ?? true )
             {
+                registrationList.AddRange( noDates );
                 registrationList = registrationList.Where( a => a.BalanceDue != 0 ).ToList();
             }
-
 
             int? maxResults = GetAttributeValue( "MaxResults" ).AsIntegerOrNull();
             if ( maxResults.HasValue && maxResults > 0 )
@@ -168,7 +168,6 @@ namespace RockWeb.Blocks.Event
 
             string template = GetAttributeValue( "LavaTemplate" );
             lContent.Text = template.ResolveMergeFields( mergeFields );
-
         }
 
         #endregion

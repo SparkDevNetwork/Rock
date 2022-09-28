@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people that are represented in the User Login entries returned by a specified Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In User Login Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F1C94F41-8545-4CC9-866B-284F5A342BE7")]
     public class UserLoginDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.UserLogin>
     {
         #region Overrides

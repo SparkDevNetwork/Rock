@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows a summary of Groups in which a Person participates from a filtered subset of Groups defined by a Data View" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Group Participation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "CC008C3C-AD0E-437D-A55F-274718679F4D")]
     public class GroupParticipationSelect : DataSelectComponent
     {
         #region Properties

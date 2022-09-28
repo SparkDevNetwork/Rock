@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -91,6 +91,7 @@ namespace Rock.Storage.AssetStorage
         Order = 7,
         Key = AttributeKeys.GenerateSingedURLs )]
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_AMAZONS3 )]
     public class AmazonS3Component : AssetStorageComponent
     {
         private static class AttributeKeys

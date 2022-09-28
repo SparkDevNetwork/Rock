@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -45,10 +46,10 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts line endings ( CRLF or just LF ) to non-encoded html breaks &lt;br&gt;
+        /// Converts line endings ( CRLF or just LF ) to non-encoded HTML breaks &lt;br&gt;
         /// </summary>
         /// <param name="str">a string that contains CR LF</param>
-        /// <returns>a string with CRLF replaced with html <code>br</code></returns>
+        /// <returns>a string with CRLF replaced with HTML <code>br</code></returns>
         public static string ConvertCrLfToHtmlBr( this string str )
         {
             if ( str == null )
@@ -56,7 +57,7 @@ namespace Rock
                 return string.Empty;
             }
 
-            // normalize line breaks so this works with either CRLF or LF lind endings
+            // Normalize line breaks so this works with either CRLF or LF line endings.
             var result = str.Replace( "\r\n", "\n" );
 
             return result.Replace( "\n", "<br>" );
@@ -206,6 +207,7 @@ namespace Rock
             {
                 return false;
             }
+
             return match.Length == email.Length;
         }
 
@@ -217,7 +219,8 @@ namespace Rock
         public static string Linkify( this string text )
         {
             // from http://stackoverflow.com/a/4750468
-            var result = Regex.Replace( text,
+            var result = Regex.Replace(
+                text,
                 @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)",
                 "<a target='_blank' href='$1'>$1</a>" );
 
@@ -235,16 +238,14 @@ namespace Rock
             // convert any Markdown into HTML
             var settings = CommonMark.CommonMarkSettings.Default.Clone();
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
-
             /*
-	            6/9/2020 - JME 
-	            Added the .Trim() to the return below. Without it CommonMark was converting strings
+                6/9/2020 - JME
+                Added the .Trim() to the return below. Without it CommonMark was converting strings
                 like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
                 when other filters were being applied in Lava to make line breaks '<br>'.
 
                 Reason: Notes Lava was having extra <br>'s at the end.
             */
-            
             return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
         }
 
@@ -266,5 +267,135 @@ namespace Rock
                 return html;
             }
         }
+
+        #region HTML Truncation Extensions 
+        // Modified from:
+        // https://blog.andycook.com/code/2016/02/11/String-truncation-of-HTML/
+
+        /// <summary>
+        /// Uses the node structure of HTML to intelligently truncate string length.
+        /// </summary>
+        /// <param name="html"></param>
+        /// <param name="maxCharacters"></param>
+        /// <param name="trailingText"></param>
+        /// <returns></returns>
+        public static string TruncateHtml( this string html, int maxCharacters, string trailingText = "&hellip;" )
+        {
+            if ( string.IsNullOrEmpty( html ) || html.Length <= maxCharacters )
+            {
+                return html;
+            }
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml( html );
+            if ( htmlDocument.DocumentNode.InnerText.Length <= maxCharacters )
+            {
+                return html;
+            }
+
+            var textNodes = new LinkedList<HtmlNode>( htmlDocument.DocumentNode.TextDescendants() );
+
+            var precedingText = 0;
+            var lastNode = textNodes.First;
+            while ( precedingText <= maxCharacters && lastNode != null )
+            {
+                var nodeTextLength = lastNode.Value.InnerText.Length;
+                if ( precedingText + nodeTextLength > maxCharacters )
+                {
+                    var truncatedText = TruncateWords( lastNode.Value.InnerText, maxCharacters - precedingText );
+
+                    if ( String.IsNullOrWhiteSpace( truncatedText ) && lastNode.Previous != null )
+                    {
+                        // Put the ellipsis in the previous node and remove the empty node.
+                        lastNode.Previous.Value.InnerHtml = lastNode.Previous.Value.InnerText.Trim() + trailingText;
+                        lastNode.Value.InnerHtml = String.Empty;
+                        lastNode = lastNode.Previous;
+                    }
+                    else
+                    {
+                        lastNode.Value.InnerHtml = truncatedText + trailingText;
+                    }
+
+                    break;
+                }
+
+                if ( precedingText + nodeTextLength == maxCharacters )
+                {
+                    break;
+                }
+
+                precedingText += nodeTextLength;
+                lastNode = lastNode.Next;
+            }
+
+            // Remove all the nodes after lastNode.
+            if ( lastNode != null )
+            {
+                RemoveSubsequentNodes( lastNode.Value );
+            }
+
+            return htmlDocument.DocumentNode.InnerHtml;
+        }
+
+        /// <summary>
+        /// Retrieve the HTML text items within an HTML node. 
+        /// </summary>
+        /// <param name="root">The HTML node root value. </param>
+        /// <returns></returns>
+        public static IEnumerable<HtmlNode> TextDescendants( this HtmlNode root )
+        {
+            return root.Descendants().Where( n => n.NodeType == HtmlNodeType.Text && !String.IsNullOrWhiteSpace( n.InnerText ) );
+        }
+
+        /// <summary>
+        /// Recursively removes HTML nodes that exist after <paramref name="lastNode"/>.
+        /// </summary>
+        /// <param name="lastNode">The last node to include.</param>
+        private static void RemoveSubsequentNodes( HtmlNode lastNode )
+        {
+            while ( lastNode.NextSibling != null )
+            {
+                lastNode.NextSibling.Remove();
+            }
+
+            if ( lastNode.ParentNode != null )
+            {
+                RemoveSubsequentNodes( lastNode.ParentNode );
+            }
+        }
+
+        /// <summary>
+        /// Removes extraneous characters to shorten the given <paramref name="value"/> without splitting any words.
+        /// </summary>
+        /// <param name="value">The string to potentially truncate.</param>
+        /// <param name="length">The acceptable length of the return string.</param>
+        /// <returns>A string of the correct length.</returns>
+        private static string TruncateWords( string value, int length )
+        {
+            if ( String.IsNullOrWhiteSpace( value ) || length <= 0 )
+            {
+                return String.Empty;
+            }
+
+            if ( length > value.Length )
+            {
+                return value;
+            }
+
+            var endIndex = length;
+            while ( char.IsLetterOrDigit( value[endIndex - 1] ) && char.IsLetterOrDigit( value[endIndex] ) && endIndex > 1 )
+            {
+                endIndex--;
+            }
+
+            if ( endIndex == 1 )
+            {
+                return String.Empty;
+            }
+
+            return value.Substring( 0, endIndex ).Trim();
+        }
+
+        #endregion
     }
 }

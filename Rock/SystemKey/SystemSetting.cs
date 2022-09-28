@@ -105,6 +105,22 @@ namespace Rock.SystemKey
         public const string ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER = "core_AlwaysShowBusinessInPersonPicker";
 
         /// <summary>
+        /// The setting to have Rock poll itself to keep it alive during times of inactivity. Usually this can stay disabled.
+        /// </summary>
+        public const string ENABLE_KEEP_ALIVE = "core_EnableKeepAlive";
+
+        /// <summary>
+        /// The PDF external render endpoint to use for the <see cref="Pdf.PdfGenerator"/> instead of the local chrome engine
+        /// For example: wss://chrome.browserless.io?token=YOUR-API-TOKEN
+        /// </summary>
+        public const string PDF_EXTERNAL_RENDER_ENDPOINT = "core_PDFExternalRenderEndpoint";
+
+        /// <summary>
+        /// The number of days that a visitor cookie persists. Default is 365.
+        /// </summary>
+        public const string VISITOR_COOKIE_PERSISTENCE_DAYS = "core_VisitorCookiePersistenceDays";
+
+        /// <summary>
         /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
         /// </summary>
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
@@ -244,5 +260,25 @@ namespace Rock.SystemKey
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "core_StatementGeneratorConfig";
+
+        /// <summary>
+        /// The default security grant token duration in minutes.
+        /// </summary>
+        public const string DEFAULT_SECURITY_GRANT_TOKEN_DURATION = "core_DefaultSecurityGrantTokenDuration";
+
+        /// <summary>
+        /// The security grant token earliest date. This provides support to revoke existing tokens.
+        /// </summary>
+        public const string SECURITY_GRANT_TOKEN_EARLIEST_DATE = "core_SecurityGrantTokenEarliestDate";
+
+        /// <summary>
+        /// Security Settings (Account Protection profiles)
+        /// </summary>
+        public const string ROCK_SECURITY_SETTINGS = "core_RockSecuritySettings";
+
+        /// <summary>
+        /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
+        /// </summary>
+        public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
     }
 }

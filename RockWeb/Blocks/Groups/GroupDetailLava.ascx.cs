@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,9 +32,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
@@ -185,6 +182,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "218B057F-B214-4317-8E84-7A95CF88067E" )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -360,8 +358,7 @@ namespace RockWeb.Blocks.Groups
                 Group group = new GroupService( new RockContext() ).Get( _groupId );
                 group.LoadAttributes();
 
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( group, phAttributes, false, BlockValidationGroup );
+                avcAttributes.AddEditControls( group, Rock.Security.Authorization.EDIT, CurrentPerson );
             }
 
             if ( IsEditingGroupMember == true )
@@ -382,8 +379,8 @@ namespace RockWeb.Blocks.Groups
 
                 // set attributes
                 groupMember.LoadAttributes();
-                phGroupMemberAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, string.Empty, true );
+
+                avcGroupMemberAttributes.AddEditControls( groupMember, Rock.Security.Authorization.EDIT, CurrentPerson );
             }
         }
 
@@ -475,7 +472,7 @@ namespace RockWeb.Blocks.Groups
 
                 // set attributes
                 group.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, group );
+                avcAttributes.GetEditValues( group );
 
                 // configure locations
                 if ( GetAttributeValue( AttributeKey.EnableLocationEdit ).AsBoolean() )
@@ -649,8 +646,7 @@ namespace RockWeb.Blocks.Groups
             groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
 
             groupMember.LoadAttributes();
-
-            Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+            avcGroupMemberAttributes.GetEditValues( groupMember );
 
             if ( !Page.IsValid )
             {
@@ -1042,8 +1038,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     group.LoadAttributes();
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
+                    avcAttributes.AddEditControls( group, Rock.Security.Authorization.EDIT, CurrentPerson );
 
                     // enable editing location
                     pnlGroupEditLocations.Visible = GetAttributeValue( AttributeKey.EnableLocationEdit ).AsBoolean();
@@ -1326,8 +1321,7 @@ namespace RockWeb.Blocks.Groups
 
             // set attributes
             groupMember.LoadAttributes();
-            phGroupMemberAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, string.Empty, true );
+            avcGroupMemberAttributes.AddEditControls( groupMember, Rock.Security.Authorization.EDIT, CurrentPerson );
 
             this.IsEditingGroupMember = true;
         }

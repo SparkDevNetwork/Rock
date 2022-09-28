@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Security.Authentication
     [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
     [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
     [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server")]
+    [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6")]
     public class ActiveDirectory : AuthenticationComponent
     {
         /// <summary>
@@ -104,7 +105,7 @@ namespace Rock.Security.Authentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>

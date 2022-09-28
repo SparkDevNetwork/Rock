@@ -391,11 +391,17 @@ namespace Rock.Transactions
         #region InteractionSession Properties
 
         /// <inheritdoc cref="InteractionSession.IpAddress"/>
+        ///<remarks>
+        /// If this is not specified, it will be determined from <see cref="RockPage.GetClientIpAddress()"/>
+        ///</remarks>
         public string IPAddress { get; set; }
 
         /// <summary>
         /// The <c>RockSessionId</c> (Guid) (set in Global.Session_Start)
         /// </summary>
+        /// <remarks>
+        /// This usually doesn't need to be set, the default is the RockSessionId.
+        /// </remarks>
         /// <value>
         /// The browser session identifier.
         /// </value>
@@ -406,8 +412,11 @@ namespace Rock.Transactions
         #region InteractionDeviceType Properties
 
         /// <summary>
-        /// Gets or sets the user agent.
+        /// The UserAgent value that will used for the Interaction.
         /// </summary>
+        /// <remarks>
+        /// If this is not specified, it will be determined from the current <see cref="HttpRequest"/>.
+        /// </remarks>
         /// <value>
         /// The user agent.
         /// </value>
@@ -418,6 +427,9 @@ namespace Rock.Transactions
         #region Interaction Properties
 
         /// <inheritdoc cref="Interaction.InteractionDateTime"/>
+        /// <remarks>
+        /// If this is not specified, <see cref="RockDateTime.Now"/> will be used.
+        /// </remarks>
         public DateTime InteractionDateTime { get; set; } = RockDateTime.Now;
 
         /// <inheritdoc cref="Interaction.InteractionLength"/>
@@ -427,6 +439,9 @@ namespace Rock.Transactions
         public DateTime? InteractionEndDateTime { get; set; }
 
         /// <inheritdoc cref="Interaction.Operation"/>
+        /// <remarks>
+        /// If this is not specified, it will set to 'View'.
+        /// </remarks>
         public string InteractionOperation { get; set; }
 
         /// <inheritdoc cref="Interaction.InteractionComponentId"/>
@@ -438,13 +453,25 @@ namespace Rock.Transactions
         /// <inheritdoc cref="Interaction.EntityId"/>
         public int? InteractionEntityId { get; set; }
 
-        /// <inheritdoc cref="Interaction.PersonAliasId"/>
+        /// <summary>
+        /// The PersonAliasId that will be saved to <seealso cref="Interaction.PersonAliasId"/>.
+        /// </summary>
+        /// <remarks>
+        /// If this is not specified, it will be determined from <see cref="RockPage.CurrentPersonAliasId"/> or <see cref="RockPage.CurrentVisitor"/>.
+        /// </remarks>
+        /// <value>The person alias identifier.</value>
         public int? PersonAliasId { get; set; }
 
         /// <inheritdoc cref="Interaction.InteractionSummary"/>
+        /// <remarks>
+        /// If this is not set, it will be determined from <see cref="RockPage.BrowserTitle"/> or <see cref="RockPage.Title"/>.
+        /// </remarks>
         public string InteractionSummary { get; set; }
 
         /// <inheritdoc cref="Interaction.InteractionData"/>
+        /// <remarks>
+        /// If this is not specified, it be determined from current request's URL.
+        /// </remarks>
         public string InteractionData { get; set; }
 
         /// <inheritdoc cref="Interaction.RelatedEntityTypeId"/>
@@ -515,7 +542,7 @@ namespace Rock.Transactions
             {
                 try
                 {
-                    rockPage = HttpContext.Current.Handler as RockPage;
+                    rockPage = HttpContext.Current?.Handler as RockPage;
                 }
                 catch
                 {
@@ -556,7 +583,7 @@ namespace Rock.Transactions
 
             this.BrowserSessionId = this.BrowserSessionId ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
 
-            this.PersonAliasId = this.PersonAliasId ?? rockPage?.CurrentPersonAliasId;
+            this.PersonAliasId = this.PersonAliasId ?? rockPage?.CurrentPersonAliasId ?? rockPage?.CurrentVisitor?.Id;
 
             // Make sure we don't exceed this field's character limit.
             this.InteractionOperation = EnforceLengthLimitation( this.InteractionOperation, 25 );
@@ -600,10 +627,25 @@ namespace Rock.Transactions
             // Get existing (or create new) interaction channel and interaction component for this interaction.
             if ( this.InteractionChannelId == default )
             {
-                this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                if ( this.ChannelName != null && this.ChannelEntityId == null )
+                {
+                    // If channel name is specified and entity is not, get the channel by name.
+                    this.InteractionChannelId = InteractionChannelCache.GetOrCreateChannelIdByName( this.ChannelTypeMediumValueId.GetValueOrDefault(), this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                }
+                else
+                {
+                    this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                }
             }
 
-            this.InteractionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( this.InteractionChannelId, this.ComponentEntityId, this.ComponentName );
+            if ( this.ComponentName != null && this.ComponentEntityId == null )
+            {
+                this.InteractionComponentId = InteractionComponentCache.GetOrCreateComponentIdByName( this.InteractionChannelId, this.ComponentName );
+            }
+            else
+            {
+                this.InteractionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( this.InteractionChannelId, this.ComponentEntityId, this.ComponentName );
+            }
 
             queue.Enqueue( this );
         }

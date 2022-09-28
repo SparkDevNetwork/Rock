@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// MediaFolder View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( MediaFolder ) )]
-    public partial class MediaFolderViewModelHelper : ViewModelHelper<MediaFolder, Rock.ViewModel.MediaFolderViewModel>
+    public partial class MediaFolderViewModelHelper : ViewModelHelper<MediaFolder, MediaFolderBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.MediaFolderViewModel CreateViewModel( MediaFolder model, Person currentPerson = null, bool loadAttributes = true )
+        public override MediaFolderBag CreateViewModel( MediaFolder model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.MediaFolderViewModel
+            var viewModel = new MediaFolderBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContentChannelAttributeId = model.ContentChannelAttributeId,
                 ContentChannelId = model.ContentChannelId,
                 ContentChannelItemStatus = ( int? ) model.ContentChannelItemStatus,
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.MediaFolderViewModel ToViewModel( this MediaFolder model, Person currentPerson = null, bool loadAttributes = false )
+        public static MediaFolderBag ToViewModel( this MediaFolder model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new MediaFolderViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

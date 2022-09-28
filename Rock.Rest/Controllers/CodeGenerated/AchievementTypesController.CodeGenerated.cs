@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AchievementTypes REST API
     /// </summary>
+    [RestControllerGuid( "6E16CF03-CDAB-42BC-9353-7AA6E08D7AE7" )]
     public partial class AchievementTypesController : Rock.Rest.ApiController<Rock.Model.AchievementType>
     {
         /// <summary>

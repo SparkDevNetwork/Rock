@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepStatus" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "6C270D6A-F126-445B-93F0-5079A968BF4E")]
     public partial class StepStatus : Model<StepStatus>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties
@@ -116,7 +117,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Name.ToString();
+            return Name;
         }
 
         #endregion

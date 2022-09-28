@@ -58,6 +58,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int SourceStatusId { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GroupRequirementsFilter = source.GroupRequirementsFilter;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Order = source.Order;
             this.SourceStatusId = source.SourceStatusId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

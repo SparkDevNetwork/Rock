@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,6 +65,8 @@ namespace Rock.Blocks.Types.Mobile.Core
     #endregion
 
     [ContextAware]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_NOTES_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "5B337D89-A298-4620-A0BE-078A41BC054B")]
     public class Notes : RockMobileBlockType
     {
         /// <summary>

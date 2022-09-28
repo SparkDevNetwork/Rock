@@ -1,15 +1,26 @@
-﻿// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
 //
-
 using DocumentFormat.OpenXml.Wordprocessing;
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
@@ -44,6 +55,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
     #endregion Rock Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "778EFA7B-56BC-4ABB-B86D-FFD87B97691F" )]
     public partial class FormAnalytics : RockBlock
     {
         #region Attribute Keys
@@ -301,8 +313,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             List<SummaryInfo> summary = GetSummary( workflowTypeId, reportPeriod );
 
-            var views = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME ).Select( m => m.value );
-            var completions = summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME ).Select( m => m.value );
+            var views = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME ).Select( m => m.Value );
+            var completions = summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME ).Select( m => m.Value );
 
             ShowKpis( views, completions );
 
@@ -355,7 +367,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             factory.StartDateTime = dateRange.Start;
             factory.EndDateTime = dateRange.End;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
-            factory.ChartColors = new List<string> { "#2ECC71", "#3498DB" };
+            factory.ChartColors = new List<RockColor> { new RockColor( "#2ECC71" ), new RockColor( "#3498DB" ) };
 
             var viewsSummary = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME );
             var completionSummary= summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME );
@@ -363,14 +375,14 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var viewedDataset = new ChartJsTimeSeriesDataset();
             viewedDataset.Name = VIEWS_DATASET_NAME;
             viewedDataset.DataPoints = viewsSummary
-                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.value } )
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.Value } )
                 .Cast<IChartJsTimeSeriesDataPoint>()
                 .ToList();
 
             var completionDataset = new ChartJsTimeSeriesDataset();
             completionDataset.Name = COMPLETIONS_DATASET_NAME;
             completionDataset.DataPoints = completionSummary
-                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.value } )
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.Value } )
                 .Cast<IChartJsTimeSeriesDataPoint>()
                 .ToList();
 
@@ -403,7 +415,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
             else
             {
-                // Group Steps by Start Date rounded to beginning of the month.
+                // Group interactions by Start Date rounded to beginning of the month.
                 groupKeySelector = x => x / 100;
             }
 
@@ -426,7 +438,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 {
                     DatasetName = VIEWS_DATASET_NAME,
                     InterationDateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
-                    value = x.Count()
+                    Value = x.Count()
                 } );
 
             var completedSummary = interactionQuery.Where( x => x.Operation == "Form Completed" )
@@ -437,7 +449,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 {
                     DatasetName = COMPLETIONS_DATASET_NAME,
                     InterationDateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
-                    value = x.Count()
+                    Value = x.Count()
                 } );
 
             summaries = viewedSummary.Union( completedSummary ).OrderBy( x => x.InterationDateTime );
@@ -492,7 +504,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             /// <value>
             /// The open counts.
             /// </value>
-            public int value { get; set; }
+            public int Value { get; set; }
 
             /// <summary>
             /// Gets or sets the interation date time.

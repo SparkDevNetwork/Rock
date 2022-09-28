@@ -33,7 +33,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class RestControllerCache : ModelCache<RestControllerCache, RestController>
     {
-
         #region Properties
 
         private readonly object _obj = new object();
@@ -197,6 +196,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

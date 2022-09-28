@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Communication.SmsActions
     [ExportMetadata( "ComponentName", "Reply" )]
     [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: AttributeCategories.Filters )]
     [MemoField( "Response", "The response that will be sent. <span class='tip tip-lava'></span>", true, order: 2, category: AttributeCategories.Response )]
+    [Rock.SystemGuid.EntityTypeGuid( "029085A7-5750-4055-BC37-2272BD194E1D")]
     public class SmsActionReply : SmsActionComponent
     {
         /// <summary>

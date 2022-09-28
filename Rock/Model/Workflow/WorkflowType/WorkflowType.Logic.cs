@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-
-using Rock.Web.Cache;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -47,22 +48,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
-                return supportedActions;
-            }
-        }
-
         #endregion Properties
 
         #region Public Methods
@@ -77,6 +62,17 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        /// <summary>
+        /// When checking for security, first check the category it belongs to, but then check the default entity security.
+        /// I don't think we would ever want an actual ParentAuthority defined on WorkflowType because it would
+        /// likely interfere with the WorkflowEntry block's behavior when it checks the workflow.IsAuthorized(...).
+        /// Why? -- Because the Workflow's ParentAuthority is the WorkflowType, and if we were to add a
+        /// ParentAuthority (not ParentAuthorityPre) to be the Category, it would then cause anyone who had edit on the
+        /// Category to also be able to edit the _running_ workflow instance (which should really only be handled
+        /// by the 'workflow assignment' feature).
+        /// </summary>
+        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 
         #endregion Public Methods
 
@@ -104,4 +100,3 @@ namespace Rock.Model
         #endregion ICacheable
     }
 }
-

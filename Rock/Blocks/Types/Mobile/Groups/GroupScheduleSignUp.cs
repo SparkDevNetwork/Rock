@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Blocks.Groups;
-using Rock.ViewModel.Blocks.Groups.GroupScheduleSignup;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Groups;
+using Rock.ViewModels.Blocks.Groups.GroupScheduleSignup;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -41,7 +41,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #region Block Attributes
 
-    [BlockTemplateField( "Schedule Preference Landing Template",
+    [BlockTemplateField( "Schedule Sign Up Landing Template",
         Description = "The XAML passed into the landing page, where the user's groups are listed.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE,
         DefaultValue = "C4BFED3A-C2A1-4A68-A646-44C3B499C75A",
@@ -59,6 +59,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP )]
     public class GroupScheduleSignUp : RockMobileBlockType
     {
 
@@ -353,7 +355,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var locations = new LocationService( rockContext ).GetByGroupSchedule( groupSchedule.Id, group.Id )
                     .OrderBy( a => a.Name )
                     .ToList()
-                    .Select( a => new ListItemViewModel
+                    .Select( a => new ListItemBag
                     {
                         Text = a.Name,
                         Value = a.Guid.ToStringSafe()

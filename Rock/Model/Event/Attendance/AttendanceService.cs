@@ -27,6 +27,7 @@ using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -1348,13 +1349,13 @@ namespace Rock.Model
                     var locationParam = schedulerResourceParameters.AttendanceOccurrenceLocationIds?.ToList() ?? new List<int>();
                     if ( locationParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => locationParam.Contains( ma.LocationId.Value ) ) || a.MemberAssignments.Any( ma => ma.LocationId == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => locationParam.Contains( ma.LocationId.Value ) || ma.LocationId == null ) );
                     }
 
                     var scheduleParam = schedulerResourceParameters.AttendanceOccurrenceScheduleIds?.ToList() ?? new List<int>();
                     if ( scheduleParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => scheduleParam.Contains( ma.Schedule.Id ) ) || a.MemberAssignments.Any( ma => ma.Schedule == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => scheduleParam.Contains( ma.Schedule.Id ) || ma.Schedule == null ) );
                     }
                 }
 
@@ -3264,36 +3265,42 @@ namespace Rock.Model
         /// Show all members of the selected group
         /// </summary>
         [Description( "Group Members - All" )]
+        [EnumOrder( 1 )]
         GroupMembers,
 
         /// <summary>
         /// Show all members of the selected group that have a scheduling preference set for the selected week
         /// </summary>
         [Description( "Group Members - Matching Week" )]
+        [EnumOrder( 2 )]
         GroupMatchingPreference,
 
         /// <summary>
         /// All group members from another group
         /// </summary>
         [Description( "Alternate Group" )]
+        [EnumOrder( 4 )]
         AlternateGroup,
 
         /// <summary>
         /// The Parent group of the select group (only show if the selected group has a parent group)
         /// </summary>
         [Description( "Parent Group" )]
+        [EnumOrder( 5 )]
         ParentGroup,
 
         /// <summary>
         /// People that exist in a selected dataview
         /// </summary>
         [Description( "Data View" )]
+        [EnumOrder( 6 )]
         DataView,
 
         /// <summary>
         /// Group members whose week to work is the selected week AND whose assignment (location/schedule) matches the filters OR they have no assignment.
         /// </summary>
         [Description( "Group Members - Matching Assignment" )]
+        [EnumOrder( 3 )]
         GroupMatchingAssignment,
     }
 

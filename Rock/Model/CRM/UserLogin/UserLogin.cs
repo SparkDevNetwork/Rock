@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "UserLogin" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0FA592F1-728C-4885-BE38-60ED6C0D834F")]
     public partial class UserLogin : Model<UserLogin>
     {
 
@@ -178,7 +179,6 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the API key that is associated with the UserLogin
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         [HideFromReporting]
         public string ApiKey { get; set; }
         
@@ -190,15 +190,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        private History.HistoryChangeList HistoryChanges { get; set; }
 
         #endregion
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Log Error" )]
     [TextField( "Message", "The error message to return. <span class='tip tip-lava'></span>" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E1F593B9-FF5A-4064-845D-331BC491674A")]
     public class LogError : ActionComponent
     {
         /// <summary>

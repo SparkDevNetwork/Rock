@@ -151,7 +151,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <returns></returns>
-        private string MakeSlugValid( string slug )
+        internal static string MakeSlugValid( string slug )
         {
             slug = slug
                 .Trim()

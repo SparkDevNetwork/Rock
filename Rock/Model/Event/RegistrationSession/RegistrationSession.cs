@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationSession" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "6846744B-2623-4EF3-A20F-8027C4839094")]
     public partial class RegistrationSession : Model<RegistrationSession>
     {
         #region Entity Properties

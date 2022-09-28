@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ServiceJobHistory View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ServiceJobHistory ) )]
-    public partial class ServiceJobHistoryViewModelHelper : ViewModelHelper<ServiceJobHistory, Rock.ViewModel.ServiceJobHistoryViewModel>
+    public partial class ServiceJobHistoryViewModelHelper : ViewModelHelper<ServiceJobHistory, ServiceJobHistoryBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ServiceJobHistoryViewModel CreateViewModel( ServiceJobHistory model, Person currentPerson = null, bool loadAttributes = true )
+        public override ServiceJobHistoryBag CreateViewModel( ServiceJobHistory model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ServiceJobHistoryViewModel
+            var viewModel = new ServiceJobHistoryBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ServiceJobId = model.ServiceJobId,
                 ServiceWorker = model.ServiceWorker,
                 StartDateTime = model.StartDateTime,
@@ -180,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ServiceJobHistoryViewModel ToViewModel( this ServiceJobHistory model, Person currentPerson = null, bool loadAttributes = false )
+        public static ServiceJobHistoryBag ToViewModel( this ServiceJobHistory model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ServiceJobHistoryViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

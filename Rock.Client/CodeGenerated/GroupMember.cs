@@ -65,6 +65,9 @@ namespace Rock.Client
         public int GroupRoleId { get; set; }
 
         /// <summary />
+        public int GroupTypeId { get; set; }
+
+        /// <summary />
         public int? GuestCount { get; set; }
 
         /// <summary />
@@ -142,6 +145,7 @@ namespace Rock.Client
             this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupOrder = source.GroupOrder;
             this.GroupRoleId = source.GroupRoleId;
+            this.GroupTypeId = source.GroupTypeId;
             this.GuestCount = source.GuestCount;
             this.InactiveDateTime = source.InactiveDateTime;
             this.IsArchived = source.IsArchived;

@@ -1,0 +1,267 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+import { computed, defineComponent, ref } from "vue";
+import Alert from "@Obsidian/Controls/alert";
+import PaneledDetailBlockTemplate from "@Obsidian/Templates/paneledDetailBlockTemplate";
+import EditPanel from "./{{ EntityName }}Detail/editPanel";
+import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
+import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { emptyGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
+import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+
+export default defineComponent({
+    name: "Core.{{ EntityName }}Detail",
+
+    components: {
+        Alert,
+        EditPanel,
+        PaneledDetailBlockTemplate,
+        ViewPanel
+    },
+
+    setup() {
+        const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
+        const invokeBlockAction = useInvokeBlockAction();
+
+        // #region Values
+
+        const blockError = ref("");
+        const errorMessage = ref("");
+
+        const {{ EntityName | CamelCase }}ViewBag = ref(config.entity);
+        const {{ EntityName | CamelCase }}EditBag = ref<{{ EntityName }}Bag | null>(null);
+
+        const isEditMode = ref(false);
+
+        // #endregion
+
+        // #region Computed Values
+
+        /**
+         * The title to display in the block panel depending on the current state.
+         */
+        const blockTitle = computed((): string => {
+            if ({{ EntityName | CamelCase }}ViewBag.value?.guid === emptyGuid) {
+                return "Add {{ EntityName | SplitCase }}";
+            }
+            else if (!isEditMode.value) {
+                return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
+            }
+            else if ({{ EntityName | CamelCase }}EditBag.value?.name) {
+                return `Edit ${{ '{' }}{{ EntityName | CamelCase }}EditBag.value.name}`;
+            }
+            else {
+                return "Edit {{ EntityName | SplitCase }}";
+            }
+        });
+
+        /**
+         * Additional labels to display in the block panel.
+         */
+        const blockLabels = computed((): ListItemBag[] => {
+            const labels: ListItemBag[] = [];
+
+            if (isEditMode.value) {
+                return labels;
+            }
+
+            if ({{ EntityName | CamelCase }}ViewBag.value?.isActive === true) {
+                labels.push({ value: "success", text: "Active" });
+            }
+            else {
+                labels.push({ value: "danger", text: "Inactive" });
+            }
+
+            return labels;
+        });
+
+        const isEditable = computed((): boolean => {
+            return config.isEditable === true && {{ EntityName | CamelCase }}ViewBag.value?.isSystem !== true;
+        });
+
+        const options = computed((): {{ EntityName }}DetailOptionsBag => {
+            return config.options ?? {};
+        });
+
+        // #endregion
+
+        // #region Functions
+
+        // #endregion
+
+        // #region Event Handlers
+
+        /**
+         * Event handler for the Cancel button being clicked while in Edit mode.
+         * Handles redirect to parent page if creating a new entity.
+         *
+         * @returns true if the panel should leave edit mode; otherwise false.
+         */
+        const onCancelEdit = async (): Promise<boolean> => {
+            if ({{ EntityName | CamelCase }}EditBag.value?.guid === emptyGuid) {
+                if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                    window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
+                }
+
+                return false;
+            }
+
+            return true;
+        };
+
+        /**
+         * Event handler for the Delete button being clicked. Sends the
+         * delete request to the server and then redirects to the target page.
+         */
+        const onDelete = async (): Promise<void> => {
+            errorMessage.value = "";
+
+            const result = await invokeBlockAction<string>("Delete", {
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
+            });
+
+            if (result.isSuccess && result.data) {
+                window.location.href = result.data;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete {{ EntityName | SplitCase | Downcase }}.";
+            }
+        };
+
+        /**
+         * Event handler for the Edit button being clicked. Request the edit
+         * details from the server and then enter edit mode.
+         *
+         * @returns true if the panel should enter edit mode; otherwise false.
+         */
+        const onEdit = async (): Promise<boolean> => {
+            const result = await invokeBlockAction<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>("Edit", {
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
+            });
+
+            if (result.isSuccess && result.data && result.data.entity) {
+                {{ EntityName | CamelCase }}EditBag.value = result.data.entity;
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Event handler for the panel's Save event. Send the data to the server
+         * to be saved and then leave edit mode or redirect to target page.
+         *
+         * @returns true if the panel should leave edit mode; otherwise false.
+         */
+        const onSave = async (): Promise<boolean> => {
+            errorMessage.value = "";
+
+            const data: DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> = {
+                entity: {{ EntityName | CamelCase }}EditBag.value,
+                isEditable: true,
+                validProperties: [{% if UseAttributeValues == true %}
+                    "attributeValues",{% endif %}{% for property in Properties %}
+                    "{{ property.Name | CamelCase }}"{% unless forloop.last %},{% endunless %}{% endfor %}
+                ]
+            };
+
+            const result = await invokeBlockAction<{{ EntityName }}Bag | string>("Save", {
+                box: data
+            });
+
+            if (result.isSuccess && result.data) {
+                if (result.statusCode === 200 && typeof result.data === "object") {
+                    {{ EntityName | CamelCase }}ViewBag.value = result.data;
+
+                    return true;
+                }
+                else if (result.statusCode === 201 && typeof result.data === "string") {
+                    window.location.href = result.data;
+
+                    return false;
+                }
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save {{ EntityName | SplitCase | Downcase }}.";
+
+            return false;
+        };
+
+        // #endregion
+
+        // Handle any initial error conditions or the need to go into edit mode.
+        if (config.errorMessage) {
+            blockError.value = config.errorMessage;
+        }
+        else if (!config.entity) {
+            blockError.value = "The specified {{ EntityName | SplitCase | Downcase }} could not be viewed.";
+        }
+        else if (config.entity.guid === emptyGuid) {
+            {{ EntityName | CamelCase }}EditBag.value = config.entity;
+            isEditMode.value = true;
+        }
+
+        return {
+            {{ EntityName | CamelCase }}ViewBag,
+            {{ EntityName | CamelCase }}EditBag,
+            blockError,
+            blockLabels,
+            blockTitle,
+            errorMessage,
+            isEditable,
+            isEditMode,
+            onCancelEdit,
+            onDelete,
+            onEdit,
+            onSave,
+            options
+        };
+    },
+
+    template: `
+<Alert alertType="warning">
+    This is an experimental block and should not be used in production.
+</Alert>
+
+<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+
+<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+
+<PaneledDetailBlockTemplate v-if="!blockError"
+    v-model:isEditMode="isEditMode"
+    :title="blockTitle"
+    iconClass="fa fa-building-o"
+    :labels="blockLabels"
+    entityTitle="{{ EntityName }}"
+    :isEditAllowed="isEditable"
+    :isDeleteAllowed="isEditable"
+    @cancelEdit="onCancelEdit"
+    @delete="onDelete"
+    @edit="onEdit"
+    @save="onSave">
+    <EditPanel v-if="isEditMode" v-model="{{ EntityName | CamelCase }}EditBag" :options="options" />
+    <ViewPanel v-else :modelValue="{{ EntityName | CamelCase }}ViewBag" :options="options" />
+</PaneledDetailBlockTemplate>
+`
+});

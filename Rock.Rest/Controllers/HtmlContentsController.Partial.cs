@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/HtmlContents/UpdateContents/{blockId}" )]
+        [Rock.SystemGuid.RestActionGuid( "6236DEEB-8536-4485-890B-0FA4B0C86F81" )]
         public void UpdateContents( int blockId, [FromBody] HtmlContents htmlContents )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -43,10 +44,10 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            var block = new BlockService( (RockContext)Service.Context ).Get( blockId );
+            var block = new BlockService( ( RockContext ) Service.Context ).Get( blockId );
             if ( block != null && block.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
             {
-                var htmlContentService = (HtmlContentService)Service;
+                var htmlContentService = ( HtmlContentService ) Service;
                 var htmlContent = htmlContentService.GetActiveContentQueryable( blockId, htmlContents.EntityValue ).FirstOrDefault();
                 if ( htmlContent != null )
                 {
@@ -61,7 +62,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HtmlContents
         {
@@ -72,7 +73,7 @@ namespace Rock.Rest.Controllers
             /// The entity value.
             /// </value>
             public string EntityValue { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the content.
             /// </summary>

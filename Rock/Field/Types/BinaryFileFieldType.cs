@@ -25,7 +25,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -35,9 +36,9 @@ namespace Rock.Field.Types
     /// Stored as BinaryFile's Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class BinaryFileFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE )]
+    public class BinaryFileFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         private const string BINARY_FILE_TYPE = "binaryFileType";
@@ -65,7 +66,7 @@ namespace Rock.Field.Types
                 var binaryFileTypes = new BinaryFileTypeService( rockContext )
                     .Queryable()
                     .OrderBy( t => t.Name )
-                    .Select( t => new ListItemViewModel
+                    .Select( t => new ListItemBag
                     {
                         Value = t.Guid.ToString(),
                         Text = t.Name
@@ -210,9 +211,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = GetFormattedValue( value, !condensed );
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -250,7 +251,7 @@ namespace Rock.Field.Types
 
                 // A binary file needs more than just the Guid to properly display
                 // in most cases, so include the guid and the filename.
-                return new ListItemViewModel
+                return new ListItemBag
                 {
                     Value = binaryFileInfo.Guid.ToString(),
                     Text = binaryFileInfo.FileName
@@ -262,7 +263,7 @@ namespace Rock.Field.Types
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Extract the raw value.
-            return publicValue.FromJsonOrNull<ListItemViewModel>()?.Value ?? string.Empty;
+            return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
         }
 
         /// <summary>
@@ -468,5 +469,45 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
+
+                if ( !binaryFileId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<BinaryFile>().Value, binaryFileId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the FileName property of a BinaryFile and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) )
+            };
+        }
+
+        #endregion
     }
 }

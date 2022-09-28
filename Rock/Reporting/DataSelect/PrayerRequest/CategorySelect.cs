@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
     [Description("Select the Category of the Group")]
     [Export(typeof(DataSelectComponent))]
     [ExportMetadata("ComponentName", "Select Prayer Request's Category")]
+    [Rock.SystemGuid.EntityTypeGuid( "73012410-B10A-483E-83F9-1586160DCF48")]
     public class CategorySelect : DataSelectComponent
     {
         #region Properties

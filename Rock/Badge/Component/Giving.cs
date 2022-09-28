@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -54,10 +54,11 @@ namespace Rock.Badge.Component
   {% capture tooltipText %}{{ Person.NickName }} has not contributed{{ dateRangeText }}.{% endcapture %}
 {% endif %}
 
-<div class='badge badge-giving badge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
+<div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
   <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F3E57EC-D126-4F0D-B1E5-C78E220C2060")]
     public class Giving : BadgeComponent
     {
         /// <summary>
@@ -70,14 +71,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -91,14 +88,14 @@ namespace Rock.Badge.Component
             var dateRangeSummary = SlidingDateRangePicker.FormatDelimitedValues( slidingDateRangeDelimitedValues );
 
             var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            mergeFields.Add( "Person", this.Person );
+            mergeFields.Add( "Person", person );
             using ( var rockContext = new RockContext() )
             {
                 mergeFields.Add( "Badge", badge );
                 mergeFields.Add( "DateRange", new { Dates = dateRange, Summary = dateRangeSummary } );
 
                 // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-                var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == this.Person.GivingId ).Select( a => a.Id ).ToList();
+                var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == person.GivingId ).Select( a => a.Id ).ToList();
 
                 var transactionTypeContributionValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
                 var qry = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.TransactionTypeValueId == transactionTypeContributionValueId );

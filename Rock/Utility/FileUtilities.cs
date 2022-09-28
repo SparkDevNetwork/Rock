@@ -233,5 +233,26 @@ namespace Rock.Utility
 
             return ( Image ) b;
         }
+
+        /// <summary>
+        /// Returns the string representation of the file size in MB, KB, or B depending on the number of bytes entered.
+        /// </summary>
+        /// <param name="bytes">The bytes.</param>
+        /// <returns>System.String.</returns>
+        public static string FileSizeSuffixFormatter(int bytes)
+        {
+            decimal d = ( decimal ) bytes;
+            if ( bytes > 1000000 )
+            {
+                return ( d / 1000000m ) + " MB";
+            }
+
+            if ( bytes > 1000 )
+            {
+                return ( d / 1000m ) + " KB";
+            }
+
+            return bytes + " B";
+        }
     }
 }

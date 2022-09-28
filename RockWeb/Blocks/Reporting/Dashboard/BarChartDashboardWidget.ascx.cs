@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,12 +21,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Bar Chart" )]
     [Category( "Reporting > Dashboard" )]
     [Description( "Bar Chart Dashboard Widget" )]
+    [Rock.SystemGuid.BlockTypeGuid( "4E3A95C6-AB63-4920-9EA6-FA5F882B13AD" )]
     public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
         protected override void OnInit( System.EventArgs e )

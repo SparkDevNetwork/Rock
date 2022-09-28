@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Guids for EntityTypes */
 export const enum EntityType {
     /** The achievement attempt */
     AchievementAttempt = "5C144B51-3D2E-4BC2-B6C7-7E4CB890E15F",
@@ -28,6 +29,8 @@ export const enum EntityType {
     AchievementType = "0E99356C-0DEA-4F24-944E-21CD5FA83B9E",
     /** The achievement type prerequisite */
     AchievementTypePrerequisite = "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
+    /** The  guid for the Rock.Model.AssessmentType entity. */
+    AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
     /** The guid for the Rock.Model.Attendance entity. */
     Attendance = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E",
     /** The guid for the Rock.Model.Attribute entity. */
@@ -40,8 +43,8 @@ export const enum EntityType {
     Badge = "99300129-6F4C-45B2-B486-71123F046289",
     /** The benevolence request */
     BenevolenceRequest = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2",
-    /** The benevolence type */
-    BenevolenceType = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46",
+    /** The guid for the Rock.Model.BenevolenceType entity. */
+    BenevolenceType = "9DB5D35A-F2DF-4AFF-AB9F-06C2EB587C0D",
     /** The Block entity type */
     Block = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65",
     /** The campus */
@@ -68,8 +71,8 @@ export const enum EntityType {
     ConnectionOpportunityCampus = "E656E8B3-12AB-476E-AA63-5F9B76F64A08",
     /** The guid for the Rock.Model.ConnectionOpportunityGroup entity */
     ConnectionOpportunityGroup = "CD3F425C-9B36-4433-9C38-D58DE42C9F65",
-    /** The guid for the Rock.Model.ConnectionOpportunityConnectorGroup entity */
-    ConnectionOpportunityConnectorGroup = "4CB430B1-0F32-482F-9C95-164A09332CC1",
+    /** The EntityType Guid for Rock.Model.ConnectionOpportunityConnectorGroup  */
+    ConnectionOpportunityConnectorGroup = "2ADBE499-C9EC-479B-B33B-6E92BDE09FD1",
     /** The guid for the Rock.Model.ConnectionRequest entity */
     ConnectionRequest = "36B0D0C7-8125-48FA-9DA2-729AAA65F718",
     /** The guid for the Rock.Model.ConnectionRequestActivity entity */
@@ -82,6 +85,10 @@ export const enum EntityType {
     ConnectionType = "B1E52EAD-65BD-4C4D-BCCD-73368067621D",
     /** The guid for the Rock.Model.ConnectionWorkflow entity */
     ConnectionWorkflow = "4EB8711F-7301-4699-A223-0505A7CEB20A",
+    /** The guid for the Rock.Model.ContentCollection entity */
+    ContentCollection = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
+    /** The guid for the Rock.Model.ContentCollectionSource entity */
+    ContentCollectionSource = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
     /** The guid for the Rock.Model.DataView entity. */
     Dataview = "57F8FA29-DCF1-4F74-8553-87E90F234139",
     /** The guid for the Rock.Model.DefinedType entity. */
@@ -90,6 +97,8 @@ export const enum EntityType {
     DefinedValue = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E",
     /** The guid for Rock.Model.EntityType entity. */
     EntityType = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7",
+    /** The guid for Rock.Model.EventCalendar entity. */
+    EventCalendar = "E67D8D6D-4FE6-48D5-A940-A39213047314",
     /** The guid for the Rock.Model.FinancialAccount entity. */
     FinancialAccount = "798BCE48-6AA7-4983-9214-F9BCEFB4521D",
     /** The guid for the Rock.Model.FinancialBatch entity. */
@@ -108,13 +117,21 @@ export const enum EntityType {
     History = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
     /** The HTTP module component */
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
-    /** The guid for  */
+    /** The guid for Rock.Model.Interaction */
     Interaction = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7",
+    /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
+    LavaShortcode = "7574A473-3326-4973-8DF6-C7BF5F64EB36",
+    /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */
+    LavaShortcodeCategory = "6CFE20AD-F883-4F53-A678-0D048406299D",
+    /** The EntityType Guid for Rock.Model.Layout */
+    Layout = "9DACC861-FED4-47FC-946D-D6A120FF6D56",
+    /** The EntityType Guid for Rock.Model.MediaAccount  */
+    MediaAccount = "CD35F034-AC18-40D5-B703-6BF16D79C51C",
     /** The guid for the Rock.Model.MetricCategory entity */
     Metriccategory = "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The guid for the Rock.Model.MergeTemplate entity */
     MergeTemplate = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer. */
     MobileAnswerToPrayerBlockType = "759AFCA0-9E0B-4A22-A402-CD4499F2A457",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Content */
     MobileContentBlockType = "B9ADB0A5-62B0-4D74-BDFF-1AA959788602",
@@ -122,7 +139,7 @@ export const enum EntityType {
     MobileContentChannelItemListBlockType = "6DBF59D6-EB40-43C8-8859-F38254EC3F6D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemView */
     MobileContentChannelItemViewBlockType = "44A8B647-E0A7-42E7-9A75-276310F7E7BB",
-    /** The GUID for the entity  */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry */
     MobileCmsDailyChallengeEntry = "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.LavaItemList */
     MobileLavaItemListBlockType = "60AD6D70-8A2A-4CC1-97D5-199300AF77EE",
@@ -130,15 +147,15 @@ export const enum EntityType {
     MobileLoginBlockType = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType = "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList. */
     MobileConnectionConnectionTypeListBlockType = "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
     MobileConnectionConnectionOpportunityListBlockType = "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList. */
     MobileConnectionConnectionRequestListBlockType = "E1C52624-898F-46EF-98B0-3C06B6D81654",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */
     MobileConnectionConnectionRequestDetailBlockType = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests. */
     MobileMyPrayerRequestsBlockType = "E644DE6A-44CA-48AC-BF33-5429DA8052C6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails */
     MobileProfileDetailsBlockType = "A1ED4948-0778-4E13-B434-E97795DDB68B",
@@ -150,7 +167,7 @@ export const enum EntityType {
     MobileCmsHeroBlockType = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView */
     MobileCmsStructuredcontentviewBlockType = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType = "F81015CD-EBA9-4358-B930-4F1AB29AF879",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList */
     MobileEventsCalendareventlistBlockType = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9",
@@ -174,7 +191,7 @@ export const enum EntityType {
     MobileGroupsGroupAttendanceEntryBlockType = "1655E6A9-2BD6-4FA0-8886-D64DCA177FBB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupEdit */
     MobileGroupsGroupEditBlockType = "DE46759A-CE15-4F27-9FC8-154CD30D4637",
-    /** The GUID for the entity  */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupFinder */
     MobileGroupsGroupFinderBlockType = "15492F6A-344A-484E-AA26-A5E667CBD502",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberEdit */
     MobileGroupsGroupMemberEditBlockType = "61208516-9051-4E0E-AC46-6C8E1F104F3A",
@@ -182,23 +199,23 @@ export const enum EntityType {
     MobileGroupsGroupMemberListBlockType = "70652D98-9285-4707-8F46-B7FC48B6503D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberView */
     MobileGroupsGroupMemberViewBlockType = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842",
-    /** The GUID for the entity  */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration */
     MobileGroupsGroupRegistrationBlockType = "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
-    /** The GUID for entity  */
+    /** The GUID for entity Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference */
     MobileGroupsGroupSchedulePreference = "36B341A9-07FC-43A1-970A-E5D4CDB83E6A",
-    /** The GUID for entity  */
+    /** The GUID for entity Rock.Blocks.Types.Mobile.Groups.GroupScheduleSignUp */
     MobileGroupsGroupScheduleSignup = "DE3893A7-C353-4D19-A3FA-8B8EA99984F9",
-    /** The GUID for entity  */
+    /** The GUID for entity Rock.Blocks.Types.Mobile.Groups.GroupScheduleToolbox */
     MobileGroupsGroupScheduleToolbox = "DCC6C7C8-1040-4F0E-94ED-90450E2E9610",
-    /** The GUID for entity  */
+    /** The GUID for entity Rock.Blocks.Types.Mobile.Groups.GroupScheduleUnavailability */
     MobileGroupsGroupScheduleUnavailability = "300E3105-A9C9-4C86-8BD1-CC041B6953C6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView */
     MobileGroupsGroupViewBlockType = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */
     MobilePrayerPrayerRequestDetailsBlockType = "F8E56BC0-E9D1-44A4-9900-46589A1FB784",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerCardView. */
     MobilePrayerPrayerCardViewBlockType = "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF",
-    /** The GUID for the entity . */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Security.OnboardPerson. */
     MobileSecurityOnboardPerson = "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry = "06AAC065-BF89-483D-B671-80F0F72779A6",
@@ -242,9 +259,11 @@ export const enum EntityType {
     ServiceJob = "52766196-A72F-4F60-997A-78E19508843D",
     /** The Signal Type entity type */
     SignalType = "0BA03B9B-E974-4526-9B21-5037424B6D16",
+    /** The Step Flow entity type */
+    StepFlow = "308D8252-7712-4A45-8DE4-737C3EEAEA8F",
     /** The guid for the database storage provider entity */
     StorageProviderDatabase = "0AA42802-04FD-4AEC-B011-FEB127FC85CD",
-    /** The guid for  */
+    /** The guid for Rock.Model.Streak */
     Streak = "D953B0A5-0065-4624-8844-10010DE01E5C",
     /** The guid for the system communication entity */
     SystemCommunication = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
@@ -258,14 +277,18 @@ export const enum EntityType {
     StorageAssetstorageGooglecloud = "71344FA8-4210-4B6C-ADC1-9F63C4CA15CA",
     /** The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent) */
     StorageAssetstorageFilesystem = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A",
-    /** The EntityType Guid for  */
+    /** The EntityType Guid for Tag. */
+    Tag = "d34258d0-d366-4efb-aa76-84b059fb5434",
+    /** The EntityType Guid for Rock.Model.Workflow */
     Workflow = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93",
-    /** The EntityType Guid for  */
+    /** The EntityType Guid for Rock.Model.WorkflowActivity */
     WorkflowActivity = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F",
-    /** The EntityType Guid for  */
+    /** The EntityType Guid for Rock.Model.WorkflowType */
     WorkflowType = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE",
-    /** The EntityType Guid for  */
+    /** The EntityType Guid for Rock.Model.WorkflowActionType */
     WorkflowActionType = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6",
+    /** The EntityType Guid for Rock.Model.WorkflowFormBuilderTemplate. */
+    WorkflowFormBuilderTemplate = "65fa3078-9d42-4857-b78a-f32a05f7a4c1",
     /** The guid for the Test Financial Gateway entity type */
     FinancialGatewayTestGateway = "C22B0247-7C9F-411B-A1F5-0051FCBAC199",
     /** The guid for the Step entity type */
@@ -278,13 +301,20 @@ export const enum EntityType {
     SmsActionConversation = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
     /** Rock.Model.Site EntityType guid */
     Site = "7244C10B-5D87-467B-A7F5-12DC29910CA8",
-    /** The EntityType Guid for   */
+    /** The EntityType Guid for Rock.Achievement.Component.AccumulativeAchievement  */
     AccumulativeAchievementComponent = "05D8CD17-E07D-4927-B9C4-5018F7C4B715",
-    /** The EntityType Guid for   */
+    /** The EntityType Guid for Rock.Achievement.Component.StreakAchievement  */
     StreakAchievementComponent = "174F0AFF-3A5E-4A20-AE8B-D8D83D43BACD",
-    /** The EntityType Guid for   */
+    /** The EntityType Guid for Rock.Achievement.Component.StepProgramAchievement  */
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
-    /** The EntityType Guid for   */
+    /** The EntityType Guid for Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement  */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
+    /** The EntityType Guid for Rock.Model.MediaFolder  */
+    MediaFolder = "B28FC79F-9FEE-4BE4-801D-96B9246E6043",
+    /** The EntityType Guid for Rock.Model.PersistedDataset  */
+    PersistedDataset = "9C3064C0-CF9C-4549-9A80-022514B7FF83",
+    /** The EntityType Guid for Rock.Model.PersonalLinkSection  */
+    PersonalLinkSection = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF",
+    /** The EntityType Guid for Rock.Model.WorkflowLog */
+    WorkflowLog = "332CFF36-D637-414D-B732-370B330B8D73",
 }
-

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,6 +66,7 @@ namespace Rock.Workflow.Action.People
         IsRequired = true,
         Order = 3,
         Key = AttributeKey.RemovePersonFromCurrentFamily )]
+    [Rock.SystemGuid.EntityTypeGuid( "2D0781BD-C062-480C-AAA9-071725DCCB2C")]
     public class AddPersonToFamily : ActionComponent
     {
         #region Workflow Attributes

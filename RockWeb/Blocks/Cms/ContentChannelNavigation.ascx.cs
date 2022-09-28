@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -87,6 +87,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_NAVIGATION )]
     public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
     {
 

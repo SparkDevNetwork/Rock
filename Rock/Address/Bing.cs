@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Address
     [ExportMetadata( "ComponentName", "Bing" )]
     [TextField( "Bing Maps Key", "The Bing maps key", true, "", "", 1 )]
     [IntegerField( "Daily Transaction Limit", "The maximum number of transactions to process each day.", false, 5000, "", 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "F9090BDE-83EB-4D93-B5D6-19016A830E2D")]
     public class Bing : VerificationComponent
     {
         const string TXN_DATE = "com.rockrms.bing.txnDate";

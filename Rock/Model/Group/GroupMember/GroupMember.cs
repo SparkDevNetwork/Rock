@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP_MEMBER )]
     public partial class GroupMember : Model<GroupMember>, ICacheable
     {
         #region Entity Properties
@@ -59,6 +60,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group member belongs to. This property is required.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group member part of.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.

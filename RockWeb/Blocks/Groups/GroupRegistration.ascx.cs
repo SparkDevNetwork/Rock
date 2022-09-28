@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Require Email", "Should email be required for registration?", true, key: REQUIRE_EMAIL_KEY )]
     [BooleanField( "Require Mobile Phone", "Should mobile phone numbers be required (when visible) for registration?  NOTE: Certain fields such as phone numbers and address are not shown when the block is configured for 'Simple' mode.", false, key: REQUIRE_MOBILE_KEY )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7" )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -184,7 +185,6 @@ namespace RockWeb.Blocks.Groups
                 Person spouse = null;
                 Group family = null;
                 GroupLocation homeLocation = null;
-                bool isMatch = false;
 
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
@@ -194,7 +194,6 @@ namespace RockWeb.Blocks.Groups
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
-                        isMatch = true;
                     }
                 }
 
@@ -203,10 +202,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnCell.Text.Trim() );
                     person = personService.FindPerson( personQuery, true );
-                    if ( person != null )
-                    {
-                        isMatch = true;
-                    }
                 }
 
                 // Check to see if this is a new person
@@ -262,23 +257,23 @@ namespace RockWeb.Blocks.Groups
                 // If using a 'Full' view, save the phone numbers and address
                 if ( !IsSimple )
                 {
-                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                    if ( !string.IsNullOrWhiteSpace( pnHome.Number ) )
                     {
                         SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     }
-                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnCell.Number ) )
+                    if ( !string.IsNullOrWhiteSpace( pnCell.Number ) )
                     {
                         SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
-                    if ( !isMatch || !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                    if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                     {
                         string oldLocation = homeLocation != null ? homeLocation.Location.ToString() : string.Empty;
                         string newLocation = string.Empty;
 
                         var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         if ( location != null )
-                        {
+                        { 
                             if ( homeLocation == null )
                             {
                                 homeLocation = new GroupLocation();
@@ -287,22 +282,9 @@ namespace RockWeb.Blocks.Groups
                                 homeLocation.IsMappedLocation = true;
                                 family.GroupLocations.Add( homeLocation );
                             }
-                            else
-                            {
-                                oldLocation = homeLocation.Location.ToString();
-                            }
 
                             homeLocation.Location = location;
                             newLocation = location.ToString();
-                        }
-                        else
-                        {
-                            if ( homeLocation != null )
-                            {
-                                homeLocation.Location = null;
-                                family.GroupLocations.Remove( homeLocation );
-                                new GroupLocationService( rockContext ).Delete( homeLocation );
-                            }
                         }
                     }
 

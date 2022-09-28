@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -36,6 +37,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "DISC" )]
 
     [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
+    [Rock.SystemGuid.EntityTypeGuid( "6D29DB44-EDC5-42AA-B42C-482BC0920AD0")]
     public class DISC : BadgeComponent
     {
         /// <summary>
@@ -53,14 +55,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -68,7 +66,7 @@ namespace Rock.Badge.Component
             // Grab the DISC Scores
             bool isValidDiscScore = true;
             int discStrength = 0;
-            int?[] discScores = new int?[] { Person.GetAttributeValue( "NaturalD" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalI" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalS" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalC" ).AsIntegerOrNull() };
+            int?[] discScores = new int?[] { person.GetAttributeValue( "NaturalD" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalI" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalS" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalC" ).AsIntegerOrNull() };
 
             // Validate the DISC Scores, find the strength
             for ( int i = 0; i < discScores.Length; i++ )
@@ -100,7 +98,7 @@ namespace Rock.Badge.Component
             {
                 // Find the DISC Personality Type / Strength
                 String description = string.Empty;
-                string personalityType = Person.GetAttributeValue( "PersonalityType" );
+                string personalityType = person.GetAttributeValue( "PersonalityType" );
                 if ( !string.IsNullOrEmpty( personalityType ) )
                 {
                     var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
@@ -115,17 +113,17 @@ namespace Rock.Badge.Component
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DISCResultDetail" ) ) )
                 {
                     int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
-                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
+                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
                     writer.Write( "<a href='{0}'>", detailPageUrl );
                 }
 
                 //Badge HTML
-                writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-toggle='tooltip' data-original-title='{1}'>", badge.Id, description ) );
-                writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
-                writer.Write( string.Format( "<li class='badge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[0].Value / ( double ) MAX ) * 100 ), ( discStrength == 0 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[1].Value / ( double ) MAX ) * 100 ), ( discStrength == 1 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-s {1}' title='S'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[2].Value / ( double ) MAX ) * 100 ), ( discStrength == 2 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-c {1}' title='C'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[3].Value / ( double ) MAX ) * 100 ), ( discStrength == 3 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( String.Format( "<div class='rockbadge rockbadge-disc rockbadge-id-{0}' data-toggle='tooltip' data-original-title='{1}'>", badge.Id, description ) );
+                writer.Write( "<ul class='rockbadge-disc-chart list-unstyled'>" );
+                writer.Write( string.Format( "<li class='rockbadge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[0].Value / ( double ) MAX ) * 100 ), ( discStrength == 0 ) ? "rockbadge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='rockbadge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[1].Value / ( double ) MAX ) * 100 ), ( discStrength == 1 ) ? "rockbadge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='rockbadge-disc-s {1}' title='S'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[2].Value / ( double ) MAX ) * 100 ), ( discStrength == 2 ) ? "rockbadge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='rockbadge-disc-c {1}' title='C'><span style='height:{0}%'></span></li>", Math.Floor( ( double ) ( ( double ) discScores[3].Value / ( double ) MAX ) * 100 ), ( discStrength == 3 ) ? "rockbadge-disc-primary" : String.Empty ) );
                 writer.Write( "</ul></div>" );
 
                 if ( !String.IsNullOrEmpty( detailPageUrl ) )
@@ -141,7 +139,7 @@ namespace Rock.Badge.Component
                    .Queryable()
                    .AsNoTracking()
                    .Where( a => a.PersonAlias != null
-                                && a.PersonAlias.PersonId == Person.Id
+                                && a.PersonAlias.PersonId == person.Id
                                 && a.Status == AssessmentRequestStatus.Pending
                                 && a.AssessmentTypeId == assessmentType.Id
                                 && a.RequestedDateTime.HasValue )
@@ -153,8 +151,8 @@ namespace Rock.Badge.Component
 
                 if ( recentRequest )
                 {
-                    writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-toggle='tooltip' data-original-title='A DISC request was made on {1}'>", badge.Id, lastRequestDate.Value.ToShortDateString() ) );
-                    writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
+                    writer.Write( String.Format( "<div class='rockbadge rockbadge-disc rockbadge-id-{0}' data-toggle='tooltip' data-original-title='A DISC request was made on {1}'>", badge.Id, lastRequestDate.Value.ToShortDateString() ) );
+                    writer.Write( "<ul class='rockbadge-disc-chart list-unstyled'>" );
                     writer.Write( string.Format( "<li class='badge-disc-d badge-disc-disabled' title='D'><span style='height:{0}%'></span></li>", 80 ) );
                     writer.Write( string.Format( "<li class='badge-disc-i badge-disc-disabled' title='I'><span style='height:{0}%'></span></li>", 20 ) );
                     writer.Write( string.Format( "<li class='badge-disc-s badge-disc-disabled' title='S'><span style='height:{0}%'></span></li>", 60 ) );

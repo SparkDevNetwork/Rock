@@ -19,12 +19,13 @@
 
                 <div class="panel-labels">
                     <asp:LinkButton ID="lbMediaFiles" runat="server" CssClass="btn btn-default btn-xs" OnClick="lbMediaFiles_Click" Visible="false">
-                        <i class="fas fa-file-text"></i> Media Files
+                        <i class="fas fa-file-text"></i> View Media Assets
                     </asp:LinkButton>
 
                     <asp:LinkButton ID="lbMediaAnalytics" runat="server" CssClass="btn btn-default btn-xs" OnClick="lbMediaAnalytics_Click" Visible="false">
-                        <i class="fas fa-line-chart"></i> Media Analytics
+                        <i class="fa fa-line-chart"></i> View Media Analytics
                     </asp:LinkButton>
+                    <Rock:HighlightLabel ID="hlDuration" runat="server" LabelType="Default" ToolTip="Media duration" />
                 </div>
             </div>
 

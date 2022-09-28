@@ -1,3 +1,6 @@
+const { pathsToModuleNameMapper } = require("ts-jest");
+const { compilerOptions } = require("./Tests/tsconfig.json");
+
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
     globals: {
@@ -11,5 +14,6 @@ module.exports = {
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
-    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"]
+    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
+    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "../" })
 };

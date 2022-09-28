@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
         new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Url", "Attribute Value", "The URL or an attribute that contains the URL that the notification should link to.", false, "", "", 4, "Url", new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "22CAA82F-7AE2-430C-AE88-FA7401981F60")]
     public class SendPushNotification : ActionComponent
     {
         /// <summary>

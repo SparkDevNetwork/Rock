@@ -19,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -434,7 +434,8 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -829,6 +830,25 @@ namespace Rock.Plugin.HotFixes {
         public static string _153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix {
+            get {
+                return ResourceManager.GetString("_157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix", resourceCulture);
             }
         }
     }

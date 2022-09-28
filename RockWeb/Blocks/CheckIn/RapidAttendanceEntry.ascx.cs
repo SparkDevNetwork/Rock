@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,7 +51,9 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 1 )]
 
+
     #region Attendance Block Attribute Settings
+
     [BooleanField(
         "Enable Attendance",
         Key = AttributeKey.EnableAttendance,
@@ -89,7 +91,17 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Attendance",
         IsRequired = true,
         Order = 5 )]
+    [BooleanField(
+        "Show Campus",
+        Key = AttributeKey.ShowCampus,
+        Description = "Determines whether the campus picker should be shown. This allows the group locations to be filtered for a specific campus.",
+        DefaultBooleanValue = true,
+        Category = "Attendance",
+        IsRequired = true,
+        Order = 6 )]
+
     #endregion Attendance Block Attribute Settings
+
     #region Family Block Attribute Settings
     [AttributeField(
         "Family Attributes",
@@ -112,6 +124,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 2,
         IsRequired = true )]
     #endregion Family Block Attribute Settings
+
     #region Individual Block Attribute Settings
     [CodeEditorField(
         "Header Lava Template",
@@ -175,6 +188,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 7 )]
     #endregion Individual Block Attribute Settings
+
     #region Prayer Block Attribute Settings
     [BooleanField(
         "Enable Prayer Request Entry",
@@ -198,7 +212,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         Order = 3 )]
     [IntegerField(
-        "Expires After (Days)",
+        "Expires After (days)",
         Key = AttributeKey.ExpiresAfter,
         DefaultIntegerValue = 14,
         Description = "Number of days until the request will expire.",
@@ -235,6 +249,7 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.EnableCategorySelection,
         Order = 8 )]
     #endregion Prayer Block Attribute Settings
+
     #region Workflows Block Attribute Settings
     [TextField(
         "Workflow List Title",
@@ -253,6 +268,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 1 )]
     #endregion Workflows Block Attribute Settings
+
     #region Notes Block Attribute Settings
     [NoteTypeField(
         "Note Types",
@@ -264,7 +280,9 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 1 )]
     #endregion Notes Block Attribute Settings
+
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "6C2ED1FA-218B-4ACC-B661-A2618F310CD4" )]
     public partial class RapidAttendanceEntry : RockBlock
     {
         #region Fields
@@ -376,6 +394,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string EnableAttendance = "EnableAttendance";
             public const string ParentGroup = "ParentGroup";
             public const string AttendanceAgeLimit = "AttendanceAgeLimit";
+            public const string ShowCampus = "ShowCampus";
             public const string AttendanceGroup = "AttendanceGroup";
             public const string ShowCanCheckInRelationships = "ShowCanCheckInRelationships";
             public const string FamilyAttributes = "FamilyAttributes";
@@ -402,6 +421,12 @@ namespace RockWeb.Blocks.CheckIn
 
         #endregion Attribute Keys
 
+        #region Properties
+
+        private List<CampusCache> CachedCampuses => CampusCache.All( false);
+
+        #endregion Properties
+
         #region Base Method Overrides
 
         /// <summary>
@@ -427,6 +452,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
+            base.BlockUpdated += RapidAttendanceEntry_BlockUpdated;
             lbAddFamily.Visible = GetAttributeValue( AttributeKey.AddFamilyPage ).IsNotNullOrWhiteSpace();
             dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
 
@@ -448,16 +474,51 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Handles the BlockUpdated event of the RapidAttendanceEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void RapidAttendanceEntry_BlockUpdated( object sender, EventArgs e )
+        {
+            var currentPageParams = PageParameters().ToDictionary( k => k.Key, v => v.Value.ToString() );
+            NavigateToCurrentPage( currentPageParams );
+        }
+
+
+        /// <summary>
         /// Initialize basic information about the page structure and setup the default content.
         /// </summary>
         /// <param name="sender">Object that is generating this event.</param>
         /// <param name="e">Arguments that describe this event.</param>
         protected void Page_Load( object sender, EventArgs e )
         {
+            var showCampus = GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean();
             if ( !IsPostBack )
             {
                 _personInputsState = new List<PersonInput>();
+                
+                if ( showCampus )
+                {
+                    cpCampus.Visible = true;
+                    cpCampus.Campuses = CachedCampuses;
+                }
+                else
+                {
+                    cpCampus.Visible = false;
+                    cpCampus.Campuses = null;
+                }
+
                 ShowDetails();
+            }
+            else
+            {
+                if ( showCampus )
+                {
+                    if ( CachedCampuses.Count == 1 )
+                    {
+                        cpCampus.SelectedCampusId = CurrentPerson.PrimaryCampusId;
+                    }
+                }
             }
         }
 
@@ -489,6 +550,16 @@ namespace RockWeb.Blocks.CheckIn
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowDetails();
+        }
+
+        /// <summary>
+        /// Handles the event when the individual changes the selected item in the campus picker.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateLocations();
         }
 
         #region Setting Events
@@ -1488,7 +1559,7 @@ namespace RockWeb.Blocks.CheckIn
             ddlLocation.Items.Add( new ListItem() );
 
             int? groupId = GetSelectedGroupId();
-
+            var selectedCampusId = cpCampus.SelectedCampusId ?? 0;
             if ( groupId.HasValue )
             {
                 var group = new GroupService( new RockContext() ).Get( groupId.Value );
@@ -1499,13 +1570,16 @@ namespace RockWeb.Blocks.CheckIn
                 //
                 foreach ( var groupLocation in groupLocations )
                 {
-                    ddlLocation.Items.Add( new ListItem( groupLocation.Location.Name, groupLocation.Id.ToString() ) );
+                    if ( groupLocation.Location.CampusId == selectedCampusId || selectedCampusId == 0 )
+                    {
+                        ddlLocation.Items.Add( new ListItem( groupLocation.Location.Name, groupLocation.Id.ToString() ) );
+                    }
                 }
 
                 //
                 // If there is only one location then select it, otherwise show the picker and let the user select.
                 //
-                if ( groupLocations.Count == 1 )
+                if ( groupLocations.Count == 1 && ddlLocation.Items.Count > 1 )
                 {
                     ddlLocation.SelectedIndex = 1;
                 }
@@ -2615,5 +2689,8 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         # endregion Supporting Classes
+
+
+
     }
 }

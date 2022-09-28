@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -86,6 +87,7 @@ namespace RockWeb.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey
@@ -134,6 +136,13 @@ namespace RockWeb.Blocks.Security
             if ( string.IsNullOrWhiteSpace( url ) )
             {
                 url = ResolveRockUrl( "~/ConfirmAccount" );
+            }
+
+            var rootUri = new Uri( RootPath );
+            var hostName = rootUri.Host;
+            if ( !CheckHostConfiguration( hostName ) )
+            {
+                throw new Exception( "Invalid request." );
             }
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -208,6 +217,26 @@ namespace RockWeb.Blocks.Security
             else
             {
                 pnlWarning.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the specified host name is configured within a Rock Site to avoid creating
+        /// invalid link URLs.
+        /// </summary>
+        /// <param name="hostName">The host name</param>
+        /// <returns>True if the specified host name is configured in Rock.</returns>
+        private bool CheckHostConfiguration( string hostName )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var siteService = new SiteService( rockContext );
+                var siteHostNames = siteService.Queryable().AsNoTracking()
+                    .SelectMany( s => s.SiteDomains )
+                    .Select( d => d.Domain )
+                    .ToList();
+
+                return siteHostNames.Contains( hostName );
             }
         }
 

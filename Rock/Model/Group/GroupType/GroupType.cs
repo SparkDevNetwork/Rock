@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,8 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -35,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286")]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
         #region Entity Properties
@@ -87,7 +89,7 @@ namespace Rock.Model
         /// Gets or sets the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> that belongs to this GroupType is called.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this 
+        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this
         /// GroupType is called.
         /// </value>
         /// <example>
@@ -130,7 +132,7 @@ namespace Rock.Model
         /// If false, this GroupType will be hidden navigation controls, such as TreeViews and Menus
         /// </summary>
         /// <remarks>
-        ///  Navigation controls include objects lie menus and treeview controls.
+        ///  Navigation controls include objects like menus and treeview controls.
         /// </remarks>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupType and Groups should be displayed in Navigation controls.
@@ -363,11 +365,13 @@ namespace Rock.Model
                     return _groupViewLavaTemplate;
                 }
             }
+
             set
             {
                 _groupViewLavaTemplate = value;
             }
         }
+
         private string _groupViewLavaTemplate;
         private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and Group.GroupCapacity != '' %}
 		{% assign warningLevel = 'warning' %}
@@ -383,9 +387,9 @@ namespace Rock.Model
 			<div class=""alert alert-{{ warningLevel }} margin-t-sm"">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
 		{% endif %}
 	{% endif %}
-	
-	
-	
+
+
+
 {% if Group.Description != '' -%}
     <p class='description'>{{ Group.Description }}</p>
 {% endif -%}
@@ -419,9 +423,10 @@ namespace Rock.Model
         </dl>
         <dl>
         {% for attribute in Group.AttributeValues %}
-        <dt>{{ attribute.AttributeName }}:</dt>
-
-<dd>{{ attribute.ValueFormatted }} </dd>
+            {% if attribute.ValueFormatted != '' %}
+                <dt>{{ attribute.AttributeName }}</dt>
+                <dd>{{ attribute.ValueFormatted }}</dd>
+            {% endif %}
         {% endfor %}
         </dl>
     </div>
@@ -465,7 +470,7 @@ namespace Rock.Model
 		        <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
 		        {% endif %}
 		    <a href = '{{ GroupMapUrl }}'><img class='img-thumbnail' src='{{ mapLink }}'/></a>
-		    </div>	
+		    </div>
 		    {% endif %}
 		{% endfor %}
 		{% endif %}
@@ -644,7 +649,7 @@ namespace Rock.Model
         [DataMember]
         public bool AllowAnyChildGroupType { get; set; }
 
-         /// <summary>
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is capacity required.
         /// </summary>
         /// <value><c>true</c> if this instance is capacity required; otherwise, <c>false</c>.</value>
@@ -795,6 +800,7 @@ namespace Rock.Model
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
             set { _groups = value; }
         }
+
         private ICollection<Group> _groups;
 
         /// <summary>
@@ -816,7 +822,7 @@ namespace Rock.Model
                     - Area 1
                         - Kittens Group
                     - Area 2
-                        - Bobcat Group    
+                        - Bobcat Group
                     - Area 3
                         - Tigers Group
                         - Bears Group
@@ -828,6 +834,7 @@ namespace Rock.Model
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
             set { _childGroupTypes = value; }
         }
+
         private ICollection<GroupType> _childGroupTypes;
 
         /// <summary>
@@ -841,6 +848,7 @@ namespace Rock.Model
             get { return _parentGroupTypes ?? ( _parentGroupTypes = new Collection<GroupType>() ); }
             set { _parentGroupTypes = value; }
         }
+
         private ICollection<GroupType> _parentGroupTypes;
 
         /// <summary>
@@ -855,6 +863,7 @@ namespace Rock.Model
             get { return _roles ?? ( _roles = new Collection<GroupTypeRole>() ); }
             set { _roles = value; }
         }
+
         private ICollection<GroupTypeRole> _roles;
 
         /// <summary>
@@ -868,8 +877,9 @@ namespace Rock.Model
             get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
             set { _triggers = value; }
         }
+
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-        
+
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -881,6 +891,7 @@ namespace Rock.Model
             get { return _groupScheduleExclusions ?? ( _groupScheduleExclusions = new Collection<GroupScheduleExclusion>() ); }
             set { _groupScheduleExclusions = value; }
         }
+
         private ICollection<GroupScheduleExclusion> _groupScheduleExclusions;
 
         /// <summary>
@@ -895,11 +906,11 @@ namespace Rock.Model
             get { return _locationTypes ?? ( _locationTypes = new Collection<GroupTypeLocationType>() ); }
             set { _locationTypes = value; }
         }
+
         private ICollection<GroupTypeLocationType> _locationTypes;
 
-
         /// <summary>
-        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
+        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a
         /// <see cref="Rock.Model.Group"/> of this GroupType.
         /// </summary>
         /// <value>
@@ -983,7 +994,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from. 
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.
         /// This is similar to a parent or a template GroupType.
         /// </summary>
         /// <value>The <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.</value>
@@ -1002,6 +1013,7 @@ namespace Rock.Model
             get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
             set { _groupsRequirements = value; }
         }
+
         private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
@@ -1011,6 +1023,29 @@ namespace Rock.Model
         /// The type of the group status defined.
         /// </value>
         public virtual DefinedType GroupStatusDefinedType { get; set; }
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 
@@ -1054,7 +1089,6 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleConfirmationSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemEmailId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleReminderSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemEmailId ).WillCascadeOnDelete( false );
 #pragma warning restore CS0618 // Type or member is obsolete
-
         }
     }
 
