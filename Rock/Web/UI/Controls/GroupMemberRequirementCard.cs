@@ -618,25 +618,27 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = GroupRequirementId.Value,
+                            GroupMemberId = GroupMemberId
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                        rockContext.SaveChanges();
 
-                    List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                        // Gets the group member requirement with the Group Member included.
+                        groupMemberRequirement = groupMemberRequirementService.GetInclude( groupMemberRequirement.Guid, r => r.GroupMember );
+                    }
+
+                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                     if ( processed )
                     {
-                        // Update the group member requirement with the workflow ID.
-                        if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
-                        {
-                            groupMemberRequirement = new GroupMemberRequirement
-                            {
-                                GroupRequirementId = GroupRequirementId.Value,
-                                GroupMemberId = GroupMemberId
-                            };
-                            groupMemberRequirementService.Add( groupMemberRequirement );
-                        }
-
-                        // Could potentially overwrite an existing workflow ID, but that is expected.
+                        // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
                         groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
                         groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
                         rockContext.SaveChanges();
@@ -685,25 +687,27 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = GroupRequirementId.Value,
+                            GroupMemberId = GroupMemberId
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                        rockContext.SaveChanges();
 
-                    List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                        // Gets the group member requirement with the Group Member included.
+                        groupMemberRequirement = groupMemberRequirementService.GetInclude( groupMemberRequirement.Guid, r => r.GroupMember );
+                    }
+
+                    workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                     if ( processed )
                     {
-                        // Update the group member requirement with the workflow ID.
-                        if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
-                        {
-                            groupMemberRequirement = new GroupMemberRequirement
-                            {
-                                GroupRequirementId = GroupRequirementId.Value,
-                                GroupMemberId = GroupMemberId
-                            };
-                            groupMemberRequirementService.Add( groupMemberRequirement );
-                        }
-
-                        // Could potentially overwrite an existing workflow ID, but that is expected.
+                        // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
                         groupMemberRequirement.WarningWorkflowId = workflow.Id;
                         groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
                         rockContext.SaveChanges();
