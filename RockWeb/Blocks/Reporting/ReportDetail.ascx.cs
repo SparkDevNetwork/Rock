@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1298,19 +1299,25 @@ namespace RockWeb.Blocks.Reporting
             SetupTimeToRunLabel( report );
             SetupNumberOfRuns( report );
             SetupLastRun( report );
+            
+            if ( report.Category != null )
+            {
+                lCategory.Text = new DescriptionList()
+                    .Add( "Category", report.Category.Name )
+                    .Html;
+            }
 
             if ( report.DataView != null )
             {
-                hlDataView.Visible = UserCanEdit;
+                
+                lDataView.Visible = UserCanEdit;
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );
-                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {report.DataView.Name.Truncate(30, true)}</a>";
-                hlDataView.ToolTip = (report.DataView.Name.Length > 30) ? report.DataView.Name : null;
-            }
-            else
-            {
-                hlDataView.Visible = false;
+
+                lDataView.Text = new DescriptionList()
+                    .Add( "Data View", $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>{report.DataView.Name}</a>" )
+                    .Html;
             }
 
             BindGrid( report, false );
