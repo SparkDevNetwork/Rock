@@ -43,6 +43,7 @@
                                     <Rock:BoolField DataField="IsSuccessful" HeaderText="Successful" SortExpression="IsSuccessful" />
                                     <Rock:BoolField DataField="IsClosed" HeaderText="Closed" SortExpression="IsClosed" />
                                     <Rock:RockLiteralField ID="lProgress" HeaderText="Progress" SortExpression="Progress" />
+                                    <Rock:RockLiteralField ID="lPerson" ItemStyle-CssClass="grid-columncommand" ControlStyle-CssClass="btn btn-default btn-sm" />
                                     <Rock:DeleteField OnClick="gAttempts_Delete" />
                                 </Columns>
                             </Rock:Grid>
