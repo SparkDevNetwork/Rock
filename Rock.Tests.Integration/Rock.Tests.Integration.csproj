@@ -175,6 +175,7 @@
     <Compile Include="Field.Types\MergeTemplateFieldTypeTests.cs" />
     <Compile Include="Field.Types\MetricCategoriesFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
+    <Compile Include="Issues\Issues_v14.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
     <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
