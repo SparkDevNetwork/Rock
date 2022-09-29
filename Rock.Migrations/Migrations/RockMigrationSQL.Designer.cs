@@ -1085,11 +1085,23 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to DELETE FROM [LavaShortcode] WHERE ([Guid]=&apos;1E6785C0-7D92-49A7-9E15-68E113399152&apos;)
-        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;Follow Icon&apos;, N&apos;Add an icon with the ability to follow any entity with a click.&apos;, N&apos;&lt;div class=&quot;alert alert-info&quot;&gt;&lt;strong&gt;Heads Up!&lt;/strong&gt; Enabling the following API requires changes to Rock security. &lt;a href=&quot;#followingsecuritydocs&quot;&gt;See documentat [rest of string was truncated]&quot;;.
+        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;Follow Icon&apos;, N&apos;Add an icon with the ability to follow any entity with a click.&apos;, N&apos;&lt;div class=&quot;alert alert-info&quot;&gt;&lt;strong&gt;Heads Up!&lt;/strong&gt; Enabling the following API requires changes to Rock security. &lt;a href=&quot;#followingsecuritydocs&quot;&gt;See documenta [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202208122155278_Rollup_20220812_Follow20Shortcode {
             get {
                 return ResourceManager.GetString("_202208122155278_Rollup_20220812_Follow20Shortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202209291606147_Rollup_20220929_AddChartGridlinecolorProperty {
+            get {
+                return ResourceManager.GetString("_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty", resourceCulture);
             }
         }
     }
