@@ -283,4 +283,7 @@
   <data name="_202208122155278_Rollup_20220812_Follow20Shortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 14.0\Version 1.14.0\202208122155278_rollup_20220812_follow20shortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202209291606147_rollup_20220929_addchartgridlinecolorproperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
