@@ -60,7 +60,7 @@
                                 <Rock:HiddenFieldWithClass ID="hfRequirementCheckType" CssClass="js-hidden-selected" runat="server" />
                                 <div class="btn-group">
                                     <asp:HyperLink ID="btnRequirementCheckTypeSQL" runat="server" CssClass="btn btn-default active" Text="SQL" data-val="0" />
-                                    <asp:HyperLink ID="btnRequirementCheckTypeDataview" runat="server" CssClass="btn btn-default" Text="Dataview" data-val="1" />
+                                    <asp:HyperLink ID="btnRequirementCheckTypeDataview" runat="server" CssClass="btn btn-default" Text="Data View" data-val="1" />
                                     <asp:HyperLink ID="btnRequirementCheckTypeManual" runat="server" CssClass="btn btn-default" Text="Manual" data-val="2" />
                                 </div>
                             </div>
@@ -71,10 +71,10 @@
                             <div class="js-dataview-mode-div">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Dataview" Help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
+                                        <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Criteria Data View" Help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataViewItemPicker ID="dpWarningDataView" runat="server" Label="Warning Dataview" Help="Optional dataview that will return a list of people that should be marked as in a warning status." />
+                                        <Rock:DataViewItemPicker ID="dpWarningDataView" runat="server" Label="Warning Criteria Data View" Help="Optional data view that will return a list of people that should be marked as in a warning status." />
                                     </div>
                                 </div>
                             </div>
