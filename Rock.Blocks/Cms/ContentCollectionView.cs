@@ -123,7 +123,7 @@ namespace Rock.Blocks.Cms
     </div>
 </div>
 <div class=""actions"">
-   <a href=""#"" class=""btn btn-default show-more"">Show More</a>
+   <a href=""#"" class=""btn btn-default js-more"">Show More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
