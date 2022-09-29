@@ -69,7 +69,8 @@ namespace Rock.Personalization
                 return true;
             }
 
-            TimeSpan maxCacheLifetime = TimeSpan.FromMinutes( 5 );
+            var personalizationCookieDuration = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? 5;
+            TimeSpan maxCacheLifetime =  TimeSpan.FromMinutes( personalizationCookieDuration );
             if ( currentDateTime - LastUpdateDateTime > maxCacheLifetime )
             {
                 return true;
