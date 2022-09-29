@@ -340,8 +340,8 @@ namespace Rock.Web.UI.Controls
                 // End the Strong tag.
                 writer.RenderEndTag();
 
-                // If there is a due date, add the short date in a "small" tag.
-                if ( GroupMemberRequirementDueDate.HasValue )
+                // If the requirement is not met and there is a due date, add the short date in a "small" tag.
+                if ( MeetsGroupRequirement != MeetsGroupRequirement.Meets && GroupMemberRequirementDueDate.HasValue )
                 {
                     writer.Write( "Due: " + GroupMemberRequirementDueDate.Value.ToShortDateString() );
                 }
