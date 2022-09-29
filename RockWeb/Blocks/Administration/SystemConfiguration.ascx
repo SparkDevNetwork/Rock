@@ -23,6 +23,7 @@
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />
                             <Rock:RockCheckBox ID="cbEnableKeepAlive" runat="server" Label="Enable Keep Alive" ValidationGroup="GeneralSetting" Help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
+                            <Rock:NumberBox ID="nbPersonalizationCookieCacheLengthMinutes" runat="server" NumberType="Integer" Label="Personalization Segment Cookie Affinity Duration" CssClass="input-width-lg" AppendText="minutes" Help="Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database. The default is 5 minutes if not set." />
                         </div>
                     </div>
                     <div class="actions">
