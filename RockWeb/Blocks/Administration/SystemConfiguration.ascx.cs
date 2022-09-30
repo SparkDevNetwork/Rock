@@ -55,6 +55,11 @@ namespace RockWeb.Blocks.Administration
             /// The login cookie timeout (in minutes)
             /// </summary>
             public const int LoginCookieTimeoutMinutes = 43200;
+
+            /// <summary>
+            /// The personalization cookie length in minutes
+            /// </summary>
+            public const int PersonalizationCookieCacheLengthMinutes = 5;
         }
 
         #endregion Defaults
@@ -156,6 +161,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_KEEP_ALIVE, cbEnableKeepAlive.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, tbPDFExternalRenderEndpoint.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, nbVisitorCookiePersistenceLengthDays.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES, nbPersonalizationCookieCacheLengthMinutes.Text );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
             nbGeneralMessage.Title = string.Empty;
@@ -226,6 +232,7 @@ namespace RockWeb.Blocks.Administration
             cbEnableKeepAlive.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
             tbPDFExternalRenderEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
             nbVisitorCookiePersistenceLengthDays.Text = (Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays).ToString();
+            nbPersonalizationCookieCacheLengthMinutes.Text = ( Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes ).ToString();
         }
 
         /// <summary>
