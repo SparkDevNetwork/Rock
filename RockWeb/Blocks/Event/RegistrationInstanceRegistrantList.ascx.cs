@@ -206,6 +206,7 @@ namespace RockWeb.Blocks.Event
 
             gRegistrants.EmptyDataText = "No Registrants Found";
             gRegistrants.DataKeyNames = new string[] { "Id" };
+            gRegistrants.PersonIdField = "PersonAlias.PersonId";
             gRegistrants.Actions.ShowAdd = true;
             gRegistrants.Actions.AddClick += gRegistrants_AddClick;
             gRegistrants.RowDataBound += gRegistrants_RowDataBound;
