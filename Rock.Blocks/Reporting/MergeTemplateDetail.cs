@@ -37,7 +37,6 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular merge template." )]
-    [IconCssClass( "fa fa-files-o" )]
 
     #region Block Attributes
 
