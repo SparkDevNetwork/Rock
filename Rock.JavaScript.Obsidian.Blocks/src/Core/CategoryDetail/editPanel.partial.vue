@@ -67,7 +67,7 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const parentCategory = propertyRef(props.modelValue.parentCategory ?? {}, "Category");
+    const parentCategory = propertyRef(props.modelValue.parentCategory ?? null, "ParentCategoryId");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
     const entityTypeGuid = ref(props.modelValue.entityType?.value ?? "");
@@ -98,7 +98,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(parentCategory, props.modelValue.parentCategory ?? {});
+        updateRefValue(parentCategory, props.modelValue.parentCategory ?? null);
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
     });

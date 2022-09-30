@@ -37,7 +37,7 @@
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
     import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/customSettingsBag";
     import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/customSettingsOptionsBag";
-    import { Guid } from "../../../Rock.JavaScript.Obsidian/Framework/Types";
+    import { Guid } from "@Obsidian/Types";
 
     const emit = defineEmits(['close']);
 
