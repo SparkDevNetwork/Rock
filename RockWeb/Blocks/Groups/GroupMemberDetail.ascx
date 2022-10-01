@@ -103,17 +103,6 @@
                                 <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                             </div>
                         </div>
-<%--                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="OLD Requirements" CssClass="well well-lg">
-                                    <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
-                                    <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />
-                                    <div class="labels">
-                                        <asp:Literal ID="lRequirementsLabels" runat="server" />
-                                    </div>
-                                </Rock:RockControlWrapper>
-                            </div>
-                        </div>--%>
                     </asp:Panel>
                     <Rock:NotificationBox runat="server" ID="nbCommunicationSuccess" NotificationBoxType="Success" Dismissable="true" Text="Communication was sent." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />

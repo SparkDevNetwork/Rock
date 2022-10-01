@@ -111,6 +111,11 @@ namespace Rock.Web.UI.Controls
         public bool IsSummaryHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets whether interaction is disabled for the child controls.
+        /// </summary>
+        public bool IsInteractionDisabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the calculated due date for this group member requirement.
         /// </summary>
         public DateTime? GroupMemberRequirementDueDate { get; set; }
@@ -193,99 +198,102 @@ namespace Rock.Web.UI.Controls
             GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
             var groupRequirement = groupRequirementService.Get( GroupRequirementId.Value );
 
-            if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+            if ( !IsInteractionDisabled )
             {
-                var manualLabel = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace() ? groupRequirement.GroupRequirementType.CheckboxLabel : groupRequirement.GroupRequirementType.Name;
-                _lbManualRequirement = new LinkButton
+                if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
                 {
-                    CausesValidation = false,
-                    ID = "lbManualRequirement" + this.ClientID,
-                    Text = "<i class='fa fa-square-o fa-fw'></i>" + manualLabel,
-                };
-                _lbManualRequirement.Click += lbManualRequirement_Click;
-                Controls.Add( _lbManualRequirement );
-            }
-
-            if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
-            {
-                _lbMarkAsMet = new LinkButton
-                {
-                    CausesValidation = false,
-                    ID = "lbMarkasMetPopup" + this.ClientID,
-                    Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
-                };
-                _lbMarkAsMet.Click += lbMarkasMetPopup_Click;
-                Controls.Add( _lbMarkAsMet );
-
-                _modalDialog = new ModalDialog
-                {
-                    ID = "modalDialog_" + this.ClientID
-                };
-                _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
-                _modalDialog.Title = "Mark as met?";
-
-                HtmlGenericControl headingControl = new HtmlGenericControl( "h5" );
-                headingControl.InnerText = "Are you sure you want to manually mark this requirement as met?";
-                _modalDialog.Content.Controls.Add( headingControl );
-
-                _modalDialog.SaveButtonText = "OK";
-                _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
-                Controls.Add( _modalDialog );
-            }
-
-            // Workflow linkbutton controls
-
-            // Add workflow link if:
-            // the Group Requirement Type has a workflow type ID,
-            // the workflow is NOT auto initiated, and
-            // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
-            _hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
-                && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
-                && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
-
-            _hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue
-                && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow
-                && MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
-
-            if ( _hasDoesNotMeetWorkflow )
-            {
-                var qryParms = new Dictionary<string, string>();
-                qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
-                if ( workflowLink.PageId > 0 )
-                {
-                    // If the link text has a value, use it, otherwise use the default label key value.
-                    var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
-                        _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
-                        LabelKey.RequirementNotMet;
-                    _lbDoesNotMeetWorkflow = new LinkButton
+                    var manualLabel = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace() ? groupRequirement.GroupRequirementType.CheckboxLabel : groupRequirement.GroupRequirementType.Name;
+                    _lbManualRequirement = new LinkButton
                     {
-                        ID = "lbDoesNotMeetWorkflow" + this.ClientID,
-                        Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                        CausesValidation = false,
+                        ID = "lbManualRequirement" + this.ClientID,
+                        Text = "<i class='fa fa-square-o fa-fw'></i>" + manualLabel,
                     };
-                    _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
-                    Controls.Add( _lbDoesNotMeetWorkflow );
+                    _lbManualRequirement.Click += lbManualRequirement_Click;
+                    Controls.Add( _lbManualRequirement );
                 }
-            }
 
-            if ( _hasWarningWorkflow )
-            {
-                var qryParms = new Dictionary<string, string>();
-                qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
-                if ( workflowLink.PageId > 0 )
+                if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
                 {
-                    // If the link text has a value, use it, otherwise use the default label key value.
-                    var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
-                        _groupMemberRequirementType.WarningWorkflowLinkText :
-                        LabelKey.RequirementMetWithWarning;
-                    _lbWarningWorkflow = new LinkButton
+                    _lbMarkAsMet = new LinkButton
                     {
-                        ID = "lblWarningWorkflow" + this.ClientID,
-                        Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                        CausesValidation = false,
+                        ID = "lbMarkasMetPopup" + this.ClientID,
+                        Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
                     };
-                    _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
-                    Controls.Add( _lbWarningWorkflow );
+                    _lbMarkAsMet.Click += lbMarkasMetPopup_Click;
+                    Controls.Add( _lbMarkAsMet );
+
+                    _modalDialog = new ModalDialog
+                    {
+                        ID = "modalDialog_" + this.ClientID
+                    };
+                    _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
+                    _modalDialog.Title = "Mark as met?";
+
+                    HtmlGenericControl headingControl = new HtmlGenericControl( "h5" );
+                    headingControl.InnerText = "Are you sure you want to manually mark this requirement as met?";
+                    _modalDialog.Content.Controls.Add( headingControl );
+
+                    _modalDialog.SaveButtonText = "OK";
+                    _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
+                    Controls.Add( _modalDialog );
+                }
+
+                // Workflow linkbutton controls
+
+                // Add workflow link if:
+                // the Group Requirement Type has a workflow type ID,
+                // the workflow is NOT auto initiated, and
+                // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
+                _hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
+                    && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
+
+                _hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue
+                    && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+                if ( _hasDoesNotMeetWorkflow )
+                {
+                    var qryParms = new Dictionary<string, string>();
+                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
+                    if ( workflowLink.PageId > 0 )
+                    {
+                        // If the link text has a value, use it, otherwise use the default label key value.
+                        var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
+                            LabelKey.RequirementNotMet;
+                        _lbDoesNotMeetWorkflow = new LinkButton
+                        {
+                            ID = "lbDoesNotMeetWorkflow" + this.ClientID,
+                            Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                        };
+                        _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
+                        Controls.Add( _lbDoesNotMeetWorkflow );
+                    }
+                }
+
+                if ( _hasWarningWorkflow )
+                {
+                    var qryParms = new Dictionary<string, string>();
+                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
+                    if ( workflowLink.PageId > 0 )
+                    {
+                        // If the link text has a value, use it, otherwise use the default label key value.
+                        var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            _groupMemberRequirementType.WarningWorkflowLinkText :
+                            LabelKey.RequirementMetWithWarning;
+                        _lbWarningWorkflow = new LinkButton
+                        {
+                            ID = "lblWarningWorkflow" + this.ClientID,
+                            Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                        };
+                        _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
+                        Controls.Add( _lbWarningWorkflow );
+                    }
                 }
             }
         }
@@ -394,7 +402,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // If any workflows, the requirement can be overridden, or a manual requirement, create the unordered list and list items.
-                if ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride || this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                if ( !IsInteractionDisabled && ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride || this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual ) )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
                     writer.AddStyleAttribute( "margin", "0" );
@@ -498,6 +506,8 @@ namespace Rock.Web.UI.Controls
                     return "Issue With Requirement.";
             }
         }
+
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the _lbMarkasMetPopup control.
@@ -721,5 +731,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        #endregion Events
     }
 }
