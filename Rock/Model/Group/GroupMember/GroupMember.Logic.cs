@@ -473,16 +473,26 @@ namespace Rock.Model
             // If the requirement's Applies To Age Classification is not "All", filter the query to the corresponding Age Classification.
             allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToAgeClassification == AppliesToAgeClassification.All || ( int ) a.AppliesToAgeClassification == ( int ) this.Person.AgeClassification ).ToList();
 
-            //allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToDataViewId == null || 
-            //if ( this.AppliesToDataViewId.HasValue )
-            //{
-            //    // If the Group Requirement has a Data View it applies to, apply it here.
-            //    var appliesToDataViewPersonService = new PersonService( rockContext );
-            //    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
-            //    var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
-            //    var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
-            //    personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
-            //}
+            var requirementsWithDataviewIds = allGroupRequirements.Where( a => a.AppliesToDataViewId != null );
+            if ( requirementsWithDataviewIds.Any() )
+            {
+                List<int> requirementToRemoveIds = new List<int>();
+                foreach ( var requirement in requirementsWithDataviewIds )
+                {
+                    var appliesToDataViewPersonService = new PersonService( rockContext );
+                    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+                    var appliesToDataViewWhereExpression = requirement.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+                    var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
+                    if ( !appliesToDataViewPersonIds.Contains( this.PersonId ) )
+                    {
+                        requirementToRemoveIds.Add( requirement.Id );
+                    }
+                };
+                if ( requirementToRemoveIds.Any() )
+                {
+                    allGroupRequirements.RemoveAll( r => requirementToRemoveIds.Contains( r.Id ) );
+                }
+            }
 
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
