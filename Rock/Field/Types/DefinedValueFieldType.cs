@@ -423,7 +423,7 @@ namespace Rock.Field.Types
 
                     var definedValues = includeInactive ?
                         DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where(v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
                     cblSelectableValues.Visible = definedValues?.Any() ?? false;
@@ -585,13 +585,17 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
+                bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                    : false;
+
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
                     var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
-                        names.Add( definedValue.Value );
+                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
                     }
                 }
 
