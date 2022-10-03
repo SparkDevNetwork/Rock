@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Rock.Data;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
@@ -645,33 +644,6 @@ namespace Rock.Model
             }
 
             this.Delete( groupMember );
-        }
-
-        /// <summary>
-        /// Archives the specified group member with an option to null the GroupMemberId from Registrant tables
-        /// </summary>
-        /// <param name="groupMember">The group member.</param>
-        /// <param name="currentPersonAliasId">The current person alias identifier (leave null to have Rock figure it out)</param>
-        /// <param name="removeFromRegistrants">if set to <c>true</c> [remove from registrants].</param>
-        public void Archive( GroupMember groupMember, int? currentPersonAliasId, bool removeFromRegistrants )
-        {
-            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
-            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
-            {
-                registrant.GroupMemberId = null;
-            }
-
-            if ( !currentPersonAliasId.HasValue )
-            {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
-                }
-            }
-
-            groupMember.IsArchived = true;
-            groupMember.ArchivedByPersonAliasId = currentPersonAliasId;
-            groupMember.ArchivedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
