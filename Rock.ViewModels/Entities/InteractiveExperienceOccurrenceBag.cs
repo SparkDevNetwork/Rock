@@ -29,65 +29,51 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Entities
 {
     /// <summary>
-    /// InteractiveExperienceAnswer View Model
+    /// InteractiveExperienceOccurrence View Model
     /// </summary>
-    public partial class InteractiveExperienceAnswerBag : EntityBagBase
+    public partial class InteractiveExperienceOccurrenceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the approval status.
+        /// Gets or sets the Id of the Rock.Model.Campus that is associated with this Interactive Experience Occurrence.
         /// </summary>
         /// <value>
-        /// The approval status.
+        /// An System.Int32 referencing the Id of the Rock.Model.Campus that is associated with this Interactive Experience Occurrence. 
         /// </value>
-        public int ApprovalStatus { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Rock.Model.InteractionSession Session.
+        /// Gets or sets the Rock.Model.InteractiveExperienceAction identifier
+        /// that is currently being displayed.
         /// </summary>
         /// <value>
-        /// An System.Int32 representing the Id of the Rock.Model.InteractionSession session.
+        /// The action identifier currently being displayed.
         /// </value>
-        public int? InteractionSessionId { get; set; }
+        public int? CurrentlyShownActionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceAction that this Interactive Experience Answer is associated with. This property is required.
+        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this InteractiveExperienceOccurrence is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceAction that the Interactive Experience Answer is associated with.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceSchedule that the InteractiveExperienceOccurrence is associated with.
         /// </value>
-        public int InteractiveExperienceActionId { get; set; }
+        public int InteractiveExperienceScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required.
+        /// Gets or sets the System.DateTime for when this occurrence started.
         /// </summary>
         /// <value>
-        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceOccurrence that the Interactive Experience Answer is associated with.
+        /// The System.DateTime for when this occurrence started.
         /// </value>
-        public int InteractiveExperienceOccurrenceId { get; set; }
+        public DateTime OccurrenceDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the state json. This is used to store general state
+        /// information about this occurrence that will be defined later.
         /// </summary>
         /// <value>
-        /// The person alias identifier.
+        /// The state json.
         /// </value>
-        public int? PersonAliasId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the response.
-        /// </summary>
-        /// <value>
-        /// The response.
-        /// </value>
-        public string Response { get; set; }
-
-        /// <summary>
-        /// Gets or sets the response date time.
-        /// </summary>
-        /// <value>
-        /// The response date time.
-        /// </value>
-        public DateTime ResponseDateTime { get; set; }
+        public string StateJson { get; set; }
 
         /// <summary>
         /// Gets or sets the created date time.

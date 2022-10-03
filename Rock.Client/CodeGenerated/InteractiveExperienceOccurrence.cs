@@ -27,15 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for InteractiveExperienceSchedule that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for InteractiveExperienceOccurrence that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class InteractiveExperienceScheduleEntity
+    public partial class InteractiveExperienceOccurrenceEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? DataViewId { get; set; }
+        public int? CampusId { get; set; }
+
+        /// <summary />
+        public int? CurrentlyShownActionId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -44,10 +47,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? GroupId { get; set; }
-
-        /// <summary />
-        public int InteractiveExperienceId { get; set; }
+        public int InteractiveExperienceScheduleId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -55,7 +55,10 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int ScheduleId { get; set; }
+        public DateTime OccurrenceDateTime { get; set; }
+
+        /// <summary />
+        public string StateJson { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -84,19 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source InteractiveExperienceSchedule object
+        /// Copies the base properties from a source InteractiveExperienceOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( InteractiveExperienceSchedule source )
+        public void CopyPropertiesFrom( InteractiveExperienceOccurrence source )
         {
             this.Id = source.Id;
-            this.DataViewId = source.DataViewId;
+            this.CampusId = source.CampusId;
+            this.CurrentlyShownActionId = source.CurrentlyShownActionId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupId = source.GroupId;
-            this.InteractiveExperienceId = source.InteractiveExperienceId;
+            this.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.ScheduleId = source.ScheduleId;
+            this.OccurrenceDateTime = source.OccurrenceDateTime;
+            this.StateJson = source.StateJson;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -108,27 +112,21 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for InteractiveExperienceSchedule that includes all the fields that are available for GETs. Use this for GETs (use InteractiveExperienceScheduleEntity for POST/PUTs)
+    /// Client model for InteractiveExperienceOccurrence that includes all the fields that are available for GETs. Use this for GETs (use InteractiveExperienceOccurrenceEntity for POST/PUTs)
     /// </summary>
-    public partial class InteractiveExperienceSchedule : InteractiveExperienceScheduleEntity
+    public partial class InteractiveExperienceOccurrence : InteractiveExperienceOccurrenceEntity
     {
         /// <summary />
-        public DataView DataView { get; set; }
+        public Campus Campus { get; set; }
 
         /// <summary />
-        public Group Group { get; set; }
+        public InteractiveExperienceAction CurrentlyShownAction { get; set; }
 
         /// <summary />
-        public InteractiveExperience InteractiveExperience { get; set; }
+        public InteractiveExperienceSchedule InteractiveExperienceSchedule { get; set; }
 
         /// <summary />
-        public ICollection<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences { get; set; }
-
-        /// <summary />
-        public ICollection<InteractiveExperienceScheduleCampus> InteractiveExperienceScheduleCampuses { get; set; }
-
-        /// <summary />
-        public Schedule Schedule { get; set; }
+        public int OccurrenceDateKey { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

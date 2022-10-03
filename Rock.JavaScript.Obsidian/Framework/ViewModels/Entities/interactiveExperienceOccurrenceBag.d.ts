@@ -23,28 +23,28 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** InteractiveExperienceAnswer View Model */
-export type InteractiveExperienceAnswerBag = {
-    /** Gets or sets the approval status. */
-    approvalStatus: number;
+/** InteractiveExperienceOccurrence View Model */
+export type InteractiveExperienceOccurrenceBag = {
+    /** Gets or sets the Id of the Rock.Model.Campus that is associated with this Interactive Experience Occurrence. */
+    campusId?: number | null;
 
-    /** Gets or sets the Id of the Rock.Model.InteractionSession Session. */
-    interactionSessionId?: number | null;
+    /**
+     * Gets or sets the Rock.Model.InteractiveExperienceAction identifier
+     * that is currently being displayed.
+     */
+    currentlyShownActionId?: number | null;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceAction that this Interactive Experience Answer is associated with. This property is required. */
-    interactiveExperienceActionId: number;
+    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this InteractiveExperienceOccurrence is associated with. This property is required. */
+    interactiveExperienceScheduleId: number;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required. */
-    interactiveExperienceOccurrenceId: number;
+    /** Gets or sets the System.DateTime for when this occurrence started. */
+    occurrenceDateTime?: string | null;
 
-    /** Gets or sets the person alias identifier. */
-    personAliasId?: number | null;
-
-    /** Gets or sets the response. */
-    response?: string | null;
-
-    /** Gets or sets the response date time. */
-    responseDateTime?: string | null;
+    /**
+     * Gets or sets the state json. This is used to store general state
+     * information about this occurrence that will be defined later.
+     */
+    stateJson?: string | null;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;
