@@ -194,9 +194,11 @@ namespace RockWeb.Blocks.Tv
             site.LoginPageId = ppLoginPage.PageId;
             site.LoginPageRouteId = ppLoginPage.PageRouteId;
 
+            avcAttributes.GetEditValues( site );
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
+                site.SaveAttributeValues( rockContext );
 
                 // Create/Modify API Key
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, txtApiKey.Text, string.Format( "tv_application_{0}", site.Id ), rockContext );
@@ -410,6 +412,9 @@ namespace RockWeb.Blocks.Tv
                 ceApplicationStyles.Text = additionalSettings.ApplicationStyles;
 
                 cbEnablePageViews.Checked = site.EnablePageViews;
+
+                site.LoadAttributes( rockContext );
+                avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
 
                 // Login Page
                 if ( site.LoginPageRoute != null )

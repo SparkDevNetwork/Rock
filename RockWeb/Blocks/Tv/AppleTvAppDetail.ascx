@@ -61,6 +61,8 @@
 
                     <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Authentication Page" Help="The page on your public website that will be used in the authentication process." />
 
+                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+
                     <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </asp:Panel>
