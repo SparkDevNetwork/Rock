@@ -67,3 +67,17 @@ var docCookies = {
     }
   };
 
+// Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+function HandleBackForwardCache() {
+
+    // Forcibly hide the wait spinner if the page is being reloaded from cache.
+    // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
+    // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+    // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+    $(window).bind('pageshow', function (e) {
+        if ( e.originalEvent.persisted )
+        {
+            $('#updateProgress').hide();
+        }
+    });
+}
