@@ -859,6 +859,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
@@ -868,6 +869,7 @@
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.cs" />
     <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Group\GroupRequirementType\DueDateType.cs" />

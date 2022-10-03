@@ -37,14 +37,14 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractiveExperienceSchedule"/> that this Interactive Experience Answer is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractiveExperienceOccurrence"/> that this Interactive Experience Answer is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractiveExperienceSchedule"/> that the Interactive Experience Answer is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractiveExperienceOccurrence"/> that the Interactive Experience Answer is associated with.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public int InteractiveExperienceScheduleId { get; set; }
+        public int InteractiveExperienceOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.InteractiveExperienceAction"/> that this Interactive Experience Answer is associated with. This property is required.
@@ -55,15 +55,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int InteractiveExperienceActionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Campus"/> associated with Interactive Experience Answer.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> that represents the Id of the campus.
-        /// </value>
-        [DataMember]
-        public int? CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the response.
@@ -115,13 +106,13 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.InteractiveExperienceSchedule"/> that the Interactive Experience Answer belongs to.
+        /// Gets or sets the <see cref="Rock.Model.InteractiveExperienceOccurrence"/> that the Interactive Experience Answer belongs to.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.InteractiveExperienceSchedule"/> representing the Interactive Experience Schedule that the Interactive Experience Answer is a part of.
+        /// A <see cref="Rock.Model.InteractiveExperienceOccurrence"/> representing the Interactive Experience Schedule that the Interactive Experience Answer is a part of.
         /// </value>
         [DataMember]
-        public virtual InteractiveExperienceSchedule InteractiveExperienceSchedule { get; set; }
+        public virtual InteractiveExperienceOccurrence InteractiveExperienceOccurrence { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.InteractiveExperienceAction"/> that the Interactive Experience Answer belongs to.
@@ -131,15 +122,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual InteractiveExperienceAction InteractiveExperienceAction { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Campus"/> that is associated with this Interactive Experience Answer.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Campus"/> that is associated with this Interactive Experience Answer.
-        /// </value>
-        [DataMember]
-        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias.
@@ -165,9 +147,8 @@ namespace Rock.Model
         /// </summary>
         public InteractiveExperienceAnswerConfiguration()
         {
-            this.HasRequired( a => a.InteractiveExperienceSchedule ).WithMany().HasForeignKey( a => a.InteractiveExperienceScheduleId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.InteractiveExperienceOccurrence ).WithMany().HasForeignKey( a => a.InteractiveExperienceOccurrenceId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.InteractiveExperienceAction ).WithMany().HasForeignKey( a => a.InteractiveExperienceActionId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( a => a.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
         }
     }

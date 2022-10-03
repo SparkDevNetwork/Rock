@@ -128,6 +128,19 @@ namespace Rock.Model
         }
         private ICollection<InteractiveExperienceScheduleCampus> _interactiveExperienceScheduleCampuses;
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.InteractiveExperienceOccurrence">occurrences</see> for this Interactive Experience Schedule.
+        /// </summary>
+        /// <value>
+        /// A collection containing the <see cref="Rock.Model.InteractiveExperienceOccurrence">occurrences</see> for this Interactive Experience Schedule.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences
+        {
+            get { return _interactiveExperienceOccurrences ?? ( _interactiveExperienceOccurrences = new Collection<InteractiveExperienceOccurrence>() ); }
+            set { _interactiveExperienceOccurrences = value; }
+        }
+        private ICollection<InteractiveExperienceOccurrence> _interactiveExperienceOccurrences;
 
         #endregion
     }

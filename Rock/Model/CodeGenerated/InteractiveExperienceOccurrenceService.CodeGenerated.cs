@@ -32,15 +32,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// InteractiveExperienceAnswer Service class
+    /// InteractiveExperienceOccurrence Service class
     /// </summary>
-    public partial class InteractiveExperienceAnswerService : Service<InteractiveExperienceAnswer>
+    public partial class InteractiveExperienceOccurrenceService : Service<InteractiveExperienceOccurrence>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractiveExperienceAnswerService"/> class
+        /// Initializes a new instance of the <see cref="InteractiveExperienceOccurrenceService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public InteractiveExperienceAnswerService(RockContext context) : base(context)
+        public InteractiveExperienceOccurrenceService(RockContext context) : base(context)
         {
         }
 
@@ -52,18 +52,24 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( InteractiveExperienceAnswer item, out string errorMessage )
+        public bool CanDelete( InteractiveExperienceOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.InteractiveExperienceOccurrenceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractiveExperienceOccurrence.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
     /// <summary>
-    /// InteractiveExperienceAnswer View Model Helper
+    /// InteractiveExperienceOccurrence View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( InteractiveExperienceAnswer ) )]
-    public partial class InteractiveExperienceAnswerViewModelHelper : ViewModelHelper<InteractiveExperienceAnswer, InteractiveExperienceAnswerBag>
+    [DefaultViewModelHelper( typeof( InteractiveExperienceOccurrence ) )]
+    public partial class InteractiveExperienceOccurrenceViewModelHelper : ViewModelHelper<InteractiveExperienceOccurrence, InteractiveExperienceOccurrenceBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -72,23 +78,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override InteractiveExperienceAnswerBag CreateViewModel( InteractiveExperienceAnswer model, Person currentPerson = null, bool loadAttributes = true )
+        public override InteractiveExperienceOccurrenceBag CreateViewModel( InteractiveExperienceOccurrence model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new InteractiveExperienceAnswerBag
+            var viewModel = new InteractiveExperienceOccurrenceBag
             {
                 IdKey = model.IdKey,
-                ApprovalStatus = ( int ) model.ApprovalStatus,
-                InteractionSessionId = model.InteractionSessionId,
-                InteractiveExperienceActionId = model.InteractiveExperienceActionId,
-                InteractiveExperienceOccurrenceId = model.InteractiveExperienceOccurrenceId,
-                PersonAliasId = model.PersonAliasId,
-                Response = model.Response,
-                ResponseDateTime = model.ResponseDateTime,
+                CampusId = model.CampusId,
+                CurrentlyShownActionId = model.CurrentlyShownActionId,
+                InteractiveExperienceScheduleId = model.InteractiveExperienceScheduleId,
+                OccurrenceDateTime = model.OccurrenceDateTime,
+                StateJson = model.StateJson,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -105,36 +109,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class InteractiveExperienceAnswerExtensionMethods
+    public static partial class InteractiveExperienceOccurrenceExtensionMethods
     {
         /// <summary>
-        /// Clones this InteractiveExperienceAnswer object to a new InteractiveExperienceAnswer object
+        /// Clones this InteractiveExperienceOccurrence object to a new InteractiveExperienceOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static InteractiveExperienceAnswer Clone( this InteractiveExperienceAnswer source, bool deepCopy )
+        public static InteractiveExperienceOccurrence Clone( this InteractiveExperienceOccurrence source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as InteractiveExperienceAnswer;
+                return source.Clone() as InteractiveExperienceOccurrence;
             }
             else
             {
-                var target = new InteractiveExperienceAnswer();
+                var target = new InteractiveExperienceOccurrence();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this InteractiveExperienceAnswer object to a new InteractiveExperienceAnswer object with default values for the properties in the Entity and Model base classes.
+        /// Clones this InteractiveExperienceOccurrence object to a new InteractiveExperienceOccurrence object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static InteractiveExperienceAnswer CloneWithoutIdentity( this InteractiveExperienceAnswer source )
+        public static InteractiveExperienceOccurrence CloneWithoutIdentity( this InteractiveExperienceOccurrence source )
         {
-            var target = new InteractiveExperienceAnswer();
+            var target = new InteractiveExperienceOccurrence();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -151,22 +155,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another InteractiveExperienceAnswer object to this InteractiveExperienceAnswer object
+        /// Copies the properties from another InteractiveExperienceOccurrence object to this InteractiveExperienceOccurrence object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this InteractiveExperienceAnswer target, InteractiveExperienceAnswer source )
+        public static void CopyPropertiesFrom( this InteractiveExperienceOccurrence target, InteractiveExperienceOccurrence source )
         {
             target.Id = source.Id;
-            target.ApprovalStatus = source.ApprovalStatus;
+            target.CampusId = source.CampusId;
+            target.CurrentlyShownActionId = source.CurrentlyShownActionId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InteractionSessionId = source.InteractionSessionId;
-            target.InteractiveExperienceActionId = source.InteractiveExperienceActionId;
-            target.InteractiveExperienceOccurrenceId = source.InteractiveExperienceOccurrenceId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.Response = source.Response;
-            target.ResponseDateTime = source.ResponseDateTime;
+            target.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
+            target.OccurrenceDateTime = source.OccurrenceDateTime;
+            target.StateJson = source.StateJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -182,9 +184,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static InteractiveExperienceAnswerBag ToViewModel( this InteractiveExperienceAnswer model, Person currentPerson = null, bool loadAttributes = false )
+        public static InteractiveExperienceOccurrenceBag ToViewModel( this InteractiveExperienceOccurrence model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new InteractiveExperienceAnswerViewModelHelper();
+            var helper = new InteractiveExperienceOccurrenceViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }
