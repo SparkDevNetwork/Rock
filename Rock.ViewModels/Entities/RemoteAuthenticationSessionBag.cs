@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class RemoteAuthenticationSessionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AuthenticationIpAddress.
+        /// Gets or sets the authentication ip address.
         /// </summary>
         /// <value>
-        /// The AuthenticationIpAddress.
+        /// The authentication ip address.
         /// </value>
         public string AuthenticationIpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the AuthorizedPersonAliasId.
+        /// Gets or sets the authorized person alias identifier.
         /// </summary>
         /// <value>
-        /// The AuthorizedPersonAliasId.
+        /// The authorized person alias identifier.
         /// </value>
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ClientIpAddress.
+        /// Gets or sets the client ip address.
         /// </summary>
         /// <value>
-        /// The ClientIpAddress.
+        /// The client ip address.
         /// </value>
         public string ClientIpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the Code.
+        /// Gets or sets the code.
         /// </summary>
         /// <value>
-        /// The Code.
+        /// The code.
         /// </value>
         public string Code { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeviceUniqueIdentifier.
+        /// Gets or sets the device unique identifier.
         /// </summary>
         /// <value>
-        /// The DeviceUniqueIdentifier.
+        /// The device unique identifier.
         /// </value>
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionAuthenticatedDateTime.
+        /// Gets or sets the session authenticated date time.
         /// </summary>
         /// <value>
-        /// The SessionAuthenticatedDateTime.
+        /// The session authenticated date time.
         /// </value>
         public DateTime? SessionAuthenticatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionEndDateTime.
+        /// Gets or sets the session end date time.
         /// </summary>
         /// <value>
-        /// The SessionEndDateTime.
+        /// The session end date time.
         /// </value>
         public DateTime? SessionEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionStartDateTime.
+        /// Gets or sets the session start date time.
         /// </summary>
         /// <value>
-        /// The SessionStartDateTime.
+        /// The session start date time.
         /// </value>
         public DateTime? SessionStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SiteId.
+        /// Gets or sets the site identifier.
         /// </summary>
         /// <value>
-        /// The SiteId.
+        /// The site identifier.
         /// </value>
         public int? SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

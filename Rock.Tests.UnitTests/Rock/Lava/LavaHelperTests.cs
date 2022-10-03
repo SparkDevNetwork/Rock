@@ -52,7 +52,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void RemoveLavaComments_CommentInStringLiteral_IsNotRemoved()
+        public void RemoveLavaComments_CommentInSingleLineStringLiteral_IsNotRemoved()
         {
             var input = @"
 -- Begin Example --
@@ -101,6 +101,41 @@ Line 3<br>
             Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
+        /// <summary>
+        /// Verify that single line comments enclosed in quoted text are removed
+        /// if the enclosed content spans multiple lines.
+        /// </summary>
+        /// <remarks>
+        /// Fixes Issue #4975. (refer https://github.com/SparkDevNetwork/Rock/issues/4975)
+        /// </remarks>
+        [TestMethod]
+        public void RemoveLavaComments_LineCommentInMultlineStringLiteral_IsRemoved()
+        {
+            var input = @"
+/- The following lines contain single-line comments enclosed in quoted text spanning multiple lines.
+   These comments should be removed to avoid exposing them unintentionally as output. -/
+Insert 1st Person's Name Here.<br>//- This is single line comment 1.
+Insert 2nd Person's Name Here.<br>//- This is single line comment 2.
+A famous (mis)quote: ""That's one small step for man,//- (should be *a* man)
+one giant leap for mankind.""
+/- The following lines contains literal text that includes a comment token.
+   However, it should not be regarded as a comment because it is not terminated by a newline. -/
+{% assign stringIncludingComment = '//- This is literal text.' %}
+";
+
+            var expectedOutput = @"
+Insert 1st Person's Name Here.<br>
+Insert 2nd Person's Name Here.<br>
+A famous (mis)quote: ""That's one small step for man,
+one giant leap for mankind.""
+{% assign stringIncludingComment = '//- This is literal text.' %}
+";
+
+            var templateUncommented = LavaHelper.RemoveLavaComments( input );
+
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
+        }
+
         public void RemoveLavaCommentsBlockCommentContainingQuotedStringIsRemoved()
         {
             var input = @"
@@ -141,7 +176,6 @@ Example End<br>
 ";
 
             var expectedOutput = @"
-
 
 Example Start<br>
 Valid Lava Comment Styles are:

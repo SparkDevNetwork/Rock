@@ -34,98 +34,98 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActivityBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActivatedByActivityId.
+        /// Gets or sets the activated by activity identifier.
         /// </summary>
         /// <value>
-        /// The ActivatedByActivityId.
+        /// The activated by activity identifier.
         /// </value>
         public int? ActivatedByActivityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ActivatedDateTime.
+        /// Gets or sets the date and time that this WorkflowActivity was activated.
         /// </summary>
         /// <value>
-        /// The ActivatedDateTime.
+        /// A System.DateTime representing the date and time that this WorkflowActivity was activated.
         /// </value>
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ActivityTypeId.
+        /// Gets or sets the ActivityTypeId of the Rock.Model.WorkflowActivityType that is being executed.
         /// </summary>
         /// <value>
-        /// The ActivityTypeId.
+        /// A System.Int32 representing the ActivityTypeID of the Rock.Model.WorkflowActivity that is being performed.
         /// </value>
         public int ActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AssignedGroupId.
+        /// Gets or sets the assigned group identifier.
         /// </summary>
         /// <value>
-        /// The AssignedGroupId.
+        /// The assigned group identifier.
         /// </value>
         public int? AssignedGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AssignedPersonAliasId.
+        /// Gets or sets the assigned person alias identifier.
         /// </summary>
         /// <value>
-        /// The AssignedPersonAliasId.
+        /// The assigned person alias identifier.
         /// </value>
         public int? AssignedPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletedDateTime.
+        /// Gets or sets the date and time that this WorkflowActivity completed.
         /// </summary>
         /// <value>
-        /// The CompletedDateTime.
+        /// A System.DateTime representing the date and time that this WorkflowActivity completed.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastProcessedDateTime.
+        /// Gets or sets the date and time that this WorkflowActivity was last processed.
         /// </summary>
         /// <value>
-        /// The LastProcessedDateTime.
+        /// A System.DateTime representing the date and time that this WorkflowActivity was last processed.
         /// </value>
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowId.
+        /// Gets or sets the WorkflowId of the Rock.Model.Workflow instance that is performing this WorkflowActivity.
         /// </summary>
         /// <value>
-        /// The WorkflowId.
+        /// A System.String representing the WorkflowId of the Rock.Model.Workflow instance that is performing this WorkflowActivity.
         /// </value>
         public int WorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

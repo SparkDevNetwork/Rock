@@ -34,74 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class EventItemOccurrenceGroupMapBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EventItemOccurrenceId.
+        /// Gets or sets the Id of the Rock.Model.Campus the event will be tied to.
         /// </summary>
         /// <value>
-        /// The EventItemOccurrenceId.
+        /// A System.Int32 representing the Id of the Rock.Model.Campus the event occured
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.EventItemOccurrence identifier.
+        /// </summary>
+        /// <value>
+        /// The event item occurrence identifier.
         /// </value>
         public int? EventItemOccurrenceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Rock.Model.Group identifier.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PublicName.
+        /// Gets or sets the name of the public.
         /// </summary>
         /// <value>
-        /// The PublicName.
+        /// The name of the public.
         /// </value>
         public string PublicName { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationInstanceId.
+        /// Gets or sets the Rock.Model.RegistrationInstance identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationInstanceId.
+        /// The registration instance identifier.
         /// </value>
         public int? RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the UrlSlug.
+        /// Gets or sets the URL slug.
         /// </summary>
         /// <value>
-        /// The UrlSlug.
+        /// The URL slug.
         /// </value>
         public string UrlSlug { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

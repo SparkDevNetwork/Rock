@@ -45,7 +45,9 @@ using Rock.ViewModels;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using static Rock.Security.Authorization;
+
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -83,6 +85,11 @@ namespace Rock.Web.UI
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
         private Stopwatch _onLoadStopwatch = null;
+
+        /// <summary>
+        /// Contains the IRockBlockType wrapper objects that need to be initialized during OnLoad.
+        /// </summary>
+        private readonly List<RockBlockTypeWrapper> _blockTypeWrappers = new List<RockBlockTypeWrapper>();
 
         /// <summary>
         /// The fingerprint to use with obsidian files.
@@ -256,6 +263,26 @@ namespace Rock.Web.UI
         /// for this Page.
         /// </value>
         public List<BreadCrumb> BreadCrumbs { get; private set; }
+
+        /// <summary>
+        /// Gets the current visitor if <see cref="Site.EnableVisitorTracking"/> is enabled.
+        /// </summary>
+        /// <value>The current visitor.</value>
+        public Rock.Model.PersonAlias CurrentVisitor { get; private set; }
+
+        /// <summary>
+        /// Gets the Ids of <see cref="PersonalizationSegmentCache">Personalization Segments</see> for the <see cref="CurrentVisitor"/>
+        /// or <see cref="CurrentPerson"/> if <see cref="Site.EnablePersonalization">personalization is enabled for the site</see>.
+        /// </summary>
+        /// <value>The personalization segment ids.</value>
+        public int[] PersonalizationSegmentIds { get; private set; }
+
+        /// <summary>
+        /// Gets the Ids of <see cref="RequestFilterCache">Personalization Request Filters</see> for the current <see cref="Page.Request"/>
+        /// if <see cref="Site.EnablePersonalization">personalization is enabled for the site</see>.
+        /// </summary>
+        /// <value>The personalization segment ids.</value>
+        public int[] PersonalizationRequestFilterIds { get; private set; }
 
         /// <summary>
         /// Publicly gets and privately sets the currently logged in user.
@@ -1011,6 +1038,30 @@ namespace Rock.Web.UI
                 }
                 else
                 {
+                    /* At this point, we know the Person (or NULL person) is authorized to View the page */
+
+                    if ( Site.EnableVisitorTracking )
+                    {
+                        bool isLoggingIn = this.PageId == Site.LoginPageId;
+
+                        // Check if this is the Login page. If so, we don't need do Visitor logic,
+                        // and we can avoid a situation where an un-needed Ghost alias could get created.
+                        if ( !isLoggingIn )
+                        {
+                            Page.Trace.Warn( "Processing Current Visitor" );
+
+                            // Visitor Tracking is enabled, and we aren't logging in so do the visitor logic.
+                            ProcessCurrentVisitor();
+                        }
+                    }
+
+                    if ( Site.EnablePersonalization )
+                    {
+                        Page.Trace.Warn( "Loading Personalization Data" );
+                        LoadPersonalizationSegments();
+                        LoadPersonalizationRequestFilters();
+                    }
+
                     // Set current models (context)
                     Page.Trace.Warn( "Checking for Context" );
                     try
@@ -1278,6 +1329,8 @@ Rock.settings.initialize({{
                                             wrapper.InitializeAsUserControl( this );
                                             wrapper.AppRelativeTemplateSourceDirectory = "~";
 
+                                            _blockTypeWrappers.Add( wrapper );
+
                                             control = wrapper;
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
@@ -1367,7 +1420,7 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                         if ( body != null )
                         {
                             body.AddCssClass( "obsidian-loading" );
@@ -1663,6 +1716,245 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         }
 
         /// <summary>
+        /// If <see cref="SiteCache.EnableVisitorTracking" />, this will determine the <see cref="CurrentVisitor" />
+        /// and do any additional processing needed to verify and validate the CurrentVisitor.
+        /// </summary>
+        private void ProcessCurrentVisitor()
+        {
+            if ( !Site.EnableVisitorTracking )
+            {
+                // Visitor Tracking isn't enabled, so we can just return.
+                return;
+            }
+
+            var currentPersonAlias = this.CurrentPersonAlias;
+
+            var currentPerson = currentPersonAlias?.Person;
+            var currentPersonId = currentPersonAlias?.PersonId;
+
+            var rockContext = new RockContext();
+
+            var visitorKeyCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            PersonAlias currentVisitorCookiePersonAlias = null;
+            if ( visitorKeyCookie != null )
+            {
+                var visitorKeyPersonAliasIdKey = visitorKeyCookie.Value;
+                if ( visitorKeyPersonAliasIdKey.IsNullOrWhiteSpace() )
+                {
+                    // There is a ROCK_VISITOR_KEY key, but it doesn't have a value, so invalid visitor key. 
+                    visitorKeyCookie = null;
+                }
+                else
+                {
+                    var visitorPersonAliasIdKey = visitorKeyCookie.Value;
+                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorPersonAliasIdKey );
+                    if ( currentVisitorCookiePersonAlias == null )
+                    {
+                        // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
+                        // isn't in the database, so it isn't a valid ROCK_VISITOR_KEY.
+                        visitorKeyCookie = null;
+                    }
+                }
+            }
+
+            var currentUTCDateTime = RockDateTime.Now.ToUniversalTime();
+
+            var persistedCookieExpirationDays = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? 365;
+            var persistedCookieExpiration = currentUTCDateTime.AddDays( persistedCookieExpirationDays );
+
+            // Set the Session Start DateTime cookie if it hasn't been set yet
+            var rockSessionStartDatetimeCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_SESSION_START_DATETIME );
+            if ( rockSessionStartDatetimeCookie == null || rockSessionStartDatetimeCookie.Value.IsNullOrWhiteSpace() )
+            {
+                rockSessionStartDatetimeCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SESSION_START_DATETIME, currentUTCDateTime.ToISO8601DateString() );
+                RockPage.AddOrUpdateCookie( rockSessionStartDatetimeCookie );
+            }
+
+            PersonAlias calculatedCurrentVisitor;
+
+            if ( visitorKeyCookie == null )
+            {
+                if ( currentPersonAlias == null )
+                {
+                    // ROCK_VISITOR_KEY does not exist and nobody is logged in, create a new PersonAlias and new Visitor Cookie tied to the GhostPersonId.
+                    var visitorPersonAlias = new PersonAliasService( rockContext ).CreateAnonymousVisitorAlias();
+                    rockContext.SaveChanges();
+
+                    var visitorPersonAliasIdKey = visitorPersonAlias.IdKey;
+                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIdKey )
+                    {
+                        Expires = persistedCookieExpiration
+                    };
+
+                    RockPage.AddOrUpdateCookie( visitorKeyCookie );
+                    RockPage.AddOrUpdateCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_CREATED_DATETIME, currentUTCDateTime.ToISO8601DateString(), persistedCookieExpiration );
+
+                    // Visitor Cookie is new, and nobody is logged in. So set this a person's first visit.
+                    RockPage.AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR, true.ToString() ) );
+
+                    calculatedCurrentVisitor = visitorPersonAlias;
+                }
+                else
+                {
+                    // If ROCK_VISITOR_KEY does not exist and person *is* logged in, create a new ROCK_VISITOR_KEY cookie using the CurrentPersonAlias's IdKey
+                    var visitorPersonAliasIdKey = currentPersonAlias.IdKey;
+                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIdKey )
+                    {
+                        Expires = persistedCookieExpiration
+                    };
+
+                    RockPage.AddOrUpdateCookie( visitorKeyCookie );
+
+                    calculatedCurrentVisitor = currentPersonAlias;
+                }
+            }
+            else
+            {
+                // ROCK_VISITOR_KEY exists
+                if ( currentPersonAlias == null )
+                {
+                    // ROCK_VISITOR_KEY exists, but nobody is logged in
+                    calculatedCurrentVisitor = currentVisitorCookiePersonAlias;
+
+                    // renew, extend cookie
+                    visitorKeyCookie.Expires = persistedCookieExpiration;
+                    RockPage.AddOrUpdateCookie( visitorKeyCookie );
+                }
+                else
+                {
+                    // ROCK_VISITOR_KEY exists, and somebody is logged in
+                    if ( currentVisitorCookiePersonAlias.PersonId == currentPersonId )
+                    {
+                        // Our visitor person alias is already associated with the current person,
+                        // so we are good. Extend expiration.
+                        visitorKeyCookie.Expires = persistedCookieExpiration;
+                        RockPage.AddOrUpdateCookie( visitorKeyCookie );
+                    }
+                    else
+                    {
+                        // Visitor Person Alias is either for the core Anonymous Person ( GhostPerson ) or
+                        // for some other person that has previously logged into rock with this browser
+                        var ghostPersonId = new PersonService( rockContext ).GetOrCreateAnonymousVisitorPersonId();
+
+                        // ROCK_VISITOR_KEY exists, and somebody is logged in
+                        if ( currentVisitorCookiePersonAlias.PersonId == ghostPersonId )
+                        {
+                            // Our current visitor cookie was associated with GhostPerson, but now we have a current person,
+                            // so convert the GhostVisitor PersonAlias to a PersonAlias of the CurrentPerson.
+                            // NOTE: This needs to be done synchronously because we'll need to know which real person this
+                            // PersonAlias is for on subsequent requests.
+                            if ( new PersonAliasService( rockContext ).MigrateAnonymousVisitorAliasToRealPerson( currentVisitorCookiePersonAlias, currentPerson ) )
+                            {
+                                rockContext.SaveChanges();
+
+                                /*  MP 06/16/2022
+
+                                At this point, we might have set FirstTime visitor as true in this session, but then merged with a real person that has been here before.
+                                This could mean a false-positive 'First Time Visitor' for the duration of the session, but that is OK.
+                                 
+                                */
+                            }
+                        }
+                        else
+                        {
+                            // Our visitor person alias is for some other person that has previously logged into rock with this browser
+                            // So update the cookie to the current person's PersonAlias
+                            visitorKeyCookie.Value = currentPersonAlias.IdKey;
+                            visitorKeyCookie.Expires = persistedCookieExpiration;
+
+                            RockPage.AddOrUpdateCookie( visitorKeyCookie );
+                        }
+                    }
+
+                    calculatedCurrentVisitor = currentPersonAlias;
+                }
+            }
+
+            CurrentVisitor = calculatedCurrentVisitor;
+
+            RockPage.AddOrUpdateCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_LASTSEEN, currentUTCDateTime.ToISO8601DateString(), persistedCookieExpiration );
+
+            var message = new UpdatePersonAliasLastVisitDateTime.Message
+            {
+                PersonAliasId = CurrentVisitor.Id,
+                LastVisitDateTime = RockDateTime.Now,
+            };
+
+            message.SendIfNeeded();
+        }
+
+        /// <summary>
+        /// Loads the matching <see cref="PersonalizationSegmentIds"/> for the <see cref="CurrentPerson"/> or <see cref="CurrentVisitor"/>.
+        /// Only call this if the Site.EnablePersonalization is true. 
+        /// </summary>
+        private void LoadPersonalizationSegments()
+        {
+            var rockSegmentFiltersCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS );
+            var personalizationPersonAliasId = CurrentVisitor?.Id ?? CurrentPersonAliasId;
+            if ( !personalizationPersonAliasId.HasValue )
+            {
+                // no visitor or person logged in
+                return;
+            }
+
+            var cookieValueJson = rockSegmentFiltersCookie?.Value;
+            Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
+            if ( cookieValueJson != null )
+            {
+                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                bool isCookieDataValid = false;
+                if ( segmentFilterCookieData != null )
+                {
+                    if ( segmentFilterCookieData.IsSamePersonAlias( personalizationPersonAliasId.Value ) && segmentFilterCookieData.SegmentIdKeys != null )
+                    {
+                        isCookieDataValid = true;
+                    }
+
+                    if ( segmentFilterCookieData.IsStale( RockDateTime.Now ) )
+                    {
+                        isCookieDataValid = false;
+                    }
+                }
+
+                if ( !isCookieDataValid )
+                {
+                    segmentFilterCookieData = null;
+                }
+            }
+
+            if ( segmentFilterCookieData == null )
+            {
+                segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
+                segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
+                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
+            }
+
+            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() ) );
+
+            this.PersonalizationSegmentIds = segmentFilterCookieData.GetSegmentIds();
+        }
+
+        /// <summary>
+        /// Loads the matching <see cref="PersonalizationRequestFilterIds"/> for the current <see cref="Page.Request"/>.
+        /// </summary>
+        private void LoadPersonalizationRequestFilters()
+        {
+            var requestFilters = RequestFilterCache.All().Where( a => a.IsActive );
+            var requestFilterIds = new List<int>();
+            foreach ( var requestFilter in requestFilters )
+            {
+                if ( requestFilter.RequestMeetsCriteria( this.Request, this.Site ) )
+                {
+                    requestFilterIds.Add( requestFilter.Id );
+                }
+            }
+
+            this.PersonalizationRequestFilterIds = requestFilterIds.ToArray();
+        }
+
+        /// <summary>
         /// Verifies the block type instance properties to make sure they are compiled and have the attributes updated.
         /// </summary>
         private void VerifyBlockTypeInstanceProperties()
@@ -1685,6 +1977,13 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
+
+            // Cause the wrapper to render it's content so the initialization
+            // logic will be part of our page load timings.
+            foreach ( var wrapper in _blockTypeWrappers )
+            {
+                wrapper.RenderAndCache();
+            }
 
             // Finalize the debug settings
             if ( _showDebugTimings )
@@ -1906,7 +2205,7 @@ Obsidian.onReady(() => {{
                 }
 
                 string showTimingsUrl = this.Request.UrlProxySafe().ToString();
-                if ( !showTimingsUrl.Contains( "ShowDebugTimings" ) )
+                if ( showTimingsUrl.IndexOf( "ShowDebugTimings", StringComparison.OrdinalIgnoreCase ) < 0 )
                 {
                     if ( showTimingsUrl.Contains( "?" ) )
                     {
@@ -1955,7 +2254,8 @@ Sys.Application.add_load(function () {
             _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
             _duration = Math.Round( stepDuration, 2 );
 
-            var viewModel = new DebugTimingViewModel {
+            var viewModel = new DebugTimingViewModel
+            {
                 TimestampMs = _previousTiming,
                 DurationMs = _duration,
                 Title = eventTitle,
@@ -2128,7 +2428,7 @@ Sys.Application.add_load(function () {
                 // Add the measurement codes that start with 'UA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
                 gtagCodes.AddRange( code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>() );
 
-                if( gtagCodes.Any() )
+                if ( gtagCodes.Any() )
                 {
                     var sb = new StringBuilder();
                     sb.Append( $@"
@@ -2137,7 +2437,7 @@ Sys.Application.add_load(function () {
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){{window.dataLayer.push(arguments);}}
-      gtag('js', new Date());");
+      gtag('js', new Date());" );
                     sb.AppendLine( "" );
                     gtagCodes.ForEach( a => sb.AppendLine( $"      gtag('config', '{a}');" ) );
                     sb.AppendLine( "    </script>" );
@@ -2679,7 +2979,77 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public HttpCookie GetCookie( string name )
         {
-            return Request.Cookies[name] ?? Response.Cookies[name] ?? null;
+            /* MP 06-16-2022 
+
+            Make sure the Cookies AllKeys contains a cookie with that name first,
+            otherwise it will automatically create the cookie. This avoids
+            an issue where a Request cookie could get removed if using GetCookie
+            to see if the cookie exists.
+             
+             */
+
+            if ( Request.Cookies.AllKeys.Contains( name ) )
+            {
+                return Request.Cookies[name];
+            }
+
+            if ( Response.Cookies.AllKeys.Contains( name ) )
+            {
+                return Response.Cookies[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the cookie value from request.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        private string GetCookieValueFromRequest( string name )
+        {
+            if ( Request.Cookies.AllKeys.Contains( name ) )
+            {
+                return Request.Cookies[name]?.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the cookie value from response.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        private string GetCookieValueFromResponse( string name )
+        {
+            if ( Response.Cookies.AllKeys.Contains( name ) )
+            {
+                return Request.Cookies[name]?.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the cookie value.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="preferResponseCookie">The prefer response cookie.</param>
+        /// <returns>string.</returns>
+        private string GetCookieValue( string name, bool preferResponseCookie )
+        {
+            string requestValue = GetCookieValueFromRequest( name );
+            string responseValue = GetCookieValueFromResponse( name );
+
+            if ( preferResponseCookie )
+            {
+                return responseValue ?? requestValue;
+            }
+            else
+            {
+                return requestValue ?? responseValue;
+            }
         }
 
         /// <summary>
@@ -3586,7 +3956,7 @@ Sys.Application.add_load(function () {
                     .OrderByDescending( d => d )
                     .FirstOrDefault();
 
-                _obsidianFingerprint = (lastWriteTime ?? RockDateTime.Now).Ticks;
+                _obsidianFingerprint = ( lastWriteTime ?? RockDateTime.Now ).Ticks;
 
                 // Check if we are in debug mode and if so enable the watchers.
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
@@ -3823,8 +4193,9 @@ Sys.Application.add_load(function () {
 
                 if ( triggerData.StartsWith( "BLOCK_UPDATED:" ) )
                 {
-                    int blockId = int.MinValue;
-                    if ( int.TryParse( triggerData.Replace( "BLOCK_UPDATED:", "" ), out blockId ) )
+                    var dataSegments = triggerData.Split( ':' );
+
+                    if ( int.TryParse( dataSegments[1], out var blockId ) )
                     {
                         OnBlockUpdated( blockId );
                     }
@@ -3991,7 +4362,8 @@ Sys.Application.add_load(function () {
     /// <summary>
     /// Debug Timing
     /// </summary>
-    public sealed class DebugTimingViewModel {
+    public sealed class DebugTimingViewModel
+    {
         /// <summary>
         /// Gets or sets the timestamp milliseconds.
         /// </summary>

@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
-    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
+    [IntegerField( "Expires After (days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, AttributeKey.DefaultCategory )]
     [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situations.", false, order: 2 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]

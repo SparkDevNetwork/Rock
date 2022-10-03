@@ -33,7 +33,7 @@ export const enum SystemCommunication {
     FinancePledgeConfirmation = "73E8D035-61BB-495A-A87F-39007B98834C",
     /**
      * The financial transaction alert notification summary.
-     * 
+     * Rock.Model.FinancialTransactionAlertType.AlertSummaryNotificationGroupId
      */
     FinancialTransactionAlertNotificationSummary = "FDF323F5-31FA-4F98-9B4C-A8C26A10840E",
     /** Gets the template guid for group attendance reminder */

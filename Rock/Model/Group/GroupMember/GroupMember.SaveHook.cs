@@ -45,15 +45,20 @@ namespace Rock.Model
             {
                 var rockContext = ( RockContext ) this.RockContext;
                 string errorMessage;
-                if ( State != EntityContextState.Deleted
+                if ( this.State != EntityContextState.Deleted
                      && Entity.IsArchived == false
                      && Entity.GroupMemberStatus != GroupMemberStatus.Inactive )
                 {
-                    if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
+                    var previousIsArchived = this.State == EntityContextState.Modified && OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
+                    // Bypass Group Member requirement check when group member is unarchived instead we will show 'does not meet' symbol in group member list.
+                    if ( !previousIsArchived )
                     {
-                        var ex = new GroupMemberValidationException( errorMessage );
-                        ExceptionLogService.LogException( ex );
-                        throw ex;
+                        if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
+                        {
+                            var ex = new GroupMemberValidationException( errorMessage );
+                            ExceptionLogService.LogException( ex );
+                            throw ex;
+                        }
                     }
                 }
 
@@ -134,6 +139,7 @@ namespace Rock.Model
 
                 if ( group != null )
                 {
+                    this.Entity.GroupTypeId = group.GroupTypeId;
                     string oldGroupName = group.Name;
                     if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
                     {
@@ -244,13 +250,14 @@ namespace Rock.Model
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
                     if ( groupType != null && groupType.IsIndexEnabled )
                     {
+                        int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
                         var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
                         {
-                            EntityTypeId = groupType.Id,
+                            EntityTypeId = groupEntityTypeId,
                             EntityId = group.Id
                         };
 
-                        processEntityTypeIndexMsg.Send();
+                        processEntityTypeIndexMsg.SendWhen( this.RockContext.WrappedTransactionCompletedTask );
                     }
                 }
 

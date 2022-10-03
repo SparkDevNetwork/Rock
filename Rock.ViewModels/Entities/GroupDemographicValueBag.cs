@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class GroupDemographicValueBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the GroupDemographicTypeId.
+        /// Gets or sets the GroupDemographicType ID that this GroupDemographicValue is for.
         /// </summary>
         /// <value>
-        /// The GroupDemographicTypeId.
+        /// The group demographic type identifier.
         /// </value>
         public int GroupDemographicTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Group ID that this GroupDemographicValue is for.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastCalculatedDateTime.
+        /// Gets or sets the last date and time when this GroupDemographicValue was calculated.
         /// </summary>
         /// <value>
-        /// The LastCalculatedDateTime.
+        /// The last calculated date time.
         /// </value>
         public DateTime? LastCalculatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityId.
+        /// Gets or sets the related entity identifier. e.g. the ID of the DefinedValue
         /// </summary>
         /// <value>
-        /// The RelatedEntityId.
+        /// The related entity identifier.
         /// </value>
         public int? RelatedEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityTypeId.
+        /// Gets or sets the related EntityTypeID this value if for. e.g. DefinedValue.
         /// </summary>
         /// <value>
-        /// The RelatedEntityTypeId.
+        /// The related entity type identifier.
         /// </value>
         public int? RelatedEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the value.
         /// </summary>
         /// <value>
-        /// The Value.
+        /// The value.
         /// </value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsBoolean.
+        /// Gets or sets the value as boolean.
         /// </summary>
         /// <value>
-        /// The ValueAsBoolean.
+        /// The value as boolean.
         /// </value>
         public bool? ValueAsBoolean { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsGuid.
+        /// Gets or sets the value as GUID.
         /// </summary>
         /// <value>
-        /// The ValueAsGuid.
+        /// The value as unique identifier.
         /// </value>
         public Guid? ValueAsGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsNumeric.
+        /// Gets or sets the value as numeric.
         /// </summary>
         /// <value>
-        /// The ValueAsNumeric.
+        /// The value as numeric.
         /// </value>
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

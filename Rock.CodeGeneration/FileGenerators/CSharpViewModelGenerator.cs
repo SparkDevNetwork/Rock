@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 using Rock.CodeGeneration.Utility;
+using Rock.CodeGeneration.XmlDoc;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -12,6 +14,15 @@ namespace Rock.CodeGeneration.FileGenerators
     /// </summary>
     public class CSharpViewModelGenerator : Generator
     {
+        #region Fields
+
+        /// <summary>
+        /// The XML document reader for documentation.
+        /// </summary>
+        private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -63,6 +74,8 @@ namespace Rock.CodeGeneration.FileGenerators
                 var declaration = GetCSharpPropertyTypeDeclaration( property.PropertyType );
 
                 usings.AddRange( declaration.RequiredUsings );
+
+                AppendCommentBlock( sb, property.PropertyInfo, 8 );
                 sb.AppendLine( $"        public {declaration.TypeName} {property.Name} {{ get; set; }}" );
             }
 
@@ -101,6 +114,39 @@ namespace Rock.CodeGeneration.FileGenerators
 
             // Try for a primitive property type.
             return type.GetCSharpPropertyDeclaration();
+        }
+
+        /// <summary>
+        /// Appends the comment block for the member to the StringBuilder.
+        /// </summary>
+        /// <param name="sb">The StringBuilder to append the comment to.</param>
+        /// <param name="memberInfo">The member information to get comments for.</param>
+        /// <param name="indentationSize">Size of the indentation for the comment block.</param>
+        private void AppendCommentBlock( StringBuilder sb, MemberInfo memberInfo, int indentationSize )
+        {
+            var xdoc = _xmlDoc.GetMemberComments( memberInfo )?.Summary?.PlainText;
+
+            AppendCommentBlock( sb, xdoc, indentationSize );
+        }
+
+        /// <summary>
+        /// Appends the comment block to the StringBuilder.
+        /// </summary>
+        /// <param name="sb">The StringBuilder to append the comment to.</param>
+        /// <param name="comment">The comment to append.</param>
+        /// <param name="indentationSize">Size of the indentation for the comment block.</param>
+        private void AppendCommentBlock( StringBuilder sb, string comment, int indentationSize )
+        {
+            if ( comment.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            comment = comment.Replace( "\r\n", $"\r\n{new string( ' ', indentationSize )}/// " );
+
+            sb.AppendLine( $"{new string( ' ', indentationSize )}/// <summary>" );
+            sb.AppendLine( $"{new string( ' ', indentationSize )}/// {comment}" );
+            sb.AppendLine( $"{new string( ' ', indentationSize )}/// </summary>" );
         }
 
         #endregion

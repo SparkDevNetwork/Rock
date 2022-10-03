@@ -16,8 +16,8 @@
 //
 
 import { defineComponent, inject } from "vue";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -39,7 +39,7 @@ export default defineComponent({
     },
     setup () {
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            invokeBlockAction: useInvokeBlockAction(),
             registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },

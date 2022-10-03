@@ -34,162 +34,162 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConnectionRequestDetailPageId.
+        /// Gets or sets the connection request detail Rock.Model.Page identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionRequestDetailPageId.
+        /// The connection request detail page identifier.
         /// </value>
         public int? ConnectionRequestDetailPageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionRequestDetailPageRouteId.
+        /// Gets or sets the connection request detail Rock.Model.PageRoute identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionRequestDetailPageRouteId.
+        /// The connection request detail page route identifier.
         /// </value>
         public int? ConnectionRequestDetailPageRouteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DaysUntilRequestIdle.
+        /// Gets or sets the number of days until the request is considered idle.
         /// </summary>
         /// <value>
-        /// The DaysUntilRequestIdle.
+        /// This determines how many days can pass before the request is considered idle.
         /// </value>
         public int DaysUntilRequestIdle { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultView.
+        /// Gets or sets the default view mode (list or board).
         /// </summary>
         /// <value>
-        /// The DefaultView.
+        /// The default view.
         /// </value>
         public int DefaultView { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableFullActivityList.
+        /// Gets or sets a value indicating whether full activity lists are enabled.
         /// </summary>
         /// <value>
-        /// The EnableFullActivityList.
+        /// true if full activity lists are enabled; otherwise, false.
         /// </value>
         public bool EnableFullActivityList { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableFutureFollowup.
+        /// Gets or sets a value indicating whether future follow-ups are enabled.
         /// </summary>
         /// <value>
-        /// The EnableFutureFollowup.
+        /// true if future follow-ups are enabled; otherwise, false.
         /// </value>
         public bool EnableFutureFollowup { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableRequestSecurity.
+        /// Gets or sets a value indicating whether [enable request security].
         /// </summary>
         /// <value>
-        /// The EnableRequestSecurity.
+        ///   true if [enable request security]; otherwise, false.
         /// </value>
         public bool EnableRequestSecurity { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the OwnerPersonAliasId.
+        /// Gets or sets the owner Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>
-        /// The OwnerPersonAliasId.
+        /// The owner person alias identifier.
         /// </value>
         public int? OwnerPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestBadgeLava.
+        /// Gets or sets the request badge lava.
         /// </summary>
         /// <value>
-        /// The RequestBadgeLava.
+        /// The request badge lava.
         /// </value>
         public string RequestBadgeLava { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestHeaderLava.
+        /// Gets or sets the request header lava.
         /// </summary>
         /// <value>
-        /// The RequestHeaderLava.
+        /// The request header lava.
         /// </value>
         public string RequestHeaderLava { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiresPlacementGroupToConnect.
+        /// Gets or sets a value indicating whether this connection type requires a placement group to connect.
         /// </summary>
         /// <value>
-        /// The RequiresPlacementGroupToConnect.
+        /// true if connection type requires a placement group to connect; otherwise, false.
         /// </value>
         public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

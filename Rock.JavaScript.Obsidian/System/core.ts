@@ -38,6 +38,7 @@ const packageMaps: Record<string, string> = {
     "@Obsidian/Controls/*": "/Obsidian/Controls/*",
     "@Obsidian/Core/*": "/Obsidian/Core/*",
     "@Obsidian/Directives/*": "/Obsidian/Directives/*",
+    "@Obsidian/Libs/*": "/Obsidian/Libs/*",
     "@Obsidian/FieldTypes/*": "/Obsidian/FieldTypes/*",
     "@Obsidian/PageState": "/Obsidian/PageState.js",
     "@Obsidian/Templates/*": "/Obsidian/Templates/*",

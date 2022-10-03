@@ -983,8 +983,15 @@ namespace Rock.Slingshot
                     k => k.Key,
                     v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.GroupId, Value = x.Value } ).ToList() );
 
-            var groupLookUp = new GroupService( rockContext ).Queryable().AsNoTracking().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+            var groupLookUp = new GroupService( rockContext ).Queryable().AsNoTracking()
+                .Where( a => a.GroupTypeId != groupTypeIdFamily
+                        && a.ForeignId.HasValue
+                        && a.ForeignKey == foreignSystemKey )
+                .Include( g => g.Members )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
+
+            var personIdLookup = new PersonService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
 
             var importedGroupTypeRoleNames = groupImports.GroupBy( a => a.GroupTypeId ).Select( a => new
             {
@@ -1092,7 +1099,7 @@ namespace Rock.Slingshot
 
                         bool wasChanged = false;
                         group = ConvertModelWithLogging<Group>( groupImport, () => {
-                            wasChanged = UpdateGroupFromGroupImport( groupImport, group, attributeValuesLookup, foreignSystemKey, importedDateTime );
+                            wasChanged = UpdateGroupFromGroupImport( groupImport, group, personIdLookup, attributeValuesLookup, foreignSystemKey, importedDateTime );
                             return group;
                         } );
 
@@ -1137,9 +1144,6 @@ namespace Rock.Slingshot
 
             var groupTypeGroupLookup = qryGroupTypeGroupLookup.GroupBy( a => a.GroupTypeId ).ToDictionary( k => k.Key, v => v.ToDictionary( k1 => k1.GroupForeignId, v1 => v1.Group ) );
 
-            var personIdLookup = new PersonService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
-                .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
-
             // populate GroupMembers
             var groupMembersToInsert = new List<GroupMember>();
             var groupMemberImports = groupImports.SelectMany( a => a.GroupMemberImports ).ToList();
@@ -1161,6 +1165,7 @@ namespace Rock.Slingshot
                             {
                                 GroupId = groupId.Value,
                                 GroupRoleId = groupRoleId.Value,
+                                GroupTypeId = groupWithMembers.GroupTypeId,
                                 PersonId = personId.Value,
                                 CreatedDateTime = importedDateTime,
                                 ModifiedDateTime = importedDateTime
@@ -1211,7 +1216,13 @@ AND [Schedule].[ForeignKey] = '{0}'
 
             // Attribute Values
             var attributeValuesToInsert = new List<AttributeValue>();
-            foreach ( var groupWithAttributes in groupImports.Where( a => a.AttributeValues.Any() && groupsToInsert.Select( x => x.ForeignId ).ToList().Contains( a.GroupForeignId ) ) )
+            var groupForeignIdsToInsert = groupsToInsert.Where( g => g.ForeignId.HasValue ).Select( g => g.ForeignId.Value ).ToList();
+            var groupsWithAttributes = groupImports.
+                Where( a => a.AttributeValues.Any()
+                            && groupForeignIdsToInsert.Contains( a.GroupForeignId ) )
+                .ToList();
+
+            foreach ( var groupWithAttributes in groupsWithAttributes )
             {
                 var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithAttributes.GroupTypeId )?.GetValueOrNull( groupWithAttributes.GroupForeignId )?.Id;
                 if ( groupId.HasValue )
@@ -1303,11 +1314,15 @@ AND [Schedule].[ForeignKey] = '{0}'
             var groupsUpdated = false;
             var groupImportsWithParentGroup = groupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
 
-            var parentGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
-            {
-                GroupId = a.Id,
-                a.ForeignId
-            } ).ToDictionary( k => k.ForeignId, v => v.GroupId );
+            var parentGroupLookup = new GroupService( rockContext ).Queryable()
+                .Where( a => a.GroupTypeId != groupTypeIdFamily
+                        && a.ForeignId.HasValue
+                        && a.ForeignKey == foreignSystemKey )
+                .Select( a => new
+                {
+                    GroupId = a.Id,
+                    a.ForeignId
+                } ).ToDictionary( k => k.ForeignId, v => v.GroupId );
 
             foreach ( var groupImport in groupImportsWithParentGroup )
             {
@@ -1324,6 +1339,7 @@ AND [Schedule].[ForeignKey] = '{0}'
                 if ( group != null )
                 {
                     int? parentGroupId = parentGroupLookup.GetValueOrNull( groupImport.ParentGroupForeignId.Value );
+
                     if ( parentGroupId.HasValue && group.ParentGroupId != parentGroupId )
                     {
                         group.ParentGroupId = parentGroupId;
@@ -1414,7 +1430,7 @@ WHERE gta.GroupTypeId IS NULL" );
             group.IsPublic = groupImport.IsPublic;
             group.GroupCapacity = groupImport.Capacity;
         }
-        private bool UpdateGroupFromGroupImport( GroupImport groupImport, Group lookupGroup, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, string foreignSystemKey, DateTime importDateTime )
+        private bool UpdateGroupFromGroupImport( GroupImport groupImport, Group lookupGroup, Dictionary<int, int> personIdLookup, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, string foreignSystemKey, DateTime importDateTime )
         {
             using ( var rockContextForGroupUpdate = new RockContext() )
             {
@@ -1532,9 +1548,6 @@ WHERE gta.GroupTypeId IS NULL" );
                 //Update Members
 
                 var groupMemberService = new GroupMemberService( rockContextForGroupUpdate );
-                var personIdLookup = new PersonService( rockContextForGroupUpdate ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
-                     .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
-
                 var groupMemberList = group.Members.Where( x => x.Person.ForeignKey == foreignSystemKey ).Select( a => new
                 {
                     a.Id,
@@ -1560,6 +1573,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         groupMember = new GroupMember();
                         groupMember.GroupId = group.Id;
                         groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.GroupTypeId = groupImport.GroupTypeId;
                         groupMember.PersonId = personId.Value;
                         groupMember.CreatedDateTime = importDateTime;
                         groupMember.ModifiedDateTime = importDateTime;
@@ -1800,7 +1814,7 @@ WHERE gta.GroupTypeId IS NULL" );
             foreach ( var personImport in personImports )
             {
                 progress++;
-                if ( progress % 100 == 0 && personUpdatesMS > 0 )
+                if ( progress % 100 == 0 )
                 {
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
@@ -1978,6 +1992,7 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         PersonId = ppi.PersonId,
                                                         GroupRoleId = ppi.PersonImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
+                                                        GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
                                                         CreatedDateTime = ppi.PersonImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                         ModifiedDateTime = ppi.PersonImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,
@@ -2641,6 +2656,7 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         PersonId = ppi.BusinessId,
                                                         GroupRoleId = ppi.BusinessImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
+                                                        GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
                                                         CreatedDateTime = ppi.BusinessImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                         ModifiedDateTime = ppi.BusinessImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,

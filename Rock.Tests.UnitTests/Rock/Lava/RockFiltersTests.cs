@@ -5,9 +5,9 @@ using System.Dynamic;
 using System.Linq;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
-using Ical.Net.Interfaces.DataTypes;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -38,12 +38,12 @@ namespace Rock.Tests.Rock.Lava
         {
             Events =
             {
-                new Event
+                new CalendarEvent
                     {
                         DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
                         DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { weeklyRecurrence },
                         Sequence = 0,
                         Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
                     }
@@ -54,12 +54,12 @@ namespace Rock.Tests.Rock.Lava
         {
             Events =
             {
-                new Event
+                new CalendarEvent
                     {
                         DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0 ),
                         DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0 ),
                         DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
                         Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
                     }

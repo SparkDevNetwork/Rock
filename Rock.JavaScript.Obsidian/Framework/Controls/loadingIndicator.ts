@@ -14,12 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { defineComponent, PropType, ref } from "vue";
 
 export default defineComponent({
     name: "LoadingIndicator",
+
+    props: {
+        /** The delay in milliseconds to wait before showing the loading indicator. */
+        delay: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    },
+
+    setup(props) {
+        const isShown = ref(!props.delay);
+
+        if (props.delay) {
+            setTimeout(() => isShown.value = true, props.delay);
+        }
+
+        return {
+            isShown
+        };
+    },
+
     template: `
-<div class="text-center fa-2x">
+<div v-if="isShown" class="text-center fa-2x">
     <i class="fas fa-spinner fa-pulse"></i>
 </div>`
 });

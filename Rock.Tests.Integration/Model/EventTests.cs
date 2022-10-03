@@ -15,10 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Ical.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -293,5 +297,125 @@ namespace Rock.Tests.Integration.Model
         }
 
         #endregion
+
+        #region GetEventCalendarFeedTests
+
+        /// <summary>
+        /// Retrieving events for a calendar feed from a Rock server having a Rock time that differs from the system local time
+        /// should return events in Rock time.
+        /// </summary>
+        /// <remarks>
+        /// This situation arises when the Rock server is hosted in a datacenter in a different timezone from the preferred server timezone.
+        /// [Fixes Issue #5029 (https://github.com/SparkDevNetwork/Rock/issues/5029)]
+        /// </remarks>
+        [TestMethod]
+        public void EventCalendarFeed_WithRockTimezoneDifferentFromSystemTimezone_ReturnsEventsWithRockTimezone()
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current dastabase.
+            TestConfigurationHelper.SetRockDateTimeToLocalTimezone();
+
+            // Verify that the events returned in the feed are scheduled in local server time.
+            var args = GetCalendarEventFeedArgumentsForTest( "Internal", "Main" );
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            // Deserialize the calendar output.
+            var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
+            var financeClass1 = events1.FirstOrDefault( x => x.Summary == "Warrior Youth Event" );
+
+            Assert.AreEqual( TimeZoneInfo.Local.BaseUtcOffset.Hours,
+                financeClass1.DtStart.AsDateTimeOffset.Offset.Hours,
+                "Unexpected Time Offset. The offset should match the system local time." );
+
+            // Verify that the events returned in the feed are scheduled in Rock time,
+            // which is now different to the local server time.
+            TestConfigurationHelper.SetRockDateTimeToAlternateTimezone();
+            var tzAlternate = TestConfigurationHelper.GetTestTimeZoneAlternate();
+
+            var calendarString2 = calendarService.CreateICalendar( args );
+
+            var events2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events;
+            var financeClass2 = events2.FirstOrDefault( x => x.Summary == "Warrior Youth Event" );
+
+            Assert.AreEqual( tzAlternate.BaseUtcOffset.Hours,
+                financeClass2.DtStart.AsDateTimeOffset.Offset.Hours,
+                "Unexpected Time Offset. The offset should match the Rock time." );
+
+        }
+
+        [TestMethod]
+        public void EventCalendarFeed_FilteredByCampus_ReturnsEventsForSpecifiedCampusOnly()
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( "Public", "Stepping Stone" );
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            // Deserialize the calendar output and verify the results.
+            var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
+            var nonCampusLocation = events1.FirstOrDefault( x => x.Location != "Meeting Room 1" );
+
+            Assert.IsTrue( events1.Count > 0,
+                "Expected result not found. Filter returned no Events." );
+            Assert.IsTrue( events1.Any( x => x.Location == "Meeting Room 1" ),
+                "Expected result not found. Event with Campus/Location not found." );
+        }
+
+        [TestMethod]
+        public void EventCalendarFeed_FilteredByAudience_ReturnsEventsForSpecifiedAudienceOnly()
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var dtAudienceType = DefinedTypeCache.Get( SystemGuid.DefinedType.CONTENT_CHANNEL_AUDIENCE_TYPE.AsGuid(), rockContext );
+            var audienceTypeId = dtAudienceType.DefinedValues
+                .Where( x => x.Value == "Men" )
+                .Select( x => x.Id )
+                .FirstOrDefault();
+
+            var args = GetCalendarEventFeedArgumentsForTest( "Public", "Main" );
+            args.AudienceIds = new List<int> { audienceTypeId };
+
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            // Deserialize the calendar output and verify the results.
+            var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
+            Assert.IsTrue( events1.Count > 0,
+                "Expected result not found. Filter returned no Events." );
+            Assert.IsNull( events1.FirstOrDefault( x => !x.Categories.Contains( "Men" ) ),
+                "Event with unexpected Audience found." );
+        }
+
+        private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName, string campusName )
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var calendarId = EventCalendarCache.All()
+                .Where( x => x.Name == calendarName )
+                .Select( x => x.Id )
+                .FirstOrDefault();
+
+            var campusId = CampusCache.All()
+                .Where( x => x.Name == campusName )
+                .Select( x => x.Id )
+                .FirstOrDefault();
+
+            var args = new GetCalendarEventFeedArgs();
+            args.CalendarId = calendarId;
+            args.StartDate = RockDateTime.New( 2015, 1, 1 ).Value;
+            args.EndDate = RockDateTime.New( 2020, 1, 1 ).Value;
+
+            args.CampusIds = new List<int> { campusId };
+
+            return args;
+
+        }
+
+        #endregion
+
     }
 }

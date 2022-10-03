@@ -34,74 +34,116 @@ namespace Rock.ViewModels.Entities
     public partial class AttributeValueBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// A System.Int32 representing the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for.
         /// </value>
         public int AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An Rock.Model.Attribute is a configuration setting, so each 
+        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a Rock.Model.BlockType has a declared attribute, and that attribute can be configured 
+        /// with a different value on each Rock.Model.Block that implements the Rock.Model.BlockType. This value will either be 0 or null for global attributes or attributes that have a 
+        /// constant across all instances of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the Rock.Model.AttributeValue.Value property.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// true if the persisted values are considered dirty; otherwise, false.
+        /// </value>
+        public bool IsPersistedValueDirty { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
+        /// </summary>
+        /// <value>
+        /// A System.Boolean value that is true if is part of the Rock core system/framework.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the persisted condensed HTML value.
         /// </summary>
         /// <value>
-        /// The Value.
+        /// The persisted condensed HTML value.
+        /// </value>
+        public string PersistedCondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted condensed text value.
+        /// </summary>
+        /// <value>
+        /// The persisted condensed text value.
+        /// </value>
+        public string PersistedCondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted HTML value.
+        /// </summary>
+        /// <value>
+        /// The persisted HTML value.
+        /// </value>
+        public string PersistedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted text value.
+        /// </summary>
+        /// <value>
+        /// The persisted text value.
+        /// </value>
+        public string PersistedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw value
+        /// </summary>
+        /// <value>
+        /// A System.String representing the raw value.
         /// </value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsNumeric.
+        /// Gets the Value as a decimal (Computed on Save).
         /// </summary>
-        /// <value>
-        /// The ValueAsNumeric.
-        /// </value>
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

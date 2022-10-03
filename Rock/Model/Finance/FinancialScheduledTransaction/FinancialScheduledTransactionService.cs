@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -371,8 +372,6 @@ namespace Rock.Model
 
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
             {
@@ -454,6 +453,8 @@ namespace Rock.Model
 
                             if ( scheduledTransaction != null )
                             {
+                                // This is the normal case where we create new transaction as a result of
+                                // a new scheduled transaction that the gateway processed.
                                 scheduledTransactionIds.Add( scheduledTransaction.Id );
                                 if ( payment.ScheduleActive.HasValue )
                                 {
@@ -463,19 +464,31 @@ namespace Rock.Model
                                 transaction.ScheduledTransactionId = scheduledTransaction.Id;
                                 transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = scheduledTransaction.SourceTypeValueId;
+                                if ( scheduledTransaction.TransactionTypeValueId.HasValue )
+                                {
+                                    transaction.TransactionTypeValueId = scheduledTransaction.TransactionTypeValueId.Value;
+                                }
+                                else
+                                {
+                                    var defaultTransactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Value;
+                                    transaction.TransactionTypeValueId = defaultTransactionTypeId;
+                                }
+
                                 financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail;
                                 scheduledTransaction.ScheduledTransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
                             else
                             {
+                                // This handles an edge-case where there is a mismatch between what the Gateway thinks the amount is and what Rock thinks the amount is.
+                                // If there is a mismatch, this will end up creating a new transaction to correct the amounts
                                 transaction.AuthorizedPersonAliasId = originalTxn.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = originalTxn.SourceTypeValueId;
+                                transaction.TransactionTypeValueId = originalTxn.TransactionTypeValueId;
                                 financialPaymentDetail = originalTxn.FinancialPaymentDetail;
                                 originalTxn.TransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
 
                             transaction.FinancialGatewayId = gateway.Id;
-                            transaction.TransactionTypeValueId = contributionTxnType.Id;
 
                             if ( txnAmount < 0.0M )
                             {
@@ -710,10 +723,18 @@ namespace Rock.Model
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
-                // Queue a transaction to send receipts
+                // Queue a bus tasks to send receipts
                 var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                foreach ( int newTransactionId in newTransactionIds )
+                {
+                    var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                    {
+                        SystemEmailGuid = receiptEmail.Value,
+                        TransactionId = newTransactionId
+                    };
+
+                    sendPaymentReceiptsTask.Send();
+                }
             }
 
             // Queue transactions to launch failed payment workflow
@@ -722,9 +743,17 @@ namespace Rock.Model
                 if ( failedPaymentEmail.HasValue )
                 {
                     // Queue a transaction to send payment failure
-                    var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
-                    var sendPaymentFailureTxn = new SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
-                    RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
+                    var failedPaymentTransactionIds = failedPayments.Select( t => t.Id ).ToList();
+                    foreach ( int failedPaymentTransactionId in failedPaymentTransactionIds )
+                    {
+                        var sendPaymentFailureTask = new ProcessSendPaymentReceiptEmails.Message
+                        {
+                            SystemEmailGuid = failedPaymentEmail.Value,
+                            TransactionId = failedPaymentTransactionId
+                        };
+
+                        sendPaymentFailureTask.Send();
+                    }
                 }
 
                 if ( failedPaymentWorkflowType.HasValue )

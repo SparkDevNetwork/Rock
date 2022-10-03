@@ -48,6 +48,21 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// The apple tv application detail
+        /// </summary>
+        public const string APPLE_TV_APPLICATION_DETAIL = "ED4341EB-3846-48B4-96D3-444D3ABBF389";
+
+        /// <summary>
+        /// The apple tv application screen detail
+        /// </summary>
+        public const string APPLE_TV_APPLICATION_SCREEN_DETAIL = "6CC8D008-8D30-416D-8A36-7D01B72A2518";
+
+        /// <summary>
+        /// The apple tv apps
+        /// </summary>
+        public const string APPLE_TV_APPS = "C8B81EBE-E98F-43EF-9E39-0491685145E2";
+
+        /// <summary>
         /// The financial account search guid
         /// ParentPage: Internal Homepage > Finance > Administration
         /// </summary>
@@ -858,6 +873,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
+        
+        /// <summary>
+        /// The mobile site pages
+        /// </summary>
+        public const string MOBILE_SITE_PAGES = "37E21200-DF91-4426-89CC-7D067237A037";
 
         /// <summary>
         /// Gets the Email Preference page guid
@@ -1861,6 +1881,18 @@ namespace Rock.SystemGuid
         public const string STEP_PROGRAMS = "F5E8A369-4856-42E5-B187-276DFCEB1F3F";
 
         /// <summary>
+        /// Gets the Step Program Detail page guid
+        /// ParentPage: Step Programs
+        /// </summary>
+        public const string STEP_PROGRAM_DETAIL = "6E46BC35-1FCB-4619-84F0-BB6926D2DDD5";
+
+        /// <summary>
+        /// Gets the Step Flow page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STEP_FLOW = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC";
+
+        /// <summary>
         /// Gets the Streak page guid
         /// ParentPage: Streak Type Detail
         /// </summary>
@@ -2141,5 +2173,19 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_PREVIEW = "FD8E0C71-9543-4CAB-9918-76A67EFE5093";
 
+        /// <summary>
+        /// The connection requests bulk update page
+        /// </summary>
+        public const string CONNECTION_REQUESTS_BULK_UPDATE = "1F5D34CF-89C1-426C-A139-83D87905D669";
+
+        /// <summary>
+        /// The dataview search results page
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "6C7AB3CA-E894-4E19-96AE-C67C4C69FEDE";
+
+        /// <summary>
+        /// The report search results page
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "7DA4B63B-4407-47B2-8984-A54A543D8A69";
     }
 }

@@ -25,46 +25,57 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AttributeValueHistorical View Model */
 export type AttributeValueHistoricalBag = {
-    /** Gets or sets the AttributeValueId. */
+    /** Gets or sets the AttributeValueId of the Rock.Model.AttributeValue that this AttributeValueHistorical provides a historical value for. */
     attributeValueId: number;
 
-    /** Gets or sets the CurrentRowIndicator. */
+    /**
+     * Gets or sets a value indicating whether [current row indicator].
+     * This will be True if this represents the same values as the current tracked record for this
+     */
     currentRowIndicator: boolean;
 
-    /** Gets or sets the EffectiveDateTime. */
+    /**
+     * Gets or sets the effective date.
+     * This is the starting date that the tracked record had the values reflected in this record
+     */
     effectiveDateTime?: string | null;
 
-    /** Gets or sets the ExpireDateTime. */
+    /**
+     * Gets or sets the expire date time
+     * This is the last date that the tracked record had the values reflected in this record
+     * For example, if a tracked record's Name property changed on '2016-07-14', the ExpireDate of the previously current record will be '2016-07-13', and the EffectiveDate of the current record will be '2016-07-14'
+     * If this is most current record, the ExpireDate will be '9999-01-01'
+     */
     expireDateTime?: string | null;
 
-    /** Gets or sets the Value. */
+    /** Gets or sets the value of the AttributeValue at this point in history */
     value?: string | null;
 
-    /** Gets or sets the ValueAsBoolean. */
+    /** Gets or sets the value as boolean at this point in history */
     valueAsBoolean?: boolean | null;
 
-    /** Gets or sets the ValueAsDateTime. */
+    /** Gets or sets the value as date time at this point in history */
     valueAsDateTime?: string | null;
 
-    /** Gets or sets the ValueAsNumeric. */
+    /** Gets or sets the value as numeric at this point in history */
     valueAsNumeric?: number | null;
 
-    /** Gets or sets the ValueAsPersonId. */
+    /** Gets or sets the value as person identifier. */
     valueAsPersonId?: number | null;
 
-    /** Gets or sets the ValueFormatted. */
+    /** Gets or sets the formatted value of the AttributeValue at this point in history */
     valueFormatted?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

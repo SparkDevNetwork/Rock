@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -610,7 +610,10 @@ function onTaskCompleted( resultData )
             if ( valueItem == null && communication.SMSFromDefinedValueId != null )
             {
                 var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-                ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                if ( lookupDefinedValue != null && lookupDefinedValue.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                }
             }
 
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
@@ -2461,12 +2464,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
                 else
                 {
@@ -2487,12 +2490,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
 
                 if ( Rock.Communication.Transport.Twilio.SupportedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
@@ -3388,6 +3391,15 @@ function onTaskCompleted( resultData )
         /// </summary>
         private CommunicationRecipient GetSampleCommunicationRecipient( Rock.Model.Communication communication, RockContext rockContext )
         {
+            // Update the recipients in the communication
+            UpdateCommunicationRecipients( communication, rockContext );
+
+            // If we have recipients in the communication then just return the first one.
+            if ( communication.Recipients.Any() )
+            {
+                return communication.Recipients.First();
+            }
+
             var recipientPersonId = 0;
 
             if ( IndividualRecipientPersonIds.Count == 0 )
@@ -3414,8 +3426,11 @@ function onTaskCompleted( resultData )
             // If there are additional merge fields, get the merge values connected to the sample recipient.
             if ( communication.AdditionalMergeFields.Any() )
             {
-                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext ).GetByCommunicationId( communication.Id )
-                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id ).First().AdditionalMergeValues;
+                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext )
+                    .GetByCommunicationId( communication.Id )
+                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id )
+                    .FirstOrDefault()?
+                    .AdditionalMergeValues;
             }
 
             return recipient;

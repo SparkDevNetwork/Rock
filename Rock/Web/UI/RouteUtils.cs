@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 
@@ -35,6 +37,29 @@ namespace Rock.Web.UI
         {
             return RouteTable.Routes.GetRouteData( new MyHttpContextBase( uri, applicationPath ) );
         }
+
+        private static Regex _routeParametersRegEx = new Regex( @"{([A-Za-z0-9\-]+)}", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Gets the list of parameter names specified in a route.
+        /// </summary>
+        /// <param name="routeUrl">A route containing parameter tokens in the form "{param1}/{param2}...".</param>
+        /// <returns></returns>
+        public static List<string> ParseRouteParameters( string routeUrl )
+        {
+            var routeParms = new List<string>();
+            if ( !string.IsNullOrWhiteSpace( routeUrl ) )
+            {
+                foreach ( Match match in _routeParametersRegEx.Matches( routeUrl ) )
+                {
+                    routeParms.Add( match.Groups[1].Value );
+                }
+            }
+
+            return routeParms;
+        }
+
+        #region Support classes
 
         /// <summary>
         /// Mock Http Context
@@ -108,5 +133,7 @@ namespace Rock.Web.UI
                 }
             }
         }
+
+        #endregion
     }
 }

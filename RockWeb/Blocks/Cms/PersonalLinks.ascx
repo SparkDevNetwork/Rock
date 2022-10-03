@@ -8,8 +8,7 @@
     })
 </script>
 
-<asp:LinkButton runat="server" ID="lbBookmark" Visible="false" class="rock-bookmark js-rock-bookmark"
-    href="#" ><i class="fa fa-bookmark"></i></asp:LinkButton>
+<asp:LinkButton runat="server" ID="lbBookmark" Visible="false" class="rock-bookmark js-rock-bookmark"><i class="fa fa-bookmark"></i></asp:LinkButton>
 
 
 <asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" class="popover rock-popover styled-scroll js-bookmark-panel js-personal-link-popover position-fixed d-none" role="tooltip">

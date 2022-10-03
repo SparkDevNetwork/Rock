@@ -108,13 +108,14 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
         /// <param name="displayPublicName">if set to <c>true</c> [public name].</param>
+        /// <param name="countsType"></param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
         [Rock.SystemGuid.RestActionGuid( "976BDF2A-92E6-4902-A84D-BE7CB25A3824" )]
-        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName )
+        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
         {
-            return GetChildrenData( id, activeOnly, displayPublicName );
+            return GetChildrenData( id, activeOnly, displayPublicName, countsType );
         }
 
         /// <summary>
@@ -148,8 +149,10 @@ namespace Rock.Rest.Controllers
                 Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
                 GlCode = a.GlCode,
                 IsActive = a.IsActive,
-                Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
             } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
@@ -182,7 +185,7 @@ namespace Rock.Rest.Controllers
         }
 
         #region Methods
-        private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName )
+        private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
         {
             var financialAccountService = new FinancialAccountService( new Data.RockContext() );
 
@@ -218,8 +221,10 @@ namespace Rock.Rest.Controllers
                     Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
                     GlCode = a.GlCode,
                     IsActive = a.IsActive,
-                    Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
                 } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
@@ -245,7 +250,10 @@ namespace Rock.Rest.Controllers
 
                 if ( accountTreeViewItem.HasChildren )
                 {
-                    accountTreeViewItem.CountInfo = childrenCount;
+                    if ( countsType == AccountTreeViewItem.GetCountsType.ChildGroups )
+                    {
+                        accountTreeViewItem.CountInfo = childrenCount;
+                    }
 
                     accountTreeViewItem.ParentId = id.ToString();
                 }
@@ -294,8 +302,9 @@ namespace Rock.Rest.Controllers
                     GlCode = a.GlCode,
                     IsActive = a.IsActive,
                     ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
-                    Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                 } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 

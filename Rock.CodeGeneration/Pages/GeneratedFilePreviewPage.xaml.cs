@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -57,7 +58,7 @@ namespace Rock.CodeGeneration.Pages
         /// Gets or sets the post save action handler.
         /// </summary>
         /// <value>The post save action handler.</value>
-        public Action<IReadOnlyList<GeneratedFile>, IReadOnlyList<GeneratedFile>, IReadOnlyList<GeneratedFile>> PostSaveAction { get; set; }
+        public Action<IReadOnlyList<GeneratedFile>, PostSaveContext> PostSaveAction { get; set; }
 
         #endregion
 
@@ -182,8 +183,9 @@ namespace Rock.CodeGeneration.Pages
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void Save_Click( object sender, RoutedEventArgs e )
+        private async void Save_Click( object sender, RoutedEventArgs e )
         {
+            var button = sender as Button;
             var solutionPath = SupportTools.GetSolutionPath();
 
             if ( solutionPath.IsNullOrWhiteSpace() )
@@ -192,53 +194,71 @@ namespace Rock.CodeGeneration.Pages
                 return;
             }
 
-            // Find all the files that should be exported.
-            var files = _exportFiles
-                .Where( f => f.IsExporting )
-                .Select( f => f.File )
-                .ToList();
+            button.IsEnabled = false;
 
-            // Find all the files that will be skipped.
-            var skippedFiles = _exportFiles.Where( f => !f.IsExporting )
-                .Select( f => f.File )
-                .ToList();
-
-            var failedFiles = new List<GeneratedFile>();
-            var exportedFiles = new List<GeneratedFile>();
-
-            // Attempt to write each file to disk. If something goes wrong
-            // then add it to the list of failed files.
-            foreach ( var file in files )
+            try
             {
-                try
+                SaveProgressBar.Maximum = _exportFiles.Count;
+                SaveProgressBar.Value = 0;
+                SaveProgressBar.IsIndeterminate = false;
+                SaveProgressBar.Visibility = Visibility.Visible;
+
+                await Task.Run( () =>
                 {
-                    var filePath = Path.Combine( solutionPath, file.SolutionRelativePath );
+                    // Attempt to write each file to disk. If something goes wrong
+                    // then add it to the list of failed files.
+                    foreach ( var file in _exportFiles )
+                    {
+                        if ( !file.IsExporting )
+                        {
+                            file.File.SaveState = GeneratedFileSaveState.NoChange;
+                            Dispatcher.Invoke( () => SaveProgressBar.Value += 1 );
+                            continue;
+                        }
 
-                    EnsureDirectoryExists( Path.GetDirectoryName( filePath ) );
+                        try
+                        {
+                            var filePath = Path.Combine( solutionPath, file.File.SolutionRelativePath );
 
-                    File.WriteAllText( filePath, file.Content );
+                            EnsureDirectoryExists( Path.GetDirectoryName( filePath ) );
+                            var exists = File.Exists( filePath );
 
-                    exportedFiles.Add( file );
+                            File.WriteAllText( filePath, file.File.Content );
+
+                            file.File.SaveState = exists ? GeneratedFileSaveState.Updated : GeneratedFileSaveState.Created;
+                        }
+                        catch ( Exception ex )
+                        {
+                            System.Diagnostics.Debug.WriteLine( $"Error processing file '{file.File.SolutionRelativePath}': {ex.Message}" );
+                            file.File.SaveState = GeneratedFileSaveState.Failed;
+                        }
+
+                        Dispatcher.Invoke( () => SaveProgressBar.Value += 1 );
+                    }
+
+                    // Process any post-save action requested by the owner.
+                    Dispatcher.Invoke( () => SaveProgressBar.IsIndeterminate = true );
+                    var context = new PostSaveContext( this );
+                    PostSaveAction?.Invoke( _exportFiles.Select( f => f.File ).ToList(), context );
+                } );
+
+                var failedFiles = _exportFiles.Where( f => f.File.SaveState == GeneratedFileSaveState.Failed );
+
+                // If any files had errors, display which ones.
+                if ( failedFiles.Any() )
+                {
+                    var errorMessage = $"The following files had errors:\n{string.Join( "\n", failedFiles.Select( f => f.File.SolutionRelativePath ) )}";
+                    MessageBox.Show( Window.GetWindow( this ), errorMessage, "Some files failed to process." );
                 }
-                catch ( Exception ex )
+                else
                 {
-                    System.Diagnostics.Debug.WriteLine( $"Error processing file '{file.SolutionRelativePath}': {ex.Message}" );
-                    failedFiles.Add( file );
+                    MessageBox.Show( "Selected files have been created or updated.", "Files Saved" );
                 }
             }
-
-            // Process any post-save action requested by the owner.
-            PostSaveAction?.Invoke( exportedFiles, skippedFiles, failedFiles );
-
-            // If any files had errors, display which ones.
-            if ( failedFiles.Any() )
+            finally
             {
-                var errorMessage = $"The following files had errors:\n{string.Join( "\n", failedFiles.Select( f => f.SolutionRelativePath ) )}";
-                MessageBox.Show( Window.GetWindow( this ), errorMessage, "Some files failed to process." );
-            }
-            else
-            {
-                MessageBox.Show( "Selected files have been created or updated.", "Files Saved" );
+                SaveProgressBar.Visibility = Visibility.Collapsed;
+                button.IsEnabled = true;
             }
         }
 
@@ -358,6 +378,64 @@ namespace Rock.CodeGeneration.Pages
             }
 
             #endregion
+        }
+
+        /// <summary>
+        /// Provides state context to post save actions.
+        /// </summary>
+        public class PostSaveContext : IDisposable
+        {
+            /// <summary>
+            /// The page that owns this context.
+            /// </summary>
+            private GeneratedFilePreviewPage _page;
+
+            /// <summary>
+            /// Creates a new instance of <see cref="PostSaveContext"/> class.
+            /// </summary>
+            /// <param name="page">The page that will own this context.</param>
+            public PostSaveContext( GeneratedFilePreviewPage page )
+            {
+                _page = page;
+            }
+
+            /// <summary>
+            /// Performs application-defined tasks associated with freeing,
+            /// releasing, or resetting unmanaged resources.
+            /// </summary>
+            public void Dispose()
+            {
+                _page = null;
+            }
+
+            /// <summary>
+            /// Sets the progress of the post save action.
+            /// </summary>
+            /// <param name="current">The current step that was completed.</param>
+            /// <param name="total">The total number of steps to be completed.</param>
+            public void SetProgress( int current, int total )
+            {
+                _page.Dispatcher.Invoke( () =>
+                {
+                    _page.SaveProgressBar.Maximum = total;
+                    _page.SaveProgressBar.Value = current;
+                    _page.SaveProgressBar.IsIndeterminate = false;
+                } );
+            }
+
+            /// <summary>
+            /// Shows the message to the user and waits for it to be dismissed
+            /// before returning.
+            /// </summary>
+            /// <param name="title">The title of the alert message.</param>
+            /// <param name="message">The message body text.</param>
+            public void ShowMessage( string title, string message )
+            {
+                _page.Dispatcher.Invoke( () =>
+                {
+                    MessageBox.Show( Window.GetWindow( _page ), message, title );
+                } );
+            }
         }
 
         #endregion

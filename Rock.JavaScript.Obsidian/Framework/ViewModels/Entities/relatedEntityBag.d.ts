@@ -25,49 +25,67 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RelatedEntity View Model */
 export type RelatedEntityBag = {
-    /** Gets or sets the AdditionalSettingsJson. */
+    /** Gets or sets the additional settings json. */
     additionalSettingsJson?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Site was created by and is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PurposeKey. */
+    /**
+     * Gets or sets the purpose key. This indicates the purpose of the relationship. For example:
+     * See notes on Rock.Model.RelatedEntityPurposeKey for details.
+     */
     purposeKey?: string | null;
 
-    /** Gets or sets the QualifierValue. */
+    /**
+     * Gets or sets the qualifier value.
+     * See more details on Rock.Model.RelatedEntityPurposeKey.
+     */
     qualifierValue?: string | null;
 
-    /** Gets or sets the Quantity. */
+    /** Gets or sets the quantity. */
     quantity?: number | null;
 
-    /** Gets or sets the SourceEntityId. */
+    /**
+     * Gets or sets the EntityId of the Rock.Model.EntityType of the source.
+     * See notes on Rock.Model.RelatedEntityPurposeKey for details.
+     */
     sourceEntityId: number;
 
-    /** Gets or sets the SourceEntityTypeId. */
+    /**
+     * Gets or sets the EntityTypeId for the Rock.Model.EntityType of source entity.
+     * See notes on Rock.Model.RelatedEntityPurposeKey for details.
+     */
     sourceEntityTypeId: number;
 
-    /** Gets or sets the TargetEntityId. */
+    /**
+     * Gets or sets the EntityId of the Rock.Model.EntityType of the target.
+     * See notes on Rock.Model.RelatedEntityPurposeKey for details.
+     */
     targetEntityId: number;
 
-    /** Gets or sets the TargetEntityTypeId. */
+    /**
+     * Gets or sets the EntityTypeId for the Rock.Model.EntityType of target entity.
+     * See notes on Rock.Model.RelatedEntityPurposeKey for details.
+     */
     targetEntityTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

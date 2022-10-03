@@ -198,6 +198,8 @@ export const enum DefinedType {
     MapMarkers = "80DC21DE-A2C2-42DF-880B-FA9CABD504A0",
     /** Languages */
     Languages = "6060ba8b-4085-4a29-bf19-a4862b95556a",
+    /** The apple device models */
+    AppleDeviceModels = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** The statement generator lava template (Legacy) */
     StatementGeneratorLavaTemplateLegacy = "74A23516-A20A-40C9-93B5-1AB5FDFF6750",
 }

@@ -25,5 +25,10 @@ namespace Rock.SystemGuid
         /// The Guid of the 'Giver Anonymous' person that ships with core
         /// </summary>
         public const string GIVER_ANONYMOUS = "802235DC-3CA5-94B0-4326-AACE71180F48";
+
+        /// <summary>
+        /// The Guid of the 'Anonymous Visitor' person that ships with core. This is used by Visitor Tracking.
+        /// </summary>
+        public const string ANONYMOUS_VISITOR = "7EBC167B-512D-4683-9D80-98B6BB02E1B9";
     }
 }

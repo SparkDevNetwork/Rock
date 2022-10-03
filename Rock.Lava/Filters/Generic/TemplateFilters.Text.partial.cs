@@ -50,20 +50,87 @@ namespace Rock.Lava.Filters
                 : input.Titleize();
         }
 
+        #region Trim
+
         /// <summary>
-        /// Removes all leading and trailing whitespace from the specified input string.
+        /// Trims the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="textToRemove"></param>
         /// <returns></returns>
-        public static string Trim( object input )
+        public static string Trim( object input, string textToRemove = null )
         {
             if ( input == null )
             {
                 return string.Empty;
             }
 
-            return input.ToString().Trim();
+            // If text to remove is not specified, remove all whitespace.
+            if ( textToRemove == null )
+            {
+                return input.ToString().Trim();
+            }
+            else
+            {
+                return TrimEnd( TrimStart( input, textToRemove ), textToRemove );
+            }
         }
+
+        /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="textToRemove"></param>
+        /// <returns></returns>
+        public static string TrimStart( object input, string textToRemove = null )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            // If text to remove is not specified, remove whitespace.
+            if ( textToRemove == null )
+            {
+                return input.ToString().TrimStart();
+            }
+
+            var inputString = input.ToString();
+            while ( textToRemove != null && inputString.StartsWith( textToRemove ) )
+            {
+                inputString = inputString.Substring( textToRemove.Length );
+            }
+            return inputString;
+        }
+
+        /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="textToRemove"></param>
+        /// <returns></returns>
+        public static string TrimEnd( object input, string textToRemove = null )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            // If text to remove is not specified, remove whitespace.
+            if ( textToRemove == null )
+            {
+                return input.ToString().TrimEnd();
+            }
+
+            var inputString = input.ToString();
+            while ( textToRemove != null && inputString.EndsWith( textToRemove ) )
+            {
+                inputString = inputString.Substring( 0, inputString.Length - textToRemove.Length );
+            }
+            return inputString;
+        }
+
+        #endregion
 
         /// <summary>
         /// takes computer-readible-formats and makes them human readable
@@ -430,17 +497,37 @@ namespace Rock.Lava.Filters
         /// </summary>
         /// <param name="input"></param>
         /// <param name="pattern"></param>
+        /// <param name="count">if specified, the maximum number of substrings to return. The remaining input text will be returned as the last entry in the collection.</param>
         /// <param name="removeEmpty">if set to <c>true</c>, empty values will be excluded from the results.</param>
         /// <returns></returns>
-        public static List<string> Split( string input, string pattern, object removeEmpty = null )
+        public static List<string> Split( string input, string pattern, object removeEmpty = null, object count = null )
         {
-            var shouldRemove = InputParser.TryConvertBoolean( removeEmpty ) ?? true;
+            // If there is nothing to process, return the input.
+            if ( input.IsNullOrWhiteSpace() )
+            {
+                return new List<string> { input };
+            }
 
+            // If zero substrings have been requested, return an empty collection.
+            var takeCount = count.ToIntSafe( -1 );
+            if ( takeCount == 0 )
+            {
+                return new List<string>();
+            }
+
+            var shouldRemove = InputParser.TryConvertBoolean( removeEmpty ) ?? true;
             var options = shouldRemove ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None;
 
-            return input.IsNullOrWhiteSpace()
-                ? new List<string> { input }
-                : input.Split( new[] { pattern }, options ).ToList();
+            List<string> parts;
+            if ( takeCount != -1 )
+            {
+                parts = input.Split( new[] { pattern }, takeCount, options ).ToList();
+            }
+            else
+            {
+                parts = input.Split( new[] { pattern }, options ).ToList();
+            }
+            return parts;
         }
 
         /// <summary>

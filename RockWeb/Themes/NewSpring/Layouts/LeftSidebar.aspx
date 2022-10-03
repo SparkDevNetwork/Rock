@@ -2,6 +2,8 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
+    <Rock:Zone Name="Feature" runat="server" />
+
     <div class="position-relative soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
 
         <!-- Ajax Error -->
@@ -15,14 +17,12 @@
             <div class="position-absolute full-screen" style="background-color: {{ pageColor }};"></div>
         </Rock:Lava>
 
-        <Rock:Zone Name="Feature" runat="server" />
-
-        <div id="content" class="clearfix">
+        <div id="content" class="container-fluid">
 
             <div class="row">
-                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
                     <Rock:Zone Name="Section A" runat="server" />
-                </div><div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
+                </div><div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
                     <Rock:Zone Name="Main" runat="server" />
                 </div>
             </div>

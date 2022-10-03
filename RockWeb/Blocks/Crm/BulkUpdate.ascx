@@ -122,8 +122,8 @@
                                 <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" />
 
                                 <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                <Rock:DefinedValuePicker ID="dvpInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:DefinedValuePicker>
-                                <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" TextMode="MultiLine" Rows="2" Visible="false" Label="Inactive Reason Note"></Rock:RockTextBox>
+                                <Rock:DefinedValuePicker ID="dvpInactiveReason" runat="server" Visible="false" Label="Inactive Reason" FormGroupCssClass="bulk-item-visible" />
+                                <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" TextMode="MultiLine" Rows="2" Visible="false" Label="Inactive Reason Note" FormGroupCssClass="bulk-item-visible" />
                             </div>
                         </div>
 
@@ -158,9 +158,9 @@
                                 <Rock:RockTextBox ID="tbSystemNote" runat="server" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:DefinedValuePicker ID="dvpReviewReason" runat="server" Enabled="false" 
+                                <Rock:DefinedValuePicker ID="dvpReviewReason" runat="server" Enabled="false"
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason" />
-                                <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false" 
+                                <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false"
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                         </div>

@@ -25,52 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActionFormAttribute View Model */
 export type WorkflowActionFormAttributeBag = {
-    /** Gets or sets the ActionFormSectionId. */
+    /** Gets or sets the action form section identifier. */
     actionFormSectionId?: number | null;
 
-    /** Gets or sets the AttributeId. */
+    /** Gets or sets the attribute identifier. */
     attributeId: number;
 
-    /** Gets or sets the ColumnSize. */
+    /** Gets or sets the size of the column. */
     columnSize?: number | null;
 
-    /** Gets or sets the FieldVisibilityRulesJSON. */
+    /** Gets the field visibility rules json. */
     fieldVisibilityRulesJSON?: string | null;
 
-    /** Gets or sets the HideLabel. */
+    /** Gets or sets a value indicating whether [hide label]. */
     hideLabel: boolean;
 
-    /** Gets or sets the IsReadOnly. */
+    /** Gets or sets a value indicating whether [is read only]. */
     isReadOnly: boolean;
 
-    /** Gets or sets the IsRequired. */
+    /** Gets or sets a value indicating whether [is required]. */
     isRequired: boolean;
 
-    /** Gets or sets the IsVisible. */
+    /** Gets or sets a value indicating whether [is visible]. */
     isVisible: boolean;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PostHtml. */
+    /** Gets or sets the post HTML. */
     postHtml?: string | null;
 
-    /** Gets or sets the PreHtml. */
+    /** Gets or sets the PreHTML. */
     preHtml?: string | null;
 
-    /** Gets or sets the WorkflowActionFormId. */
+    /** Gets or sets the header. */
     workflowActionFormId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

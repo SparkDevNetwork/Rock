@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -815,7 +815,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 case IndexFieldType.Date:
                                 case IndexFieldType.Number:
                                     {
-                                        typeMappingProperty.IndexType = IndexType.NotAnalyzed;
+                                        typeMappingProperty.IndexType = IndexType.Indexed;
                                         typeMappingProperty.Analyzer = string.Empty;
                                         break;
                                     }

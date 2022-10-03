@@ -34,66 +34,68 @@ namespace Rock.ViewModels.Entities
     public partial class PageRouteBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the IsGlobal.
+        /// If true then the route will be accessible from all sites regardless if EnableExclusiveRoutes is set on the site
         /// </summary>
         /// <value>
-        /// The IsGlobal.
+        ///   true if this instance is global; otherwise, false.
         /// </value>
         public bool IsGlobal { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if the PageRoute is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if the PageRoute is part of the Rock core system/framework, otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the PageId.
+        /// Gets or sets the Id of the Rock.Model.Page that the PageRoute is linked to. This property is required.
         /// </summary>
         /// <value>
-        /// The PageId.
+        /// A System.Int32 containing the Id of the Rock.Model.Page that the PageRoute is linked to.
         /// </value>
         public int PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Route.
+        /// Gets or sets the format of the route path. Route examples include: Page NewAccount or Checkin/Welcome. 
+        /// A specific group Group/{GroupId} (i.e. Group/16). A person's history Person/{PersonId}/History (i.e. Person/12/History).
+        /// This property is required.
         /// </summary>
         /// <value>
-        /// The Route.
+        /// A System.String containing the format of the RoutePath.
         /// </value>
         public string Route { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

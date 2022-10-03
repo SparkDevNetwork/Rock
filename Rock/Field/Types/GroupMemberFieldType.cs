@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -37,7 +38,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER )]
-    public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
+    public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -191,6 +192,33 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var names = new List<string>();
+
+                foreach ( Guid guid in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var groupMember = groupMemberService.GetNoTracking( guid );
+
+                    if ( groupMember != null )
+                    {
+                        names.Add( groupMember.Person.FullName );
+                    }
+                }
+
+                return names.AsDelimited( ", " );
+            }
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -201,28 +229,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var names = new List<string>();
-                using ( var rockContext = new RockContext() )
-                {
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                    {
-                        var groupMember = groupMemberService.GetNoTracking( guid );
-                        if ( groupMember != null )
-                        {
-                            names.Add( groupMember.Person.FullName );
-                        }
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -234,8 +243,6 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            string formattedValue = string.Empty;
-
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 // if there are multiple group members, just pick the first one as the sort value
@@ -760,6 +767,66 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            if ( !guids.Any() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var idValues = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Where( gm => guids.Contains( gm.Guid ) )
+                    .Select( gm => new
+                    {
+                        gm.Id,
+                        gm.PersonId
+                    } )
+                    .ToList();
+
+                if ( !idValues.Any() )
+                {
+                    return null;
+                }
+
+                var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
+                var personEntityTypeId = EntityTypeCache.GetId<Person>().Value;
+                var entityReferences = new List<ReferencedEntity>();
+
+                foreach ( var ids in idValues )
+                {
+                    entityReferences.Add( new ReferencedEntity( groupMemberEntityTypeId, ids.Id ) );
+                    entityReferences.Add( new ReferencedEntity( personEntityTypeId, ids.PersonId ) );
+                }
+
+                return entityReferences;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Technically, more properties on Person are used such as the
+            // suffix. But the extra overhead to monitor those is probably
+            // not worth it since we will pick up the change eventually
+            // on our nightly job runs.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMember>().Value, nameof( GroupMember.PersonId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) )
+            };
         }
 
         #endregion

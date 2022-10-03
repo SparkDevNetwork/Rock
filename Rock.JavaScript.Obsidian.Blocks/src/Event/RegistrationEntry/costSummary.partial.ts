@@ -17,7 +17,7 @@
 
 import { defineComponent, inject } from "vue";
 import Loading from "@Obsidian/Controls/loading";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import { ValidationRule } from "@Obsidian/ValidationRules";
@@ -57,7 +57,7 @@ export default defineComponent({
     setup() {
         return {
             getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            invokeBlockAction: useInvokeBlockAction(),
             registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
@@ -198,12 +198,19 @@ export default defineComponent({
 
         /** The vee-validate rules for the amount to pay today */
         amountToPayTodayRules(): ValidationRule[] {
-            const rules: ValidationRule[] = ["required"];
+            const rules: ValidationRule[] = [];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
 
             if (min > max) {
                 min = max;
+            }
+
+            if (min > 0) {
+                rules.push("required");
+            }
+            else {
+                rules.push("notblank");
             }
 
             rules.push(`gte:${min}`);

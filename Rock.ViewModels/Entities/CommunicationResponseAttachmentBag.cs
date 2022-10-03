@@ -34,58 +34,58 @@ namespace Rock.ViewModels.Entities
     public partial class CommunicationResponseAttachmentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BinaryFileId.
+        /// Gets or sets the binary file identifier.
         /// </summary>
         /// <value>
-        /// The BinaryFileId.
+        /// The binary file identifier.
         /// </value>
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CommunicationResponseId.
+        /// Gets or sets the communication response identifier.
         /// </summary>
         /// <value>
-        /// The CommunicationResponseId.
+        /// The communication response identifier.
         /// </value>
         public int CommunicationResponseId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CommunicationType.
+        /// Gets or sets the type of the communication.
         /// </summary>
         /// <value>
-        /// The CommunicationType.
+        /// The type of the communication.
         /// </value>
         public int CommunicationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

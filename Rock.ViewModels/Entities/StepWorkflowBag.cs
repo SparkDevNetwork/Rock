@@ -34,58 +34,49 @@ namespace Rock.ViewModels.Entities
     public partial class StepWorkflowBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the StepId.
+        /// Gets or sets the Id of the Rock.Model.Step that triggered the workflow. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepId.
-        /// </value>
         public int StepId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepWorkflowTriggerId.
+        /// Gets or sets the Id of the Rock.Model.StepWorkflowTrigger by which this Workflow was triggered. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepWorkflowTriggerId.
-        /// </value>
         public int StepWorkflowTriggerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowId.
+        /// Gets or sets the Id of the Rock.Model.Workflow that was triggered. This property is required.
         /// </summary>
-        /// <value>
-        /// The WorkflowId.
-        /// </value>
         public int WorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

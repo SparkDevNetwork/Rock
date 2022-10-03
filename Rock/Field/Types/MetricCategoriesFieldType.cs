@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -22,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC_CATEGORIES )]
-    public class MetricCategoriesFieldType : FieldType
+    public class MetricCategoriesFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -46,25 +48,37 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
             {
-                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+                return string.Empty;
+            }
 
-                var metricGuids = guidPairs.Select( a => a.MetricGuid );
+            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+            if ( !guidPairs.Any() )
+            {
+                return string.Empty;
+            }
 
-                using ( var rockContext = new RockContext() )
+            var metricGuids = guidPairs.Select( a => a.MetricGuid );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
+                if ( metrics.Any() )
                 {
-                    var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
-                    if ( metrics.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from metric in metrics select metric.Title ).ToArray() );
-                    }
+                    return string.Join( ", ", metrics.Select( m => m.Title ) );
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return string.Empty;
         }
 
         #endregion
@@ -135,18 +149,18 @@ namespace Rock.Field.Types
                 {
                     // first try to get each metric from the category that it was selected from
                     var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
-                    if (metricCategory == null)
+                    if ( metricCategory == null )
                     {
                         // if the metric isn't found in the original category, just the first one, ignoring category
                         metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
                     }
 
-                    if (metricCategory != null)
+                    if ( metricCategory != null )
                     {
                         metricCategories.Add( metricCategory );
                     }
                 }
-                    
+
                 picker.SetValues( metricCategories );
             }
         }
@@ -180,5 +194,47 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
+
+            if ( !guidPairs.Any() )
+            {
+                return null;
+            }
+            var metricGuids = guidPairs.Select( a => a.MetricGuid );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var referencedEntities = new MetricService( rockContext )
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( m => metricGuids.Contains( m.Guid ) )
+                                    .Select( m => m.Id )
+                                    .ToList()
+                                    .Select( m => new ReferencedEntity( EntityTypeCache.GetId<Metric>().Value, m ) );
+                if ( !referencedEntities.Any() )
+                {
+                    return null;
+                }
+                return referencedEntities.ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Metric and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Metric>().Value, nameof( Metric.Title ) )
+            };
+        }
+
+        #endregion
     }
 }

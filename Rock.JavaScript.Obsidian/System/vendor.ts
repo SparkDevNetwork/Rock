@@ -1,4 +1,5 @@
 import AntSelect from "ant-design-vue/lib/select";
+import AntAutoComplete from "ant-design-vue/lib/auto-complete";
 import * as Axios from "axios";
 import { DateTime } from "luxon/src/luxon";
 import * as Mitt from "mitt";
@@ -12,11 +13,12 @@ const Luxon = {
 
 // Only include the components we are actually going to use.
 const AntDesignVue = {
-    Select: AntSelect
+    Select: AntSelect,
+    AutoComplete: AntAutoComplete
 };
 
 export {
-    AntDesignVue, // 280KB
+    AntDesignVue, // 284KB
     Axios, // 13.7KB
     Luxon, // 60KB
     Mitt, // 374b

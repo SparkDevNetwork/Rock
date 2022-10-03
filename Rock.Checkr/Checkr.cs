@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Checkr
     [ExportMetadata( "ComponentName", "Checkr" )]
 
     [EncryptedTextField( "Access Token", "Checkr Access Token", true, "", "", 0, null, true )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CHECKR_PROVIDER )]
     public class Checkr : BackgroundCheckComponent
     {
         #region Private Fields

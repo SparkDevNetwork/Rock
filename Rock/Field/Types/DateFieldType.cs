@@ -269,6 +269,12 @@ namespace Rock.Field.Types
             return FormatValue( value, configurationValues, true );
         }
 
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return FormatValue( value, configurationValues, true ).EncodeHtml();
+        }
+
         /// <summary>
         /// Formats the value for display as a date.
         /// </summary>
@@ -355,7 +361,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return FormatValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -938,5 +946,29 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldFormat = oldPrivateConfigurationValues.GetValueOrNull( "format" ) ?? string.Empty;
+            var oldDisplayDiff = oldPrivateConfigurationValues.GetValueOrNull( "displayDiff" ) ?? string.Empty;
+            var newFormat = newPrivateConfigurationValues.GetValueOrNull( "format" ) ?? string.Empty;
+            var newDisplayDiff = newPrivateConfigurationValues.GetValueOrNull( "displayDiff" ) ?? string.Empty;
+
+            if ( oldFormat != newFormat )
+            {
+                return true;
+            }
+
+            if ( oldDisplayDiff != newDisplayDiff )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

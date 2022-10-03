@@ -114,7 +114,9 @@ namespace Rock.Tasks
                 return;
             }
 
-            new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
+            var workflowTransaction=new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
+            
+            workflowTransaction.Execute();
         }
 
         /// <summary>
@@ -230,6 +232,7 @@ namespace Rock.Tasks
             /// Gets or sets the end date.
             /// </summary>
             public DateTime? EndDate { get; set; }
+
         }
     }
 }

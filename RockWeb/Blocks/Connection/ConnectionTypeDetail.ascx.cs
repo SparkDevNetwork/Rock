@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -517,22 +517,15 @@ namespace RockWeb.Blocks.Connection
                         connectionWorkflowState.Guid = connectionWorkflow.Guid;
                     }
 
-                    // need WrapTransaction due to Attribute saves
-                    rockContext.WrapTransaction( () =>
-                    {
-                        rockContext.SaveChanges();
-
-                        connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                        connectionWorkflow.ConnectionTypeId = connectionTypeId;
-                    } );
+                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
                 }
 
                 if ( !connectionType.IsValid )
                 {
                     // Controls will render the error messages
                     return;
-                }           
-                                
+                }
 
                 // need WrapTransaction due to Attribute saves
                 rockContext.WrapTransaction( () =>
@@ -1310,6 +1303,31 @@ namespace RockWeb.Blocks.Connection
         #region Connection Status Automation
 
         /// <summary>
+        /// Handles the GridReorder event of the gStatusAutomations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gStatusAutomations_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var connectionStatusGuid = hfConnectionTypeAddConnectionStatusGuid.Value.AsGuid();
+            var connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( connectionStatusGuid ) );
+            var movedItem = connectionStatus.ConnectionStatusAutomations.ElementAtOrDefault( e.OldIndex );
+
+            if ( movedItem != null )
+            {
+                connectionStatus.ConnectionStatusAutomations.RemoveAt( e.OldIndex );
+                connectionStatus.ConnectionStatusAutomations.Insert( e.NewIndex, movedItem );
+
+                for ( var i = 0; i < connectionStatus.ConnectionStatusAutomations.Count; i++ )
+                {
+                    connectionStatus.ConnectionStatusAutomations[i].Order = i;
+                }
+            }
+
+            BindStatusAutomationGrid( connectionStatusGuid );
+        }
+
+        /// <summary>
         /// Handles the Add event of the gStatusAutomations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1681,7 +1699,7 @@ namespace RockWeb.Blocks.Connection
             {
                 c.Id,
                 c.Guid,
-                WorkflowType = c.WorkflowType.Name,
+                WorkflowType = c.WorkflowTypeCache.Name,
                 Trigger = c.TriggerType.ConvertToString()
             } ).ToList();
             gWorkflows.DataBind();
@@ -1697,7 +1715,7 @@ namespace RockWeb.Blocks.Connection
             {
                 if ( connectionWorkflowList.Any() )
                 {
-                    connectionWorkflowList.OrderBy( c => c.WorkflowType.Name ).ThenBy( c => c.TriggerType.ConvertToString() ).ToList();
+                    connectionWorkflowList.OrderBy( c => c.WorkflowTypeCache.Name ).ThenBy( c => c.TriggerType.ConvertToString() ).ToList();
                 }
             }
         }
@@ -2016,7 +2034,10 @@ namespace RockWeb.Blocks.Connection
                 connectionStatus.ConnectionStatusAutomations = new List<ConnectionStatusAutomationState>();
             }
 
-            gStatusAutomations.DataSource = connectionStatus.ConnectionStatusAutomations.OrderBy( a => a.AutomationName ).ToList();
+            gStatusAutomations.DataSource = connectionStatus.ConnectionStatusAutomations
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.AutomationName )
+                .ToList();
             gStatusAutomations.DataBind();
         }
 
@@ -2034,24 +2055,35 @@ namespace RockWeb.Blocks.Connection
             if ( connectionStatusAutomation == null )
             {
                 connectionStatusAutomation = new ConnectionStatusAutomationState();
+                connectionStatusAutomation.Order = connectionStatus.ConnectionStatusAutomations.Select( a => a.Order ).DefaultIfEmpty( -1 ).Max() + 1;
                 isNew = true;
             }
 
             connectionStatusAutomation.AutomationName = tbAutomationName.Text;
-            connectionStatusAutomation.DataViewId = dataViewId;
             connectionStatusAutomation.GroupRequirementsFilter = groupRequirementsFilter;
             var moveToGuid = ddlMoveTo.SelectedValue.AsGuid();
             var destinationStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( moveToGuid ) );
             if ( destinationStatus != null )
             {
                 connectionStatusAutomation.DestinationStatusGuid = destinationStatus?.Guid;
+                connectionStatusAutomation.DestinationStatusName = destinationStatus?.Name;
             }
 
-            if ( dataViewId.HasValue && connectionStatusAutomation.DataViewId == null )
+            if ( dataViewId.HasValue && connectionStatusAutomation.DataViewId != dataViewId )
             {
-                connectionStatusAutomation.DataViewId = dataViewId;
+                // This might be extra call to database but it helps set the dataview name in the grid only when new automation is added
+                var dataView = new DataViewService( new RockContext() ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    connectionStatusAutomation.DataViewName = dataView.Name;
+                }
+            }
+            else if( !dataViewId.HasValue )
+            {
+                connectionStatusAutomation.DataViewName = string.Empty;
             }
 
+            connectionStatusAutomation.DataViewId = dataViewId;
             if ( isNew )
             {
                 connectionStatus.ConnectionStatusAutomations.Add( connectionStatusAutomation );
@@ -2081,7 +2113,7 @@ namespace RockWeb.Blocks.Connection
                 this.IsDefault = connectionStatus.IsDefault;
                 this.Guid = connectionStatus.Guid;
                 this.IsActive = connectionStatus.IsActive;
-                this.ConnectionStatusAutomations = connectionStatus.ConnectionStatusAutomations.Select( a => new ConnectionStatusAutomationState( a ) ).ToList();
+                this.ConnectionStatusAutomations = connectionStatus.ConnectionStatusAutomations.Select( a => new ConnectionStatusAutomationState( a ) ).OrderBy( a => a.Order ).ThenBy( a => a.AutomationName ).ToList();
                 this.AutoInactivateState = connectionStatus.AutoInactivateState;
                 this.Order = connectionStatus.Order;
                 this.Name = connectionStatus.Name;
@@ -2193,6 +2225,7 @@ namespace RockWeb.Blocks.Connection
                 this.DataViewId = connectionStatusAutomation.DataViewId;
                 this.DataViewName = connectionStatusAutomation.DataView?.Name;
                 this.GroupRequirementsFilter = connectionStatusAutomation.GroupRequirementsFilter;
+                this.Order = connectionStatusAutomation.Order;
             }
 
             /// <inheritdoc cref="Rock.Data.IEntity.Guid"/>
@@ -2216,16 +2249,20 @@ namespace RockWeb.Blocks.Connection
             /// <inheritdoc cref="ConnectionStatusAutomation.GroupRequirementsFilter"/>
             public GroupRequirementsFilter GroupRequirementsFilter { get; set; }
 
+            /// <inheritdoc cref="ConnectionStatusAutomation.Order"/>
+            public int Order { get; set; }
+
             /// <summary>
             /// Copies the editable properties from the State item to the model
             /// </summary>
-            /// <param name="connectionStatus">The connection status.</param>
-            public void CopyPropertiesTo( ConnectionStatusAutomation connectionStatus )
+            /// <param name="connectionStatusAutomation">The connection status automation.</param>
+            public void CopyPropertiesTo( ConnectionStatusAutomation connectionStatusAutomation )
             {
-                connectionStatus.Guid = this.Guid;
-                connectionStatus.AutomationName = this.AutomationName;
-                connectionStatus.DataViewId = this.DataViewId;
-                connectionStatus.GroupRequirementsFilter = this.GroupRequirementsFilter;
+                connectionStatusAutomation.Guid = this.Guid;
+                connectionStatusAutomation.AutomationName = this.AutomationName;
+                connectionStatusAutomation.DataViewId = this.DataViewId;
+                connectionStatusAutomation.GroupRequirementsFilter = this.GroupRequirementsFilter;
+                connectionStatusAutomation.Order = this.Order;
             }
         }
     }

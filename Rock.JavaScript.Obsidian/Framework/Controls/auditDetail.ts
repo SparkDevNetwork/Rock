@@ -15,46 +15,123 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref } from "vue";
-import { AuditDetailBag } from "@Obsidian/ViewModels/Utility/auditDetailBag";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { EntityAuditBag } from "@Obsidian/ViewModels/Utility/entityAuditBag";
+import { AuditDetailGetAuditDetailsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/auditDetailGetAuditDetailsOptionsBag";
+import { Guid } from "@Obsidian/Types";
+import { useHttp } from "@Obsidian/Utility/http";
+import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
 export default defineComponent({
     name: "AuditDetail",
 
     props: {
-        modelValue: {
-            type: Object as PropType<AuditDetailBag>,
-            default: {}
+        /**
+         * The entity type unique identifier whose audit information will
+         * be retrieved and displayed.
+         */
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /**
+         * The entity identifier key whose audit information will be
+         * retrieved and displayed.
+         */
+        entityKey: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
     setup(props) {
-        const id = computed(() => props.modelValue.id?.toString() ?? "");
+        // #region Values
 
-        const guid = computed(() => props.modelValue.guid ?? "");
+        const securityGrantToken = useSecurityGrantToken();
+        const http = useHttp();
+        const auditBag = ref<EntityAuditBag | null>(null);
 
-        const createdByPersonId = computed(() => props.modelValue.createdByPersonId);
+        // #endregion
 
-        const createdByName = computed(() => props.modelValue.createdByName ?? "");
+        // #region Computed Values
 
-        const createdRelativeTime = computed(() => props.modelValue.createdRelativeTime);
+        const id = computed(() => auditBag.value?.id?.toString() ?? "");
 
-        const modifiedByPersonId = computed(() => props.modelValue.modifiedByPersonId);
+        const idKey = computed(() => auditBag.value?.idKey ?? "");
 
-        const modifiedByName = computed(() => props.modelValue.modifiedByName ?? "");
+        const guid = computed(() => auditBag.value?.guid ?? "");
 
-        const modifiedRelativeTime = computed(() => props.modelValue.modifiedRelativeTime);
+        const createdByPersonId = computed(() => auditBag.value?.createdByPersonId);
+
+        const createdByName = computed(() => auditBag.value?.createdByName ?? "");
+
+        const createdRelativeTime = computed(() => auditBag.value?.createdRelativeTime);
+
+        const modifiedByPersonId = computed(() => auditBag.value?.modifiedByPersonId);
+
+        const modifiedByName = computed(() => auditBag.value?.modifiedByName ?? "");
+
+        const modifiedRelativeTime = computed(() => auditBag.value?.modifiedRelativeTime);
 
         const showId = ref(true);
 
-        const getPersonLink = (personId: number): string => `/Person/${personId}`;
+        const showGuid = ref(false);
+
+        // #endregion
+
+        // #region Functions
+
+        const getPersonLink = (personId: number): string => {
+            return `/Person/${personId}`;
+        };
+
+        const loadAuditBag = async (): Promise<void> => {
+            if (!props.entityTypeGuid || !props.entityKey) {
+                auditBag.value = null;
+                return;
+            }
+
+            const data: AuditDetailGetAuditDetailsOptionsBag = {
+                entityTypeGuid: props.entityTypeGuid,
+                entityKey: props.entityKey,
+                securityGrantToken: securityGrantToken.value
+            };
+
+            const result = await http.post<EntityAuditBag>("/api/v2/Controls/AuditDetailGetAuditDetails", undefined, data);
+
+            auditBag.value = result.isSuccess && result.data ? result.data : null;
+        };
+
+        // #endregion
+
+        // #region Event Handlers
 
         /**
          * Event handler for when the Id/Guid label is clicked.
          */
         const onIdClick = (): void => {
-            showId.value = !showId.value;
+            if (showId.value) {
+                showId.value = false;
+                showGuid.value = true;
+            }
+            else if (showGuid.value) {
+                showId.value = false;
+                showGuid.value = false;
+            }
+            else {
+                showId.value = true;
+                showGuid.value = false;
+            }
         };
+
+        // #endregion
+
+        watch([() => props.entityTypeGuid, () => props.entityKey], () => {
+            loadAuditBag();
+        });
+
+        loadAuditBag();
 
         return {
             createdByName,
@@ -63,11 +140,13 @@ export default defineComponent({
             getPersonLink,
             guid,
             id,
+            idKey,
             modifiedByName,
             modifiedByPersonId,
             modifiedRelativeTime,
             onIdClick,
-            showId,
+            showGuid,
+            showId
         };
     },
 
@@ -97,12 +176,16 @@ export default defineComponent({
 
     <div class="col-md-4">
         <dl v-if="showId">
-            <dt @click.stop="onIdClick">Id</dt>
+            <dt @click.stop="onIdClick" class="clickable">Id</dt>
             <dd>{{ id }}</dd>
         </dl>
-        <dl v-else>
-            <dt @click.stop="onIdClick">Guid</dt>
+        <dl v-else-if="showGuid">
+            <dt @click.stop="onIdClick" class="clickable">Guid</dt>
             <dd>{{ guid }}</dd>
+        </dl>
+        <dl v-else>
+            <dt @click.stop="onIdClick" class="clickable">Id Key</dt>
+            <dd>{{ idKey }}</dd>
         </dl>
     </div>
 </div>

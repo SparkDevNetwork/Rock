@@ -53,7 +53,7 @@
                             <Rock:DatePicker ID="dpEditRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" AutoPostBack="true" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true"/>
+                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" AutoPostBack="true" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" OnSelectedIndexChanged="ddlEditRequestType_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-3">
                             <Rock:DefinedValuePicker ID="dvpEditRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
@@ -165,9 +165,11 @@
                 <h1 class="panel-title"><i class="fa fa-plug"></i>Benevolence Request</h1>
 
                 <div class="panel-labels">
-                    <asp:Literal ID="lViewBenevolenceType" runat="server" />
-                    <asp:Literal ID="lViewCampus" runat="server" />
-                    <asp:Literal ID="lViewStatus" runat="server" />
+                    <Rock:HighlightLabel ID="hlViewBenevolenceType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlViewCampus" runat="server" LabelType="Campus" />
+
+                    <!-- LabelType specified in  BenevolenceRequestDetail.ascx.cs -->
+                    <Rock:HighlightLabel ID="hlViewStatus" runat="server" />
                 </div>
             </div>
             <div class="panel-body">

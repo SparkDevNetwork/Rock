@@ -47,7 +47,7 @@ namespace Rock.CodeGeneration.Utility
         /// Gets the property information.
         /// </summary>
         /// <value>The property information.</value>
-        protected PropertyInfo PropertyInfo { get; }
+        public PropertyInfo PropertyInfo { get; }
 
         /// <summary>
         /// Gets the type of the property.
@@ -155,6 +155,14 @@ namespace Rock.CodeGeneration.Utility
 
             if ( entityType.IsAssignableFrom( PropertyType ) )
             {
+                var idProperty = PropertyInfo.DeclaringType.GetProperty( $"{PropertyType.Name}Id" );
+
+                // If the id property is not nullable, get the required integer value.
+                if ( idProperty != null && idProperty.PropertyType == typeof( int ) )
+                {
+                    return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( rockContext ).Value";
+                }
+
                 return $"{Name}.GetEntityId<{PropertyType.GetFriendlyName()}>( rockContext )";
             }
 

@@ -154,38 +154,38 @@
                     </h2>
                     <div class="panel-labels">
                         <asp:LinkButton ID="btnAddCampaignRequests" runat="server" OnClick="btnAddCampaignRequests_Click" CssClass="btn btn-default btn-xs">
-                                <i class="fa fa-plus"></i>
-                                Campaign Requests
-                            </asp:LinkButton>
-                        </div>
-                        <div class="panel-follow-full-container">
-                            <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" title="Click to Follow"></asp:Panel>
-                            <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
-                        </div>
+                            <i class="fa fa-plus"></i>
+                            Campaign Requests
+                        </asp:LinkButton>
+                    </div>
+                    <div class="panel-follow-full-container">
+                        <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" title="Click to Follow"></asp:Panel>
+                        <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
+                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-                    <div class="panel-collapsible">
-                        <div class="panel-toolbar">
-                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server" class="toolbar-group">
-                                <ContentTemplate>
-                                    <div class="d-inline-block btn-group-mega js-btn-group-mega">
-                                        <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fa fa-plug"></i>
-                                            Opportunities
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
-                                            <li runat="server" id="liFavoritesHeader" class="dropdown-header">
-                                                <i class="far fa-star"></i>
-                                                Favorites
-                                            </li>
-                                            <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">
-                                                <ItemTemplate>
-                                                    <li>
-                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
-                                                            <i class="<%# Eval("IconCssClass") %>"></i>
-                                                            <%# Eval("PublicName") %>
-                                                            <span class="pull-right text-muted small"><%# Eval("ConnectionTypeName") %></span>
+            <div class="panel-collapsible">
+                <div class="panel-toolbar">
+                    <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server" class="toolbar-group">
+                        <ContentTemplate>
+                            <div class="d-inline-block btn-group-mega js-btn-group-mega">
+                                <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-plug"></i>
+                                    Opportunities
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
+                                    <li runat="server" id="liFavoritesHeader" class="dropdown-header">
+                                        <i class="far fa-star"></i>
+                                        Favorites
+                                    </li>
+                                    <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">
+                                        <ItemTemplate>
+                                            <li>
+                                                <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
+                                                    <i class="<%# Eval("IconCssClass") %>"></i>
+                                                    <%# Eval("PublicName") %>
+                                                    <span class="pull-right text-muted small"><%# Eval("ConnectionTypeName") %></span>
                                                 </asp:LinkButton>
                                             </li>
                                         </ItemTemplate>
@@ -213,21 +213,21 @@
                                 </ul>
                             </div>
                             <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbAddRequest_Click" CausesValidation="false">
-                                        <i class="fa fa-plus"></i>
-                                        Add Request
-                                    </asp:LinkButton>
-                                </ContentTemplate>
-                            </asp:UpdatePanel>
-                            <div class="toolbar-group">
-                                <div class="btn-group">
-                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fa fa-user"></i>
-                                        <asp:Literal runat="server" ID="lConnectorText" />
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <asp:LinkButton runat="server" ID="lbAllConnectors" OnClick="lbAllConnectors_Click">
-                                                All Connectors
+                                <i class="fa fa-plus"></i>
+                                Add Request
+                            </asp:LinkButton>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
+                    <div class="toolbar-group">
+                        <div class="btn-group">
+                            <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-user"></i>
+                                <asp:Literal runat="server" ID="lConnectorText" />
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <asp:LinkButton runat="server" ID="lbAllConnectors" OnClick="lbAllConnectors_Click">
+                                        All Connectors
                                     </asp:LinkButton>
                                 </li>
                                 <li>
@@ -240,28 +240,28 @@
                                     <ItemTemplate>
                                         <li>
                                             <asp:LinkButton runat="server" CommandArgument='<%# Eval("PersonAliasId") %>'>
-                                                        <%# Eval("FullName") %>
-                                                    </asp:LinkButton>
-                                                </li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="toolbar-group">
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fa fa-sort"></i>
-                                        <asp:Literal runat="server" ID="lSortText" />
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
-                                            <ItemTemplate>
-                                                <li>
-                                                    <asp:LinkButton runat="server" CommandArgument='<%# Eval("SortBy") %>'>
-                                                        <%# Eval("Title") %>
-                                                        &nbsp;
-                                                        <small class="text-muted"><%# Eval("SubTitle") %></small>
+                                                <%# Eval("FullName") %>
+                                            </asp:LinkButton>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="toolbar-group">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-sort"></i>
+                                <asp:Literal runat="server" ID="lSortText" />
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
+                                    <ItemTemplate>
+                                        <li>
+                                            <asp:LinkButton runat="server" CommandArgument='<%# Eval("SortBy") %>'>
+                                                <%# Eval("Title") %>
+                                                &nbsp;
+                                                <small class="text-muted"><%# Eval("SubTitle") %></small>
                                             </asp:LinkButton>
                                         </li>
                                     </ItemTemplate>
@@ -285,7 +285,7 @@
                                     <ItemTemplate>
                                         <li>
                                             <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
-                                                        <%# Eval("Name") %>
+                                                <%# Eval("Name") %>
                                             </asp:LinkButton>
                                         </li>
                                     </ItemTemplate>
@@ -296,37 +296,37 @@
                     </div>
                 </div>
 
-                        <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
-                            <div class="container-fluid py-3">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <asp:LinkButton runat="server" ID="lbApplyFilter" CssClass="btn btn-primary btn-xs" OnClick="lbApplyFilter_Click">
-                                            Apply
+                <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
+                    <div class="container-fluid py-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <asp:LinkButton runat="server" ID="lbApplyFilter" CssClass="btn btn-primary btn-xs" OnClick="lbApplyFilter_Click">
+                                    Apply
                                 </asp:LinkButton>
                                 <asp:LinkButton runat="server" ID="lbClearFilter" CssClass="btn btn-link btn-xs" OnClick="lbClearFilter_Click">
-                                            Clear
+                                    Clear
                                 </asp:LinkButton>
                             </div>
                         </div>

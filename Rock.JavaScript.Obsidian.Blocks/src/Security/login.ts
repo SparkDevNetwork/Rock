@@ -17,10 +17,11 @@
 import TextBox from "@Obsidian/Controls/textBox";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { defineComponent, inject } from "vue";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert";
+import { defineComponent } from "vue";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import Alert from "@Obsidian/Controls/alert.vue";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
 type AuthCookie = {
     expires: string;
@@ -42,7 +43,7 @@ export default defineComponent({
     },
     setup () {
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction: useInvokeBlockAction()
         };
     },
     data () {
@@ -79,8 +80,7 @@ export default defineComponent({
             const returnUrl = urlParams.get("returnurl");
 
             if (returnUrl) {
-                // TODO make this force relative URLs (no absolute URLs)
-                window.location.href = decodeURIComponent(returnUrl);
+                window.location.href = makeUrlRedirectSafe(decodeURIComponent(returnUrl));
             }
         },
         async onHelpClick (): Promise<void> {
@@ -94,8 +94,7 @@ export default defineComponent({
                     this.errorMessage = result.errorMessage || "An unknown error occurred communicating with the server";
                 }
                 else if (result.data) {
-                    // TODO make this force relative URLs (no absolute URLs)
-                    window.location.href = result.data;
+                    window.location.href = makeUrlRedirectSafe(result.data);
                 }
             }
             catch (e) {

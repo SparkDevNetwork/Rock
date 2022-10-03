@@ -25,49 +25,49 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplateDiscount View Model */
 export type RegistrationTemplateDiscountBag = {
-    /** Gets or sets the AutoApplyDiscount. */
+    /** Gets or sets a value indicating whether the discount applies automatically. */
     autoApplyDiscount: boolean;
 
-    /** Gets or sets the Code. */
+    /** Gets or sets the code. */
     code?: string | null;
 
-    /** Gets or sets the DiscountAmount. */
-    discountAmount?: number;
+    /** Gets or sets the discount amount. */
+    discountAmount: number;
 
-    /** Gets or sets the DiscountPercentage. */
-    discountPercentage?: number;
+    /** Gets or sets the discount percentage. */
+    discountPercentage: number;
 
-    /** Gets or sets the EndDate. */
+    /** Gets or sets the last day that the discount code can be used */
     endDate?: string | null;
 
-    /** Gets or sets the MaxRegistrants. */
+    /** Gets or sets the maximum number of registrants per registration that the discount code can used for. */
     maxRegistrants?: number | null;
 
-    /** Gets or sets the MaxUsage. */
+    /** Gets or sets the maximum number of registrations that can use this discount code. */
     maxUsage?: number | null;
 
-    /** Gets or sets the MinRegistrants. */
+    /** Gets or sets the minimum number of registrants a registration is required to have in order to be able to use this discount code. */
     minRegistrants?: number | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the RegistrationTemplateId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
     registrationTemplateId: number;
 
-    /** Gets or sets the StartDate. */
+    /** Gets or sets the first day that the discount code can be used. */
     startDate?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,7 +69,7 @@ namespace Rock.Model
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
+        /// Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'.
         /// </summary>
         /// <value>
         /// The operation.
@@ -93,16 +93,16 @@ namespace Rock.Model
         /// <list type="bullet">
         /// <item>
         ///     <term>Page Views</term>
-        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        ///     <description>EntityId is left null, Page is the Component, Site is the Channel</description></item>
         /// <item>
         ///     <term>Communication Recipient Activity</term>
-        ///     <description><see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        ///     <description>EntityId is the <see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Content Channel Activity</term>
-        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        ///     <description>EntityId is left null, ContentChannel is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Workflow Form Entry</term>
-        ///     <description><see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
+        ///     <description>EntityId is the <see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
         /// </list>
         /// </summary>
         /// <value>

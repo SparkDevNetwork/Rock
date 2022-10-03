@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
+    xmlns:fa="http://schemas.fontawesome.io/icons/"
     Title="Select Save Location"
     d:DesignHeight="600"
     d:DesignWidth="960"
@@ -80,8 +81,13 @@
 
                             <Label
                                 Margin="0,10,0,0"
-                                Content="Document Purpose Key"
-                                Style="{StaticResource labelStyleBold}" />
+                                Style="{StaticResource labelStyleBold}"
+                                ToolTip="The purpose key you provide will be what is shown to indivduals to describe what period the statement is for. In most cases this should be the year.">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock>Document Purpose Key</TextBlock>
+                                    <fa:FontAwesome Icon="InfoCircle" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#006dcc" Opacity="0.8" Height="16" Width="24"/>
+                                </StackPanel>
+                            </Label>
                             <TextBox
                                 Name="txtDocumentPurposeKey"
                                 Width="440"
@@ -103,9 +109,9 @@
                     </Grid>
 
                     <CheckBox
-                        Name="cbOverwriteDocumentsOfThisTypeCreatedOnSameDate"
+                        Name="cbOverwriteDocumentsOfThisTypeWithSamePurposeKey"
                         Margin="4,10,0,0"
-                        Content="Overwrite documents of this type created on the same date"
+                        Content="Overwrite documents of this type with the same purpose key"
                         IsChecked="False"
                         Style="{StaticResource checkboxStyle}" />
 

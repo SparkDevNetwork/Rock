@@ -17,7 +17,7 @@
 
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import Panel from "@Obsidian/Controls/panel";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { FieldType } from "@Obsidian/SystemGuids";
@@ -25,11 +25,11 @@ import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/
 import { FormError } from "@Obsidian/Utility/form";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import CommunicationsTab from "./FormBuilderDetail/communicationsTab";
-import FormBuilderTab from "./FormBuilderDetail/formBuilderTab";
-import SettingsTab from "./FormBuilderDetail/settingsTab";
+import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial";
+import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial";
+import SettingsTab from "./FormBuilderDetail/settingsTab.partial";
 import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types";
-import { provideFormSources } from "./FormBuilderDetail/utils";
+import { provideFormSources } from "./FormBuilderDetail/utils.partial";
 import { FormCompletionAction, FormGeneral } from "./Shared/types";
 
 export default defineComponent({
@@ -345,7 +345,7 @@ export default defineComponent({
 <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="fa fa-poll-h">
     <template #default>
 
-        <div ref="bodyElement" class="form-builder-detail panel-flex-fill-body styled-scroll">
+        <div ref="bodyElement" class="panel-flex-fill-body styled-scroll">
             <div class="panel-toolbar panel-toolbar-shadow">
                 <ul class="nav nav-pills nav-sm">
                     <li role="presentation"><a :href="submissionsPageUrl">Submissions</a></li>

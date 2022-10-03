@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -55,12 +58,8 @@ namespace Rock.Badge.Component
 
         #endregion Keys
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
             var achievementTypeGuid = GetAchievementTypeGuid( badge );
 
@@ -76,30 +75,23 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            var achiever = Entity;
-
-            if ( achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id && Person != null )
+            if ( achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id && entity is Person )
             {
-                // Translate this person badge to the person alias achievement
-                achiever = Person.PrimaryAlias;
+                // Intentionally left blank to match logic pattern in GetJavaScript().
             }
-            else if ( achievementType.AchieverEntityTypeId != Entity.TypeId )
+            else if ( achievementType.AchieverEntityTypeId != entity.TypeId )
             {
                 // This badge is not compatabile with this achievement
                 return;
             }
 
-            var domElementKey = GenerateBadgeKey( badge );
+            var domElementKey = GenerateBadgeKey( badge, entity );
             var html = GetHtmlTemplate( domElementKey );
             writer.Write( $"{html}" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var achievementTypeGuid = GetAchievementTypeGuid( badge );
 
@@ -115,20 +107,20 @@ namespace Rock.Badge.Component
                 return null;
             }
 
-            var achiever = Entity;
+            var achiever = entity;
 
-            if ( achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id && Person != null )
+            if ( achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id && entity is Person person )
             {
                 // Translate this person badge to the person alias achievement
-                achiever = Person.PrimaryAlias;
+                achiever = person.PrimaryAlias;
             }
-            else if ( achievementType.AchieverEntityTypeId != Entity.TypeId )
+            else if ( achievementType.AchieverEntityTypeId != entity.TypeId )
             {
                 // This badge is not compatabile with this achievement
                 return null;
             }
 
-            var domElementKey = GenerateBadgeKey( badge );
+            var domElementKey = GenerateBadgeKey( badge, entity );
             return GetScript( achievementType.Id, achiever.Id, domElementKey );
         }
 
@@ -171,7 +163,7 @@ $@"$.ajax({{
             var html = [];
 
             if (data && data.BadgeMarkup) {{
-                html.push('<div class=""badge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
+                html.push('<div class=""rockbadge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
                 html.push(data.BadgeMarkup);
                 html.push('</div>\n');
             }}

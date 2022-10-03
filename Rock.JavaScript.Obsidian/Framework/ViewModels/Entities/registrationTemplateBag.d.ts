@@ -25,181 +25,184 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplate View Model */
 export type RegistrationTemplateBag = {
-    /** Gets or sets the AddPersonNote. */
+    /** Gets or sets a value indicating whether a person note should be added when a person registers for this type of registration. */
     addPersonNote: boolean;
 
-    /** Gets or sets the AllowExternalRegistrationUpdates. */
+    /** Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their registration on-line after submitting it). */
     allowExternalRegistrationUpdates: boolean;
 
-    /** Gets or sets the AllowMultipleRegistrants. */
+    /** Gets or sets a value indicating whether [allow multiple registrants]. */
     allowMultipleRegistrants: boolean;
 
-    /** Gets or sets the BatchNamePrefix. */
+    /** Gets or sets the batch name prefix. */
     batchNamePrefix?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the category identifier. */
     categoryId?: number | null;
 
-    /** Gets or sets the ConfirmationEmailTemplate. */
+    /** Gets or sets the confirmation email text to send. */
     confirmationEmailTemplate?: string | null;
 
-    /** Gets or sets the ConfirmationFromEmail. */
+    /** Gets or sets the confirmation from email. */
     confirmationFromEmail?: string | null;
 
-    /** Gets or sets the ConfirmationFromName. */
+    /** Gets or sets the name of the confirmation from. */
     confirmationFromName?: string | null;
 
-    /** Gets or sets the ConfirmationSubject. */
+    /** Gets or sets the confirmation subject. */
     confirmationSubject?: string | null;
 
-    /** Gets or sets the Cost. */
-    cost?: number;
+    /** Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false). */
+    cost: number;
 
-    /** Gets or sets the DefaultPayment. */
+    /**
+     * Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).
+     * If this is null, the default payment will be the Rock.Model.RegistrationTemplate.Cost
+     */
     defaultPayment?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description of the Attribute. */
     description?: string | null;
 
-    /** Gets or sets the DiscountCodeTerm. */
+    /** Gets or sets the term to use for discount code */
     discountCodeTerm?: string | null;
 
-    /** Gets or sets the FeeTerm. */
+    /** Gets or sets the term to use for fee */
     feeTerm?: string | null;
 
-    /** Gets or sets the FinancialGatewayId. */
+    /** Gets or sets the financial gateway identifier. */
     financialGatewayId?: number | null;
 
-    /** Gets or sets the GroupMemberRoleId. */
+    /** Gets or sets the group member role that registrants will be added to group as */
     groupMemberRoleId?: number | null;
 
-    /** Gets or sets the GroupMemberStatus. */
+    /** Gets or sets the group member status that registrants will be added to group with. */
     groupMemberStatus: number;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the group type that this registration template applies to */
     groupTypeId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsRegistrationMeteringEnabled. */
+    /** Gets or sets a value indicating whether this instance is registration metering enabled. */
     isRegistrationMeteringEnabled: boolean;
 
-    /** Gets or sets the LoginRequired. */
+    /** Gets or sets a value indicating whether [log in required]. */
     loginRequired: boolean;
 
-    /** Gets or sets the MaxRegistrants. */
+    /** Gets or sets the maximum registrants. */
     maxRegistrants?: number | null;
 
-    /** Gets or sets the MinimumInitialPayment. */
+    /** Gets or sets the minimum initial payment (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false). */
     minimumInitialPayment?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the registration template */
     name?: string | null;
 
-    /** Gets or sets the Notify. */
+    /** Gets or sets the notify. */
     notify: number;
 
-    /** Gets or sets the PaymentReminderEmailTemplate. */
+    /** Gets or sets the payment reminder email template. */
     paymentReminderEmailTemplate?: string | null;
 
-    /** Gets or sets the PaymentReminderFromEmail. */
+    /** Gets or sets the payment reminder from email. */
     paymentReminderFromEmail?: string | null;
 
-    /** Gets or sets the PaymentReminderFromName. */
+    /** Gets or sets the name of the payment reminder from. */
     paymentReminderFromName?: string | null;
 
-    /** Gets or sets the PaymentReminderSubject. */
+    /** Gets or sets the payment reminder subject. */
     paymentReminderSubject?: string | null;
 
-    /** Gets or sets the PaymentReminderTimeSpan. */
+    /** Gets or sets the payment reminder time span in days. */
     paymentReminderTimeSpan?: number | null;
 
-    /** Gets or sets the RegistrantsSameFamily. */
+    /** Gets or sets flag indicating if registrants registered for this template are typically in same family. values are ( yes, no, ask ). */
     registrantsSameFamily: number;
 
-    /** Gets or sets the RegistrantTerm. */
+    /** Gets or sets the term to use for registrant */
     registrantTerm?: string | null;
 
-    /** Gets or sets the RegistrantWorkflowTypeId. */
+    /** Optional workflow type to launch for registrant */
     registrantWorkflowTypeId?: number | null;
 
-    /** Gets or sets the RegistrarOption. */
+    /** Gets or sets the registrar option. */
     registrarOption: number;
 
-    /** Gets or sets the RegistrationAttributeTitleEnd. */
+    /** Gets or sets the section title for attributes that are collected at the end of the registration entry process. */
     registrationAttributeTitleEnd?: string | null;
 
-    /** Gets or sets the RegistrationAttributeTitleStart. */
+    /** Gets or sets the section title for attributes that are collected at the start of the registration entry process. */
     registrationAttributeTitleStart?: string | null;
 
-    /** Gets or sets the RegistrationInstructions. */
+    /** Gets or sets the registration instructions. */
     registrationInstructions?: string | null;
 
-    /** Gets or sets the RegistrationTerm. */
+    /** Gets or sets the term to use for registration */
     registrationTerm?: string | null;
 
-    /** Gets or sets the RegistrationWorkflowTypeId. */
+    /** Optional workflow type to launch at end of registration */
     registrationWorkflowTypeId?: number | null;
 
-    /** Gets or sets the ReminderEmailTemplate. */
+    /** Gets or sets the reminder email template. */
     reminderEmailTemplate?: string | null;
 
-    /** Gets or sets the ReminderFromEmail. */
+    /** Gets or sets the reminder from email. */
     reminderFromEmail?: string | null;
 
-    /** Gets or sets the ReminderFromName. */
+    /** Gets or sets the name of the reminder from. */
     reminderFromName?: string | null;
 
-    /** Gets or sets the ReminderSubject. */
+    /** Gets or sets the reminder subject. */
     reminderSubject?: string | null;
 
-    /** Gets or sets the RequestEntryName. */
+    /** Gets or sets the name of the request entry. */
     requestEntryName?: string | null;
 
-    /** Gets or sets the RequiredSignatureDocumentTemplateId. */
+    /** Gets or sets the required signature document type identifier. */
     requiredSignatureDocumentTemplateId?: number | null;
 
-    /** Gets or sets the SetCostOnInstance. */
+    /** Gets or sets the set cost on instance. */
     setCostOnInstance?: boolean | null;
 
-    /** Gets or sets the ShowCurrentFamilyMembers. */
+    /** Gets or sets a value indicating whether [show current family members]. */
     showCurrentFamilyMembers: boolean;
 
-    /** Gets or sets the SignatureDocumentAction. */
+    /** Gets or sets the signature documentation. */
     signatureDocumentAction: number;
 
-    /** Gets or sets the SuccessText. */
+    /** Gets or sets the success text. */
     successText?: string | null;
 
-    /** Gets or sets the SuccessTitle. */
+    /** Gets or sets the success title. */
     successTitle?: string | null;
 
-    /** Gets or sets the WaitListEnabled. */
+    /** Gets or sets a value indicating whether a wait list is enabled for this event template */
     waitListEnabled: boolean;
 
-    /** Gets or sets the WaitListTransitionEmailTemplate. */
+    /** Gets or sets the wait list transition email template. */
     waitListTransitionEmailTemplate?: string | null;
 
-    /** Gets or sets the WaitListTransitionFromEmail. */
+    /** Gets or sets the wait list transition from email. */
     waitListTransitionFromEmail?: string | null;
 
-    /** Gets or sets the WaitListTransitionFromName. */
+    /** Gets or sets the name of the wait list transition from. */
     waitListTransitionFromName?: string | null;
 
-    /** Gets or sets the WaitListTransitionSubject. */
+    /** Gets or sets the wait list transition subject. */
     waitListTransitionSubject?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the plural registrant term. */

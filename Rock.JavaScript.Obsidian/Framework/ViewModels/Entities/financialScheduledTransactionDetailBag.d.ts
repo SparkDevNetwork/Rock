@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialScheduledTransactionDetail View Model */
 export type FinancialScheduledTransactionDetailBag = {
-    /** Gets or sets the AccountId. */
+    /** Gets or sets the AccountId of the Rock.Model.FinancialAccount/account that that the transaction detail Rock.Model.FinancialScheduledTransactionDetail.Amount should be directed toward. */
     accountId: number;
 
-    /** Gets or sets the Amount. */
-    amount?: number;
+    /** Gets or sets the purchase/gift amount. */
+    amount: number;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity id. */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the FeeCoverageAmount. */
+    /** Gets or sets the fee coverage amount. */
     feeCoverageAmount?: number | null;
 
-    /** Gets or sets the ScheduledTransactionId. */
+    /** Gets or sets the ScheduledTransactionId of the Rock.Model.FinancialScheduledTransaction that this detail item belongs to. */
     scheduledTransactionId: number;
 
-    /** Gets or sets the Summary. */
+    /** Gets or sets the summary of this scheduled transaction detail. */
     summary?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

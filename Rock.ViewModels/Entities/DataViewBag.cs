@@ -34,154 +34,157 @@ namespace Rock.ViewModels.Entities
     public partial class DataViewBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the CategoryId of the Rock.Model.Category that this DataView belongs to. If there is no Category, this value will be null.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the CategoryId of the Rock.Model.Category that this DataView belongs to. If it is not part of a Category this value will be null.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewFilterId.
+        /// Gets or sets the DataViewFilterId of the root/base Rock.Model.DataViewFilter that is used to generate this DataView. 
         /// </summary>
         /// <value>
-        /// The DataViewFilterId.
+        /// A System.Int32 that represents the DataViewFilterId of the root/base Rock.Model.DataViewFilter that is used to generate this DataView. If there is 
+        /// not a filter on this DataView, this value will be null.
         /// </value>
         public int? DataViewFilterId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the DataView
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the DataView.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that this DataView reports on.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IncludeDeceased.
+        /// Gets or sets a value indicating whether deceased should be included.
         /// </summary>
         /// <value>
-        /// The IncludeDeceased.
+        ///   true if [include deceased]; otherwise, false.
         /// </value>
         public bool IncludeDeceased { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this DataView is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if it is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunDateTime.
+        /// Gets or sets the last run date time.
         /// </summary>
         /// <value>
-        /// The LastRunDateTime.
+        /// The last run date time.
         /// </value>
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the DataView.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the DataView.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersistedLastRefreshDateTime.
+        /// Gets or sets the persisted last refresh date time.
         /// </summary>
         /// <value>
-        /// The PersistedLastRefreshDateTime.
+        /// The persisted last refresh date time.
         /// </value>
         public DateTime? PersistedLastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersistedLastRunDurationMilliseconds.
+        /// Gets or sets the persisted last run duration in milliseconds.
         /// </summary>
         /// <value>
-        /// The PersistedLastRunDurationMilliseconds.
+        /// The persisted last run duration in milliseconds.
         /// </value>
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersistedScheduleIntervalMinutes.
+        /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
         /// </summary>
         /// <value>
-        /// The PersistedScheduleIntervalMinutes.
+        /// The persisted schedule interval minutes.
         /// </value>
         public int? PersistedScheduleIntervalMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the RunCount.
+        /// Gets or sets the run count.
         /// </summary>
         /// <value>
-        /// The RunCount.
+        /// The run count.
         /// </value>
         public int? RunCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the RunCountLastRefreshDateTime.
+        /// Gets or sets the DateTime that the Run Count was last reset to 0.
         /// </summary>
         /// <value>
-        /// The RunCountLastRefreshDateTime.
+        /// The run count last refresh date time.
         /// </value>
         public DateTime? RunCountLastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimeToRunDurationMilliseconds.
+        /// The amount of time in milliseconds that it took to run the Rock.Model.DataView
         /// </summary>
         /// <value>
-        /// The TimeToRunDurationMilliseconds.
+        /// The time to run in ms.
         /// </value>
         public double? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransformEntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType (MEF Component) that is used for an optional transformation on this DataView.
         /// </summary>
         /// <value>
-        /// The TransformEntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that is used for an optional transformation on this DataView. If there
+        /// is not a transformation on this DataView, this value will be null.
         /// </value>
         public int? TransformEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

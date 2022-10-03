@@ -34,106 +34,109 @@ namespace Rock.ViewModels.Entities
     public partial class NoteWatchBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowOverride.
+        /// Set AllowOverride to False to prevent people from adding an IsWatching=False on NoteWatch with the same filter that is marked as IsWatching=True
+        /// In other words, if a group is configured a NoteWatch, an individual shouldn't be able to add an un-watch if AllowOverride=False (and any un-watches that may have been already added would be ignored)
         /// </summary>
         /// <value>
-        /// The AllowOverride.
+        ///   true if [allow override]; otherwise, false.
         /// </value>
         public bool AllowOverride { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Set EntityTypeId and EntityId to watch all notes for a specific entity
+        /// NOTE: If EntityType is Person, make sure to watch the Person's PersonAlias' Persons
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The entity identifier.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Set EntityTypeId and EntityId to watch all notes for a specific entity
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsWatching.
+        /// Set IsWatching to False to disable this NoteWatch (or specifically don't watch based on the notewatch criteria)
         /// </summary>
         /// <value>
-        /// The IsWatching.
+        ///   true if this instance is watching; otherwise, false.
         /// </value>
         public bool IsWatching { get; set; }
 
         /// <summary>
-        /// Gets or sets the NoteId.
+        /// Set NoteId to watch a specific note
         /// </summary>
         /// <value>
-        /// The NoteId.
+        /// The note identifier.
         /// </value>
         public int? NoteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the NoteTypeId.
+        /// Set NoteTypeId to watch all notes of a specific note type
+        /// Set NoteTypeId and EntityId to watch all notes of a specific type as it relates to a specific entity 
         /// </summary>
         /// <value>
-        /// The NoteTypeId.
+        /// The note type identifier.
         /// </value>
         public int? NoteTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WatcherGroupId.
+        /// Gets or sets the group that is watching this note watch
         /// </summary>
         /// <value>
-        /// The WatcherGroupId.
+        /// The group identifier.
         /// </value>
         public int? WatcherGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WatcherPersonAliasId.
+        /// Gets or sets the person alias id of the person watching this note watch
         /// </summary>
         /// <value>
-        /// The WatcherPersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? WatcherPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WatchReplies.
+        /// Gets or sets a value indicating whether [watch replies].
         /// </summary>
         /// <value>
-        /// The WatchReplies.
+        ///   true if [watch replies]; otherwise, false.
         /// </value>
         public bool WatchReplies { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

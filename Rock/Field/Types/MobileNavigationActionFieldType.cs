@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using System.Linq;
 using Rock.Attribute;
 using Rock.Mobile;
 using Rock.Web.Cache;
@@ -36,14 +36,14 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8")]
-    public sealed class MobileNavigationActionFieldType : FieldType
+    public sealed class MobileNavigationActionFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Formatting
 
         /// <inheritdoc/>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var navigationAction = value.FromJsonOrNull<MobileNavigationAction>();
+            var navigationAction = privateValue.FromJsonOrNull<MobileNavigationAction>();
 
             if ( navigationAction == null )
             {
@@ -75,6 +75,14 @@ namespace Rock.Field.Types
                 default:
                     return string.Empty;
             }
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -121,6 +129,44 @@ namespace Rock.Field.Types
         public override bool HasFilterControl()
         {
             return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var navigationAction = privateValue.FromJsonOrNull<MobileNavigationAction>();
+
+            if ( navigationAction == null || !navigationAction.PageGuid.HasValue )
+            {
+                return null;
+            }
+
+            var pageId = PageCache.GetId( navigationAction.PageGuid.Value );
+
+            if ( !pageId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Rock.Model.Page>().Value, pageId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the InternalName property of a Page and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Rock.Model.Page>().Value, nameof( Rock.Model.Page.InternalName ) )
+            };
         }
 
         #endregion

@@ -94,6 +94,9 @@ namespace Rock.CodeGeneration.Pages
 
             SelectedEntityName.Content = _selectedEntityType?.FullName ?? string.Empty;
             UpdateEntityProperties();
+
+            UseAttributeValuesCheckBox.IsChecked = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( entityType );
+            UseAttributeValuesCheckBox.IsEnabled = UseAttributeValuesCheckBox.IsChecked ?? false;
         }
 
         /// <summary>
@@ -167,10 +170,11 @@ namespace Rock.CodeGeneration.Pages
         {
             var files = new List<GeneratedFile>();
             var domain = options.EntityType.GetCustomAttribute<Data.RockDomainAttribute>()?.Name ?? "Unknown";
-            var bagPath = $"Rock.ViewModels\\Blocks\\{domain}\\{options.EntityType.Name}Detail";
-            var blockPath = $"Rock.Blocks\\{domain}";
-            var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domain}";
-            var bagNamespace = $"Rock.ViewModels.Blocks.{domain}.{options.EntityType.Name}Detail";
+            var domainNamespace = SupportTools.GetDomainFolderName( domain );
+            var bagPath = $"Rock.ViewModels\\Blocks\\{domainNamespace}\\{options.EntityType.Name}Detail";
+            var blockPath = $"Rock.Blocks\\{domainNamespace}";
+            var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domainNamespace}";
+            var bagNamespace = $"Rock.ViewModels.Blocks.{domainNamespace}.{options.EntityType.Name}Detail";
             var generator = new CSharpViewModelGenerator();
             var tsGenerator = new TypeScriptViewModelGenerator();
 
@@ -181,12 +185,14 @@ namespace Rock.CodeGeneration.Pages
                 ["EntityName"] = options.EntityType.Name,
                 ["ServiceName"] = options.ServiceType.Name,
                 ["Domain"] = domain,
+                ["DomainNamespace"] = domainNamespace,
                 ["Properties"] = options.Properties,
                 ["UseAttributeValues"] = options.UseAttributeValues,
                 ["UseDescription"] = options.Properties.Any( p => p.Name == "Description" ),
                 ["UseEntitySecurity"] = options.UseEntitySecurity,
                 ["UseIsActive"] = options.Properties.Any( p => p.Name == "IsActive" ),
                 ["UseIsSystem"] = options.Properties.Any( p => p.Name == "IsSystem" ),
+                ["UseOrder"] = options.Properties.Any( p => p.Name == "Order" ),
                 ["UseName"] = options.Properties.Any( p => p.Name == "Name" )
             };
 
@@ -208,34 +214,34 @@ namespace Rock.CodeGeneration.Pages
                 files.Add( new GeneratedFile( $"{options.EntityType.Name}Detail.cs", blockPath, result ) );
             }
 
-            // Generate the Obsidian <entity>Detail.ts file.
+            // Generate the Obsidian <entity>Detail.vue file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.ts", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.vue", typeScriptBlockPath, result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\viewPanel.ts file.
+            // Generate the Obsidian <Entity>Detail\viewPanel.partial.vue file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.ViewPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"viewPanel.partial.vue", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\editPanel.ts file.
+            // Generate the Obsidian <Entity>Detail\editPanel.partial.vue file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EditPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"editPanel.partial.vue", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\types.d.ts file.
@@ -251,36 +257,53 @@ namespace Rock.CodeGeneration.Pages
         /// <summary>
         /// Performs any post-processing actions for files that were generated.
         /// </summary>
-        /// <param name="exportedFiles">The files that were exported.</param>
-        /// <param name="skippedFiles">The files that were intentionally not exported.</param>
-        /// <param name="failedFiles">The files that failed to be exported.</param>
-        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> skippedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        /// <param name="files">The files that were listed to be possibly exported.</param>
+        /// <param name="context">The context to provide status information back.</param>
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> files, GeneratedFilePreviewPage.PostSaveContext context )
         {
+            var createdFiles = files.Where( f => f.SaveState == GeneratedFileSaveState.Created ).ToList();
+
+            if ( !createdFiles.Any() )
+            {
+                return;
+            }
+
             var solutionPath = SupportTools.GetSolutionPath();
             var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
 
             if ( solutionFileName == null )
             {
+                context.ShowMessage( "Cannot update projects", "Could not determine the solution path to update the project files." );
                 return;
             }
 
-            using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+            try
             {
-                // For each file that was actually exported, make sure it
-                // has been added to the project file automatically.
-                foreach ( var file in exportedFiles )
+                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
                 {
-                    var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
-
-                    if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                    // For each file that was created, make sure it
+                    // has been added to the project file automatically.
+                    for ( int i = 0; i < createdFiles.Count; i++ )
                     {
-                        var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+                        var file = createdFiles[i];
+                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        solution.AddCompileFileToProject( projectName, filename );
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) || filename.EndsWith( ".vue" ) )
+                        {
+                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+
+                            solution.AddCompileFileToProject( projectName, filename );
+                        }
+
+                        context.SetProgress( i + 1, createdFiles.Count );
                     }
-                }
 
-                solution.Save();
+                    solution.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                context.ShowMessage( "Failed to update projects", $"Unable to add one or more files to projects. Please check to make sure everything has been added.\n{ex.Message}" );
             }
         }
 

@@ -34,114 +34,114 @@ namespace Rock.ViewModels.Entities
     public partial class LavaShortcodeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Description of the Lava Shortcode.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description of the shortcode. This is used as a public description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Documentation.
+        /// Gets or sets the documentation. This serves as the technical description of the internals of the shortcode.
         /// </summary>
         /// <value>
-        /// The Documentation.
+        /// The technical description that serves as documentation.
         /// </value>
         public string Documentation { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnabledLavaCommands.
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
         /// </summary>
         /// <value>
-        /// The EnabledLavaCommands.
+        /// The enabled lava commands.
         /// </value>
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a value indicating whether this instance is system.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        ///   true if this instance is system; otherwise, false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Markup.
+        /// Gets or sets the token.
         /// </summary>
         /// <value>
-        /// The Markup.
+        /// The token.
         /// </value>
         public string Markup { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the public name of the shortcode.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The public name of the shortcode.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parameters.
+        /// Gets or sets the parameters.
         /// </summary>
         /// <value>
-        /// The Parameters.
+        /// The parameters.
         /// </value>
         public string Parameters { get; set; }
 
         /// <summary>
-        /// Gets or sets the TagName.
+        /// Gets or sets the name of the tag.
         /// </summary>
         /// <value>
-        /// The TagName.
+        /// The name of the tag.
         /// </value>
         public string TagName { get; set; }
 
         /// <summary>
-        /// Gets or sets the TagType.
+        /// Gets or sets the type of the tag (inline or block). A tag type of block requires an end tag.
         /// </summary>
         /// <value>
-        /// The TagType.
+        /// The type of the tag.
         /// </value>
         public int TagType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

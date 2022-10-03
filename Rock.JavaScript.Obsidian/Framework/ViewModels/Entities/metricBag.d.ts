@@ -25,73 +25,87 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Metric View Model */
 export type MetricBag = {
-    /** Gets or sets the AdminPersonAliasId. */
+    /** Gets or sets the admin person alias identifier. */
     adminPersonAliasId?: number | null;
 
-    /** Gets or sets the AutoPartitionOnPrimaryCampus. */
+    /** If set to true this feature will auto partition the individuals in the data view based on their primary campus. */
     autoPartitionOnPrimaryCampus: boolean;
 
-    /** Gets or sets the DataViewId. */
+    /** Gets or sets the data view identifier. */
     dataViewId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description of the Metric. */
     description?: string | null;
 
-    /** Gets or sets the EnableAnalytics. */
+    /**
+     * Gets or sets a value indicating whether [enable analytics].
+     * If this is enabled, a SQL View named 'AnalyticsFactMetric{{Metric.Name}}' will be made available that can be used by Analytic tools, such as Power BI
+     */
     enableAnalytics: boolean;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsCumulative. */
+    /** Gets or sets a value indicating whether [is cumulative]. */
     isCumulative: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Metric is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LastRunDateTime. */
+    /** For SQL or DataView based Metrics, this is the DateTime that the MetricValues where scheduled to be updated according to Schedule */
     lastRunDateTime?: string | null;
 
-    /** Gets or sets the MetricChampionPersonAliasId. */
+    /** Gets or sets the metric champion person alias identifier. */
     metricChampionPersonAliasId?: number | null;
 
-    /** Gets or sets the NumericDataType. */
+    /**
+     * Gets or sets the type of the numeric data that the values represent. Although all values
+     * are stored as a decimal, specifying the type here allows entry screens to use appropriate
+     * controls/validation when entering values.
+     */
     numericDataType: number;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the schedule identifier. */
     scheduleId?: number | null;
 
-    /** Gets or sets the SourceLava. */
+    /** Gets or sets the Lava code that returns the data for the Metric. */
     sourceLava?: string | null;
 
-    /** Gets or sets the SourceSql. */
+    /** Gets or sets the SQL query that returns the data for the Metric. */
     sourceSql?: string | null;
 
-    /** Gets or sets the SourceValueTypeId. */
+    /** Gets or sets the source value type identifier. */
     sourceValueTypeId?: number | null;
 
-    /** Gets or sets the Subtitle. */
+    /** Gets or sets the Subtitle of the Metric. */
     subtitle?: string | null;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the Title of this Metric. */
     title?: string | null;
 
-    /** Gets or sets the XAxisLabel. */
+    /** Gets or sets the type of the unit. */
+    unitType: number;
+
+    /**
+     * Gets or sets the x axis label.
+     * Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.
+     * Therefore, in most cases, Metric.XAxisLabel and MetricValue.XAxis are NOT used
+     */
     xAxisLabel?: string | null;
 
-    /** Gets or sets the YAxisLabel. */
+    /** Gets or sets the y axis label. */
     yAxisLabel?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

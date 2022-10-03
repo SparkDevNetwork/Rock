@@ -138,6 +138,10 @@ namespace Rock.Model
         public void IndexDocument( int id )
         {
             var groupEntity = new GroupService( new RockContext() ).Get( id );
+            if ( groupEntity == null )
+            {
+                return;
+            }
 
             // check that this group type is set to be indexed.
             if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )
@@ -467,20 +471,9 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var groupType = this.GroupType;
-            if ( groupType == null && this.GroupTypeId > 0 )
-            {
-                groupType = new GroupTypeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( t => t.Id == this.GroupTypeId );
-            }
+            var groupTypeCache = GroupTypeCache.Get( GroupTypeId );
 
-            if ( groupType != null )
-            {
-                return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
-            }
-
-            return null;
+            return groupTypeCache?.GetInheritedAttributesForQualifier( TypeId, "GroupTypeId" );
         }
 
         #endregion

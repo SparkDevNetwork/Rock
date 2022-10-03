@@ -19,8 +19,9 @@ import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
 import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
+import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
-import { containsRequiredRule } from "./validationRules";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -184,24 +185,40 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
 // #region Standard Async Pickers
 
 type StandardAsyncPickerProps = StandardRockFormFieldProps & {
+    /** Enhance the picker for dealing with long lists by providing a search mechanism. */
     enhanceForLongLists: {
         type: PropType<boolean>,
         default: false
     },
 
+    /** The method the picker should use to load data. */
     lazyMode: {
         type: PropType<ControlLazyModeType>,
         default: ControlLazyMode.OnDemand
     },
 
+    /** True if the picker should allow multiple items to be selected. */
     multiple: {
         type: PropType<boolean>,
         default: false
     },
 
+    /** True if the picker should allow empty selections. */
     showBlankItem: {
         type: PropType<boolean>,
         default: false
+    },
+
+    /** The visual style to use when displaying the picker. */
+    displayStyle: {
+        type: PropType<PickerDisplayStyleType>,
+        default: PickerDisplayStyle.Auto
+    },
+
+    /** The number of columns to use when displaying the items in a list. */
+    columnCount: {
+        type: PropType<number>,
+        default: 0
     }
 };
 
@@ -227,6 +244,16 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     showBlankItem: {
         type: Boolean as PropType<boolean>,
         default: false
+    },
+
+    displayStyle: {
+        type: String as PropType<PickerDisplayStyleType>,
+        default: PickerDisplayStyle.Auto
+    },
+
+    columnCount: {
+        type: Number as PropType<number>,
+        default: 0
     }
 };
 
@@ -243,7 +270,9 @@ function copyStandardAsyncPickerProps(source: ExtractPropTypes<StandardAsyncPick
     destination.enhanceForLongLists = source.enhanceForLongLists;
     destination.lazyMode = source.lazyMode;
     destination.multiple = source.multiple;
-    destination.showBlankItem = source.showBlankItem || !containsRequiredRule(source.rules);
+    destination.showBlankItem = source.showBlankItem;
+    destination.displayStyle = source.displayStyle;
+    destination.columnCount = source.columnCount;
 }
 
 /**
@@ -263,7 +292,9 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
         enhanceForLongLists: props.enhanceForLongLists,
         lazyMode: props.lazyMode,
         multiple: props.multiple,
-        showBlankItem: props.showBlankItem || !containsRequiredRule(props.rules)
+        showBlankItem: props.showBlankItem,
+        displayStyle: props.displayStyle,
+        columnCount: props.columnCount
     });
 
     // Watch for changes in any of the standard props. Use deep for this so we
@@ -275,7 +306,7 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
     });
 
     // Watch for changes in our known list of props that might change.
-    watch([() => props.enhanceForLongLists, () => props.lazyMode, () => props.multiple, () => props.showBlankItem], () => {
+    watch([() => props.enhanceForLongLists, () => props.lazyMode, () => props.multiple, () => props.showBlankItem, () => props.displayStyle, () => props.columnCount], () => {
         copyStandardAsyncPickerProps(props, propValues);
     });
 
@@ -283,3 +314,38 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 }
 
 // #endregion
+
+// #region Extended References
+
+/**
+ * Creates a Ref that contains extended data to better identify this ref
+ * when you have multiple refs to work with.
+ * 
+ * @param value The initial value of the Ref.
+ * @param extendedData The additional context data to put on the Ref.
+ * 
+ * @returns An ExtendedRef object that can be used like a regular Ref object.
+ */
+export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedRef<T> {
+    const refValue = ref(value) as ExtendedRef<T>;
+
+    refValue.context = context;
+
+    return refValue;
+}
+
+/**
+ * Creates an extended Ref with the specified property name in the context.
+ * 
+ * @param value The initial value of the Ref.
+ * @param propertyName The property name to use for the context.
+ *
+ * @returns An ExtendedRef object that can be used like a regular Ref object.
+ */
+export function propertyRef<T>(value: T, propertyName: string): ExtendedRef<T> {
+    return extendedRef(value, {
+        propertyName
+    });
+}
+
+// #endregion Extended Refs

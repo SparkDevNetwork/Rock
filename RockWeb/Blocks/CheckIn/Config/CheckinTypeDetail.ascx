@@ -55,14 +55,16 @@
 
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes"
-                                        Help="Should individuals be allowed to manually check out?" />
+                                            <Rock:RockCheckBox ID="cbAllowCheckoutAtKiosk" runat="server" Label="Enable Check-out at Kiosk" Text="Yes"
+                                        Help="Allows individuals to check-out using the kiosks." />
                                         </div>
                                         <div class="col-md-6">
-                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
-                                        Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+                                             <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager" Text="Yes"
+                                        Help="Allows check-out to be enabled in the Check-in Manager." />
                                         </div>
                                     </div>
+                                    <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
+                                        Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes"
                                         Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes"
@@ -194,6 +196,7 @@
                                     <Rock:RockListBox ID="lbRegistrationOptionalAttributesForChildren" runat="server" Label="Optional Attributes for Children" />
                                     <Rock:RockListBox ID="lbRegistrationRequiredAttributesForFamilies" runat="server" Label="Required Attributes for Families" />
                                     <Rock:RockListBox ID="lbRegistrationOptionalAttributesForFamilies" runat="server" Label="Optional Attributes for Families" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnAdults" runat="server" Label="Display Birthdate on Adults" Help="How should Birthdate be displayed for adults?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnChildren" runat="server" Label="Display Birthdate on Children" Help="How should Birthdate be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayGradeOnChildren" runat="server" Label="Display Grade on Children" Help="How should Grade be displayed for children?" />
                                 </div>

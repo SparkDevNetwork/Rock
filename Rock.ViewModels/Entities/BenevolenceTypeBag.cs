@@ -34,74 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class BenevolenceTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the additional settings json.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The additional settings json.
+        /// </value>
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.BenevolenceType.Description value on the Rock.Model.BenevolenceType. This property is required.
+        /// </summary>
+        /// <value>
+        /// A System.String containing the Rock.Model.BenevolenceType.Description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the Rock.Model.BenevolenceType.IsActive value on the Rock.Model.BenevolenceType. This property is required.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean containing the Rock.Model.BenevolenceType.IsActive.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Rock.Model.BenevolenceType.Name value on the Rock.Model.BenevolenceType. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String containing the Rock.Model.BenevolenceType.Name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestLavaTemplate.
+        /// Gets or sets the Rock.Model.BenevolenceType.RequestLavaTemplate value on the Rock.Model.BenevolenceType. This property is required.
         /// </summary>
         /// <value>
-        /// The RequestLavaTemplate.
+        /// A System.String containing the Rock.Model.BenevolenceType.RequestLavaTemplate.
         /// </value>
         public string RequestLavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowFinancialResults.
+        /// Gets or sets a value indicating whether [show financial results].
         /// </summary>
         /// <value>
-        /// The ShowFinancialResults.
+        /// true if [show financial results]; otherwise, false.
         /// </value>
         public bool ShowFinancialResults { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

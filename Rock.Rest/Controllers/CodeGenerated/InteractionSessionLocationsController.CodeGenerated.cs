@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// InteractionSessionLocations REST API
     /// </summary>
-    [RestControllerGuid( "" )]
+    [RestControllerGuid( "9A2FAB59-FCF7-413B-A461-2EC3F318DC89" )]
     public partial class InteractionSessionLocationsController : Rock.Rest.ApiController<Rock.Model.InteractionSessionLocation>
     {
         /// <summary>

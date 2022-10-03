@@ -34,298 +34,300 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActionFormBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActionAttributeGuid.
+        /// An optional text attribute that will be updated with the action that was selected
         /// </summary>
         /// <value>
-        /// The ActionAttributeGuid.
+        /// The action attribute unique identifier.
         /// </value>
         public Guid? ActionAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the Actions.
+        /// Gets or sets the delimited list of action buttons and actions.
         /// </summary>
         /// <value>
-        /// The Actions.
+        /// The actions.
         /// </value>
         public string Actions { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowNotes.
+        /// Gets or sets whether Notes can be entered
         /// </summary>
         /// <value>
-        /// The AllowNotes.
+        ///   true if [allow notes entry]; otherwise, false.
         /// </value>
         public bool? AllowNotes { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowPersonEntry.
+        /// Gets or sets a value indicating whether a new person (and spouse) can be added
         /// </summary>
         /// <value>
-        /// The AllowPersonEntry.
+        ///   true if [allow person entry]; otherwise, false.
         /// </value>
         public bool AllowPersonEntry { get; set; }
 
         /// <summary>
-        /// Gets or sets the Footer.
+        /// Gets or sets the footer.
         /// </summary>
         /// <value>
-        /// The Footer.
+        /// The footer.
         /// </value>
         public string Footer { get; set; }
 
         /// <summary>
-        /// Gets or sets the Header.
+        /// Gets or sets the header.
         /// </summary>
         /// <value>
-        /// The Header.
+        /// The header.
         /// </value>
         public string Header { get; set; }
 
         /// <summary>
-        /// Gets or sets the IncludeActionsInNotification.
+        /// Gets or sets a value indicating whether [include actions in notification].
         /// </summary>
         /// <value>
-        /// The IncludeActionsInNotification.
+        /// true if [include actions in notification]; otherwise, false.
         /// </value>
         public bool IncludeActionsInNotification { get; set; }
 
         /// <summary>
-        /// Gets or sets the NotificationSystemCommunicationId.
+        /// Gets or sets the notification system communication identifier.
         /// </summary>
         /// <value>
-        /// The NotificationSystemCommunicationId.
+        /// The notification system communication identifier.
         /// </value>
         public int? NotificationSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryAddressEntryOption.
+        /// Gets or sets the person entry address entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryAddressEntryOption.
+        /// The person entry address entry option.
         /// </value>
         public int PersonEntryAddressEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryAutofillCurrentPerson.
+        /// Gets or sets a value indicating whether Person Entry should auto-fill with the CurrentPerson
         /// </summary>
         /// <value>
-        /// The PersonEntryAutofillCurrentPerson.
+        ///   true if [person entry auto-fill current person]; otherwise, false.
         /// </value>
         public bool PersonEntryAutofillCurrentPerson { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryBirthdateEntryOption.
+        /// Gets or sets the person entry birthdate entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryBirthdateEntryOption.
+        /// The person entry birthdate entry option.
         /// </value>
         public int PersonEntryBirthdateEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryCampusIsVisible.
+        /// Gets or sets a value indicating whether [person entry show campus].
         /// </summary>
         /// <value>
-        /// The PersonEntryCampusIsVisible.
+        ///   true if [person entry show campus]; otherwise, false.
         /// </value>
         public bool PersonEntryCampusIsVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryCampusStatusValueId.
+        /// Gets or sets the person entry campus status value identifier.
+        /// This and Rock.Model.WorkflowActionForm.PersonEntryCampusTypeValueId will determine which campuses will selectable
         /// </summary>
         /// <value>
-        /// The PersonEntryCampusStatusValueId.
+        /// The person entry campus status value identifier.
         /// </value>
         public int? PersonEntryCampusStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryCampusTypeValueId.
+        /// Gets or sets the person entry campus type value identifier.
+        /// This and Rock.Model.WorkflowActionForm.PersonEntryCampusStatusValueId will determine which campuses will selectable
         /// </summary>
         /// <value>
-        /// The PersonEntryCampusTypeValueId.
+        /// The person entry campus type value identifier.
         /// </value>
         public int? PersonEntryCampusTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryConnectionStatusValueId.
+        /// Gets or sets the person entry connection status value identifier.
         /// </summary>
         /// <value>
-        /// The PersonEntryConnectionStatusValueId.
+        /// The person entry connection status value identifier.
         /// </value>
         public int? PersonEntryConnectionStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryDescription.
+        /// Gets or sets the Description to display under the Rock.Model.WorkflowActionForm.PersonEntryTitle
         /// </summary>
         /// <value>
-        /// The PersonEntryDescription.
+        /// The person entry description.
         /// </value>
         public string PersonEntryDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryEmailEntryOption.
+        /// Gets or sets the person entry email entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryEmailEntryOption.
+        /// The person entry email entry option.
         /// </value>
         public int PersonEntryEmailEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryFamilyAttributeGuid.
+        /// Gets or sets the person entry family attribute unique identifier. (The one used to set the Added/Edited Person's Family to)
         /// </summary>
         /// <value>
-        /// The PersonEntryFamilyAttributeGuid.
+        /// The person entry family attribute unique identifier.
         /// </value>
         public Guid? PersonEntryFamilyAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryGenderEntryOption.
+        /// Gets or sets the person entry gender entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryGenderEntryOption.
+        /// The person entry gender entry option.
         /// </value>
         public int PersonEntryGenderEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryGroupLocationTypeValueId.
+        /// Gets or sets the person entry address type value identifier.
         /// </summary>
         /// <value>
-        /// The PersonEntryGroupLocationTypeValueId.
+        /// The person entry address type value identifier.
         /// </value>
         public int? PersonEntryGroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryHideIfCurrentPersonKnown.
+        /// Gets or sets a value indicating whether Person Entry should be hidden if the CurrentPerson is known
         /// </summary>
         /// <value>
-        /// The PersonEntryHideIfCurrentPersonKnown.
+        ///   true if [person entry hide if current person known]; otherwise, false.
         /// </value>
         public bool PersonEntryHideIfCurrentPersonKnown { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryMaritalStatusEntryOption.
+        /// Gets or sets the person entry marital status entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryMaritalStatusEntryOption.
+        /// The person entry marital entry option.
         /// </value>
         public int PersonEntryMaritalStatusEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryMobilePhoneEntryOption.
+        /// Gets or sets the person entry mobile phone entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntryMobilePhoneEntryOption.
+        /// The person entry mobile phone entry option.
         /// </value>
         public int PersonEntryMobilePhoneEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryPersonAttributeGuid.
+        /// Gets or sets the person entry person workflow attribute unique identifier. (The one used to set the Added/Edited Person to)
         /// </summary>
         /// <value>
-        /// The PersonEntryPersonAttributeGuid.
+        /// The person entry person attribute unique identifier.
         /// </value>
         public Guid? PersonEntryPersonAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryPostHtml.
+        /// Gets or sets the person entry post HTML.
         /// </summary>
         /// <value>
-        /// The PersonEntryPostHtml.
+        /// The person entry post HTML.
         /// </value>
         public string PersonEntryPostHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryPreHtml.
+        /// Gets or sets the person entry preHTML.
         /// </summary>
         /// <value>
-        /// The PersonEntryPreHtml.
+        /// The person entry preHTML.
         /// </value>
         public string PersonEntryPreHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryRecordStatusValueId.
+        /// Gets or sets the person entry record status value identifier.
         /// </summary>
         /// <value>
-        /// The PersonEntryRecordStatusValueId.
+        /// The person entry record status value identifier.
         /// </value>
         public int? PersonEntryRecordStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntrySectionTypeValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the SectionType for the Person Entry Section.
         /// </summary>
         /// <value>
-        /// The PersonEntrySectionTypeValueId.
+        /// A System.Int32 representing DefinedValueId of the SectionType's Rock.Model.DefinedValue for the Person Entry Section.
         /// </value>
         public int? PersonEntrySectionTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryShowHeadingSeparator.
+        /// Gets or sets whether a heading separator should be display under the Rock.Model.WorkflowActionForm.PersonEntryTitle and Rock.Model.WorkflowActionForm.PersonEntryDescription
         /// </summary>
         /// <value>
-        /// The PersonEntryShowHeadingSeparator.
+        ///   true if [person entry show heading separator]; otherwise, false.
         /// </value>
         public bool PersonEntryShowHeadingSeparator { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntrySpouseAttributeGuid.
+        /// Gets or sets the person entry spouse workflow attribute unique identifier.  (The one used to set the Added/Edited Person's Spouse to)
         /// </summary>
         /// <value>
-        /// The PersonEntrySpouseAttributeGuid.
+        /// The person entry spouse attribute unique identifier.
         /// </value>
         public Guid? PersonEntrySpouseAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntrySpouseEntryOption.
+        /// Gets or sets the person entry spouse entry option.
         /// </summary>
         /// <value>
-        /// The PersonEntrySpouseEntryOption.
+        /// The person entry spouse entry option.
         /// </value>
         public int PersonEntrySpouseEntryOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntrySpouseLabel.
+        /// Gets or sets the person entry spouse label.
         /// </summary>
         /// <value>
-        /// The PersonEntrySpouseLabel.
+        /// The person entry spouse label.
         /// </value>
         public string PersonEntrySpouseLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntryTitle.
+        /// Gets or sets the Title to display at the top the Person Entry Section
         /// </summary>
         /// <value>
-        /// The PersonEntryTitle.
+        /// The person entry title.
         /// </value>
         public string PersonEntryTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

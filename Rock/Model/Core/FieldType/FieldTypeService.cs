@@ -82,7 +82,7 @@ namespace Rock.Model
                 {
                     string assemblyName = type.Assembly.GetName().Name;
                     string className = type.FullName;
-                    
+
                     var fieldType = existingFieldTypes.FirstOrDefault( t => t.Assembly == assemblyName && t.Class == className );
 
                     if ( fieldType == null )
@@ -104,7 +104,7 @@ namespace Rock.Model
                         changesMade = true;
                     }
 
-                    var fieldTypeGuidFromAttribute = type.GetCustomAttribute<Rock.SystemGuid.FieldTypeGuidAttribute>()?.Guid;
+                    var fieldTypeGuidFromAttribute = type.GetCustomAttribute<Rock.SystemGuid.FieldTypeGuidAttribute>( inherit: false )?.Guid;
                     if ( fieldTypeGuidFromAttribute.HasValue && fieldType.Guid != fieldTypeGuidFromAttribute.Value )
                     {
                         fieldType.Guid = fieldTypeGuidFromAttribute.Value;

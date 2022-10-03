@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+
+using Rock.CodeGeneration.XmlDoc;
 
 namespace Rock.CodeGeneration.Utility
 {
@@ -51,6 +54,79 @@ namespace Rock.CodeGeneration.Utility
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the XML document reader that will provide access to XML
+        /// documentation for the various code generation pages.
+        /// </summary>
+        /// <returns>An instance of <see cref="XmlDocReader"/> that is ready to read.</returns>
+        public static XmlDocReader GetXmlDocReader()
+        {
+            var reader = new XmlDocReader();
+
+            // Read the XML documentation for the Rock assembly.
+            var assemblyFileName = new FileInfo( new Uri( typeof( Data.IEntity ).Assembly.CodeBase ).LocalPath ).FullName;
+
+            try
+            {
+                reader.ReadCommentsFrom( assemblyFileName.Substring( 0, assemblyFileName.Length - 4 ) + ".xml" );
+            }
+            catch
+            {
+                /* Intentionally left blank. */
+            }
+
+            // Read the XML documentation for the Rock.ViewModels assembly.
+            assemblyFileName = new FileInfo( new Uri( typeof( Rock.ViewModels.Utility.IViewModel ).Assembly.CodeBase ).LocalPath ).FullName;
+
+            try
+            {
+                reader.ReadCommentsFrom( assemblyFileName.Substring( 0, assemblyFileName.Length - 4 ) + ".xml" );
+            }
+            catch
+            {
+                /* Intentionally left blank. */
+            }
+
+            // Read the XML documentation for the Rock.Enums assembly.
+            assemblyFileName = new FileInfo( new Uri( typeof( Enums.Reporting.FieldFilterSourceType ).Assembly.CodeBase ).LocalPath ).FullName;
+
+            try
+            {
+                reader.ReadCommentsFrom( assemblyFileName.Substring( 0, assemblyFileName.Length - 4 ) + ".xml" );
+            }
+            catch
+            {
+                /* Intentionally left blank. */
+            }
+
+            return reader;
+        }
+
+        /// <summary>
+        /// Gets the file system folder name (and C# namespace name) for the
+        /// specified rock domain. If the string is not all caps then it will
+        /// be returned as is. If it is all caps then special rules will be
+        /// applied to format it correctly.
+        /// </summary>
+        /// <param name="domain">The Rock domain, such as CRM or Group.</param>
+        /// <returns>The name in a format that can be used for file system folders and C# namespaces.</returns>
+        public static string GetDomainFolderName( string domain )
+        {
+            // If the domain isn't all caps, then its already in the correct format.
+            if ( domain != domain.ToUpper() )
+            {
+                return domain;
+            }
+
+            // 2 letter acronyms (such as UI) are kept as-is.
+            if ( domain.Length == 2 )
+            {
+                return domain;
+            }
+
+            return domain.ToUpper()[0] + domain.Substring( 1 ).ToLower();
         }
 
         #endregion

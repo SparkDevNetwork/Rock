@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { DayOfWeek } from "./dayOfWeekField.partial";
+import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 import { FieldTypeBase } from "./fieldType";
 
 

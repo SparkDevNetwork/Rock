@@ -25,6 +25,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Gets the content bag to be passed into mobile. */
 export type ContentBag = {
+    /** Gets or sets the XAML content. */
     content?: string | null;
 
     /** Gets or sets a list containing group member names and Guids */

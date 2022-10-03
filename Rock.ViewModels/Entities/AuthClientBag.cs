@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class AuthClientBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowedClaims.
+        /// Gets or sets the allowed claims.
         /// </summary>
         /// <value>
-        /// The AllowedClaims.
+        /// The allowed claims.
         /// </value>
         public string AllowedClaims { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowedScopes.
+        /// Gets or sets the allowed scopes.
         /// </summary>
         /// <value>
-        /// The AllowedScopes.
+        /// The allowed scopes.
         /// </value>
         public string AllowedScopes { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowUserApiAccess.
+        /// Gets or sets a value indicating whether [allow user API access].
         /// </summary>
         /// <value>
-        /// The AllowUserApiAccess.
+        ///   true if [allow user API access]; otherwise, false.
         /// </value>
         public bool AllowUserApiAccess { get; set; }
 
         /// <summary>
-        /// Gets or sets the ClientId.
+        /// Gets or sets the client identifier.
         /// </summary>
         /// <value>
-        /// The ClientId.
+        /// The client identifier.
         /// </value>
         public string ClientId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ClientSecretHash.
+        /// Gets or sets the client secret hash.
         /// </summary>
         /// <value>
-        /// The ClientSecretHash.
+        /// The client secret hash.
         /// </value>
         public string ClientSecretHash { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// Active.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostLogoutRedirectUri.
+        /// Gets or sets the post logout redirect URI.
         /// </summary>
         /// <value>
-        /// The PostLogoutRedirectUri.
+        /// The post logout redirect URI.
         /// </value>
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>
-        /// Gets or sets the RedirectUri.
+        /// Gets or sets the redirect URL.
         /// </summary>
         /// <value>
-        /// The RedirectUri.
+        /// The redirect URL.
         /// </value>
         public string RedirectUri { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

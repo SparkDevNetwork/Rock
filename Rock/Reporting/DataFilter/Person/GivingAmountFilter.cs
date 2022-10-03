@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -135,7 +135,7 @@ function() {
             var accountGuids = selectionConfig.AccountGuids;
             if ( selectionConfig.AccountGuids != null && selectionConfig.AccountGuids.Any() )
             {
-                accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( ", ", " and " );
+                accountNames = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( ", ", " and " );
             }
 
             bool combineGiving = selectionConfig.CombineGiving;
@@ -396,7 +396,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
 
             var accountIdList = accountPicker.SelectedValuesAsInt().ToList();
             List<Guid> accountGuids;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 accountGuids = accounts.Select( a => a.Guid ).ToList();
@@ -457,17 +457,17 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
 
             // Accounts
             var accountGuids = selectionConfig.AccountGuids;
-            List<FinancialAccount> accounts;
+            List<FinancialAccountCache> accounts;
             if ( accountGuids != null && accountGuids.Any() )
             {
-                accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).ToList();
+                accounts = FinancialAccountCache.GetByGuids( accountGuids ).ToList();
             }
             else
             {
-                accounts = new List<FinancialAccount>();
+                accounts = new List<FinancialAccountCache>();
             }
 
-            accountPicker.SetValues( accounts );
+            accountPicker.SetValuesFromCache( accounts );
 
             // everything else
             cbIncludeChildAccounts.Checked = selectionConfig.IncludeChildAccounts;
@@ -498,8 +498,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
             List<int> accountIdList;
             if ( accountGuids != null && accountGuids.Any() )
             {
-                var financialAccountService = new FinancialAccountService( ( RockContext ) serviceInstance.Context );
-                accountIdList = financialAccountService.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                accountIdList = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
                 if ( selectionConfig.IncludeChildAccounts )
                 {
                     var parentAccountIds = accountIdList.ToList();

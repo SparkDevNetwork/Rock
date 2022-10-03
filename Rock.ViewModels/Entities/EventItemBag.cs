@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class EventItemBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApprovedByPersonAliasId.
+        /// Gets or sets the PersonId of the Rock.Model.Person who approved this event.
         /// </summary>
         /// <value>
-        /// The ApprovedByPersonAliasId.
+        /// A System.Int32 representing the PersonId of the Rock.Model.Person who approved this event.
         /// </value>
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedOnDateTime.
+        /// Gets or sets the date this event was approved.
         /// </summary>
         /// <value>
-        /// The ApprovedOnDateTime.
+        /// A System.DateTime representing the date that this event was approved.
         /// </value>
         public DateTime? ApprovedOnDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Description of the EventItem.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the EventItem.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DetailsUrl.
+        /// Gets or sets the URL for an external event.
         /// </summary>
         /// <value>
-        /// The DetailsUrl.
+        /// A System.String representing the URL for an external event.
         /// </value>
         public string DetailsUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// The is active.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsApproved.
+        /// Gets or sets a flag indicating if the event has been approved.
         /// </summary>
         /// <value>
-        /// The IsApproved.
+        /// A System.Boolean value that is true if this event has been approved; otherwise false.
         /// </value>
         public bool IsApproved { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the EventItem. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the EventItem.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PhotoId.
+        /// Gets or sets the Id of the Rock.Model.BinaryFile that contains the photo of the EventItem.
         /// </summary>
         /// <value>
-        /// The PhotoId.
+        /// A System.Int32 representing the Id of the Rock.Model.BinaryFile containing the photo of the EventItem.
         /// </value>
         public int? PhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets the Summary of the EventItem.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// A System.String representing the summary of the EventItem.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

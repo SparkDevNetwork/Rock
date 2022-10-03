@@ -1,3 +1,19 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -7,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -19,8 +36,8 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// </summary>
     [Description( "Filter people based on their website session interaction" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Website Session Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7")]
+    [ExportMetadata( "ComponentName", "Site Session Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7" )]
     public class WebsiteSessionFilter : DataFilterComponent
     {
         #region Properties
@@ -61,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <exception cref="System.NotImplementedException"></exception>
         public override string GetTitle( Type entityType )
         {
-            return "Website Session";
+            return "Site Session";
         }
 
         /// <summary>
@@ -92,10 +109,11 @@ function() {
         result +=  "" Date Range: "" + dateRangeText
     }}
 
-    var pages = $('.js-pages', $content).find(':selected');
-    if ( pages.length > 0 ) {
-        var pagesDelimitedList = pages.map(function() {{ return $(this).text() }}).get().join(', ');
-        result += "" on pages: "" + pagesDelimitedList +""."";
+    let pagePicker = document.querySelector('.js-pages');
+    let selectedNames = pagePicker.querySelector('.js-item-name-value').value;
+
+    if(selectedNames){
+        result += "" on pages: "" + selectedNames +""."";
     }
 
     return result;
@@ -151,10 +169,10 @@ function() {
                     var pages = new List<string>();
                     foreach ( var pageId in selectionConfig.PageIds )
                     {
-                        var interactionComponent = InteractionComponentCache.Get( pageId );
-                        if ( interactionComponent != null )
+                        var page = PageCache.Get( pageId );
+                        if ( page != null )
                         {
-                            pages.Add( interactionComponent.Name );
+                            pages.Add( page.InternalName );
                         }
                     }
 
@@ -177,6 +195,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
+            var rockContext = new RockContext();
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes | ComparisonType.StartsWith );
             ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, "ddlIntegerCompare" );
@@ -201,12 +220,12 @@ function() {
             rlbWebsites.ID = filterControl.GetChildControlInstanceName( "rlbWebsites" );
             rlbWebsites.CssClass = "js-websites";
             rlbWebsites.Items.Clear();
-            rlbWebsites.Items.AddRange( GetInteractionChannels().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
+            rlbWebsites.Items.AddRange( GetInteractionChannelListItems( rockContext ).ToArray() );
             filterControl.Controls.Add( rlbWebsites );
             controls.Add( rlbWebsites );
 
             var websitesLabel = new Label();
-            websitesLabel.Text = " websites(s) ";
+            websitesLabel.Text = " sites(s) ";
             filterControl.Controls.Add( websitesLabel );
             controls.Add( websitesLabel );
 
@@ -220,7 +239,7 @@ function() {
             slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             slidingDateRangePicker.Label = "Date Started";
-            slidingDateRangePicker.Help = "The date range within which the website page was viewed";
+            slidingDateRangePicker.Help = "The date range within which the site page was viewed";
             slidingDateRangePicker.Required = false;
             filterControl.Controls.Add( slidingDateRangePicker );
             controls.Add( slidingDateRangePicker );
@@ -230,29 +249,28 @@ function() {
             filterControl.Controls.Add( optionallyLabel );
             controls.Add( optionallyLabel );
 
-            var rlbPages = new RockListBox();
-            rlbPages.ID = filterControl.GetChildControlInstanceName( "rlbPages" );
-            rlbPages.CssClass = "js-pages";
-            rlbPages.Items.Clear();
-            rlbPages.Items.AddRange( GetInteractionComponents().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
-            filterControl.Controls.Add( rlbPages );
-            controls.Add( rlbPages );
+            var ppPages = new PagePicker();
+            ppPages.ID = filterControl.GetChildControlInstanceName( "ppPages" );
+            ppPages.AllowMultiSelect = true;
+            ppPages.CssClass = "js-pages";
+            filterControl.Controls.Add( ppPages );
+            controls.Add( ppPages );
 
             return controls.ToArray();
         }
 
-        private List<InteractionChannel> GetInteractionChannels()
+        private List<ListItem> GetInteractionChannelListItems( RockContext rockContext )
         {
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
-            var channels = interactionChannelService.Queryable().Where( x => x.ChannelTypeMediumValue.Value == "Website" ).ToList();
-            return channels;
-        }
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
 
-        private List<InteractionComponent> GetInteractionComponents()
-        {
-            var interactionComponentService = new InteractionComponentService( new RockContext() );
-            var components = interactionComponentService.Queryable().ToList();
-            return components;
+            var channels = new InteractionChannelService( rockContext )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( ic => new ListItem() { Text = ic.Name, Value = ic.Id.ToString() } )
+                .ToList();
+
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -273,7 +291,7 @@ function() {
             Label dateRangeLabel = controls[5] as Label;
             SlidingDateRangePicker slidingDateRangePicker = controls[6] as SlidingDateRangePicker;
             Label optionallyLabel = controls[7] as Label;
-            RockListBox rlbPages = controls[8] as RockListBox;
+            PagePicker ppPages = controls[8] as PagePicker;
 
             writer.AddAttribute( "class", "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // row
@@ -314,12 +332,12 @@ function() {
             writer.AddAttribute( "class", "row mt-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // second row
 
-            writer.AddAttribute( "class", "col-md-3 mt-1" );
+            writer.AddAttribute( "class", "col-md-4 mt-1" );
             optionallyLabel.RenderControl( writer ); // optionallyLabel
 
-            writer.AddAttribute( "class", "col-md-5" );
+            writer.AddAttribute( "class", "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // websites
-            rlbPages.RenderControl( writer );
+            ppPages.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // third row
@@ -340,12 +358,12 @@ function() {
             NumberBox nbValue = controls[1] as NumberBox;
             RockListBox rlbWebsites = controls[3] as RockListBox;
             SlidingDateRangePicker dateRange = controls[6] as SlidingDateRangePicker;
-            RockListBox rlbPages = controls[8] as RockListBox;
+            PagePicker ppPages = controls[8] as PagePicker;
 
             var selectionConfig = new SelectionConfig();
             selectionConfig.ComparisonValue = ddlCompare.SelectedValue;
             selectionConfig.DelimitedDateRangeValues = dateRange.DelimitedValues;
-            selectionConfig.PageIds = rlbPages.SelectedValuesAsInt;
+            selectionConfig.PageIds = ppPages.SelectedIds.ToList();
             selectionConfig.ViewsCount = nbValue.IntegerValue ?? 1;
             selectionConfig.WebsiteIds = rlbWebsites.SelectedValuesAsInt;
 
@@ -367,13 +385,13 @@ function() {
             NumberBox nbValue = controls[1] as NumberBox;
             RockListBox rlbWebsites = controls[3] as RockListBox;
             SlidingDateRangePicker dateRange = controls[6] as SlidingDateRangePicker;
-            RockListBox rlbPages = controls[8] as RockListBox;
+            PagePicker ppPages = controls[8] as PagePicker;
 
             ddlCompare.SelectedValue = selectionConfig.ComparisonValue;
             nbValue.IntegerValue = selectionConfig.ViewsCount;
             rlbWebsites.SetValues( selectionConfig.WebsiteIds );
             dateRange.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
-            rlbPages.SetValues( selectionConfig.PageIds );
+            ppPages.SetValues( selectionConfig.PageIds );
         }
 
         /// <summary>
@@ -392,9 +410,18 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
-            var interactionQry = new InteractionSessionService( rockContext ).Queryable()
-                .Where( m => m.Interactions.Any( x => ( selectionConfig.WebsiteIds.Contains( x.InteractionComponent.InteractionChannelId ) && x.Operation == "View" )
-                || selectionConfig.PageIds.Contains( x.InteractionComponentId ) ) );
+            rockContext.Database.Log = s => Debug.WriteLine( s );
+
+            IQueryable<Rock.Model.Interaction> interactionQry;
+
+            if ( selectionConfig.PageIds.Count > 0 )
+            {
+                interactionQry = new InteractionService( rockContext ).GetPageViewsByPage( selectionConfig.WebsiteIds.ToArray(), selectionConfig.PageIds.ToArray() );
+            }
+            else
+            {
+                interactionQry = new InteractionService( rockContext ).GetPageViewsBySite( selectionConfig.WebsiteIds.ToArray() );
+            }
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
             {
@@ -417,19 +444,19 @@ function() {
                 switch ( comparisonType )
                 {
                     case ComparisonType.EqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() == selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() == selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThan:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() < selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() < selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() <= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() <= selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThan:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() > selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() > selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() >= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() >= selectionConfig.ViewsCount );
                         break;
                 }
             }

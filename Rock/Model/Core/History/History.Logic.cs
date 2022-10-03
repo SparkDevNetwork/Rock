@@ -88,8 +88,8 @@ namespace Rock.Model
                                     }
                                     else
                                     {
-                                        string summaryVerb;
-                                        string summaryValue;
+                                        string summaryVerb = "Modified";
+                                        string summaryValue = ChangeType;
 
                                         if ( this.OldValue == null && this.NewValue != null )
                                         {
@@ -103,7 +103,7 @@ namespace Rock.Model
                                             summaryVerb = "Deleted";
                                             summaryValue = $"value of <span class='field-value'>{this.OldValue}</span>";
                                         }
-                                        else
+                                        else if ( this.OldValue != this.NewValue )
                                         {
                                             summaryVerb = "Modified";
                                             summaryValue = $"value from <span class='field-value'>{this.OldValue}</span> to <span class='field-value'>{this.NewValue}</span>";

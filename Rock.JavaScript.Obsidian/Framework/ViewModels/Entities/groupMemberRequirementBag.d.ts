@@ -25,34 +25,61 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupMemberRequirement View Model */
 export type GroupMemberRequirementBag = {
-    /** Gets or sets the GroupMemberId. */
+    /** Gets or sets the "Does Not Meet" Rock.Model.Workflow identifier for the group member's requirement. */
+    doesNotMeetWorkflowId?: number | null;
+
+    /** Gets or sets the due date for the group member requirement. */
+    dueDate?: string | null;
+
+    /** Gets or sets the group member identifier. */
     groupMemberId: number;
 
-    /** Gets or sets the GroupRequirementId. */
+    /** Gets or sets the Rock.Model.GroupRequirement identifier. */
     groupRequirementId: number;
 
-    /** Gets or sets the LastRequirementCheckDateTime. */
+    /** Gets or sets the last requirement check date time. */
     lastRequirementCheckDateTime?: string | null;
 
-    /** Gets or sets the RequirementFailDateTime. */
+    /** Gets or sets the PersonAliasId that manually completed this member requirement. */
+    manuallyCompletedByPersonAliasId?: number | null;
+
+    /** Gets or sets the manually completed date for the group member requirement. */
+    manuallyCompletedDateTime?: string | null;
+
+    /** Gets or sets the PersonAliasId that overrode this member requirement. */
+    overriddenByPersonAliasId?: number | null;
+
+    /** Gets or sets the overridden date for the group member requirement. */
+    overriddenDateTime?: string | null;
+
+    /** Gets or sets the requirement fail date time. */
     requirementFailDateTime?: string | null;
 
-    /** Gets or sets the RequirementMetDateTime. */
+    /** Gets or sets the requirement met date time. */
     requirementMetDateTime?: string | null;
 
-    /** Gets or sets the RequirementWarningDateTime. */
+    /** Gets or sets the requirement warning date time. */
     requirementWarningDateTime?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the "Warning" Rock.Model.Workflow identifier for the group member's requirement. */
+    warningWorkflowId?: number | null;
+
+    /** Gets or sets whether the member requirement was manually completed. */
+    wasManuallyCompleted: boolean;
+
+    /** Gets or sets whether the member requirement was overridden. */
+    wasOverridden: boolean;
+
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

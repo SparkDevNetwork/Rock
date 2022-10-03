@@ -25,52 +25,61 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DocumentType View Model */
 export type DocumentTypeBag = {
-    /** Gets or sets the BinaryFileTypeId. */
+    /** Gets or sets the id of the Rock.Model.BinaryFileType that this document type belongs to. */
     binaryFileTypeId: number;
 
-    /** Gets or sets the DefaultDocumentNameTemplate. */
+    /** Gets or sets the default document name template. */
     defaultDocumentNameTemplate?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /**
+     * Gets or sets the Id of the Rock.Model.EntityType that this DocumentType is used for.  A DocumentType can only be associated with a single Rock.Model.EntityType and will 
+     * only contain notes for entities of this type. This property is required.
+     */
     entityTypeId: number;
 
-    /** Gets or sets the EntityTypeQualifierColumn. */
+    /**
+     * Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Docuement Type applies to. If this is not 
+     * provided, the document type can be used on all entities of the provided Rock.Model.EntityType.
+     */
     entityTypeQualifierColumn?: string | null;
 
-    /** Gets or sets the EntityTypeQualifierValue. */
+    /**
+     * Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity 
+     * if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
+     */
     entityTypeQualifierValue?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the CSS class that is used for a vector/CSS icon. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsImage. */
+    /** Gets or sets the IsImage flag for the Rock.Model.DocumentType. */
     isImage: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this DocumentType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the MaxDocumentsPerEntity. */
+    /** Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit. */
     maxDocumentsPerEntity?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the given Name of the DocumentType. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the display order of this DocumentType.  The lower the number the higher the display priority.  This property is required. */
     order: number;
 
-    /** Gets or sets the UserSelectable. */
+    /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

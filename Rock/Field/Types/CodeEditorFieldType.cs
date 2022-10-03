@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -179,6 +179,22 @@ namespace Rock.Field.Types
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.EncodeHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.Truncate( 100 ).EncodeHtml();
+        }
 
         /// <summary>
         /// Formats the value as HTML.

@@ -34,90 +34,91 @@ namespace Rock.ViewModels.Entities
     public partial class LayoutBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the Layout.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String that represents the Description of the Layout
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FileName.
+        /// Gets or sets the file name portion of the associated .Net ASCX UserControl that provides the HTML Markup and code for this Layout.
+        /// Value should not include the extension.  And the path is relative to the theme folder.
         /// </summary>
         /// <value>
-        /// The FileName.
+        /// A System.String that represents the relative path to the supporting UserControl for the Layout.
         /// </value>
         public string FileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Layout was created by and is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this Block is part of the Rock core system/framework, otherwise is false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LayoutMobilePhone.
+        /// Gets or sets the layout mobile phone.
         /// </summary>
         /// <value>
-        /// The LayoutMobilePhone.
+        /// The layout mobile phone.
         /// </value>
         public string LayoutMobilePhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the LayoutMobileTablet.
+        /// Gets or sets the layout mobile tablet.
         /// </summary>
         /// <value>
-        /// The LayoutMobileTablet.
+        /// The layout mobile tablet.
         /// </value>
         public string LayoutMobileTablet { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the logical name of the Layout.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the logical Name of the Layout. This property is required.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SiteId.
+        /// Gets or sets the Id of the Rock.Model.Site that this layout is associated with.
         /// </summary>
         /// <value>
-        /// The SiteId.
+        /// An System.Int32 that represents the Id of the Rock.Model.Site that this layout is associated with.
         /// </value>
         public int SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

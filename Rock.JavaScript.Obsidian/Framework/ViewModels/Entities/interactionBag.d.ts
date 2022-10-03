@@ -25,82 +25,105 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Interaction View Model */
 export type InteractionBag = {
-    /** Gets or sets the Campaign. */
+    /** Gets or sets the campaign name */
     campaign?: string | null;
 
-    /** Gets or sets the ChannelCustom1. */
+    /** Gets or sets the channel custom 1. */
     channelCustom1?: string | null;
 
-    /** Gets or sets the ChannelCustom2. */
+    /** Gets or sets the channel custom 2. */
     channelCustom2?: string | null;
 
-    /** Gets or sets the ChannelCustomIndexed1. */
+    /** Gets or sets the channel custom indexed 1. */
     channelCustomIndexed1?: string | null;
 
-    /** Gets or sets the Content. */
+    /** Gets or sets the campaign content. */
     content?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /**
+     * Gets or sets the Id of the entity that this interaction component is tracking activity for.
+     * 
+     * 
+     *     <term>Page Views</term>
+     *     <description>EntityId is left null, Page is the Component, Site is the Channel</description>
+     * 
+     *     <term>Communication Recipient Activity</term>
+     *     <description>EntityId is the <see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description>
+     * 
+     *     <term>Content Channel Activity</term>
+     *     <description>EntityId is left null, ContentChannel is the Component, single Channel</description>
+     * 
+     *     <term>Workflow Form Entry</term>
+     *     <description>EntityId is the <see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description>
+     */
     entityId?: number | null;
 
-    /** Gets or sets the InteractionComponentId. */
+    /** Gets or sets the Id of the Rock.Model.InteractionComponent Component that is associated with this Interaction. */
     interactionComponentId: number;
 
-    /** Gets or sets the InteractionData. */
+    /** Gets or sets the interaction data. */
     interactionData?: string | null;
 
-    /** Gets or sets the InteractionDateTime. */
+    /** Gets or sets the interaction datetime. */
     interactionDateTime?: string | null;
 
-    /** Gets or sets the InteractionEndDateTime. */
+    /** Gets or sets the interaction end date time. */
     interactionEndDateTime?: string | null;
 
-    /** Gets or sets the InteractionLength. */
+    /**
+     * Gets or sets the length of time (or percent of time) of the interaction.
+     * The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc
+     * For example, if this interaction type is watching a video, this might be what percent of the video they watched
+     */
     interactionLength?: number | null;
 
-    /** Gets or sets the InteractionSessionId. */
+    /** Gets or sets the Id of the Rock.Model.InteractionSession Session that that is associated with this Interaction. */
     interactionSessionId?: number | null;
 
-    /** Gets or sets the InteractionSummary. */
+    /** Gets or sets the interaction summary. */
     interactionSummary?: string | null;
 
-    /** Gets or sets the InteractionTimeToServe. */
+    /**
+     * Gets or sets the interaction time to serve.
+     * The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
+     * For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
+     */
     interactionTimeToServe?: number | null;
 
-    /** Gets or sets the Medium. */
+    /** Gets or sets the campaign medium. */
     medium?: string | null;
 
-    /** Gets or sets the Operation. */
+    /** Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'. */
     operation?: string | null;
 
-    /** Gets or sets the PersonalDeviceId. */
+    /** Gets or sets the personal device identifier. */
     personalDeviceId?: number | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the RelatedEntityId. */
+    /** Gets or sets the related entity identifier. */
     relatedEntityId?: number | null;
 
-    /** Gets or sets the RelatedEntityTypeId. */
+    /** Gets or sets the related entity type identifier. */
     relatedEntityTypeId?: number | null;
 
-    /** Gets or sets the Source. */
+    /** Gets or sets the campaign source. */
     source?: string | null;
 
-    /** Gets or sets the Term. */
+    /** Gets or sets the term(s). */
     term?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

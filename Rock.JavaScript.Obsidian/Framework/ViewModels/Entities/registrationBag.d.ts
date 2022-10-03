@@ -25,49 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Registration View Model */
 export type RegistrationBag = {
-    /** Gets or sets the ConfirmationEmail. */
+    /** Gets or sets the Id of the Rock.Model.Campus the registration will be tied to */
+    campusId?: number | null;
+
+    /** Gets or sets the confirmation email. */
     confirmationEmail?: string | null;
 
-    /** Gets or sets the DiscountAmount. */
-    discountAmount?: number;
+    /** Gets or sets the discount amount. */
+    discountAmount: number;
 
-    /** Gets or sets the DiscountCode. */
+    /** Gets or sets the code. */
     discountCode?: string | null;
 
-    /** Gets or sets the DiscountPercentage. */
-    discountPercentage?: number;
+    /** Gets or sets the discount percentage. */
+    discountPercentage: number;
 
-    /** Gets or sets the FirstName. */
+    /** Gets or sets the first name. */
     firstName?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Rock.Model.Group identifier. */
     groupId?: number | null;
 
-    /** Gets or sets the IsTemporary. */
+    /** Gets or sets a value indicating whether this instance is temporary. */
     isTemporary: boolean;
 
-    /** Gets or sets the LastName. */
+    /** Gets or sets the last name. */
     lastName?: string | null;
 
-    /** Gets or sets the LastPaymentReminderDateTime. */
+    /** Gets or sets the last payment reminder date time. */
     lastPaymentReminderDateTime?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Rock.Model.PersonAlias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the RegistrationInstanceId. */
+    /** Gets or sets the registration instance identifier. */
     registrationInstanceId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

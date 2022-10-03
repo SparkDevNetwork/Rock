@@ -362,11 +362,15 @@ namespace Rock.ClientService.Core.Category
                     {
                         var childItems = GetChildrenItems( options, cachedEntityType, childQry );
 
-                        categoryItem.Children = new List<TreeItemBag>();
+                        if ( categoryItem.Children == null )
+                        {
+                            categoryItem.Children = new List<TreeItemBag>();
+                        }
                         categoryItem.Children.AddRange( childItems );
-                        categoryItem.HasChildren = childItems.Any();
                     }
                 }
+
+                categoryItem.HasChildren = categoryItem.Children?.Any() ?? false;
             }
 
             return categoryItem;

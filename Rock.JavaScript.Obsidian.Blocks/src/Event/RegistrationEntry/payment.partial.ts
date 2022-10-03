@@ -19,7 +19,7 @@ import { defineComponent, inject, ref } from "vue";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -297,8 +297,8 @@ export default defineComponent({
                         v-model="selectedSavedAccount" />
                     <span class="label-text payment-method-account">
                         <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
-                        <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
-                        <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
+                        <span class="payment-method-name">{{ getAccountName(savedAccount) }}</span>
+                        <span class="payment-method-description text-muted">{{ getAccountDescription(savedAccount) }}</span>
                     </span>
                 </label>
             </div>
@@ -325,11 +325,11 @@ export default defineComponent({
         <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
 
         <div class="actions text-right">
-            <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
+            <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                 Previous
             </RockButton>
 
-            <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading">
+            <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading" autoDisable>
                 {{finishButtonText}}
             </RockButton>
         </div>

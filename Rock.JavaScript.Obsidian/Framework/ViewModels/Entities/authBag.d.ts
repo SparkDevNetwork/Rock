@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Auth View Model */
 export type AuthBag = {
-    /** Gets or sets the Action. */
+    /** Gets or sets the name of action that this Auth entity covers (i.e. view, edit, administrate, etc.). */
     action?: string | null;
 
-    /** Gets or sets the AllowOrDeny. */
+    /** Gets or sets a flag indicating if this Auth entity allows or denies this action for the role. */
     allowOrDeny?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the EntityId of the entity that this Auth entity applies to. */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType for the entity that this Auth object applies to. */
     entityTypeId: number;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the GroupId of the Security Role Rock.Model.Group that this Auth entity allows or denies access to. This is used for group based authorization. */
     groupId?: number | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order or priority of the Auth entity.  */
     order: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Id of the Rock.Model.PersonAlias that this Auth entity allows or denies access to. This is used for user based authorization */
     personAliasId?: number | null;
 
-    /** Gets or sets the SpecialRole. */
+    /** Gets or sets the special role that this Auth entity applies to. */
     specialRole: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

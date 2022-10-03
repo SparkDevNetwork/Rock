@@ -34,258 +34,275 @@ namespace Rock.ViewModels.Entities
     public partial class LocationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AssessorParcelId.
+        /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.
         /// </summary>
         /// <value>
-        /// The AssessorParcelId.
+        /// A System.String represents the local assessor's parcel Id for the location (if applicable). If this is not applicable to this location,
+        /// the value will be null.
         /// </value>
         public string AssessorParcelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Barcode.
+        /// Gets or sets the barcode.
         /// </summary>
         /// <value>
-        /// The Barcode.
+        /// The barcode.
         /// </value>
         public string Barcode { get; set; }
 
         /// <summary>
-        /// Gets or sets the City.
+        /// Gets or sets the city component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// The City.
+        /// A System.String representing the city component of the Location's Street/Mailing Address. If this Location does not have
+        /// a Street/Mailing Address this value will be null.
         /// </value>
         public string City { get; set; }
 
         /// <summary>
-        /// Gets or sets the Country.
+        /// Gets or sets the country component of the Location's Street/Mailing Address. 
         /// </summary>
         /// <value>
-        /// The Country.
+        /// A System.String representing the country component of the Location's Street/Mailing Address. If this Location does not have a 
+        /// Street/Mailing Address, this value will be null.
         /// </value>
         public string Country { get; set; }
 
         /// <summary>
-        /// Gets or sets the County.
+        /// Gets or sets the county.
         /// </summary>
         /// <value>
-        /// The County.
+        /// The county.
         /// </value>
         public string County { get; set; }
 
         /// <summary>
-        /// Gets or sets the FirmRoomThreshold.
+        /// Gets or sets threshold that will prevent checkin (no option to override)
         /// </summary>
         /// <value>
-        /// The FirmRoomThreshold.
+        /// The firm room threshold.
         /// </value>
         public int? FirmRoomThreshold { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeocodeAttemptedDateTime.
+        /// Gets and sets the date and time that an attempt was made to geocode the Location's address.
         /// </summary>
         /// <value>
-        /// The GeocodeAttemptedDateTime.
+        /// A System.DateTime representing the date and time that an attempt was made to geocode the Location's address. If a geocoding has not been attempted for this location, 
+        /// the value will be null.
         /// </value>
         public DateTime? GeocodeAttemptedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeocodeAttemptedResult.
+        /// Gets or sets the result code returned by geocoding service during the last geocode attempt.
         /// </summary>
         /// <value>
-        /// The GeocodeAttemptedResult.
+        /// A System.String representing the result code returned by the geocoding service from the most recent geocoding attempt. If geocoding has not been attempted for this location,
+        /// the value will be null.
         /// </value>
         public string GeocodeAttemptedResult { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeocodeAttemptedServiceType.
+        /// Gets or sets the component name of the Geocoding service that attempted the most recent address Geocode attempt.
         /// </summary>
         /// <value>
-        /// The GeocodeAttemptedServiceType.
+        /// A System.String representing the component name of the Geocoding service that attempted the most recent address Geocode attempt. If geocoding has not been attempted 
+        /// for this location, the value will be null.
         /// </value>
         public string GeocodeAttemptedServiceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeocodedDateTime.
+        /// Gets or sets date and time that this Location's  address has been successfully geocoded. 
         /// </summary>
         /// <value>
-        /// The GeocodedDateTime.
+        /// A System.DateTime representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attempted for this location or 
+        /// the location had not been successfully geocoded this value will be null.
         /// </value>
         public DateTime? GeocodedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeoFence.
+        /// Gets or sets the geographic parameter around the a Location's GeoPoint. This can also be used to define a large area
+        /// like a neighborhood.  
         /// </summary>
         /// <value>
-        /// The GeoFence.
+        /// A System.Data.Entity.Spatial.DbGeography object representing the parameter of a location.
         /// </value>
         public object GeoFence { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeoPoint.
+        /// Gets or sets the GeoPoint (GeoLocation) for the location
         /// </summary>
         /// <value>
-        /// The GeoPoint.
+        /// A System.Data.Entity.Spatial.DbGeography object that represents the GeoLocation of the Location.
         /// </value>
         public object GeoPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the ImageId.
+        /// Gets or sets the image identifier.
         /// </summary>
         /// <value>
-        /// The ImageId.
+        /// The image identifier.
         /// </value>
         public int? ImageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean that is  true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsGeoPointLocked.
+        /// Gets or sets flag indicating if GeoPoint is locked (shouldn't be geocoded again)
         /// </summary>
         /// <value>
-        /// The IsGeoPointLocked.
+        /// is GeoPoint locked.
         /// </value>
         public bool? IsGeoPointLocked { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationTypeValueId.
+        /// Gets or sets the Id of the LocationType Rock.Model.DefinedValue that is used to identify the type of Rock.Model.Location
+        /// that this is. Examples: Campus, Building, Room, etc
         /// </summary>
         /// <value>
-        /// The LocationTypeValueId.
+        /// The location type value identifier.
         /// </value>
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Location's Name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the Location.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentLocationId.
+        /// Gets or sets the if the location's parent Location. 
         /// </summary>
         /// <value>
-        /// The ParentLocationId.
+        /// An System.Int32 representing the Id of this Location's parent Location. If this Location does not have a parent Location, this value will be null.
         /// </value>
         public int? ParentLocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostalCode.
+        /// Gets or sets the Zip/Postal Code component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// The PostalCode.
+        /// A System.String representing the Zip/Postal Code component of the Location's Street/Mailing Address. If this Location does not have 
+        /// Street/Mailing Address, this value will be null.
         /// </value>
         public string PostalCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrinterDeviceId.
+        /// Gets or sets the Rock.Model.Device Id of the printer (if any) associated with the location.
         /// </summary>
         /// <value>
-        /// The PrinterDeviceId.
+        /// The Rock.Model.Device Id of the printer that is associated with this Location. If no printer is associated with this location, this value will be null.
         /// </value>
         public int? PrinterDeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SoftRoomThreshold.
+        /// Gets or sets a threshold that will prevent checkin unless a manager overrides
         /// </summary>
         /// <value>
-        /// The SoftRoomThreshold.
+        /// The soft room threshold.
         /// </value>
         public int? SoftRoomThreshold { get; set; }
 
         /// <summary>
-        /// Gets or sets the StandardizeAttemptedDateTime.
+        /// Gets or sets the date and time of the last address standardization attempt.
         /// </summary>
         /// <value>
-        /// The StandardizeAttemptedDateTime.
+        /// A System.DateTime representing the when the most recent address standardization attempt was made. If this is not applicable to this location,
+        /// or if the address has not been standardized, this value will be null.
         /// </value>
         public DateTime? StandardizeAttemptedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the StandardizeAttemptedResult.
+        /// Gets or sets the result code returned from the address standardization service.
         /// </summary>
         /// <value>
-        /// The StandardizeAttemptedResult.
+        /// A System.String representing the result code that was returned by the address standardization service. If an address standardization has not been attempted for this location, 
+        /// this value will be null.
         /// </value>
         public string StandardizeAttemptedResult { get; set; }
 
         /// <summary>
-        /// Gets or sets the StandardizeAttemptedServiceType.
+        /// Gets or set the component name of the service that attempted the most recent address standardization attempt.
         /// </summary>
         /// <value>
-        /// The StandardizeAttemptedServiceType.
+        /// A System.String representing the component name of the service that last attempted to standardize this Location's address.
+        /// If this is not applicable to the location or a standardization attempt has not been made, this value will be null.
         /// </value>
         public string StandardizeAttemptedServiceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the StandardizedDateTime.
+        /// Gets or sets the date and time that the Location's address was successfully standardized.
         /// </summary>
         /// <value>
-        /// The StandardizedDateTime.
+        /// A System.DateTime representing the date and time that the Location's address was successfully standardized. If address standardization has not been attempted for this location,
+        /// This value will be null.
         /// </value>
         public DateTime? StandardizedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the State.
+        /// Gets or sets the State component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// The State.
+        /// A System.String representing the state component of the Location's Street/Mailing Address. If this Location does not have 
+        /// a Street/Mailing Address, this value will be null.
         /// </value>
         public string State { get; set; }
 
         /// <summary>
-        /// Gets or sets the Street1.
+        /// Gets or sets the first line of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// The Street1.
+        /// A System.String representing the First line of the Location's Street/Mailing Address. If the Location does not have
+        /// a Street/Mailing address, this value is null.
         /// </value>
         public string Street1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the Street2.
+        /// Gets or sets the second line of the Location's Street/Mailing Address. 
         /// </summary>
         /// <value>
-        /// The Street2.
+        /// A System.String representing the second line of the Location's Street/Mailing Address. if this Location does not have 
+        /// Street/Mailing Address or if the address does not have a 2nd line, this value is null.
         /// </value>
         public string Street2 { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

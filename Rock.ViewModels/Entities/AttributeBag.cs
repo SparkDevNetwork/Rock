@@ -34,242 +34,290 @@ namespace Rock.ViewModels.Entities
     public partial class AttributeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AbbreviatedName.
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
         /// </summary>
         /// <value>
-        /// The AbbreviatedName.
+        /// The name of the abbreviated.
         /// </value>
         public string AbbreviatedName { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowSearch.
+        /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
+        /// For example, if you had a UI where you would allow the user to find people based on a list of attributes
         /// </summary>
         /// <value>
-        /// The AllowSearch.
+        ///   true if [allow search]; otherwise, false.
         /// </value>
         public bool AllowSearch { get; set; }
 
         /// <summary>
-        /// Gets or sets the AttributeColor.
+        /// The color to visually distinguish the attribute. For example, Rock.Model.Attribute.AttributeColor might be used to set the color for the Rock.Model.Attribute.IconCssClass of the icon.
         /// </summary>
         /// <value>
-        /// The AttributeColor.
+        /// The color of the attribute.
         /// </value>
         public string AttributeColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultValue.
+        /// Gets or sets the default persisted condensed HTML value.
         /// </summary>
         /// <value>
-        /// The DefaultValue.
+        /// The persisted condensed HTML value.
+        /// </value>
+        public string DefaultPersistedCondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted condensed text value.
+        /// </summary>
+        /// <value>
+        /// The persisted condensed text value.
+        /// </value>
+        public string DefaultPersistedCondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted HTML value.
+        /// </summary>
+        /// <value>
+        /// The persisted HTML value.
+        /// </value>
+        public string DefaultPersistedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted text value.
+        /// </summary>
+        /// <value>
+        /// The persisted text value.
+        /// </value>
+        public string DefaultPersistedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Attribute's default value.
+        /// </summary>
+        /// <value>
+        /// A System.String representing the Attribute's default value.
         /// </value>
         public string DefaultValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description of the Attribute.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String that represents the description of the Attribute.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableHistory.
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
-        /// The EnableHistory.
+        ///   true if [enable history]; otherwise, false.
         /// </value>
         public bool EnableHistory { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that this Attribute is used to configure. This property will be null if the Attribute is a Global (system)
+        /// Attribute.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Attribute.EntityTypeQualifierValue) that is used narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the name of the Qualifier Column/Property that contains the Rock.Model.Attribute.EntityTypeQualifierValue that is used to narrow the scope of the Attribute.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// A System.String that represents the value that is used to narrow the scope of the Attribute.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldTypeId.
+        /// Gets or sets the FieldTypeId of the Rock.Model.FieldType that is used to select/set the Rock.Model.AttributeValue for this Attribute setting.
+        /// The FieldType can also be used to enforce formatting of the attribute setting. This property is required.
         /// </summary>
         /// <value>
-        /// The FieldTypeId.
+        /// A System.Int32 representing the FieldTyepId of the Rock.Model.FieldType that is used to select/set the Rock.Model.AttributeValue
         /// </value>
         public int FieldTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this attribute is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsAnalytic.
+        /// Gets or sets a value indicating whether this instance is analytic.
+        /// NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic and has an [AnalyticAttributes] Attribute
+        /// If this is true, the Analytic table for this entity should include a field for this attribute
         /// </summary>
         /// <value>
-        /// The IsAnalytic.
+        /// true if this instance is analytic; otherwise, false.
         /// </value>
         public bool IsAnalytic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsAnalyticHistory.
+        /// Gets or sets a value indicating whether this instance is analytic history.
+        /// Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
+        /// If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
+        /// to become CurrentRowIndicator=0, sets the ExpireDate, then a new row with CurrentRowIndicator=1 to be created
         /// </summary>
         /// <value>
-        /// The IsAnalyticHistory.
+        /// true if this instance is analytic history; otherwise, false.
         /// </value>
         public bool IsAnalyticHistory { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsGridColumn.
+        /// Gets or sets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the Rock.Model.Attribute.DefaultValue property.
         /// </summary>
         /// <value>
-        /// The IsGridColumn.
+        /// true if the persisted values are considered dirty; otherwise, false.
+        /// </value>
+        public bool IsDefaultPersistedValueDirty { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this Attribute is a Grid Column?
+        /// </summary>
+        /// <value>
+        /// A System.Boolean value that is true if this Attribute is a grid column; otherwise false
         /// </value>
         public bool IsGridColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsIndexEnabled.
+        /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
         /// <value>
-        /// The IsIndexEnabled.
+        /// true if this instance is index enabled; otherwise, false.
         /// </value>
         public bool IsIndexEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsMultiValue.
+        /// Gets or sets a flag indicating if the Attribute supports multiple values.
         /// </summary>
         /// <value>
-        /// The IsMultiValue.
+        /// A System.Boolean that is true if the attribute supports multiple values; otherwise false.
         /// </value>
         public bool IsMultiValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        /// A boolean value.
         /// </value>
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets a flag indicating if a value is required.
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        /// A System.Boolean value that is true if a value is required, otherwise false.
         /// </value>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Attribute is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this Attribute is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Key.
+        /// Gets sets the Key value  that is used to reference and call the Attribute. This property is required.
         /// </summary>
         /// <value>
-        /// The Key.
+        /// A System.String that represents the Key value that is used to reference and call the Attribute.
         /// </value>
         public string Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Attribute. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the name of the Attribute.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the attribute.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the display order of the Attribute.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets any HTML to be rendered after the attribute's edit control 
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The post HTML.
         /// </value>
         public string PostHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreHtml.
+        /// Gets or sets any HTML to be rendered before the attribute's edit control 
         /// </summary>
         /// <value>
-        /// The PreHtml.
+        /// The pre HTML.
         /// </value>
         public string PreHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowOnBulk.
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
         /// </summary>
-        /// <value>
-        /// The ShowOnBulk.
-        /// </value>
         public bool ShowOnBulk { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

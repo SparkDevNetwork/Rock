@@ -34,154 +34,148 @@ namespace Rock.ViewModels.Entities
     public partial class AttendanceOccurrenceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AcceptConfirmationMessage.
+        /// Gets or sets the Accept Confirmation Message (for RSVP).
         /// </summary>
         /// <value>
-        /// The AcceptConfirmationMessage.
+        /// The message.
         /// </value>
         public string AcceptConfirmationMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the AnonymousAttendanceCount.
+        /// Gets or sets the number anonymous attendance.
         /// </summary>
         /// <value>
-        /// The AnonymousAttendanceCount.
+        /// A System.Int32 representing the number anonymous attendance.
         /// </value>
         public int? AnonymousAttendanceCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the AttendanceTypeValueId.
+        /// Gets or sets the attendance type value identifier.
         /// </summary>
         /// <value>
-        /// The AttendanceTypeValueId.
+        /// The attendance type value identifier.
         /// </value>
         public int? AttendanceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeclineConfirmationMessage.
+        /// Gets or sets the Decline Confirmation Message (for RSVP).
         /// </summary>
         /// <value>
-        /// The DeclineConfirmationMessage.
+        /// The message.
         /// </value>
         public string DeclineConfirmationMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeclineReasonValueIds.
+        /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
         /// </summary>
         /// <value>
-        /// The DeclineReasonValueIds.
+        /// The integer IDs.
         /// </value>
         public string DeclineReasonValueIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the DidNotOccur.
+        /// Gets or sets the did not occur.
         /// </summary>
         /// <value>
-        /// The DidNotOccur.
+        /// The did not occur.
         /// </value>
         public bool? DidNotOccur { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Id of the Rock.Model.Group that the Rock.Model.Person checked in to.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// A System.Int32 representing the Id of the Rock.Model.Group that was checked in to.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Id of the Rock.Model.Location that the individual attended/checked in to. 
         /// </summary>
         /// <value>
-        /// The LocationId.
+        /// A System.Int32 representing the Id of the Rock.Model.Location that was checked in to.
         /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Notes.
+        /// Gets or sets the notes.
         /// </summary>
         /// <value>
-        /// The Notes.
+        /// The notes.
         /// </value>
         public string Notes { get; set; }
 
         /// <summary>
-        /// Gets or sets the OccurrenceDate.
+        /// Gets or sets the date of the Attendance. Only the date is used.
         /// </summary>
         /// <value>
-        /// The OccurrenceDate.
+        /// A System.DateTime representing the start date and time/check in date and time.
         /// </value>
         public DateTime OccurrenceDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleId.
+        /// Gets or sets the Id of the Rock.Model.Schedule that the Rock.Model.Person checked in to.
         /// </summary>
         /// <value>
-        /// The ScheduleId.
+        /// An System.Int32 representing the schedule that was checked in to.
         /// </value>
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowDeclineReasons.
+        /// Indicates whether or not to show the Decline Confirmation Message.
         /// </summary>
-        /// <value>
-        /// The ShowDeclineReasons.
-        /// </value>
         public bool ShowDeclineReasons { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepTypeId.
+        /// Gets or sets the Id of the Rock.Model.StepType to which this occurrence is associated.
         /// </summary>
-        /// <value>
-        /// The StepTypeId.
-        /// </value>
         public int? StepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SundayDate.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The SundayDate.
+        /// The Sunday date.
         /// </value>
         public DateTime SundayDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

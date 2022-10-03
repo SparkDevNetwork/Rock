@@ -25,31 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionStatusAutomation View Model */
 export type ConnectionStatusAutomationBag = {
-    /** Gets or sets the AutomationName. */
+    /** Gets or sets the automation name. */
     automationName?: string | null;
 
-    /** Gets or sets the DataViewId. */
+    /** Gets or sets the Rock.Model.DataView identifier. */
     dataViewId?: number | null;
 
-    /** Gets or sets the DestinationStatusId. */
+    /** Gets or sets the destination Rock.Model.ConnectionStatus identifier. */
     destinationStatusId: number;
 
-    /** Gets or sets the GroupRequirementsFilter. */
+    /** Gets or sets the Group Requirements filter. */
     groupRequirementsFilter: number;
 
-    /** Gets or sets the SourceStatusId. */
+    /** Gets or sets the order. */
+    order: number;
+
+    /** Gets or sets the source Rock.Model.ConnectionStatus identifier. */
     sourceStatusId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

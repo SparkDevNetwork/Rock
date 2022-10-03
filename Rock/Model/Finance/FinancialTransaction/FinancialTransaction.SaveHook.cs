@@ -39,14 +39,17 @@ namespace Rock.Model
 
                 HistoryChangeList = new History.HistoryChangeList();
                 BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
+                string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
+                if ( person.IsNullOrWhiteSpace() )
+                {
+                    person = "Anonymous";
+                }
 
                 switch ( Entry.State )
                 {
                     case EntityContextState.Added:
                         {
                             HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
-
-                            string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
 
                             History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
                             History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Entity.Batch, Entity.BatchId, rockContext ) );
@@ -75,7 +78,6 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             string origPerson = History.GetValue<PersonAlias>( null, Entry.OriginalValues[nameof( Entity.AuthorizedPersonAliasId )].ToStringSafe().AsIntegerOrNull(), rockContext );
-                            string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
                             History.EvaluateChange( HistoryChangeList, "Authorized Person", origPerson, person );
 
                             int? origBatchId = OriginalValues[nameof( Entity.BatchId )].ToStringSafe().AsIntegerOrNull();
@@ -138,7 +140,6 @@ namespace Rock.Model
                             if ( batchId.HasValue )
                             {
                                 string batch = History.GetValue<FinancialBatch>( Entity.Batch, Entity.BatchId, rockContext );
-                                string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
                                 var batchChanges = new History.HistoryChangeList();
                                 batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{Entity.TotalAmount.FormatAsCurrency()} for {person}" );
 
@@ -161,10 +162,6 @@ namespace Rock.Model
                             {
                                 FinancialTransactionImage.SaveHook.ProcessImageDeletion( image, rockContext );
                             }
-
-                            // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
-                            var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                            financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
 
                             break;
                         }
@@ -218,6 +215,18 @@ namespace Rock.Model
                 {
                     // The data context operation doesn't need to wait for this to compelete
                     Task.Run( () => StreakTypeService.HandleFinancialTransactionRecord( Entity.Id ) );
+                }
+
+                if ( Entry.State == EntityContextState.Deleted || Entry.State == EntityContextState.Modified )
+                {
+                    // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it
+                    var originalFinancialPaymentDetailId = Entry.OriginalValues[nameof( FinancialTransaction.FinancialPaymentDetailId )] as int?;
+                    if ( originalFinancialPaymentDetailId.HasValue && Entity.FinancialPaymentDetailId != originalFinancialPaymentDetailId.Value )
+                    {
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 base.PostSave();

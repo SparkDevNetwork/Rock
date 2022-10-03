@@ -14,7 +14,15 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <div class="position-relative">
-        <Rock:Zone Name="Profile Navigation" CssClass="profile-sticky-nav" runat="server" />
+        <div id="profilenavigation" class="profile-sticky-nav">
+            <div class="profile-sticky-nav-placeholder"></div>
+            <div class="profile-nav">
+                <Rock:Zone Name="Profile Navigation Left" CssClass="flex-1 z-10" runat="server" />
+                <Rock:Zone Name="Profile Navigation" CssClass="zone-nav" runat="server" />
+                <Rock:Zone Name="Profile Navigation Right" CssClass="d-flex flex-1 justify-content-end overflow-hidden" runat="server" />
+            </div>
+        </div>
+
         <div class="person-profile person-profile-ext">
             <!-- Ajax Error -->
             <div class="alert alert-danger ajax-error no-index" style="display:none">
@@ -26,7 +34,7 @@
                     <Rock:Zone Name="Profile" CssClass="zone-h-100" runat="server" />
                 </div>
                 <div class="col-xs-12 col-md-8 mb-4">
-                    <Rock:Zone Name="Badge Bar" runat="server" />
+                    <Rock:Zone Name="Badge Bar" CssClass="zone-badgebar" runat="server" />
                 </div>
             </div>
 
@@ -67,35 +75,4 @@
             </div>
         </div>
 	</div>
-
-    <script>
-        const header = document.querySelector("#zone-profilenavigation");
-        const profileImage = document.querySelector("#profile-image");
-
-        if (profileImage) {
-            const profileImageOptions = {
-            rootMargin: `${header.getBoundingClientRect().bottom * -1}px`,
-            threshold: 0
-            };
-
-            const profileImageObserver = new IntersectionObserver(function(
-            entries,
-            profileImageObserver
-            ) {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) {
-                header.classList.add("nav-scrolled");
-                } else {
-                header.classList.remove("nav-scrolled");
-                }
-            });
-            },
-            profileImageOptions);
-
-            profileImageObserver.observe(profileImage);
-        } else {
-            header.classList.add("nav-scrolled");
-        }
-    </script>
-
 </asp:Content>

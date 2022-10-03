@@ -25,37 +25,41 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AchievementAttempt View Model */
 export type AchievementAttemptBag = {
-    /** Gets or sets the AchievementAttemptEndDateTime. */
+    /** Gets or sets the achievement attempt end date time. */
     achievementAttemptEndDateTime?: string | null;
 
-    /** Gets or sets the AchievementAttemptStartDateTime. */
+    /** Gets or sets the achievement attempt start date time. */
     achievementAttemptStartDateTime?: string | null;
 
-    /** Gets or sets the AchievementTypeId. */
+    /** Gets or sets the Id of the Rock.Model.AchievementType to which this attempt belongs. This property is required. */
     achievementTypeId: number;
 
-    /** Gets or sets the AchieverEntityId. */
+    /**
+     * Gets or sets the achiever entity identifier. The type of AchieverEntity is determined by Rock.Model.AchievementType.AchieverEntityTypeId.
+     * NOTE: In the case of a Person achievement, this could either by PersonAliasId or PersonId (but probably PersonAliasId)
+     * depending on Rock.Model.AchievementType.AchievementEntityType
+     */
     achieverEntityId: number;
 
-    /** Gets or sets the IsClosed. */
+    /** Gets or sets a value indicating whether this attempt is closed. */
     isClosed: boolean;
 
-    /** Gets or sets the IsSuccessful. */
+    /** Gets or sets a value indicating whether this attempt was a success. */
     isSuccessful: boolean;
 
-    /** Gets or sets the Progress. */
-    progress?: number;
+    /** Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%. */
+    progress: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -198,6 +198,15 @@ namespace RockWeb
                 // Perform any Rock startups
                 RunStartups();
 
+                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                if ( runJobsInContext && RockApplicationStartupHelper.QuartzScheduler != null )
+                {
+                    RockApplicationStartupHelper.LogStartupMessage( "Starting Job Scheduler" );
+                    Debug.WriteLine( "Starting Job Scheduler" );
+                    RockApplicationStartupHelper.QuartzScheduler.Start();
+                    Debug.WriteLine( "Job Scheduler Started" );
+                    RockApplicationStartupHelper.LogStartupMessage( "Job Scheduler Started" );
+                }
             }
             catch ( Exception ex )
             {
@@ -273,7 +282,14 @@ namespace RockWeb
                 /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
                 Thread.CurrentThread.IsBackground = true;
 
-                Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                try
+                {
+                    Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( ex, null );
+                }
             } ).Start();
         }
 

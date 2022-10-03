@@ -1,3 +1,19 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -7,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -19,8 +36,8 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// </summary>
     [Description( "Filter people based on their webpage view data" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Website Page View Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206")]
+    [ExportMetadata( "ComponentName", "Site Page View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206" )]
     public class WebsitePageViewFilter : DataFilterComponent
     {
         #region Properties
@@ -61,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <exception cref="System.NotImplementedException"></exception>
         public override string GetTitle( Type entityType )
         {
-            return "Website Page View";
+            return "Site Page View";
         }
 
         /// <summary>
@@ -181,12 +198,12 @@ console.log(websiteNames);
             rlbWebsites.ID = filterControl.GetChildControlInstanceName( "rlbWebsites" );
             rlbWebsites.CssClass = "js-websites";
             rlbWebsites.Items.Clear();
-            rlbWebsites.Items.AddRange( GetInteractionChannels().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
+            rlbWebsites.Items.AddRange( GetInteractionChannelListItems().ToArray() );
             filterControl.Controls.Add( rlbWebsites );
             controls.Add( rlbWebsites );
 
             var websiteslabel = new Label();
-            websiteslabel.Text = " websites(s) ";
+            websiteslabel.Text = " sites(s) ";
             filterControl.Controls.Add( websiteslabel );
             controls.Add( websiteslabel );
 
@@ -200,7 +217,7 @@ console.log(websiteNames);
             slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             slidingDateRangePicker.Label = "Date Started";
-            slidingDateRangePicker.Help = "The date range within which the website page was viewed";
+            slidingDateRangePicker.Help = "The date range within which the site page was viewed";
             slidingDateRangePicker.Required = false;
             filterControl.Controls.Add( slidingDateRangePicker );
             controls.Add( slidingDateRangePicker );
@@ -208,11 +225,18 @@ console.log(websiteNames);
             return controls.ToArray();
         }
 
-        private List<InteractionChannel> GetInteractionChannels()
+        private List<ListItem> GetInteractionChannelListItems()
         {
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
-            var channels = interactionChannelService.Queryable().Where( x => x.ChannelTypeMediumValue.Value == "Website" ).ToList();
-            return channels;
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var channels = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
+
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -334,9 +358,10 @@ console.log(websiteNames);
         /// <exception cref="System.NotImplementedException"></exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            var rockContext = ( RockContext ) serviceInstance.Context;
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
-            var rockContext = ( RockContext ) serviceInstance.Context;
+
             var interactionQry = new InteractionService( rockContext ).Queryable()
                 .Where( m => selectionConfig.WebsiteIds.Contains( m.InteractionComponent.InteractionChannelId ) && m.Operation == "View" );
 
@@ -378,7 +403,7 @@ console.log(websiteNames);
                 }
             }
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>(personQry, parameterExpression, "p");
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQry, parameterExpression, "p" );
         }
 
         #endregion
@@ -433,6 +458,16 @@ console.log(websiteNames);
             {
                 return selection.FromJsonOrNull<SelectionConfig>() ?? new SelectionConfig();
             }
+        }
+
+        /// <summary>
+        /// Viewmodel for interaction channels 
+        /// </summary>
+        private sealed class InteractionChannelViewModel
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public int SiteId { get; set; }
         }
     }
 }

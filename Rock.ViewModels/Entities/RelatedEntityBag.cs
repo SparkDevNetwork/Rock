@@ -34,122 +34,128 @@ namespace Rock.ViewModels.Entities
     public partial class RelatedEntityBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AdditionalSettingsJson.
+        /// Gets or sets the additional settings json.
         /// </summary>
         /// <value>
-        /// The AdditionalSettingsJson.
+        /// The additional settings json.
         /// </value>
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Site was created by and is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this Site is part of the Rock core system/framework, otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the purpose key. This indicates the purpose of the relationship. For example:
+        /// See notes on <seealso cref="T:Rock.Model.RelatedEntityPurposeKey" /> for details.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The purpose key.
         /// </value>
         public string PurposeKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the QualifierValue.
+        /// Gets or sets the qualifier value.
+        /// See more details on Rock.Model.RelatedEntityPurposeKey.
         /// </summary>
         /// <value>
-        /// The QualifierValue.
+        /// The qualifier value.
         /// </value>
         public string QualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Quantity.
+        /// Gets or sets the quantity.
         /// </summary>
         /// <value>
-        /// The Quantity.
+        /// The quantity.
         /// </value>
         public int? Quantity { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceEntityId.
+        /// Gets or sets the EntityId of the Rock.Model.EntityType of the source.
+        /// See notes on <seealso cref="T:Rock.Model.RelatedEntityPurposeKey" /> for details.
         /// </summary>
         /// <value>
-        /// The SourceEntityId.
+        /// The source entity identifier.
         /// </value>
         public int SourceEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceEntityTypeId.
+        /// Gets or sets the EntityTypeId for the Rock.Model.EntityType of source entity.
+        /// See notes on <seealso cref="T:Rock.Model.RelatedEntityPurposeKey" /> for details.
         /// </summary>
         /// <value>
-        /// The SourceEntityTypeId.
+        /// A System.Int32 representing the EntityTypeId for the Rock.Model.EntityType of the  source entity.
         /// </value>
         public int SourceEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the TargetEntityId.
+        /// Gets or sets the EntityId of the Rock.Model.EntityType of the target.
+        /// See notes on <seealso cref="T:Rock.Model.RelatedEntityPurposeKey" /> for details.
         /// </summary>
         /// <value>
-        /// The TargetEntityId.
+        /// The target entity identifier.
         /// </value>
         public int TargetEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the TargetEntityTypeId.
+        /// Gets or sets the EntityTypeId for the Rock.Model.EntityType of target entity.
+        /// See notes on <seealso cref="T:Rock.Model.RelatedEntityPurposeKey" /> for details.
         /// </summary>
         /// <value>
-        /// The TargetEntityTypeId.
+        /// The target entity type identifier.
         /// </value>
         public int TargetEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

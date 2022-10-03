@@ -31,44 +31,12 @@ namespace Rock.Lava.Shortcodes
     /// Lava shortcode for displaying scripture links
     /// </summary>
     [LavaShortcodeMetadata(
-        "Scripturize ",
-        "scripturize",
-        "Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
-        @"<p>Many blog posts and articles contain references to scriptures. Using this
-            shortcode you can easily convert those references to links to popular Bible
-            websites. Let's take a look at how simple this shortcode is to use.
-         </p>
-         <pre>{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}
-{{ item.Title }}
-
-{{ item | Attribute:'Summary' }}
-
-{{ item.Content }}
-{[ endscripturize ]}</pre>
-
-        <p>It's that easy! The format of the reference can take many forms. Below are a few examples.</p>
-
-        <ul>
-            <li>John 3:16</li>
-            <li>Jn 3:16</li>
-            <li>Jn 3:16 (NIV)</li>
-            <li>1 Peter 1:1-10</li>
-        </ul>
-
-        <p>Let's take a look at some of the parameters and options that are available.</p>
-
-        <ul>
-            <li><strong>defaulttranslation</strong> (NLT) - Scripture references that do not provide a translation will use the default value you assign. A listing of supported translations can be found below.</li>
-            <li><strong>landingsite</strong> (YouVersion) - This is the landing site that you want the links to refer to. Valid values are 'YouVersion' and 'BibleGateway'.</li>
-            <li><strong>cssclass</strong> - The optional CSS class you would like to have added to the anchor tag.</li>
-            <li><strong>openintab</strong> - Determines if the link should be opened in a new browser tab.</li>
-        </ul>
-
-        <ul>
-            <li>AMP</li><li>ASV</li><li>CEB</li><li>CEV</li><li>CEVUS06</li><li>CPDV</li><li>DARBY</li><li>DRA</li><li>ESV</li><li>GNBDC</li><li>GWT</li><li>GNB</li><li>GNT</li><li>HCSB</li><li>KJV</li><li>MSG</li><li>NASB</li><li>NCV</li><li>NIV</li><li>NET</li><li>NIRV</li><li>NKJV</li><li>NLT</li><li>OJB</li><li>RSV</li><li>TLV</li><li>WEB</li>
-        </ul>",
-        "defaulttranslation,landingsite,cssclass",
-        "" )]
+        Name = "Scripturize ",
+        TagName = "scripturize",
+        Description ="Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
+        Documentation = ScripturizeShortcode.DocumentationMetadata,
+        Parameters = "defaulttranslation,landingsite,cssclass",
+        Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]
     public class Scripturize : RockLavaShortcodeBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );

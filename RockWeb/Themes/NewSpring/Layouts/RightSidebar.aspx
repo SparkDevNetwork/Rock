@@ -2,7 +2,10 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <div class="position-relative soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
+    <div class="position-relative">
+        
+        <!-- Breadcrumbs -->
+        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
 
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error no-index" style="display:none">
@@ -17,8 +20,8 @@
 
         <Rock:Zone Name="Feature" runat="server" />
 
-        <div id="content" class="clearfix">
-            <div class="row">
+        <div id="content" class="container-fluid">
+            <div class="row page-constrained mx-auto">
                 <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
                     <Rock:Zone Name="Main" runat="server" />
                 </div><div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,6 +150,16 @@ namespace Rock.Model
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int ConnectionTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -282,7 +292,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            if ( PersonAlias != null )
+            {
+                return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
+            }
+            else
+            {
+                return $"{ ConnectionOpportunity } Connection Request";
+            }
+
         }
 
         #endregion

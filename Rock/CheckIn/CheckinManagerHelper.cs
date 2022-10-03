@@ -48,6 +48,11 @@ namespace Rock.CheckIn
             /// The location identifier
             /// </summary>
             public const string LocationId = "LocationId";
+
+            /// <summary>
+            /// The schedule identifier
+            /// </summary>
+            public const string ScheduleId = "ScheduleId";
         }
 
         /// <summary>
@@ -156,6 +161,36 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Sets the selected schedule.
+        /// Note this will redirect to the current page to include a ScheduleId query parameter if a ScheduleId parameter in the URL is missing or doesn't match.
+        /// </summary>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="spSchedule">The schedule picker.</param>
+        /// <param name="scheduleId">The identifier of the schedule.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        public static void SetSelectedSchedule( RockBlock rockBlock, SchedulePicker spSchedule, int? scheduleId, int campusId )
+        {
+            spSchedule.SetValue( scheduleId );
+            CheckinManagerHelper.SaveCampusScheduleConfigurationToCookie( campusId, scheduleId );
+            var pageParameterScheduleId = rockBlock.PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+            if ( pageParameterScheduleId.ToIntSafe() != scheduleId.ToIntSafe() )
+            {
+                if ( scheduleId.ToIntSafe() != default( int ) )
+                {
+                    var additionalQueryParameters = new Dictionary<string, string>();
+                    additionalQueryParameters.Add( PageParameterKey.ScheduleId, scheduleId.ToString() );
+                    rockBlock.NavigateToCurrentPageReference( additionalQueryParameters );
+                }
+                else
+                {
+                    rockBlock.NavigateToCurrentPageReferenceWithRemove( new List<string>() { PageParameterKey.ScheduleId } );
+                }
+
+                return;
+            }
+        }
+
+        /// <summary>
         /// Gets the selected location.
         /// </summary>
         /// <param name="rockBlock">The rock block.</param>
@@ -196,7 +231,7 @@ namespace Rock.CheckIn
             {
                 // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
-                
+
                 if ( locationId > 0 )
                 {
                     // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
@@ -217,6 +252,44 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the selected schedule.
+        /// </summary>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="campus">The campus.</param>
+        /// <param name="spSchedule">The schedule.</param>
+        /// <returns></returns>
+        public static int? GetSelectedSchedule( RockBlock rockBlock, CampusCache campus, SchedulePicker spSchedule )
+        {
+            // Check the SchedulePicker for the Schedule ID.
+            var scheduleId = spSchedule.SelectedValueAsInt();
+
+            if ( scheduleId.HasValue && scheduleId.Value > 0 )
+            {
+                return scheduleId;
+            }
+
+            // If not defined on the SchedulePicker, check first for a ScheduleId Page parameter.
+            scheduleId = rockBlock.PageParameter( PageParameterKey.ScheduleId ).AsInteger();
+
+            if ( scheduleId > 0 )
+            {
+                CheckinManagerHelper.SaveCampusLocationConfigurationToCookie( campus.Id, scheduleId );
+            }
+            else
+            {
+                // If still not defined, check for cookie setting.
+                scheduleId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().ScheduleIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
+
+                if ( scheduleId <= 0 )
+                {
+                    return null;
+                }
+            }
+
+            return scheduleId;
+        }
+
+        /// <summary>
         /// Saves the campus location configuration to the response cookie
         /// </summary>
         /// <param name="campusId">The campus identifier.</param>
@@ -232,6 +305,27 @@ namespace Rock.CheckIn
             else
             {
                 checkinManagerConfiguration.LocationIdFromSelectedCampusId.Remove( campusId );
+            }
+
+            SaveCheckinManagerConfigurationToCookie( checkinManagerConfiguration );
+        }
+
+        /// <summary>
+        /// Saves the campus schedule configuration to the response cookie
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public static void SaveCampusScheduleConfigurationToCookie( int campusId, int? scheduleId )
+        {
+            CheckinManagerConfiguration checkinManagerConfiguration = GetCheckinManagerConfigurationFromCookie();
+
+            if ( scheduleId.HasValue )
+            {
+                checkinManagerConfiguration.ScheduleIdFromSelectedCampusId.AddOrReplace( campusId, scheduleId.Value );
+            }
+            else
+            {
+                checkinManagerConfiguration.ScheduleIdFromSelectedCampusId.Remove( campusId );
             }
 
             SaveCheckinManagerConfigurationToCookie( checkinManagerConfiguration );
@@ -343,6 +437,11 @@ namespace Rock.CheckIn
                 checkinManagerConfiguration.LocationIdFromSelectedCampusId = new Dictionary<int, int>();
             }
 
+            if ( checkinManagerConfiguration.ScheduleIdFromSelectedCampusId == null )
+            {
+                checkinManagerConfiguration.ScheduleIdFromSelectedCampusId = new Dictionary<int, int>();
+            }
+
             if ( checkinManagerConfiguration.RoomListScheduleIdsFilter == null )
             {
                 checkinManagerConfiguration.RoomListScheduleIdsFilter = new int[0];
@@ -380,7 +479,7 @@ namespace Rock.CheckIn
             var groupTypeIds = attendanceList.Select( a => a.GroupTypeId ).Distinct().ToList();
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) );
             var groupTypeIdsWithAllowCheckout = new HashSet<int>( groupTypes
-                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
+                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean() )
                 .Where( a => a != null )
                 .Select( a => a.Id )
                 .Distinct().ToList() );
@@ -509,6 +608,14 @@ namespace Rock.CheckIn
         /// The location identifier from selected campus identifier.
         /// </value>
         public Dictionary<int, int> LocationIdFromSelectedCampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier from selected campus identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier from selected campus identifier.
+        /// </value>
+        public Dictionary<int, int> ScheduleIdFromSelectedCampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the roster status filter.

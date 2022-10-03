@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "299F8444-BB47-4B6C-B523-235156BF96DC")]
-    public class InteractionChannelInteractionComponentFieldType : FieldType
+    public class InteractionChannelInteractionComponentFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Keys
 
@@ -125,18 +127,12 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var formattedValue = string.Empty;
-            GetModelsFromAttributeValue( value, out var channel, out var component );
+
+            GetModelsFromAttributeValue( privateValue, out var channel, out var component );
 
             if ( component != null )
             {
@@ -148,7 +144,22 @@ namespace Rock.Field.Types
                 formattedValue = "Interaction Channel: " + channel.Name;
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion Formatting
@@ -298,5 +309,60 @@ namespace Rock.Field.Types
         }
 
         #endregion Parse Helpers
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            ParseDelimitedGuids( privateValue, out var interactionChannelGuid, out var interactionComponentGuid );
+
+            if ( !interactionChannelGuid.HasValue && !interactionComponentGuid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityReferences = new List<ReferencedEntity>();
+
+                if ( interactionChannelGuid.HasValue )
+                {
+                    var interactionChannelId = InteractionChannelCache.GetId( interactionChannelGuid.Value );
+
+                    if ( interactionChannelId.HasValue )
+                    {
+                        entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<InteractionChannel>().Value, interactionChannelId.Value ) );
+                    }
+                }
+
+                if ( interactionComponentGuid.HasValue )
+                {
+                    var interactionComponentId = InteractionComponentCache.GetId( interactionComponentGuid.Value );
+
+                    if ( interactionComponentId.HasValue )
+                    {
+                        entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<InteractionComponent>().Value, interactionComponentId.Value ) );
+                    }
+                }
+
+                return entityReferences;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of InteractionChannel
+            // and InteractionComponent and should have its persisted values
+            // updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<InteractionChannel>().Value, nameof( InteractionChannel.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<InteractionComponent>().Value, nameof( InteractionComponent.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

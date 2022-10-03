@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -46,14 +47,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -63,21 +60,17 @@ namespace Rock.Badge.Component
             if ( !badgeColor.IsNullOrWhiteSpace() )
             {
                 writer.Write( string.Format(
-                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>",
+                    "<span class='label badge-geofencing-group rockbadge-id-{0}' style='background-color:{1};display:none' ></span>",
                     badge.Id, badgeColor.EscapeQuotes() ) );
             }
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuidOrNull();
 
-            if ( Person == null || !groupTypeGuid.HasValue )
+            if ( !( entity is Person person ) || !groupTypeGuid.HasValue )
             {
                 return null;
             }
@@ -88,11 +81,11 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var $badge = $('.badge-geofencing-group.badge-id-{2}');
+            var $badge = $('.rockbadge-geofencing-group.rockbadge-id-{2}');
             var badgeHtml = '';
 
             $.each(data, function() {{
-                if ( badgeHtml != '' ) {{ 
+                if ( badgeHtml != '' ) {{
                     badgeHtml += ' | ';
                 }}
                 badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';
@@ -107,7 +100,7 @@ $.ajax({{
             $badge.find('span').tooltip();
         }}
     }},
-}});", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id );
+}});", person.Id.ToString(), groupTypeGuid.ToString(), badge.Id );
         }
     }
 }

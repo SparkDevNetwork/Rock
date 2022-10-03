@@ -25,43 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Assessment View Model */
 export type AssessmentBag = {
-    /** Gets or sets the AssessmentResultData. */
+    /** Gets or sets the result data for the Assessment taken. */
     assessmentResultData?: string | null;
 
-    /** Gets or sets the AssessmentTypeId. */
+    /** Gets or sets the Id of the Rock.Model.AssessmentType */
     assessmentTypeId: number;
 
-    /** Gets or sets the CompletedDateTime. */
+    /** Gets or sets the date of when the Assessment was completed. */
     completedDateTime?: string | null;
 
-    /** Gets or sets the LastReminderDate. */
+    /** Gets or sets the result last reminder date. */
     lastReminderDate?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Id of the person Rock.Model.Person who is associated with the assessment. */
     personAliasId: number;
 
-    /** Gets or sets the RequestedDateTime. */
+    /** Gets or sets the date when the assessment was requested. */
     requestedDateTime?: string | null;
 
-    /** Gets or sets the RequestedDueDate. */
+    /** Gets or sets the date of the requested due date. */
     requestedDueDate?: string | null;
 
-    /** Gets or sets the RequesterPersonAliasId. */
+    /** Gets or sets the RequesterPersonAliasId of the Rock.Model.Person that requested the assessment. */
     requesterPersonAliasId?: number | null;
 
-    /** Gets or sets the Status. */
+    /**
+     * Gets or sets the enum of the assessment status.
+     * Requirement from Jon, a pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
+     */
     status: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

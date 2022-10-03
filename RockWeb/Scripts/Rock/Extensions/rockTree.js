@@ -456,7 +456,7 @@
 
                     $li.addClass('rocktree-item')
                         .addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-                        .addClass(isActive ? '' : 'is-inactive-not-allowed')
+                        .addClass(isActive ? '' : 'is-inactive')
                         .attr('data-id', node.id);
 
 
@@ -476,15 +476,14 @@
                     var tmp = document.createElement("DIV");
                     tmp.innerHTML = node.name;
                     var nodeText = tmp.textContent || tmp.innerText || "";
+                    var titleText = self.escapeHtml(nodeText.trim());
 
                     var countInfoHtml = '';
-                    if (typeof (node.countInfo) !== 'undefined' && node.countInfo !== null && self.options.displayChildItemCountLabel) {
+                    if (typeof (node.countInfo) !== 'undefined' && node.countInfo !== null) {
                         countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
                     }
 
-                    var notAllowedClass = isActive ? '' : ' not-allowed';
-
-                    $li.append('<span class="rocktree-name' + notAllowedClass + '" title="' + nodeText.trim() + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
+                    $li.append('<span class="rocktree-name" title="' + titleText + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
                     var $rockTreeNameNode = $li.find('.rocktree-name');
 
                     if (!self.options.categorySelection && node.isCategory) {
@@ -548,6 +547,23 @@
             });
                         
             this.$el.trigger('rockTree:rendered');
+        },
+
+        escapeHtml: function (unencodedString) {
+            // This method is based on he.js (https://github.com/mathiasbynens/he).
+            var regexEscape = /["&'<>`]/g;
+            var escapeMap = {
+                '"': '&quot;',
+                '&': '&amp;',
+                '\'': '&#x27;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '`': '&#x60;'
+            };
+
+            return unencodedString.replace(regexEscape, function ($0) {
+                return escapeMap[$0];
+            });
         },
 
         // clear the error message
@@ -685,17 +701,14 @@
                 $rockTree.find('.selected').parent('li[data-id="' + id + '"]').removeClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
+                    var nodeId = $li.attr('data-id');
 
-                    var isInactive = $li.hasClass('is-inactive-not-allowed');
-
-                    if (!isInactive) {
-                        var id = $li.attr('data-id');
-
-                        var nodeToAdd = _findNodeById(id, self.nodes);
-                        if (nodeToAdd) {
-                            selectedNodes.push(nodeToAdd);
-                        }
-                    }
+                    selectedNodes.push({
+                        id: nodeId,
+                        // get the li text excluding child text
+                        name: $li.contents(':not(ul)').text(),
+                        path: _findNodeById(nodeId, self.nodes)?.path
+                    });
                 });
 
                 self.selectedNodes = selectedNodes;

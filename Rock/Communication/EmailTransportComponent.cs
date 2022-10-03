@@ -262,7 +262,6 @@ namespace Rock.Communication
 
                     var result = SendEmail( recipientEmailMessage );
 
-
                     var sendMessageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
 
                     errorMessages.AddRange( sendMessageResult.Errors );

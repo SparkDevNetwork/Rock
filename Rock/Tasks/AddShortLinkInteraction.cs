@@ -16,9 +16,11 @@
 //
 using System;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+
 using UAParser;
 
 namespace Rock.Tasks
@@ -98,6 +100,11 @@ namespace Rock.Tasks
                         personAliasId = currentUser?.Person?.PrimaryAlias?.Id;
                     }
 
+                    if ( !personAliasId.HasValue && message.VisitorPersonAliasIdKey.IsNotNullOrWhiteSpace() )
+                    {
+                        personAliasId = new PersonAliasService( rockContext ).GetSelect( message.VisitorPersonAliasIdKey, s => s.Id );
+                    }
+
                     Parser uaParser = Parser.GetDefault();
                     ClientInfo client = uaParser.Parse( userAgent );
                     var clientOs = client.OS.ToString();
@@ -145,6 +152,13 @@ namespace Rock.Tasks
             /// User Name.
             /// </value>
             public string UserName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the visitor person alias identifier key.
+            /// This will get used if UserName is not specified.
+            /// </summary>
+            /// <value>The visitor person alias identifier key.</value>
+            public string VisitorPersonAliasIdKey { get; set; }
 
             /// <summary>
             /// Gets or sets the DateTime the page was viewed.

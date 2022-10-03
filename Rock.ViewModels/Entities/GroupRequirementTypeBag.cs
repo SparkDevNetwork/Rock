@@ -34,138 +34,214 @@ namespace Rock.ViewModels.Entities
     public partial class GroupRequirementTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CanExpire.
+        /// Gets or sets a value indicating whether this requirement can expire.
         /// </summary>
         /// <value>
-        /// The CanExpire.
+        /// true if this instance can expire; otherwise, false.
         /// </value>
         public bool CanExpire { get; set; }
 
         /// <summary>
-        /// Gets or sets the CheckboxLabel.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CheckboxLabel.
+        /// The category identifier.
+        /// </value>
+        public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the checkbox label. This is the text that is used for the checkbox if this is a manually set requirement
+        /// </summary>
+        /// <value>
+        /// The checkbox label.
         /// </value>
         public string CheckboxLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewId.
+        /// Gets or sets the Rock.Model.DataView identifier.
         /// </summary>
         /// <value>
-        /// The DataViewId.
+        /// The data view identifier.
         /// </value>
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireInDays.
+        /// Gets or sets the text for the "Does Not Meet" workflow link.
+        /// </summary>
+        public string DoesNotMeetWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type it does not meet.
         /// </summary>
         /// <value>
-        /// The ExpireInDays.
+        /// The workflow type identifier.
+        /// </value>
+        public int? DoesNotMeetWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days before the requirement is due.
+        /// </summary>
+        /// <value>
+        /// The due date offset in days.
+        /// </value>
+        public int? DueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of due date.
+        /// </summary>
+        /// <value>
+        /// The type of due date.
+        /// </value>
+        public int DueDateType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires
+        /// </summary>
+        /// <value>
+        /// The expire in days.
         /// </value>
         public int? ExpireInDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the NegativeLabel.
+        /// Gets or sets the negative label. This is the text that is displayed when the requirement is not met.
         /// </summary>
         /// <value>
-        /// The NegativeLabel.
+        /// The negative label.
         /// </value>
         public string NegativeLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the PositiveLabel.
+        /// Gets or sets the positive label. This is the text that is displayed when the requirement is met.
         /// </summary>
         /// <value>
-        /// The PositiveLabel.
+        /// The positive label.
         /// </value>
         public string PositiveLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequirementCheckType.
+        /// Gets or sets the type of the requirement check.
         /// </summary>
         /// <value>
-        /// The RequirementCheckType.
+        /// The type of the requirement check.
         /// </value>
         public int RequirementCheckType { get; set; }
 
         /// <summary>
-        /// Gets or sets the SqlExpression.
+        /// Gets or sets a value indicating whether this requirement type's "Does Not Meet" workflow should auto-initiate.
+        /// </summary>
+        public bool ShouldAutoInitiateDoesNotMeetWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this requirement type's "Warning" workflow should auto-initiate.
+        /// </summary>
+        public bool ShouldAutoInitiateWarningWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SQL expression.
         /// </summary>
         /// <value>
-        /// The SqlExpression.
+        /// The SQL expression.
         /// </value>
         public string SqlExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the WarningDataViewId.
+        /// Gets or sets the summary.
         /// </summary>
         /// <value>
-        /// The WarningDataViewId.
+        /// The summary.
+        /// </value>
+        public string Summary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning Rock.Model.DataView identifier.
+        /// </summary>
+        /// <value>
+        /// The warning data view identifier.
         /// </value>
         public int? WarningDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WarningLabel.
+        /// Gets or sets the warning label.
         /// </summary>
         /// <value>
-        /// The WarningLabel.
+        /// The warning label.
         /// </value>
         public string WarningLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the WarningSqlExpression.
+        /// Gets or sets the warning SQL expression.
         /// </summary>
         /// <value>
-        /// The WarningSqlExpression.
+        /// The warning SQL expression.
         /// </value>
         public string WarningSqlExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the text for the "Warning" workflow link.
+        /// </summary>
+        public string WarningWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.WorkflowType identifier for the group requirement type's warning.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The workflow type identifier.
+        /// </value>
+        public int? WarningWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

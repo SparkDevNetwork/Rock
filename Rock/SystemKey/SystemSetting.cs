@@ -116,28 +116,41 @@ namespace Rock.SystemKey
         public const string PDF_EXTERNAL_RENDER_ENDPOINT = "core_PDFExternalRenderEndpoint";
 
         /// <summary>
+        /// The number of days that a visitor cookie persists. Default is 365.
+        /// </summary>
+        public const string VISITOR_COOKIE_PERSISTENCE_DAYS = "core_VisitorCookiePersistenceDays";
+
+        /// <summary>
         /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
         /// </summary>
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
 
         /// <summary>
-        /// Enable a redis cache cluster
+        /// (Obsolete) Enable a redis cache cluster
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
 
         /// <summary>
-        /// Comma separated list of Redis endpoints (e.g. server.com:6379)
+        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
 
         /// <summary>
-        /// The redis password
+        /// (Obsolete) The redis password
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_PASSWORD = "RedisPassword";
 
         /// <summary>
-        /// The redis database index number
+        /// (Obsolete) The redis database index number
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
 
         /// <summary>
@@ -265,5 +278,15 @@ namespace Rock.SystemKey
         /// The security grant token earliest date. This provides support to revoke existing tokens.
         /// </summary>
         public const string SECURITY_GRANT_TOKEN_EARLIEST_DATE = "core_SecurityGrantTokenEarliestDate";
+
+        /// <summary>
+        /// Security Settings (Account Protection profiles)
+        /// </summary>
+        public const string ROCK_SECURITY_SETTINGS = "core_RockSecuritySettings";
+
+        /// <summary>
+        /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
+        /// </summary>
+        public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
     }
 }

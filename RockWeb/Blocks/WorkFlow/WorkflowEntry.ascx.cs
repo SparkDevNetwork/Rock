@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -97,13 +97,13 @@ namespace RockWeb.Blocks.WorkFlow
     [BooleanField(
         "Log Interaction when Form is Viewed",
         Key = AttributeKey.LogInteractionOnView,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 6 )]
 
     [BooleanField(
         "Log Interaction when Form is Completed",
         Key = AttributeKey.LogInteractionOnCompletion,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 7 )]
 
     #endregion Block Attributes
@@ -364,32 +364,35 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             /* 
+                05/18/2022 MDP
+
+                Update on the 04/27/2022 note. After discussing with Product team,
+                the intended behavior is that *none* of the form values should save
+                if the button doesn't do validation.  It was sort of a bug that it used to do that.
+
                 04/27/2022 CWR
 
                 The only Form Action that should not get PersonEntry values is "Cancel",
                 but to avoid a string comparison, we will check the Action's "Causes Validation".
                 "Cancel" should be the only Form Action that does not cause validation.
                 If the Form Action exists, complete the Form Action, regardless of the Form Action validation.
+            
             */
             var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
             var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
-            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
-
-            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
-            {
-                // Out if the action does not cause validation and does not have an Activate Activity.
-                return;
-            }
 
             if ( formUserAction != null && formUserAction.CausesValidation )
             {
+                // Only save the User Form values to the database if the form is getting validated. In other words,
+                // if the intent is to cancel, don't keep any of the form person values or any other form values.
                 using ( var personEntryRockContext = new RockContext() )
                 {
                     GetWorkflowFormPersonEntryValues( personEntryRockContext );
                 }
+
+                SetWorkflowFormAttributeValues();
             }
 
-            SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
 
@@ -2034,6 +2037,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
 
+            /* 05/18/2022
+             * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
+             * get one, we'll need to review this logic to make sure it doesn't the right thing
+            */
             var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
             switch ( workflowCampusSetFrom )
             {
@@ -2055,7 +2062,7 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     break;
-                case CampusSetFrom.QueryString:
+                default:
                     {
                         var campusIdFromUrl = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
                         var campusGuidFromUrl = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
@@ -2069,8 +2076,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    break;
-                default:
                     break;
             }
 
@@ -2240,6 +2245,10 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( notificationEmailSettings != null )
                 {
+                    /* 05/18/2022
+                    * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
+                    * get one, we'll need to review this logic to make sure it doesn't the right thing
+                    */
                     SendFormBuilderNotificationEmail( notificationEmailSettings );
                 }
 
@@ -2781,7 +2790,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             var interactionTransactionInfo = new InteractionTransactionInfo
             {
-                PersonAliasId = this.CurrentPersonAliasId,
+                // NOTE: InteractionTransactionInfo.PersonAliasId will do this same logic if PersonAliasId isn't specified. Doing it here to
+                // make it more obvious.
+                PersonAliasId = this.CurrentPersonAliasId ?? this.CurrentVisitor?.Id,
+
                 InteractionEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() ),
                 InteractionDateTime = RockDateTime.Now,
                 InteractionChannelId = workflowLaunchInteractionChannelId ?? 0,

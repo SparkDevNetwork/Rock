@@ -34,170 +34,125 @@ namespace Rock.ViewModels.Entities
     public partial class StepTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowManualEditing.
+        /// Gets or sets a flag indicating if this item can be edited by a person.
         /// </summary>
-        /// <value>
-        /// The AllowManualEditing.
-        /// </value>
         public bool AllowManualEditing { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowMultiple.
+        /// Gets or sets a flag indicating if this step type allows multiple step records per person.
         /// </summary>
-        /// <value>
-        /// The AllowMultiple.
-        /// </value>
         public bool AllowMultiple { get; set; }
 
         /// <summary>
-        /// Gets or sets the AudienceDataViewId.
+        /// Gets or sets the Id of the Rock.Model.DataView associated with this step type. The data view reveals the people that are allowed to be
+        /// considered for this step type.
         /// </summary>
-        /// <value>
-        /// The AudienceDataViewId.
-        /// </value>
         public int? AudienceDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AutoCompleteDataViewId.
+        /// Gets or sets the Id of the Rock.Model.DataView associated with this step type. The data view reveals the people that should be considered
+        /// as having completed this step.
         /// </summary>
-        /// <value>
-        /// The AutoCompleteDataViewId.
-        /// </value>
         public int? AutoCompleteDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CardLavaTemplate.
+        /// Gets or sets the lava template used to render custom card details.
         /// </summary>
-        /// <value>
-        /// The CardLavaTemplate.
-        /// </value>
         public string CardLavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the step type.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the HasEndDate.
+        /// Gets or sets a flag indicating if this step type happens over time (like being in a group) or is it achievement based (like attended a class).
         /// </summary>
-        /// <value>
-        /// The HasEndDate.
-        /// </value>
         public bool HasEndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the HighlightColor.
+        /// Gets or sets the highlight color for badges and cards.
         /// </summary>
-        /// <value>
-        /// The HighlightColor.
-        /// </value>
         public string HighlightColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
-        /// <value>
-        /// The IconCssClass.
-        /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
-        /// <value>
-        /// The IsActive.
-        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsDateRequired.
+        /// Gets or sets a value indicating whether this step requires a date.
         /// </summary>
         /// <value>
-        /// The IsDateRequired.
+        ///   true if this instance is date required; otherwise, false.
         /// </value>
         public bool IsDateRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the MergeTemplateDescriptor.
+        /// Gets or sets the name used to describe the merge template (e.g. Certificate).
         /// </summary>
-        /// <value>
-        /// The MergeTemplateDescriptor.
-        /// </value>
         public string MergeTemplateDescriptor { get; set; }
 
         /// <summary>
-        /// Gets or sets the MergeTemplateId.
+        /// Gets or sets the Id of the Rock.Model.MergeTemplate associated with this step type. This template can represent things like
+        /// certificates or letters.
         /// </summary>
-        /// <value>
-        /// The MergeTemplateId.
-        /// </value>
         public int? MergeTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the step type. This property is required.
         /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
-        /// <value>
-        /// The Order.
-        /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowCountOnBadge.
+        /// Gets or sets a flag indicating if the number of occurrences should be shown on the badge.
         /// </summary>
-        /// <value>
-        /// The ShowCountOnBadge.
-        /// </value>
         public bool ShowCountOnBadge { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepProgramId.
+        /// Gets or sets the Id of the Rock.Model.StepProgram to which this step type belongs. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepProgramId.
-        /// </value>
         public int StepProgramId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -653,7 +653,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/CheckAuthenticationSession/{siteId}/{code}" )]
         [Rock.SystemGuid.RestActionGuid( "35C60489-936F-42F9-8617-18C959ABDB0C" )]
-        public HttpResponseMessage CheckAuthenicationSession( int siteId, string code )
+        public HttpResponseMessage CheckAuthenticationSession( int siteId, string code )
         {
             var response = new HttpResponseMessage();
             var authCheckResponse = new AuthCodeCheckResponse();
@@ -687,7 +687,13 @@ namespace Rock.Rest.v2.Controllers
                 rockContext.SaveChanges();
 
                 authCheckResponse.CurrentPerson = TvHelper.GetTvPerson( validatedSession.AuthorizedPersonAlias.Person );
+
+                // Obsolete property because of incorrect spelling.
+                #pragma warning disable 
                 authCheckResponse.IsAuthenciated = true;
+                #pragma warning restore
+
+                authCheckResponse.IsAuthenticated = true;
 
                 // Link personal device
                 var tvDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_TV ).Id;
@@ -703,7 +709,12 @@ namespace Rock.Rest.v2.Controllers
             }
             else
             {
+                authCheckResponse.IsAuthenticated = false;
+
+                // Obsolete property because of incorrect spelling.
+                #pragma warning disable
                 authCheckResponse.IsAuthenciated = false;
+                #pragma warning restore
             }
 
 

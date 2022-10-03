@@ -102,16 +102,20 @@ namespace Rock.Model
         /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
         public List<int> GetInheritedGroupTypeIds( Rock.Data.RockContext rockContext )
         {
+            // Attempt to get an existing GroupTypeCache object from the cache
+            // manager without loading it from the database. If the cache system
+            // were to try and load from the database then it could cause a
+            // recursive loop since the cache object would load attributes which
+            // would in turn call us again.
+            if ( GroupTypeCache.TryGet( Id, out var groupTypeCache ) )
+            {
+                return groupTypeCache.GetInheritedGroupTypeIds();
+            }
+
             rockContext = rockContext ?? new RockContext();
 
-            //
-            // Can't use GroupTypeCache here since it loads attributes and could
-            // result in a recursive stack overflow situation when we are called
-            // from a GetInheritedAttributes() method.
-            //
             var groupTypeService = new GroupTypeService( rockContext );
             var groupTypeIds = new List<int>();
-
             var groupType = this;
 
             //

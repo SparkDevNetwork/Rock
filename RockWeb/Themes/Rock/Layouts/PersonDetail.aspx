@@ -29,13 +29,13 @@
 
         <div class="personprofilebar-badge">
             <div class="row">
-                <div class="badge-group col-sm-4">
+                <div class="rockbadge-container col-sm-4">
                     <Rock:Zone Name="Badge Bar Left" runat="server" />
                 </div>
-                <div class="badge-group col-sm-4">
+                <div class="rockbadge-container col-sm-4">
                     <Rock:Zone Name="Badge Bar Middle" runat="server" />
                 </div>
-                <div class="badge-group col-sm-4">
+                <div class="rockbadge-container col-sm-4">
                     <Rock:Zone Name="Badge Bar Right" runat="server" />
                 </div>
             </div>

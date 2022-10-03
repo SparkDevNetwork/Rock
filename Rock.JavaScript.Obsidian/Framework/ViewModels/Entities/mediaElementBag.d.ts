@@ -25,49 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** MediaElement View Model */
 export type MediaElementBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the Element. */
     description?: string | null;
 
-    /** Gets or sets the DurationSeconds. */
+    /** Gets or set the duration in seconds of media element. */
     durationSeconds?: number | null;
 
-    /** Gets or sets the FileDataJson. */
+    /**
+     * Gets or sets the file data JSON content that will be stored in
+     * the database.
+     */
     fileDataJson?: string | null;
 
-    /** Gets or sets the MediaFolderId. */
+    /** Gets or sets the MediaFolderId of the Rock.Model.MediaFolder that this MediaElement belongs to. This property is required. */
     mediaFolderId: number;
 
-    /** Gets or sets the MetricData. */
+    /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Element. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the SourceCreatedDateTime. */
+    /** Gets or sets the System.DateTime this instance was created on the provider. */
     sourceCreatedDateTime?: string | null;
 
-    /** Gets or sets the SourceData. */
+    /** Gets or sets the custom provider data for this instance. */
     sourceData?: string | null;
 
-    /** Gets or sets the SourceKey. */
+    /** Gets or sets the provider's unique identifier for this instance. */
     sourceKey?: string | null;
 
-    /** Gets or sets the SourceModifiedDateTime. */
+    /** Gets or sets the System.DateTime this instance was modified on the provider. */
     sourceModifiedDateTime?: string | null;
 
-    /** Gets or sets the ThumbnailDataJson. */
+    /**
+     * Gets or sets the thumbnail data JSON content that will stored
+     * in the database.
+     */
     thumbnailDataJson?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

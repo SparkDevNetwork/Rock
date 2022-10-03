@@ -40,6 +40,7 @@
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbTransactionDetailValidationMessage" runat="server" NotificationBoxType="Validation" Text="An amount for at least one account is required." Visible="false" />
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
                                     <Rock:CurrencyBox ID="tbSingleAccountAmountMinusFeeCoverageAmount" Label="Amount" runat="server" CssClass="input-width-lg" />
@@ -81,7 +82,7 @@
                             <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:DefinedValuePicker ID="dvpForeignCurrencyCode" runat="server" Label="Foreign Currency" AutoPostBack="true" OnSelectedIndexChanged="dvpForeignCurrencyCode_SelectedIndexChanged" />
                             <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
-                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" IncludeInactive="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                             <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server" />

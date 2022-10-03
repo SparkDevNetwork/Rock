@@ -34,122 +34,130 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConfirmationEmail.
+        /// Gets or sets the Id of the Rock.Model.Campus the registration will be tied to
         /// </summary>
         /// <value>
-        /// The ConfirmationEmail.
+        /// A System.Int32 representing the Id of the Rock.Model.Campus the event occured
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation email.
+        /// </summary>
+        /// <value>
+        /// The confirmation email.
         /// </value>
         public string ConfirmationEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountAmount.
+        /// Gets or sets the discount amount.
         /// </summary>
         /// <value>
-        /// The DiscountAmount.
+        /// The discount amount.
         /// </value>
         public decimal DiscountAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountCode.
+        /// Gets or sets the code.
         /// </summary>
         /// <value>
-        /// The DiscountCode.
+        /// The code.
         /// </value>
         public string DiscountCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountPercentage.
+        /// Gets or sets the discount percentage.
         /// </summary>
         /// <value>
-        /// The DiscountPercentage.
+        /// The discount percentage.
         /// </value>
         public decimal DiscountPercentage { get; set; }
 
         /// <summary>
-        /// Gets or sets the FirstName.
+        /// Gets or sets the first name.
         /// </summary>
         /// <value>
-        /// The FirstName.
+        /// The first name.
         /// </value>
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Rock.Model.Group identifier.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsTemporary.
+        /// Gets or sets a value indicating whether this instance is temporary.
         /// </summary>
         /// <value>
-        /// The IsTemporary.
+        ///   true if this instance is temporary; otherwise, false.
         /// </value>
         public bool IsTemporary { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastName.
+        /// Gets or sets the last name.
         /// </summary>
         /// <value>
-        /// The LastName.
+        /// The last name.
         /// </value>
         public string LastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastPaymentReminderDateTime.
+        /// Gets or sets the last payment reminder date time.
         /// </summary>
         /// <value>
-        /// The LastPaymentReminderDateTime.
+        /// The last payment reminder date time.
         /// </value>
         public DateTime? LastPaymentReminderDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationInstanceId.
+        /// Gets or sets the registration instance identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationInstanceId.
+        /// The registration instance identifier.
         /// </value>
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

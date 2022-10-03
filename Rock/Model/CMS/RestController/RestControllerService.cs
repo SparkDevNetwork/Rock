@@ -18,6 +18,7 @@
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -35,8 +36,8 @@ namespace Rock.Model
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="controllerName">Name of the controller.</param>
         /// <returns></returns>
-        [RockObsolete("1.14")]
-        [Obsolete("Use the method with the 'rockGuid' property instead.")]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the method with the 'rockGuid' property instead." )]
         public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
         {
             return GetApiId( methodInfo, httpMethod, controllerName, out _ );
@@ -54,7 +55,7 @@ namespace Rock.Model
         {
             // If the Method has a RestActionGuidAttribute, output what it is.
             // Note that inherited methods won't have a RockGuid since that Method applies to multiple controllers
-            restActionGuid = methodInfo.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>()?.Guid;
+            restActionGuid = methodInfo.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( inherit: false )?.Guid;
 
             var strippedClassname = Regex.Replace( methodInfo.ToString(), @"((?:(?:\w+)?\.(?<name>[a-z_A-Z]\w+))+)", "${name}" );
             return $"{httpMethod}{controllerName}^{strippedClassname}";

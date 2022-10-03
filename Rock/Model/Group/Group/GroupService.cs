@@ -873,6 +873,25 @@ namespace Rock.Model
                 .Distinct().ToList();
         }
 
+        /// <summary>
+        /// Returns an IEnumerable list of Group Members from primary group that are people in secondary group.
+        /// </summary>
+        /// <remarks>For example, "this" group can be a family, and secondaryGroup can be the fundraising group the family member is in, so we can gather the other members of the same family that are in the fundraising group.</remarks>
+        /// <param name="primaryGroup"></param>
+        /// <param name="secondaryGroup"></param>
+        /// <returns></returns>
+        public IEnumerable<GroupMember> GroupMembersInAnotherGroup( Group primaryGroup, Group secondaryGroup )
+        {
+            // Do not allow the same group in both parameters.
+            if ( primaryGroup.Guid == secondaryGroup.Guid )
+            {
+                return null;
+            }
+
+            var primaryMembers = primaryGroup.Members.Select( m => m.PersonId );
+            return secondaryGroup.Members.Where( m => primaryMembers.Contains( m.PersonId ) );
+        }
+
         #endregion Group Requirement Queries
 
         /// <summary>

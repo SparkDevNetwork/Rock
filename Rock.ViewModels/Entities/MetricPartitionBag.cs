@@ -34,42 +34,42 @@ namespace Rock.ViewModels.Entities
     public partial class MetricPartitionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity type identifier.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the entity type qualifier column that contains the value (see Rock.Model.MetricPartition.EntityTypeQualifierValue) that is used narrow the scope of the MetricPartition to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the name of the Qualifier Column/Property that contains the Rock.Model.MetricPartition.EntityTypeQualifierValue that is used to narrow the scope of the MetricPartition.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// A System.String that represents the value that is used to narrow the scope of the Attribute.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets a value indicating whether this instance is required.
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        /// true if this instance is required; otherwise, false.
         /// </value>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the Label.
+        /// Gets or sets the label.
         /// </summary>
         /// <value>
-        /// The Label.
+        /// The label.
         /// </value>
         public string Label { get; set; }
 
@@ -77,47 +77,47 @@ namespace Rock.ViewModels.Entities
         /// Gets or sets the MetricId.
         /// </summary>
         /// <value>
-        /// The MetricId.
+        /// MetricId.
         /// </value>
         public int MetricId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

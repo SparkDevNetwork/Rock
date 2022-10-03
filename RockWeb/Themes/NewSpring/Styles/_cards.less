@@ -1,4 +1,8 @@
 // Cards
+.card {
+	border: 0px;
+}
+
 .card-count {
 	position: absolute;
 	top: @base-spacing-unit/2;
@@ -17,4 +21,29 @@
 	height: 5px;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
+}
+
+.card .full-screen {
+	transition: transform .5s;
+	outline: 1px solid transparent;
+	-webkit-backface-visibility: hidden;
+	transform: translateZ(0);
+	will-change: transform;
+	-webkit-perspective: 1000;
+}
+
+.card:hover .full-screen {
+	transform: scale(1.05);
+}
+
+.card-gradient {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgb(0,0,0);
+	background: linear-gradient(180deg, transparent 0%, #000 100%);
+	opacity: .7;
 }

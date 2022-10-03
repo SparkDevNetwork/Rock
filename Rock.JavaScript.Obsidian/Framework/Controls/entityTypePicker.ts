@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { emptyGuid } from "@Obsidian/Utility/guid";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
+import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
@@ -34,15 +35,12 @@ export default defineComponent({
             required: false
         },
 
-        multiple: {
+        includeGlobalOption: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
-        includeGlobalOption: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        }
+        ...standardAsyncPickerProps
     },
 
     emits: {
@@ -53,6 +51,8 @@ export default defineComponent({
         // #region Values
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
+        const standardProps = useStandardAsyncPickerProps(props);
+        const http = useHttp();
         const loadedItems = ref<ListItemBag[] | null>(null);
 
         // #endregion
@@ -60,9 +60,8 @@ export default defineComponent({
         // #region Computed Values
 
         /**
-         * The actual items to make available to the picker. Because we do post
-         * processing of the items this allows us to be both lazy loaded as well
-         * as post-process the items once they are loaded.
+         * The actual items to make available to the picker. This allows us to do any
+         * post-processing, such as adding additional items, and still be lazy loaded as well.
          */
         const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
             return loadedItems.value ? postProcessItems(loadedItems.value) : loadOptions;
@@ -75,7 +74,7 @@ export default defineComponent({
         /**
          * Perform additional processing on the items based on our property
          * settings.
-         * 
+         *
          * @param items The items to be processed.
          *
          * @returns A new array of items that have been processed.
@@ -97,7 +96,9 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const result = await post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, {});
+            const options: Partial<EntityTypePickerGetEntityTypesOptionsBag> = {
+            };
+            const result = await http.post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
@@ -114,15 +115,15 @@ export default defineComponent({
 
         return {
             actualItems,
-            internalValue
+            internalValue,
+            standardProps
         };
     },
 
     template: `
 <BaseAsyncPicker v-model="internalValue"
+    v-bind="standardProps"
     grouped
-    :items="actualItems"
-    :multiple="multiple"
-    showBlankItem />
+    :items="actualItems" />
 `
 });

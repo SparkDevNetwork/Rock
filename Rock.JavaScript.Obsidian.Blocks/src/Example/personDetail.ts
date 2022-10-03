@@ -20,14 +20,14 @@ import bus from "@Obsidian/Utility/bus";
 import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
-import { defineComponent, inject } from "vue";
+import { defineComponent } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Loading from "@Obsidian/Controls/loading";
 import PrimaryBlock from "@Obsidian/Controls/primaryBlock";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -54,7 +54,7 @@ export default defineComponent({
 
     setup() {
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
+            invokeBlockAction: useInvokeBlockAction()
         };
     },
 

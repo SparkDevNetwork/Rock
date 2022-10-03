@@ -25,52 +25,60 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** MediaFolder View Model */
 export type MediaFolderBag = {
-    /** Gets or sets the ContentChannelAttributeId. */
+    /**
+     * Gets or sets the synced content channel item attribute identifier
+     * to store the Guid value into.
+     */
     contentChannelAttributeId?: number | null;
 
-    /** Gets or sets the ContentChannelId. */
+    /** Gets or sets the content channel identifier. */
     contentChannelId?: number | null;
 
-    /** Gets or sets the ContentChannelItemStatus. */
+    /** Gets or sets the Rock.Model.ContentChannelItemStatus Content channel Item status. */
     contentChannelItemStatus?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the MediaFolder. */
     description?: string | null;
 
-    /** Gets or sets the IsContentChannelSyncEnabled. */
+    /** Gets or sets a value indicating whether the content channel sync is enabled. */
     isContentChannelSyncEnabled: boolean;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets a value indicating if this Media Folder is public. */
     isPublic?: boolean | null;
 
-    /** Gets or sets the MediaAccountId. */
+    /** Gets or sets the MediaAccountId of the Rock.Model.MediaAccount that this MediaFolder belongs to. This property is required. */
     mediaAccountId: number;
 
-    /** Gets or sets the MetricData. */
+    /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the MediaFolder. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the SourceData. */
+    /** Gets or sets the custom provider data for this instance. */
     sourceData?: string | null;
 
-    /** Gets or sets the SourceKey. */
+    /** Gets or sets the provider's unique identifier for this instance. */
     sourceKey?: string | null;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /**
+     * Gets or sets the workflow type identifier. This workflow is
+     * launched whenever a new Rock.Model.MediaElement is added to
+     * the system. The Rock.Model.MediaElement is passed as the Entity
+     * object to the workflow.
+     */
     workflowTypeId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

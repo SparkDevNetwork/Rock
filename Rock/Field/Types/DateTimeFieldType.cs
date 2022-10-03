@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATE_TIME )]
     public class DateTimeFieldType : DateFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -70,13 +69,13 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            return FormatValue( value, configurationValues, false );
+            return GetTextOrCondensedValue( value, configurationValues, false );
         }
 
         /// <inheritdoc/>
         public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            return FormatValue( value, configurationValues, true );
+            return GetTextOrCondensedValue( value, configurationValues, true );
         }
 
         /// <summary>
@@ -87,6 +86,13 @@ namespace Rock.Field.Types
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         private string FormatValue( string value, Dictionary<string, string> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
+        }
+
+        private static string GetTextOrCondensedValue( string value, Dictionary<string, string> configurationValues, bool condensed )
         {
             if ( string.IsNullOrWhiteSpace( value ) )
             {
@@ -117,7 +123,6 @@ namespace Rock.Field.Types
             }
             else
             {
-
                 string formattedValue = string.Empty;
 
                 DateTime? dateValue = value.AsDateTime();
@@ -393,6 +398,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }

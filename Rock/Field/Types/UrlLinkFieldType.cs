@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -93,7 +94,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ConfigurationKey.ShouldRequireTrailingForwardSlash, new ConfigurationValue( "Ensure Trailing Forward Slash",
                 "When set, the URL must end with a forward slash (/) to be valid.", "false" ) );
 
@@ -140,34 +141,61 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
-
-            if ( string.IsNullOrWhiteSpace( value ) )
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return string.Empty;
             }
+
+            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            if ( shouldAlwaysShowCondensed )
+            {
+                return privateValue;
+            }
+
+            // Try to create a valid absolute Uri.
+            Uri uri;
+            if ( privateValue.StartsWith( "/" ) )
+            {
+                // Process as a relative Uri.
+                Uri.TryCreate( privateValue, UriKind.Relative, out uri );
+            }
             else
             {
-                if ( condensed || shouldAlwaysShowCondensed )
+                // Try to process as an absolute Uri...
+                if ( !Uri.TryCreate( privateValue, UriKind.Absolute, out uri ) )
                 {
-                    return value;
-                }
-                else
-                {
-                    return string.Format( "<a href='{0}'>{0}</a>", value );
+                    // ... but if not, try adding a default "http://" prefix.
+                    Uri.TryCreate( "http://" + privateValue, UriKind.Absolute, out uri );
                 }
             }
+
+            // If we have a valid Uri create a link, otherwise just display the unformatted value.
+            if ( uri != null )
+            {
+                return string.Format( "<a href='{0}'>{1}</a>",
+                    uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString,
+                    privateValue );
+            }
+
+            return privateValue;
         }
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            var showCondensed = condensed || shouldAlwaysShowCondensed;
+
+            // Original implementation returned HTML formatted string when not condensed
+            // and the plain text string when condensed.
+            return !showCondensed
+               ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
 
         #endregion
 
@@ -199,8 +227,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                Uri validatedUri;
-                if ( Uri.TryCreate( value, UriKind.Absolute, out validatedUri ) )
+                if ( Uri.TryCreate( value, UriKind.Absolute, out Uri _ ) )
                 {
                     message = "The link provided is not valid";
                     return true;
@@ -230,5 +257,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldShouldAlwaysShowCondensed = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+            var newShouldAlwaysShowCondensed = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+
+            if ( oldShouldAlwaysShowCondensed != newShouldAlwaysShowCondensed )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

@@ -97,6 +97,9 @@ namespace Rock.Client
         public string Title { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.UnitType UnitType { get; set; }
+
+        /// <summary />
         public string XAxisLabel { get; set; }
 
         /// <summary />
@@ -155,6 +158,7 @@ namespace Rock.Client
             this.SourceValueTypeId = source.SourceValueTypeId;
             this.Subtitle = source.Subtitle;
             this.Title = source.Title;
+            this.UnitType = source.UnitType;
             this.XAxisLabel = source.XAxisLabel;
             this.YAxisLabel = source.YAxisLabel;
             this.CreatedDateTime = source.CreatedDateTime;

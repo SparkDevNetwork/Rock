@@ -25,25 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialPersonBankAccount View Model */
 export type FinancialPersonBankAccountBag = {
-    /** Gets or sets the AccountNumberMasked. */
+    /** Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s) */
     accountNumberMasked?: string | null;
 
-    /** Gets or sets the AccountNumberSecured. */
+    /**
+     * Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash so that it can be matched without being known
+     * Enables a match of a Check Account to Person ( or Persons if multiple persons share a checking account) can be made
+     */
     accountNumberSecured?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

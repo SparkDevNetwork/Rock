@@ -34,82 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationRegistrantBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Cost.
+        /// Gets or sets the cost.
         /// </summary>
         /// <value>
-        /// The Cost.
+        /// The cost.
         /// </value>
         public decimal Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountApplies.
+        /// Gets or sets a flag indicating if the registration's discount code applies to this registrant.
         /// </summary>
         /// <value>
-        /// The DiscountApplies.
+        /// The discount applies.
         /// </value>
         public bool DiscountApplies { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberId.
+        /// Gets or sets the Rock.Model.GroupMember identifier.
         /// </summary>
         /// <value>
-        /// The GroupMemberId.
+        /// The group member identifier.
         /// </value>
         public int? GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets the OnWaitList.
+        /// Gets or sets a value indicating whether registrant is on a wait list.
         /// </summary>
         /// <value>
-        /// The OnWaitList.
+        ///   true if [on wait list]; otherwise, false.
         /// </value>
         public bool OnWaitList { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationId.
+        /// Gets or sets the Rock.Model.Registration identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationId.
+        /// The registration identifier.
         /// </value>
         public int RegistrationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The registration template identifier.
+        /// </value>
+        public int RegistrationTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

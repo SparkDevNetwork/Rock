@@ -39,26 +39,9 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
-                int? previousStepStatusId = null;
-
-                if ( State == EntityContextState.Modified )
-                {
-                    var dbProperty = Entity.GetPropertyValue( nameof( StepStatusId ) );
-                    previousStepStatusId = OriginalValues[nameof( StepStatusId )] as int?;
-                }
-
-                // Send a task to process workflows associated with changes to this Step.
-                new LaunchStepChangeWorkflows.Message
-                {
-                    EntityGuid = Entity.Guid,
-                    EntityContextState = State,
-                    StepTypeId = Entity.StepTypeId,
-                    CurrentStepStatusId = Entity.StepStatusId,
-                    PreviousStepStatusId = previousStepStatusId
-                }.Send();
-
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var rockContext = ( RockContext ) this.RockContext;
+
                 if ( Entity.Caption.IsNullOrWhiteSpace() )
                 {
                     Entity.Caption = new StepTypeService( rockContext ).Get( Entity.StepTypeId ).Name;
@@ -154,6 +137,23 @@ namespace Rock.Model
             /// </summary>
             protected override void PostSave()
             {
+                int? previousStepStatusId = null;
+
+                if ( State == EntityContextState.Modified )
+                {
+                    previousStepStatusId = OriginalValues[nameof( StepStatusId )] as int?;
+                }
+
+                // Send a task to process workflows associated with changes to this Step.
+                new LaunchStepChangeWorkflows.Message
+                {
+                    EntityGuid = Entity.Guid,
+                    EntityContextState = State,
+                    StepTypeId = Entity.StepTypeId,
+                    CurrentStepStatusId = Entity.StepStatusId,
+                    PreviousStepStatusId = previousStepStatusId
+                }.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
+
                 var rockContext = ( RockContext ) this.RockContext;
 
                 if ( PersonHistoryChangeList?.Any() == true )

@@ -34,210 +34,216 @@ namespace Rock.ViewModels.Entities
     public partial class SystemCommunicationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Bcc.
+        /// Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
+        /// can remain empty.
         /// </summary>
         /// <value>
-        /// The Bcc.
+        /// A System.String representing a list of email addresses that should be sent a BCC or blind carbon copy of an email that uses this template. If there is not a predetermined
+        /// distribution list this property will remain null.
         /// </value>
         public string Bcc { get; set; }
 
         /// <summary>
-        /// Gets or sets the Body.
+        /// Gets or sets the Body template that is used for emails that use this template.
         /// </summary>
         /// <value>
-        /// The Body.
+        /// A System.String representing the body template for emails that use this template.
         /// </value>
         public string Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cc.
+        /// Gets or sets the email addresses that should be sent a CC or carbon copy of an email using this template. If there is not a predetermined distribution list, this property
+        /// can remain empty.
         /// </summary>
         /// <value>
-        /// The Cc.
+        /// A System.String representing a list of email addresses that should be sent a CC or carbon copy of an email that uses this template. If there is not a predetermined
+        /// distribution list, this property will be null.
         /// </value>
         public string Cc { get; set; }
 
         /// <summary>
-        /// Gets or sets the CssInliningEnabled.
+        /// Gets or sets a value indicating whether CSS styles should be inlined in the message body to ensure compatibility with oldere HTML rendering engines.
         /// </summary>
         /// <value>
-        /// The CssInliningEnabled.
+        ///   true if CSS style inlining is enabled; otherwise, false.
         /// </value>
         public bool CssInliningEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the From.
+        /// Gets or sets the From email address.
         /// </summary>
         /// <value>
-        /// The From.
+        /// A System.String representing the from email address.
         /// </value>
         public string From { get; set; }
 
         /// <summary>
-        /// Gets or sets the FromName.
+        /// Gets or sets from name.
         /// </summary>
         /// <value>
-        /// The FromName.
+        /// From name.
         /// </value>
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is available for use.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if this item is available for use.
         /// </value>
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if the email template is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if the EmailTemplate is part of the Rock core system/framework otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LavaFieldsJson.
+        /// The internal storage for Rock.Model.CommunicationTemplate.LavaFields
         /// </summary>
         /// <value>
-        /// The LavaFieldsJson.
+        /// The lava fields json
         /// </value>
         public string LavaFieldsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushData.
+        /// Gets or sets the push data.
         /// </summary>
         /// <value>
-        /// The PushData.
+        /// The push data.
         /// </value>
         public string PushData { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushImageBinaryFileId.
+        /// Gets or sets the push image file identifier.
         /// </summary>
         /// <value>
-        /// The PushImageBinaryFileId.
+        /// The push image file identifier.
         /// </value>
         public int? PushImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushMessage.
+        /// Gets or sets the message text.
         /// </summary>
         /// <value>
-        /// The PushMessage.
+        /// A System.String containing the notification text.
         /// </value>
         public string PushMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenAction.
+        /// Gets or sets the push open action.
         /// </summary>
         /// <value>
-        /// The PushOpenAction.
+        /// The push open action.
         /// </value>
         public int? PushOpenAction { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenMessage.
+        /// Gets or sets the push open message.
         /// </summary>
         /// <value>
-        /// The PushOpenMessage.
+        /// The push open message.
         /// </value>
         public string PushOpenMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushSound.
+        /// Gets or sets the name of the sound alert to use for the notification.
         /// </summary>
         /// <value>
-        /// The PushSound.
+        /// From number.
         /// </value>
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushTitle.
+        /// Gets or sets the title of the notification.
         /// </summary>
         /// <value>
-        /// The PushTitle.
+        /// A System.String containing the notification title.
         /// </value>
         public string PushTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSFromDefinedValueId.
+        /// Gets or sets the SMS from number.
         /// </summary>
         /// <value>
-        /// The SMSFromDefinedValueId.
+        /// The identifier of a Defined Value that identifies the SMS Sender.
         /// </value>
         public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSMessage.
+        /// Gets or sets the SMS message content.
         /// </summary>
         /// <value>
-        /// The SMSMessage.
+        /// A System.String containing the message text.
         /// </value>
         public string SMSMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subject.
+        /// Gets or sets the subject of an email that uses this template.
         /// </summary>
         /// <value>
-        /// The Subject.
+        /// A System.String representing the subject of an email that uses this template.
         /// </value>
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the Title of the EmailTemplate 
         /// </summary>
         /// <value>
-        /// The Title.
+        /// A System.String representing the Title of the EmailTemplate.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the To.
+        /// Gets or sets the To email addresses that emails using this template should be delivered to.  If there is not a predetermined distribution list, this property can 
+        /// remain empty.
         /// </summary>
         /// <value>
-        /// The To.
+        /// A System.String representing a list of email addresses that the message should be delivered to. If there is not a predetermined email list, this property will 
+        /// be null.
         /// </value>
         public string To { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

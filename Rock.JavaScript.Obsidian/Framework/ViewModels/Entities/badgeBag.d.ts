@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Badge View Model */
 export type BadgeBag = {
-    /** Gets or sets the BadgeComponentEntityTypeId. */
+    /** Gets or sets the Id of the badge component entity type */
     badgeComponentEntityTypeId: number;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the badge. */
     description?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Badge describes. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the EntityTypeQualifierColumn. */
+    /** Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Badge.EntityTypeQualifierValue) that is used narrow the scope of the Badge to a subset or specific instance of an EntityType. */
     entityTypeQualifierColumn?: string | null;
 
-    /** Gets or sets the EntityTypeQualifierValue. */
+    /** Gets or sets the entity type qualifier value that is used to narrow the scope of the Badge to a subset or specific instance of an EntityType. */
     entityTypeQualifierValue?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the given Name of the badge. This value is an alternate key and is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

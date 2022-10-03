@@ -34,74 +34,111 @@ namespace Rock.ViewModels.Entities
     public partial class GroupRequirementBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets whether leaders are allowed to mark requirements as met manually.
+        /// </summary>
+        public bool AllowLeadersToOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Applies To" Age Classification.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The Age Classification.
+        /// </value>
+        public int AppliesToAgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Applies To" Rock.Model.DataView identifier.
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        public int? AppliesToDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Due Date" attribute identifier for when the Rock.Model.GroupRequirementType.DueDateType is <see cref="F:Rock.Model.DueDateType.GroupAttribute" />.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        public int? DueDateAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configured date for when the Rock.Model.GroupRequirementType.DueDateType is <see cref="F:Rock.Model.DueDateType.ConfiguredDate" />.
+        /// </summary>
+        /// <value>
+        /// The due date time.
+        /// </value>
+        public DateTime? DueDateStaticDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Rock.Model.Group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupRequirementTypeId.
+        /// Gets or sets the group requirement type identifier.
         /// </summary>
         /// <value>
-        /// The GroupRequirementTypeId.
+        /// The group requirement type identifier.
         /// </value>
         public int GroupRequirementTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupRoleId.
+        /// The specific GroupRoleId that this requirement is for. NULL means this requirement applies to all roles.
         /// </summary>
         /// <value>
-        /// The GroupRoleId.
+        /// The group role identifier.
         /// </value>
         public int? GroupRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the Rock.Model.GroupType identifier.
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// The group type identifier.
         /// </value>
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MustMeetRequirementToAddMember.
+        /// Gets or sets a value indicating whether a member must meet this requirement before adding (only applies to DataView and SQL RequirementCheckType)
         /// </summary>
         /// <value>
-        /// The MustMeetRequirementToAddMember.
+        /// true if [must meet requirement to add member]; otherwise, false.
         /// </value>
         public bool MustMeetRequirementToAddMember { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

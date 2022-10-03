@@ -34,74 +34,79 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionStatusAutomationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AutomationName.
+        /// Gets or sets the automation name.
         /// </summary>
         /// <value>
-        /// The AutomationName.
+        /// The automation name.
         /// </value>
         public string AutomationName { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewId.
+        /// Gets or sets the Rock.Model.DataView identifier.
         /// </summary>
         /// <value>
-        /// The DataViewId.
+        /// The data view identifier.
         /// </value>
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DestinationStatusId.
+        /// Gets or sets the destination Rock.Model.ConnectionStatus identifier.
         /// </summary>
         /// <value>
-        /// The DestinationStatusId.
+        /// The destination connection status identifier.
         /// </value>
         public int DestinationStatusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupRequirementsFilter.
+        /// Gets or sets the Group Requirements filter.
         /// </summary>
         /// <value>
-        /// The GroupRequirementsFilter.
+        /// A Rock.Model.GroupRequirementsFilter enum value that represents the Group Requirements filter.
         /// </value>
         public int GroupRequirementsFilter { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceStatusId.
+        /// Gets or sets the order.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source Rock.Model.ConnectionStatus identifier.
         /// </summary>
         /// <value>
-        /// The SourceStatusId.
+        /// The source connection status identifier.
         /// </value>
         public int SourceStatusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -20,7 +20,7 @@ import DropDownList from "./dropDownList";
 import DatePickerBase from "./datePicker";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { get } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "@Obsidian/Utility/slidingDateRange";
 
 export default defineComponent({
@@ -45,6 +45,7 @@ export default defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue);
+        const http = useHttp();
 
         const rangeType = ref(internalValue.value?.rangeType?.toString() ?? "");
         const timeValue = ref(internalValue.value?.timeValue?.toString() ?? "");
@@ -90,7 +91,7 @@ export default defineComponent({
          * made by the user.
          */
         const updateDateRangeText = async (): Promise<void> => {
-           const parameters: Record<string, string> = {
+            const parameters: Record<string, string> = {
                 slidingDateRangeType: rangeType.value || "0",
                 timeUnitType: timeUnit.value || "0",
                 number: timeValue.value || "1"
@@ -101,7 +102,7 @@ export default defineComponent({
                 parameters["endDate"] = highDate.value;
             }
 
-            const result = await get<string>("/api/Utility/CalculateSlidingDateRange", parameters);
+            const result = await http.get<string>("/api/Utility/CalculateSlidingDateRange", parameters);
 
             if (result.isSuccess && result.data) {
                 dateRangeText.value = result.data;

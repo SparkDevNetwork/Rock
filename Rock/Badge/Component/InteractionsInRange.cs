@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -50,30 +51,22 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-interactioninrange badge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-interactioninrange rockbadge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -96,7 +89,7 @@ namespace Rock.Badge.Component
             return $@"
                 $.ajax({{
                     type: 'GET',
-                    url: Rock.settings.get('baseUrl') + 'api/Badges/InteractionsInRange/{Person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode( dateRange )}' ,
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/InteractionsInRange/{person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode( dateRange )}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
 
@@ -115,7 +108,7 @@ namespace Rock.Badge.Component
                                 badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fa {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
                             }}
 
-                            $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);
+                            $('.rockbadge-interactioninrange.rockbadge-id-{badge.Id}').html(badgeContent);
                         }}
                     }},
                 }});";

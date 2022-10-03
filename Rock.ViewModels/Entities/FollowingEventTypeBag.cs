@@ -34,122 +34,122 @@ namespace Rock.ViewModels.Entities
     public partial class FollowingEventTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the FollowingEvent.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the user defined description of the FollowingEvent.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityNotificationFormatLava.
+        /// Gets or sets how an entity should be formatted when included in the event notification to follower.
         /// </summary>
         /// <value>
-        /// The EntityNotificationFormatLava.
+        /// The item notification lava.
         /// </value>
         public string EntityNotificationFormatLava { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the event MEF component identifier.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The event entity type identifier.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FollowedEntityTypeId.
+        /// Gets or sets the followed entity type identifier.
         /// </summary>
         /// <value>
-        /// The FollowedEntityTypeId.
+        /// The followed entity type identifier.
         /// </value>
         public int? FollowedEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IncludeNonPublicRequests.
+        /// Gets or sets a value indicating whether [include non public requests].
         /// </summary>
         /// <value>
-        /// The IncludeNonPublicRequests.
+        ///   true if [include non public requests]; otherwise, false.
         /// </value>
         public bool IncludeNonPublicRequests { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsNoticeRequired.
+        /// Gets or sets a value indicating whether this event is required. If not, followers will be able to optionally select if they want to be notified of this event
         /// </summary>
         /// <value>
-        /// The IsNoticeRequired.
+        /// true if this instance is notice required; otherwise, false.
         /// </value>
         public bool IsNoticeRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastCheckDateTime.
+        /// Gets or sets the last check.
         /// </summary>
         /// <value>
-        /// The LastCheckDateTime.
+        /// The last check.
         /// </value>
         public DateTime? LastCheckDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the (internal) Name of the FollowingEvent. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the (internal) name of the FollowingEvent.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the SendOnWeekends.
+        /// Gets or sets a value indicating whether [send on weekends].
         /// </summary>
         /// <value>
-        /// The SendOnWeekends.
+        ///   true if [send on weekends]; otherwise, false.
         /// </value>
         public bool SendOnWeekends { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

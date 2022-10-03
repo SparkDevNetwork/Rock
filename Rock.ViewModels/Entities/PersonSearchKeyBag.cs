@@ -34,66 +34,67 @@ namespace Rock.ViewModels.Entities
     public partial class PersonSearchKeyBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the IsValuePrivate.
+        /// Gets or sets a value indicating whether this value is private.
+        /// If the search key is private, it should not be shown in the UI.
         /// </summary>
         /// <value>
-        /// The IsValuePrivate.
+        ///   true if this instance is value private; otherwise, false.
         /// </value>
         public bool IsValuePrivate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SearchTypeValueId.
+        /// Gets or sets the Id of the search Type Rock.Model.DefinedValue representing search type key.
         /// </summary>
         /// <value>
-        /// The SearchTypeValueId.
+        /// A System.Int32 representing the Id of the Rock.Model.DefinedValue identifying the search type key.
         /// </value>
         public int SearchTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SearchValue.
+        /// Gets or sets the search value.
         /// </summary>
         /// <value>
-        /// The SearchValue.
+        /// The search value.
         /// </value>
         public string SearchValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

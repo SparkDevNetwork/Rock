@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupScheduleExclusion View Model */
 export type GroupScheduleExclusionBag = {
-    /** Gets or sets the EndDate. */
+    /** Gets the end date. */
     endDate?: string | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Rock.Model.GroupType identifier. */
     groupTypeId: number;
 
-    /** Gets or sets the StartDate. */
+    /** Gets the start date. */
     startDate?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

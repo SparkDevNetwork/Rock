@@ -25,43 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventItem View Model */
 export type EventItemBag = {
-    /** Gets or sets the ApprovedByPersonAliasId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who approved this event. */
     approvedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ApprovedOnDateTime. */
+    /** Gets or sets the date this event was approved. */
     approvedOnDateTime?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the Description of the EventItem. */
     description?: string | null;
 
-    /** Gets or sets the DetailsUrl. */
+    /** Gets or sets the URL for an external event. */
     detailsUrl?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets the is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsApproved. */
+    /** Gets or sets a flag indicating if the event has been approved. */
     isApproved: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the EventItem. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the PhotoId. */
+    /** Gets or sets the Id of the Rock.Model.BinaryFile that contains the photo of the EventItem. */
     photoId?: number | null;
 
-    /** Gets or sets the Summary. */
+    /** Gets or sets the Summary of the EventItem. */
     summary?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

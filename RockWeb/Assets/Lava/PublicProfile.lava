@@ -8,10 +8,13 @@
     ShowFamilyMembers - If this is true, family members should be listed
     FamilyMembers -  (List of Rock.Model.GroupMember) The family members (of the selected family), not including the currentperson
     Families = (List of Rock.Model.Group) The families that this person is in
+    ShowGender - If this is true, gender should be shown
 
+    ShowAddresses - If this is true, addresses should be shown
     AddressTypeValueId - (DefinedValueCache Id) The address type defined value Id that is displayed
     Address = (Rock.Model.GroupLocation) The address to be displayed
 
+    ShowEmailPreference - If this is true, email preference should be shown
     ShowPhoneNumbers - If this is true, phone numbers should be shown
     DisplayedPhoneTypeValueIds - (List of DefinedValueCache Ids) - The Phone Type defined values ids that should be shown
     PhoneNumbers (List of Rock.Model.PhoneNumber)) - The phone numbers that can be displayed
@@ -66,9 +69,11 @@
                             {{ CurrentPerson.Age }} {{ 'year' | PluralizeForQuantity:CurrentPerson.Age }} old <small>({{ CurrentPerson.BirthDate | Date:'sd' }})</small><br>
                         {% endif %}
                     </li>
+                    {% if ShowGender %}
                     <li>
                         {% if CurrentPerson.Gender != "Unknown" %}{{ CurrentPerson.Gender }}{% endif %}
                     </li>
+                    {% endif %}
                     <li>
                         {% if CurrentPerson.MaritalStatusValueId %}
                             {% assign maritalStatusValue = CurrentPerson.MaritalStatusValueId | FromCache:'DefinedValue' %}

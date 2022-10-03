@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -235,11 +235,14 @@ namespace Rock.Rest.Controllers
                     WatchedPercentage = watchedPercentage
                 };
 
+                var pageId = mediaInteraction.PageId
+                    ?? ( mediaInteraction.PageGuid.HasValue ? PageCache.GetId( mediaInteraction.PageGuid.Value ) : null );
+
                 // If the data includes all of the device information then use it.
                 if ( mediaInteraction.Application.IsNotNullOrWhiteSpace() && mediaInteraction.OperatingSystem.IsNotNullOrWhiteSpace() && mediaInteraction.ClientType.IsNotNullOrWhiteSpace() )
                 {
                     interaction = interactionService.CreateInteraction( interactionComponentId,
-                        null,
+                        pageId,
                         "Watch",
                         mediaInteraction.OriginalUrl?.Truncate( 500, false ),
                         data.ToJson(),
@@ -267,6 +270,7 @@ namespace Rock.Rest.Controllers
                     interaction.Operation = "Watch";
                     interaction.InteractionData = data.ToJson();
                     interaction.PersonAliasId = personAliasId;
+                    interaction.EntityId = pageId;
                 }
 
                 interaction.InteractionLength = watchedPercentage;
@@ -379,6 +383,18 @@ namespace Rock.Rest.Controllers
             /// The person unique identifier.
             /// </value>
             public Guid? PersonGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the page the media was viewed on.
+            /// </summary>
+            /// <value>The identifier of the page the media was viewed on.</value>
+            public int? PageId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique identifier of the page the media was viewed on.
+            /// </summary>
+            /// <value>The unique identifier of the page the media was viewed on.</value>
+            public Guid? PageGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the related entity type identifier.

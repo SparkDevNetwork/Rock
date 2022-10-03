@@ -55,10 +55,16 @@ namespace Rock.Model
                     // Set the workflow number
                     if ( State == EntityContextState.Added )
                     {
+                        // Get the next WorkflowIdNumber.
+                        // Ordering by the indexed [Id] column significantly improves performance over using Max([WorkflowIdNumber]),
+                        // However, be aware that this introduces the possibility of duplicate sequence numbers if the most recently added WorkflowIdNumber
+                        // is set to a value less than the current maximum by some external process.
                         int maxNumber = new WorkflowService( RockContext )
                             .Queryable().AsNoTracking()
                             .Where( w => w.WorkflowTypeId == this.Entity.WorkflowTypeId )
-                            .Max( w => ( int? ) w.WorkflowIdNumber ) ?? 0;
+                            .OrderByDescending( x => x.Id )
+                            .Select( x => x.WorkflowIdNumber )
+                            .FirstOrDefault();
                         this.Entity.WorkflowIdNumber = maxNumber + 1;
                     }
 

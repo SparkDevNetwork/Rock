@@ -25,43 +25,49 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransactionDetail View Model */
 export type FinancialTransactionDetailBag = {
-    /** Gets or sets the AccountId. */
+    /**
+     * Gets or sets the AccountId of the Rock.Model.FinancialAccount/account that the Rock.Model.FinancialTransactionDetail.Amount of this 
+     * detail line item should be credited towards.
+     */
     accountId: number;
 
-    /** Gets or sets the Amount. */
-    amount?: number;
+    /** Gets or sets the total amount of the transaction detail. This total amount includes any associated fees. */
+    amount: number;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity id. */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the FeeAmount. */
+    /** Gets or sets the fee amount of the transaction detail, which is a subset of the Amount. */
     feeAmount?: number | null;
 
-    /** Gets or sets the FeeCoverageAmount. */
+    /** Gets or sets the fee coverage amount. */
     feeCoverageAmount?: number | null;
 
-    /** Gets or sets the ForeignCurrencyAmount. */
+    /** Gets or sets the foreign currency amount. */
     foreignCurrencyAmount?: number | null;
 
-    /** Gets or sets the Summary. */
+    /** Gets or sets the summary of the transaction detail. */
     summary?: string | null;
 
-    /** Gets or sets the TransactionId. */
+    /**
+     * Gets or sets the TransactionId of the Rock.Model.FinancialTransaction that this 
+     * detail item is a part of.
+     */
     transactionId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

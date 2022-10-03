@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.FamilyTerm )]
 
     [BooleanField( "Force Email Update",
-        Description = "Force the email to be updated on the person's record.",
+        Description = "If enabled, no checkbox option will be available on the final confirmation screen regarding whether or not to update the  Registrar's email address. Instead, the registrar's email address will be updated to match the supplied Confirmation Email.",
         DefaultBooleanValue = false,
         Order = 9,
         Key = AttributeKey.ForceEmailUpdate )]
@@ -876,6 +876,21 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Updates the RegistrationInstanceState property with info from the DB. This is to ensure that any change to the RegistrationInstnaceState made while the user was registering
+        /// is considered. e.g. If the registration was at capacity, made inactive, or the period ended then the user can be prevented from saving it.
+        /// </summary>
+        private void UpdateRegistrationInstanceStateInfo()
+        {
+            if ( RegistrationInstanceState == null || RegistrationInstanceState.Id == 0 )
+            {
+                return;
+            }
+
+            RegistrationInstanceState = new RegistrationInstanceService( new RockContext() ).Get( RegistrationInstanceState.Id );
+
+        }
+
+        /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
         /// based on the current page reference.  This function is called during the page's
         /// oninit to load any initial breadcrumbs.
@@ -1178,7 +1193,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
+                pnlRegistrationAttributesEndProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                 lRegistrationAttributesEndTitle.Text = this.RegistrationAttributeTitleEnd;
                 avcRegistrationAttributesEnd.ShowCategoryLabel = false;
@@ -2027,6 +2042,11 @@ namespace RockWeb.Blocks.Event
                     if ( linkage != null )
                     {
                         GroupId = linkage.GroupId;
+
+                        if ( linkage.CampusId.HasValue )
+                        {
+                            CampusId = linkage.CampusId;
+                        }
                     }
                 }
             }
@@ -2052,6 +2072,11 @@ namespace RockWeb.Blocks.Event
                     RegistrationInstanceState = linkage.RegistrationInstance;
                     GroupId = linkage.GroupId;
                     RegistrationState = new RegistrationInfo( CurrentPerson );
+
+                    if ( linkage.CampusId.HasValue )
+                    {
+                        CampusId = linkage.CampusId;
+                    }
                 }
             }
 
@@ -2079,6 +2104,10 @@ namespace RockWeb.Blocks.Event
                     RegistrationInstanceState = linkage.RegistrationInstance;
                     GroupId = linkage.GroupId;
                     RegistrationState = new RegistrationInfo( CurrentPerson );
+                    if ( linkage.CampusId.HasValue )
+                    {
+                        CampusId = linkage.CampusId;
+                    }
                 }
             }
 
@@ -2121,6 +2150,11 @@ namespace RockWeb.Blocks.Event
                     if ( linkage != null )
                     {
                         GroupId = linkage.GroupId;
+
+                        if ( linkage.CampusId.HasValue )
+                        {
+                            CampusId = linkage.CampusId;
+                        }
                     }
                 }
             }
@@ -2393,6 +2427,8 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
             {
+                UpdateRegistrationInstanceStateInfo();
+
                 var rockContext = new RockContext();
 
                 var registrationService = new RegistrationService( rockContext );
@@ -2409,6 +2445,21 @@ namespace RockWeb.Blocks.Event
                             .Where( r => r.PersonAlias != null )
                             .Select( r => r.PersonAlias.PersonId )
                             .ToList();
+                    }
+                }
+
+                if ( isNewRegistration )
+                {
+                    if ( RegistrationInstanceState.EndDateTime < RockDateTime.Now )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} closed on {RegistrationInstanceState.EndDateTime}." );
+                        return null;
+                    }
+
+                    if ( !RegistrationInstanceState.IsActive )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} is no longer active." );
+                        return null;
                     }
                 }
 
@@ -2596,7 +2647,7 @@ namespace RockWeb.Blocks.Event
                             var parameters = new Dictionary<string, string>();
                             parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                             parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                            item.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                         }
 
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
@@ -2685,6 +2736,18 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+            // If the Registration Instance linkage specified a Campus, load it now
+            CampusCache campus = null;
+            if ( CampusId.HasValue )
+            {
+                campus = CampusCache.Get( CampusId.Value );
+                if ( campus != null && ( !registration.CampusId.HasValue || registration.CampusId.Value != campus.Id ) )
+                {
+                    registration.CampusId = campus.Id;
+                    History.EvaluateChange( registrationChanges, "Campus", registration.CampusId?.ToString() ?? string.Empty, campus.Name );
+                }
+            }
+
             bool newRegistrar = newRegistration ||
                 registration.FirstName == null || !registration.FirstName.Equals( RegistrationState.FirstName, StringComparison.OrdinalIgnoreCase ) ||
                 registration.LastName == null || !registration.LastName.Equals( RegistrationState.LastName, StringComparison.OrdinalIgnoreCase );
@@ -2744,8 +2807,29 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // otherwise look for one and one-only match by name/email
-                    registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    if ( RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                    {
+                        // So, here we should probably grab the "first" registrant from the State.
+                        var firstRegistrantInfo = RegistrationState.Registrants.FirstOrDefault();
+                        bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                        string firstName = firstRegistrantInfo.GetFirstName( RegistrationTemplate );
+                        string lastName = firstRegistrantInfo.GetLastName( RegistrationTemplate );
+                        string email = firstRegistrantInfo.GetEmail( RegistrationTemplate );
+                        var birthday = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
+                        var mobilePhone = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
+
+                        // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                        registrar = personService.FindPerson( personQuery, forceEmailUpdate );
+                    }
+                    else
+                    {
+                        // otherwise look for one and one-only match by name/email
+                        registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    }
+
                     if ( registrar != null )
                     {
                         registration.PersonAliasId = registrar.PrimaryAliasId;
@@ -2922,9 +3006,30 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
-                    // If a match was not found, create a new person
+
+                    /**
+                      * 06/07/2022 - KA
+                      * 
+                      * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                      * then chances are a Person was created or found for the first Registrant and used
+                      * as the Registrar. In that case then we don't create a new Person for the first
+                      * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                      * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                      * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                      * any time it is called. This prevents us from creating duplicate Person entities for
+                      * both the Registrar and first Registrant who are the same person in this scenario.
+                    */
+                    bool isCreatedAsRegistrant = RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == RegistrationState.Registrants.FirstOrDefault();
+
                     if ( person == null )
                     {
+                        if ( isCreatedAsRegistrant )
+                        {
+                            person = registrar;
+                        }
+                        else
+                        {
+                        // If a match was not found, create a new person
                         person = new Person();
                         person.FirstName = firstName;
                         person.LastName = lastName;
@@ -2933,13 +3038,14 @@ namespace RockWeb.Blocks.Event
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )
-                        {
-                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                        }
+                            {
+                                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                            }
 
-                        if ( dvcRecordStatus != null )
-                        {
-                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                            if ( dvcRecordStatus != null )
+                            {
+                                person.RecordStatusValueId = dvcRecordStatus.Id;
+                            }
                         }
                     }
 
@@ -5428,19 +5534,28 @@ namespace RockWeb.Blocks.Event
                 var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
                 if ( familyOptions.Any() )
                 {
-                    // previous family selections are always null after postback, so default to anyone in the same family
+                    // Previous family selections are always null after postback, so default to anyone in the same family.
                     var selectedGuid = CurrentPerson != null ? CurrentPerson.GetFamily().Guid : rblRegistrarFamilyOptions.SelectedValueAsGuid();
+
+                    // Set selected to nothing before we repopulate rblRegistrarFamilyOptions,
+                    // then we'll set it back.
+                    rblRegistrarFamilyOptions.SetValue( ( Guid? ) null );
 
                     familyOptions.Add(
                         familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
                         Guid.NewGuid() :
                         RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
                         "None" );
-                    rblRegistrarFamilyOptions.DataSource = familyOptions;
-                    rblRegistrarFamilyOptions.DataBind();
+
+                    rblRegistrarFamilyOptions.Items.Clear();
+                    foreach ( var option in familyOptions )
+                    {
+                        rblRegistrarFamilyOptions.Items.Add( new ListItem( option.Value, option.Key.ToString() ) );
+                    }
 
                     if ( selectedGuid.HasValue )
                     {
+                        // Note that SetValue internally checks to see if the specified value is a valid to set.
                         rblRegistrarFamilyOptions.SetValue( selectedGuid );
                     }
 

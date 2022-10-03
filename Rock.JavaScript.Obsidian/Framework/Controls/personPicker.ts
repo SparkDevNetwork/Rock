@@ -16,12 +16,13 @@
 //
 
 import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
+import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 import Panel from "./panel";
 import TextBox from "./textBox";
 import { nextTick } from "vue";
-import { doApiCall } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 const enum AgeClassification {
@@ -94,6 +95,7 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
+        const http = useHttp();
         const internalValue = ref(props.modelValue);
 
         /** Determines if the clear button should be shown. */
@@ -141,13 +143,13 @@ export default defineComponent({
                 return;
             }
 
-            const params = {
+            const options: Partial<PersonPickerSearchOptionsBag> = {
                 name: text,
                 includeDetails: true
             };
 
             // Make the API call to get the search results.
-            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, params);
+            const result = await http.doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, options);
 
             // Check again if we have been cancelled before we do the update.
             if (cancellationToken.value) {
@@ -404,7 +406,7 @@ export default defineComponent({
             <div class="picker picker-select person-picker">
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
-                    <span class="selected-name" v-text="selectedName"></span>
+                    <span class="selected-name">{{ selectedName }}</span>
                     <b class="fa fa-caret-down pull-right"></b>
                 </a>
 

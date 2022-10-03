@@ -25,58 +25,63 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationRecipient View Model */
 export type CommunicationRecipientBag = {
-    /** Gets or sets the AdditionalMergeValuesJson. */
+    /** Gets or sets the AdditionalMergeValues as a Json string. */
     additionalMergeValuesJson?: string | null;
 
-    /** Gets or sets the CommunicationId. */
+    /** Gets or sets the CommunicationId of the Rock.Model.Communication. */
     communicationId: number;
 
-    /** Gets or sets the MediumEntityTypeId. */
+    /** Gets or sets the medium entity type identifier. */
     mediumEntityTypeId?: number | null;
 
-    /** Gets or sets the OpenedClient. */
+    /** Gets or sets type of client that the recipient used to open the communication. */
     openedClient?: string | null;
 
-    /** Gets or sets the OpenedDateTime. */
+    /** Gets or sets the datetime that communication was opened by recipient. */
     openedDateTime?: string | null;
 
-    /** Gets or sets the PersonalDeviceId. */
+    /** Gets or sets the personal device identifier. */
     personalDeviceId?: number | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who is being sent the Rock.Model.Communication. */
     personAliasId?: number | null;
 
-    /** Gets or sets the ResponseCode. */
+    /**
+     * The response code from 100-99999 (excluding 666 and 911)
+     * with a prefix of '@'. For example, '@126345'
+     * Note: this numeric portion must be between 3 and 5 digits due
+     * to a regex that parses the message to find response codes
+     */
     responseCode?: string | null;
 
-    /** Gets or sets the SendDateTime. */
+    /** Gets or sets the datetime that communication was sent. */
     sendDateTime?: string | null;
 
-    /** Gets or sets the SentMessage. */
+    /** Gets or sets the message as it was sent to the recipient (i.e. after lava merge). */
     sentMessage?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status of the Communication submission to the recipient. */
     status: number;
 
-    /** Gets or sets the StatusNote. */
+    /** Gets or sets the status note. */
     statusNote?: string | null;
 
-    /** Gets or sets the TransportEntityTypeName. */
+    /** Gets or sets the transport entity type identifier. */
     transportEntityTypeName?: string | null;
 
-    /** Gets or sets the UniqueMessageId. */
+    /** Gets or sets the unique message identifier. */
     uniqueMessageId?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

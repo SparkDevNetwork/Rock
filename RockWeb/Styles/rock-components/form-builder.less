@@ -21,10 +21,6 @@
   --flex-col-gutter: 30px;
   --zone-border-radius: 6px;
 
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-
   .zone-body {
     .configurable-zone > .zone-content-container > .zone-content {
       pointer-events: none;
@@ -210,8 +206,15 @@
 }
 
 .form-builder-grow {
+  position: relative;
   display: flex;
   flex-grow: 1;
+  overflow: hidden;
+}
+
+.form-builder-container {
+  display: flex;
+  flex: 1 1 auto;
   overflow: hidden;
 }
 
@@ -223,6 +226,7 @@
 }
 
 .form-layout {
+  position: relative;
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
@@ -237,6 +241,7 @@
 }
 
 .form-sidebar {
+  position: relative;
   z-index: 20;
   display: flex;
   flex: 1 0 auto;
@@ -252,8 +257,8 @@
   }
 
   .panel-title {
-    font-size: 16px;
     padding: 0 16px !important;
+    font-size: 16px;
   }
 }
 
@@ -272,6 +277,7 @@
 }
 
 .sidebar-header {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -295,6 +301,7 @@
 }
 
 .sidebar-body {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -399,23 +406,6 @@
   align-items: center;
 }
 
-.rock-header {
-  .title {
-    margin: 0;
-  }
-
-  .description {
-    margin: 0;
-    font-size: @font-size-small;
-    color: @text-muted;
-  }
-}
-
-
-.section-header-hr {
-  margin-top: 16px;
-}
-
 /*** Form Template Items ***/
 
 .form-template-item {
@@ -462,6 +452,11 @@
 
 
 .block-instance.form-list {
+  .panel-body {
+    flex: 1 0 0;
+    overflow: hidden;
+  }
+
   .filter-options,
   .form-category-display {
     overflow-y: auto;
@@ -474,6 +469,11 @@
     .category-header {
       padding: 18px 18px 12px;
     }
+
+    @media (max-width: @screen-md-max) {
+      border-right: 0;
+      border-bottom: 1px solid @panel-border;
+    }
   }
 
   .form-actions {
@@ -482,10 +482,10 @@
 
   .btn-link-spaced {
     padding: 0;
-    margin-right: 16px;
+    margin-right: 8px;
   }
 
   .btn-link-spaced + .btn-link-spaced {
-    margin-left: 16px;
+    margin-left: 8px;
   }
 }

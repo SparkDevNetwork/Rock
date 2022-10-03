@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
             var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
-                foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+                foreach ( var schoolGrade in schoolGrades.DefinedValues.Where( a => a.IsActive ).OrderByDescending( a => a.Value.AsInteger() ) )
                 {
                     ListItem listItem = new ListItem();
                     if ( UseAbbreviation )

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Event
         Key = AttributeKey.FamilyTerm )]
 
     [BooleanField( "Force Email Update",
-        Description = "Force the email to be updated on the person's record.",
+        Description = "If enabled, no checkbox option will be available on the final confirmation screen regarding whether or not to update the  Registrar's email address. Instead, the registrar's email address will be updated to match the supplied Confirmation Email.",
         DefaultBooleanValue = false,
         Order = 9,
         Key = AttributeKey.ForceEmailUpdate )]
@@ -127,6 +127,8 @@ namespace Rock.Blocks.Event
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys
@@ -455,7 +457,8 @@ namespace Rock.Blocks.Event
                 var registrarFamily = registrar?.GetFamily( rockContext );
 
                 // Process the Person so we have data for the Lava merge.
-                var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, rockContext );
+                bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
+                var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
                 var (campusId, location, _) = UpdatePersonFromRegistrant( person, registrantInfo, new History.HistoryChangeList(), context.RegistrationSettings );
 
                 if ( person.Attributes == null )
@@ -659,6 +662,22 @@ namespace Rock.Blocks.Event
                     registrar = currentPerson;
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
                 }
+                else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                {
+                    var registrantInfo = args.Registrants.FirstOrDefault();
+
+                    var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+                    var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+                    var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+                    var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
+                    var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+                    bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                    var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                    registrar = new PersonService( rockContext ).FindPerson( personQuery, forceEmailUpdate );
+                    context.Registration.PersonAliasId = registrar?.PrimaryAliasId;
+                }
             }
             else
             {
@@ -820,6 +839,20 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var linkage = GetRegistrationLinkage( registrationSlug, rockContext );
+
+            if ( linkage?.CampusId.HasValue == true )
+            {
+                campusId = linkage.CampusId;
+            }
+
+            if ( campusId.HasValue )
+            {
+                context.Registration.CampusId = campusId;
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
+            }
+
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
             context.Registration.IsTemporary = false;
 
@@ -855,6 +888,7 @@ namespace Rock.Blocks.Event
                 foreach ( var registrantInfo in args.Registrants )
                 {
                     var forceWaitlist = context.SpotsRemaining < 1;
+                    bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
                         rockContext,
@@ -866,6 +900,7 @@ namespace Rock.Blocks.Event
                         multipleFamilyGroupIds,
                         ref singleFamilyId,
                         forceWaitlist,
+                        isCreatedAsRegistrant,
                         isNewRegistration,
                         postSaveActions );
 
@@ -1022,6 +1057,32 @@ namespace Rock.Blocks.Event
             }
 
             return groupId;
+        }
+
+        /// <summary>
+        /// Gets the registration linkage.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private EventItemOccurrenceGroupMap GetRegistrationLinkage( string slug, RockContext rockContext )
+        {
+            var dateTime = RockDateTime.Now;
+
+            var linkage = new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                .Queryable().AsNoTracking()
+                .Include( m => m.Campus )
+                .Where( l =>
+                    l.UrlSlug == slug &&
+                    l.RegistrationInstance != null &&
+                    l.RegistrationInstance.IsActive &&
+                    l.RegistrationInstance.RegistrationTemplate != null &&
+                    l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                    ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                    ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                .FirstOrDefault();
+
+            return linkage;
         }
 
         /// <summary>
@@ -1492,9 +1553,10 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="registrar">The registrar person that is performing the registering.</param>
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="rockContext">The rock context for any database lookups.</param>
-        /// <returns>A tuple that contains the <see cref="Person"/> object and the optional <see cref="RegistrationRegistrant"/> object.</returns>
-        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, RockContext rockContext )
+        /// <returns>A tuple that contains the <see cref="Person" /> object and the optional <see cref="RegistrationRegistrant" /> object.</returns>
+        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, bool isCreatedAsRegistrant, RockContext rockContext )
         {
             RegistrationRegistrant registrant = null;
             Person person = null;
@@ -1577,26 +1639,45 @@ namespace Rock.Blocks.Event
 
             if ( person == null )
             {
-                var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
-                var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
-
-                // If a match was not found, create a new person
-                person = new Person();
-                person.FirstName = firstName;
-                person.LastName = lastName;
-                person.IsEmailActive = true;
-                person.Email = email;
-                person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
-                if ( dvcConnectionStatus != null )
+                /**
+                  * 06/07/2022 - KA
+                  * 
+                  * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                  * then chances are a Person was created or found for the first Registrant and used
+                  * as the Registrar. In that case then we don't create a new Person for the first
+                  * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                  * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                  * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                  * any time it is called. This prevents us from creating duplicate Person entities for
+                  * both the Registrar and first Registrant who are the same person in this scenario.
+                */
+                if ( isCreatedAsRegistrant )
                 {
-                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    person = registrar;
                 }
-
-                if ( dvcRecordStatus != null )
+                else
                 {
-                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                    var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                    var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+
+                    // If a match was not found, create a new person
+                    person = new Person();
+                    person.FirstName = firstName;
+                    person.LastName = lastName;
+                    person.IsEmailActive = true;
+                    person.Email = email;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                    if ( dvcConnectionStatus != null )
+                    {
+                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    }
+
+                    if ( dvcRecordStatus != null )
+                    {
+                        person.RecordStatusValueId = dvcRecordStatus.Id;
+                    }
                 }
             }
 
@@ -1810,6 +1891,7 @@ namespace Rock.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <param name="isWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="isNewRegistration"><c>true</c> if the registration is new; otherwise <c>false</c>.</param>
         /// <param name="postSaveActions">Additional post save actions that can be appended to.</param>
         private void UpsertRegistrant(
@@ -1822,6 +1904,7 @@ namespace Rock.Blocks.Event
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
             bool isWaitlist,
+            bool isCreatedAsRegistrant,
             bool isNewRegistration,
             List<Action> postSaveActions )
         {
@@ -1835,7 +1918,7 @@ namespace Rock.Blocks.Event
             var registrantChanges = new History.HistoryChangeList();
             var personChanges = new History.HistoryChangeList();
 
-            var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamilyGuid, rockContext );
+            var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamilyGuid, isCreatedAsRegistrant, rockContext );
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles
@@ -2133,8 +2216,25 @@ namespace Rock.Blocks.Event
             }
 
             // If the registration is existing, then add the args that describe it to the view model
-            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+
+            /*
+	            9/7/2022 - SMC / DSH / NA
+                
+                isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
+                RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
+                (like Pushpay) may not return the RegistrationId parameter.
+
+                This will result loading the registration from the database, which previously caused a security error if the
+                currently logged in person (i.e., CurrentPerson) does not match the person who created the Registration (the
+                "registrar").  This error seems to have been related to the protection profiles and the creation of new person
+                records (for the registrar).  We no longer believe this is happening, so it should be okay to set the
+                RegistrationGuid argument.
+
+                Reason:  Resolving errors when processing additional payments from redirection gateways.
+            */
+
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
@@ -2147,18 +2247,9 @@ namespace Rock.Blocks.Event
                     FieldValues = session.FieldValues,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
-                    RegistrationGuid = null,
+                    RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
-
-                // Only populate the RegistrationGuid if this is an existing registration.
-                // Otherwise a security check on the current person will be performed
-                // which may throw an incorrect error since the current person may not
-                // match the person that was created as the registrar.
-                if ( isExistingRegistration )
-                {
-                    args.RegistrationGuid = session.RegistrationGuid;
-                }
 
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
@@ -2476,6 +2567,7 @@ namespace Rock.Blocks.Event
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
+                IsExistingRegistration = isExistingRegistration,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
                 Campuses = campusClientService.GetCampusesAsListItems(),

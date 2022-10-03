@@ -31,68 +31,65 @@ namespace Rock.Model
             /// <inheritdoc/>
             protected override void PreSave()
             {
-                var rockContext = ( RockContext ) DbContext;
-
-                switch ( Entry.State )
-                {
-                    case EntityContextState.Deleted:
-                        {
-                            // If a FinancialPaymentDetail was linked to this FinancialPersonSavedAccount and is now orphaned, delete it.
-                            var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                            financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
-
-                            break;
-                        }
-                }
-
                 base.PreSave();
             }
 
-            /// <inheritdoc/>
             protected override void PostSave()
             {
-                try
+                if ( Entry.State == EntityContextState.Deleted || Entry.State == EntityContextState.Modified )
                 {
-                    CreateReciprocalPaymentDetailRelationship();
-                }
-                catch ( Exception ex )
-                {
-                    RockLogger.Log.Error( ex, $"An exception occurred while attempting to add a reciprocal relationship to a FinancialPaymentDetail from FinancialPersonSavedAccount {Entity.Id}." );
+                    // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it
+                    var originalFinancialPaymentDetailId = Entry.OriginalValues[nameof( FinancialPersonSavedAccount.FinancialPaymentDetailId )] as int?;
+                    if ( originalFinancialPaymentDetailId.HasValue && Entity.FinancialPaymentDetailId != originalFinancialPaymentDetailId.Value )
+                    {
+                        var rockContext = this.RockContext;
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
+                        rockContext.SaveChanges();
+                    }
                 }
 
-                base.PreSave();
+                base.PostSave();
             }
 
-            /// <summary>
-            /// If this FinancialPersonSavedAccount is associated with a FinancialPaymentDetail entity, and that
-            /// FinancialPaymentDetail entity is not already associated with another FinancialPersonSavedAccount,
-            /// then we should create the reverse-association so that the payment detail points back to this
-            /// saved account.  Doing so creates more useful data if the FinancialPaymentDetail entity is cloned
-            /// in the future (i.e., because of tokenized payment methods being reused for new scheduled
-            /// transactions).
-            /// </summary>
-            private void CreateReciprocalPaymentDetailRelationship()
-            {
-                if ( State != EntityContextState.Added && State != EntityContextState.Modified )
-                {
-                    return; // Exit if this record is not being inserted or updated.
-                }
 
-                var rockContext = ( RockContext ) DbContext;
-                var paymentDetailId = Entity.FinancialPaymentDetailId;
-                FinancialPaymentDetail paymentDetail = null;
+            /* 2022-07-22 ED
+             * Circular references will result in an error when trying to perform an operation on both items, such as delete.
+             * This can result in DependencyOrderingError, Unable to determine a valid ordering for dependent operations. Dependencies may exist dueo to foreign key constratints, model requirements, or store-generated values.
+             * Since FinancialPersonSavedAccount has a FinancialPaymentDetailId, we cannot also have a reverse relationship on FinancialPaymentDetail.
+             * So the logic below should not be applied.
+             * 
+             * /// <summary>
+             * /// If this FinancialPersonSavedAccount is associated with a FinancialPaymentDetail entity, and that
+             * /// FinancialPaymentDetail entity is not already associated with another FinancialPersonSavedAccount,
+             * /// then we should create the reverse-association so that the payment detail points back to this
+             * /// saved account.  Doing so creates more useful data if the FinancialPaymentDetail entity is cloned
+             * /// in the future (i.e., because of tokenized payment methods being reused for new scheduled
+             * /// transactions).
+             * /// </summary>
+             * private void CreateReciprocalPaymentDetailRelationship()
+             * {
+             *     if ( State != EntityContextState.Added && State != EntityContextState.Modified )
+             *     {
+             *         return; // Exit if this record is not being inserted or updated.
+             *     }
 
-                if ( paymentDetailId.HasValue )
-                {
-                    paymentDetail = new FinancialPaymentDetailService( rockContext ).Get( paymentDetailId.Value );
-                }
+             *     var rockContext = ( RockContext ) DbContext;
+             *     var paymentDetailId = Entity.FinancialPaymentDetailId;
+             *     FinancialPaymentDetail paymentDetail = null;
 
-                if ( paymentDetail != null && paymentDetail.FinancialPersonSavedAccountId == null )
-                {
-                    paymentDetail.FinancialPersonSavedAccountId = Entity.Id;
-                    rockContext.SaveChanges();
-                }
-            }
+             *     if ( paymentDetailId.HasValue )
+             *     {
+             *         paymentDetail = new FinancialPaymentDetailService( rockContext ).Get( paymentDetailId.Value );
+             *     }
+
+             *     if ( paymentDetail != null && paymentDetail.FinancialPersonSavedAccountId == null )
+             *     {
+             *         paymentDetail.FinancialPersonSavedAccountId = Entity.Id;
+             *         rockContext.SaveChanges();
+             *     }
+             * }
+            */
         }
     }
 }

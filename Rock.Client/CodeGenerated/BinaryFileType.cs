@@ -61,6 +61,9 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
+        public int? MaxFileSizeBytes { get; set; }
+
+        /// <summary />
         public int? MaxHeight { get; set; }
 
         /// <summary />
@@ -135,6 +138,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsSystem = source.IsSystem;
+            this.MaxFileSizeBytes = source.MaxFileSizeBytes;
             this.MaxHeight = source.MaxHeight;
             this.MaxWidth = source.MaxWidth;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

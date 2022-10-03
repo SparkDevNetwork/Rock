@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -169,9 +169,9 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -180,9 +180,9 @@ namespace Rock.Field.Types
 
             if ( boolValue.Value )
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                 {
-                    return configurationValues[ConfigurationKey.TrueText];
+                    return privateConfigurationValues[ConfigurationKey.TrueText];
                 }
                 else
                 {
@@ -191,9 +191,9 @@ namespace Rock.Field.Types
             }
             else
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                 {
-                    return configurationValues[ConfigurationKey.FalseText];
+                    return privateConfigurationValues[ConfigurationKey.FalseText];
                 }
                 else
                 {
@@ -203,9 +203,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -215,6 +215,12 @@ namespace Rock.Field.Types
             // A condensed boolean value simply returns "Y" or "N" regardless
             // of the other configuration values.
             return boolValue.Value ? "Y" : "N";
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetCondensedTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
@@ -227,14 +233,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !condensed )
-            {
-                return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
-            else
-            {
-                return GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -729,5 +730,29 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldTrueText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var oldFalseText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+            var newTrueText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var newFalseText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+
+            if ( oldTrueText != newTrueText )
+            {
+                return true;
+            }
+
+            if ( oldFalseText != newFalseText )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

@@ -25,70 +25,73 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannel View Model */
 export type ContentChannelBag = {
-    /** Gets or sets the ChannelUrl. */
+    /** Gets or sets the channel URL. */
     channelUrl?: string | null;
 
-    /** Gets or sets the ChildItemsManuallyOrdered. */
+    /** Gets or sets a value indicating whether child items are manually ordered or not */
     childItemsManuallyOrdered: boolean;
 
-    /** Gets or sets the ContentChannelTypeId. */
+    /** Gets or sets the Rock.Model.ContentChannelType identifier. */
     contentChannelTypeId: number;
 
-    /** Gets or sets the ContentControlType. */
+    /** Gets or sets the type of the control to render when editing content for items of this type. */
     contentControlType: number;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the EnableRss. */
+    /** Gets or sets a value indicating whether [enable personalization]. */
+    enablePersonalization: boolean;
+
+    /** Gets or sets a value indicating whether [enable RSS]. */
     enableRss: boolean;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsIndexEnabled. */
+    /** Gets or sets a value indicating whether this instance is index enabled. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets the IsStructuredContent. */
+    /** Gets or sets a value indicating whether this content is structured. */
     isStructuredContent: boolean;
 
-    /** Gets or sets the IsTaggingEnabled. */
+    /** Gets or sets a value indicating whether this instance is tagging enabled. */
     isTaggingEnabled: boolean;
 
-    /** Gets or sets the ItemsManuallyOrdered. */
+    /** Gets or sets a value indicating whether items are manually ordered or not */
     itemsManuallyOrdered: boolean;
 
-    /** Gets or sets the ItemTagCategoryId. */
+    /** Gets or sets the item tag category identifier. */
     itemTagCategoryId?: number | null;
 
-    /** Gets or sets the ItemUrl. */
+    /** Gets or sets the item URL. */
     itemUrl?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the RequiresApproval. */
+    /** Gets or sets a value indicating whether [requires approval]. */
     requiresApproval: boolean;
 
-    /** Gets or sets the RootImageDirectory. */
+    /** Gets or sets the root image directory to use when the HTML control type is used */
     rootImageDirectory?: string | null;
 
-    /** Gets or sets the StructuredContentToolValueId. */
+    /** Gets or sets the Structure Content Tool Id. */
     structuredContentToolValueId?: number | null;
 
-    /** Gets or sets the TimeToLive. */
+    /** Gets or sets the number of minutes a feed can stay cached before refreshing it from the source. */
     timeToLive?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

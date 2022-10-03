@@ -433,9 +433,18 @@ var options = {
         enabled: true,
         backgroundColor: '#000',
         bodyFontColor: '#fff',
-        titleFontColor: '#fff'
+        titleFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(tooltipItem.yLabel); }
+        }
+    },
+    scales: {
+        yAxes:[ {
+            ticks: {
+                callback: function(label,index,labels) { returnIntl.NumberFormat().format(label); },
+            },
+        } ]
     }
-    
 };
 var data = {
     labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
@@ -850,7 +859,7 @@ This is a super simple panel.
 ";
 
             var expectedOutput = @"
-<div class=``panel panel-block``>
+<div class=``panel panel-default``>
   
       <div class=``panel-heading``>
         <h3 class=``panel-title``>

@@ -562,6 +562,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 
+        /// <summary>
+        /// The group attribute for the type of participation in a Fundraising Opportunity group.
+        /// </summary>
+        public const string PARTICIPATION_TYPE = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC";
+
+        /// <summary>
+        /// The attribute for Transaction Header in the Fundraising Transaction Entry block.
+        /// </summary>
+        public const string FUNDRAISING_TRANSACTION_HEADER = "65FB0B9A-670E-4AB9-9666-77959B4B702E";
+
         #endregion
 
         #region BIO Block
@@ -1007,5 +1017,10 @@ namespace Rock.SystemGuid
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "3C6B81A5-63AB-4EA7-A671-836505B9E444";
+
+        /// <summary>
+        /// The category treeview search results
+        /// </summary>
+        public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
     }
 }

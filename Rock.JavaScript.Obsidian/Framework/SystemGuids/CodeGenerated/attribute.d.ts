@@ -219,6 +219,10 @@ export const enum Attribute {
     CountryAddressPostcodeRequirement = "0037453D-0D26-4F02-8AB3-6AD675D85AAE",
     /** The defined value attribute for storing a fundraising opportunity type's donation button text. */
     DefinedValueFundraisingDonateButtonText = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E",
+    /** The group attribute for the type of participation in a Fundraising Opportunity group. */
+    ParticipationType = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC",
+    /** The attribute for Transaction Header in the Fundraising Transaction Entry block. */
+    FundraisingTransactionHeader = "65FB0B9A-670E-4AB9-9666-77959B4B702E",
     /** The bio block's workflow action attribute Guid */
     BioWorkflowaction = "7197A0FB-B330-43C4-8E62-F3C14F649813",
     /** Global attribute of image file type extensions that should be allowed. */
@@ -309,7 +313,7 @@ export const enum Attribute {
     PersonGivingPreferredCurrency = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F",
     /** Preferred Source - Defined Type */
     PersonGivingPreferredSource = "0567B279-1F4D-4573-9AA7-927A7278443E",
-    /** Frequency Label. See . */
+    /** Frequency Label. See Rock.Financial.FinancialGivingAnalyticsFrequencyLabel. */
     PersonGivingFrequencyLabel = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5",
     /** Percent of Gifts Scheduled - Integer */
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",
@@ -386,4 +390,6 @@ export const enum Attribute {
     StreakAchievementTimeSpanInDays = "80030537-ED8E-41BA-BF61-AF242B9073CC",
     /** The statement generator configuration */
     StatementGeneratorConfig = "3C6B81A5-63AB-4EA7-A671-836505B9E444",
+    /** The category treeview search results */
+    CategoryTreeviewSearchResults = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E",
 }

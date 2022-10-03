@@ -54,6 +54,10 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: true
         },
+        hideDay: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
         allowFutureDates: {
             type: Boolean as PropType<boolean>,
             default: true
@@ -120,7 +124,7 @@ export default defineComponent({
         computedRequireYear(): boolean {
             return this.showYear && this.requireYear;
         },
-        internalDateKey (): string {
+        internalDateKey(): string {
             if (!this.modelValue.year && !this.computedRequireYear) {
                 const dateKey = DateKey.toNoYearDateKey(this.modelValue.month, this.modelValue.day);
                 return dateKey;
@@ -129,7 +133,7 @@ export default defineComponent({
             const dateKey = DateKey.toDateKey(this.modelValue.year, this.modelValue.month, this.modelValue.day);
             return dateKey;
         },
-        computedRules (): ValidationRule[] {
+        computedRules(): ValidationRule[] {
             const rules = normalizeRules(this.rules);
 
             if (rules.indexOf("required") !== -1 && rules.indexOf("datekey") === -1) {
@@ -138,7 +142,7 @@ export default defineComponent({
 
             return rules;
         },
-        years (): string[] {
+        years(): string[] {
             const years: string[] = [];
             let year = RockDateTime.now().year;
 
@@ -228,8 +232,8 @@ export default defineComponent({
                     <option value="11">Nov</option>
                     <option value="12">Dec</option>
                 </select>
-                <span class="separator">/</span>
-                <select :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="internalDay">
+                <span v-if="!hideDay" class="separator">/</span>
+                <select v-if="!hideDay" :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="internalDay">
                     <option value="0"></option>
                     <option v-for="day in days" :key="day" :value="day">{{day}}</option>
                 </select>

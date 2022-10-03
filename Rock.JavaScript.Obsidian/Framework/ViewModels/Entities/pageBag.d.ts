@@ -25,106 +25,112 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Page View Model */
 export type PageBag = {
-    /** Gets or sets the AdditionalSettings. */
+    /** Gets or sets the additional settings. */
     additionalSettings?: string | null;
 
-    /** Gets or sets the AllowIndexing. */
+    /** Gets or sets a value indicating whether [allow indexing]. */
     allowIndexing: boolean;
 
-    /** Gets or sets the BodyCssClass. */
+    /** Gets or sets the body CSS class. */
     bodyCssClass?: string | null;
 
-    /** Gets or sets the BreadCrumbDisplayIcon. */
+    /** Gets or sets a value indicating whether icon is displayed in breadcrumb. */
     breadCrumbDisplayIcon: boolean;
 
-    /** Gets or sets the BreadCrumbDisplayName. */
+    /** Gets or sets a value indicating whether the Page Name is displayed in the breadcrumb. */
     breadCrumbDisplayName: boolean;
 
-    /** Gets or sets the BrowserTitle. */
+    /** Gets or sets the browser title to use for the page. */
     browserTitle?: string | null;
 
-    /** Gets or sets the CacheControlHeaderSettings. */
+    /** Gets or sets the cache control header settings. */
     cacheControlHeaderSettings?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description of the page.  This will be added as a meta tag for the page  */
     description?: string | null;
 
-    /** Gets or sets the DisplayInNavWhen. */
+    /** Gets or sets a value indicating when the Page should be displayed in the navigation. */
     displayInNavWhen: number;
 
-    /** Gets or sets the EnableViewState. */
+    /** Gets or sets a flag indicating if view state should be enabled on the page.  */
     enableViewState: boolean;
 
-    /** Gets or sets the HeaderContent. */
+    /** Gets or sets HTML content to add to the page header area of the page when rendered. */
     headerContent?: string | null;
 
-    /** Gets or sets the IconBinaryFileId. */
+    /** Gets or sets the icon binary file identifier. */
     iconBinaryFileId?: number | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class name for a font vector based icon. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IncludeAdminFooter. */
+    /** Gets or sets a flag indicating if the admin footer should be displayed when a Site Administrator is logged in. */
     includeAdminFooter: boolean;
 
-    /** Gets or sets the InternalName. */
+    /** Gets or sets the internal name to use when administering this page */
     internalName?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the Page is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the KeyWords. */
+    /** Gets or sets the key words. */
     keyWords?: string | null;
 
-    /** Gets or sets the LayoutId. */
+    /** Gets or sets the Id of the Rock.Model.Layout that this Page uses. */
     layoutId: number;
 
-    /** Gets or sets the MedianPageLoadTimeDurationSeconds. */
+    /**
+     * Gets or sets the median page load time in seconds. Typically calculated from a set of
+     * Rock.Model.Interaction.InteractionTimeToServe values.
+     */
     medianPageLoadTimeDurationSeconds?: number | null;
 
-    /** Gets or sets the MenuDisplayChildPages. */
+    /** Gets or sets a flag indicating if the Page's children Pages should be displayed in the menu. */
     menuDisplayChildPages: boolean;
 
-    /** Gets or sets the MenuDisplayDescription. */
+    /** Gets or sets a flag indicating if the Page description should be displayed in the menu. */
     menuDisplayDescription: boolean;
 
-    /** Gets or sets the MenuDisplayIcon. */
+    /** Gets or sets a flag indicating if the Page icon should be displayed in the menu. */
     menuDisplayIcon: boolean;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets a number indicating the order of the page in the menu and in the site map.
+     * This will also affect the page order in the menu. This property is required.
+     */
     order: number;
 
-    /** Gets or sets the PageDisplayBreadCrumb. */
+    /** Gets or sets a flag indicating whether breadcrumbs are displayed on Page */
     pageDisplayBreadCrumb: boolean;
 
-    /** Gets or sets the PageDisplayDescription. */
+    /** Gets or sets a value indicating whether the Page description should be displayed on the page. */
     pageDisplayDescription: boolean;
 
-    /** Gets or sets the PageDisplayIcon. */
+    /** Gets or sets a value indicating whether the Page icon should be displayed on the Page. */
     pageDisplayIcon: boolean;
 
-    /** Gets or sets the PageDisplayTitle. */
+    /** Gets or sets a value indicating whether the Page Title should be displayed on the page (if the Rock.Model.Layout supports it). */
     pageDisplayTitle: boolean;
 
-    /** Gets or sets the PageTitle. */
+    /** Gets or sets the title of the of the Page to use as the page caption, in menu's, breadcrumb display etc. */
     pageTitle?: string | null;
 
-    /** Gets or sets the ParentPageId. */
+    /** Gets or sets the Id of the parent Page. */
     parentPageId?: number | null;
 
-    /** Gets or sets the RequiresEncryption. */
+    /** Gets or sets a flag that indicates if the Page requires SSL encryption. */
     requiresEncryption: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

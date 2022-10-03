@@ -39,6 +39,9 @@
                 <div class="my-2">
                     <Rock:LocationPicker ID="lpLocation" runat="server" LabelName="Select a Location" AllowedPickerModes="Named" CssClass="picker-lg" OnSelectLocation="lpLocation_SelectLocation" IncludeInactiveNamedLocations="true" />
                 </div>
+                <div class="my-2">
+                    <Rock:SchedulePicker ID="spSchedule" runat="server" LabelName="Select a Schedule"  CssClass="picker-lg" DefaultText="All Schedules" OnSelectItem="spSchedule_SelectItem" AllowInactiveSelection="true" />
+                </div>
                 <asp:Panel ID="pnlSubPageNav" runat="server" CssClass="d-print-none my-2">
                     <Rock:PageNavButtons ID="pbSubPages" runat="server" IncludeCurrentQueryString="true" />
                 </asp:Panel>

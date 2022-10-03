@@ -25,46 +25,63 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialBatch View Model */
 export type FinancialBatchBag = {
-    /** Gets or sets the AccountingSystemCode. */
+    /** Gets or sets an optional transaction code from an accounting system that batch is associated with */
     accountingSystemCode?: string | null;
 
-    /** Gets or sets the BatchEndDateTime. */
+    /**
+     * Gets or sets end of the posting date and time range for FinancialTransactions that are included in this batch.
+     * Transactions that post before or on this date and time and after the Rock.Model.FinancialBatch.BatchStartDateTime can be included in this batch.
+     */
     batchEndDateTime?: string | null;
 
-    /** Gets or sets the BatchStartDateTime. */
+    /**
+     * Gets or sets the start posting date and time range of FinancialTransactions that are included in this batch.  
+     * Transactions that post on or after this date and time and before the Rock.Model.FinancialBatch.BatchEndDateTime can be included in this batch.
+     */
     batchStartDateTime?: string | null;
 
-    /** Gets or sets the CampusId. */
+    /**
+     * Gets or sets the CampusId of the Rock.Model.Campus that this batch is associated with. If the batch is not linked
+     * to a campus, this value will be null.
+     */
     campusId?: number | null;
 
-    /** Gets or sets the ControlAmount. */
-    controlAmount?: number;
+    /**
+     * Gets or sets the control amount. This should match the total value of all
+     * FinancialTransactions that are included in the batch.
+     * Use Rock.Model.FinancialBatchService.IncrementControlAmount(System.Int32,System.Decimal,Rock.Model.History.HistoryChangeList) if you are incrementing the control amount
+     * based on a transaction amount.
+     */
+    controlAmount: number;
 
-    /** Gets or sets the ControlItemCount. */
+    /** Gets or sets the control item count. */
     controlItemCount?: number | null;
 
-    /** Gets or sets the IsAutomated. */
+    /**
+     * Gets or sets a value indicating whether this instance is automated.
+     * If IsAutomated is True, the UI should not allow the status of Pending to be changed to Open or Closed ( an external process will be in change of changing the status )
+     */
     isAutomated: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the batch. */
     name?: string | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status of the batch. */
     status: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

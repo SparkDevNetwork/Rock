@@ -25,11 +25,9 @@ position-relative
 text-white
 bring-forward
 overflow-hidden
-
 d-flex
 justify-content-center
 align-items-{{ contentalignment }}
-
 {% if ratio != null and ratio != '' %}
     ratio-{{ ratio }} hard xs-soft
 {% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
@@ -37,7 +35,7 @@ align-items-{{ contentalignment }}
     {% if backgroundvideourl != null and backgroundvideourl != '' %}
 
         <!-- Background Video -->
-        <video class="video display-block full-screen width-full {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
+        <video class="video display-block full-screen width-full {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 120%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
             <source src="{{ backgroundvideourl }}" type="video/mp4">
         </video>
 
@@ -45,11 +43,11 @@ align-items-{{ contentalignment }}
 
     <!-- Background Image -->
     {% if imageurl != null and imageurl != '' and backgroundvideourl == '' %}
-        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}" data-0="transform: scale(1);" data-900="transform: scale(1.5);"></span>
     {% endif %}
 
     {% if mobileimageurl != null and mobileimageurl != '' and backgroundvideourl == '' %}
-        <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+        <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}" data-0="transform: scale(1);" data-900="transform: scale(1.5);"></span>
     {% endif %}
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
@@ -64,7 +62,7 @@ align-items-{{ contentalignment }}
             {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
 
                 {% if title != null and title != '' %}
-                    <h1 class="{% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
+                    <h1 class="{% if titlesize and titlesize != empty %}{{ titlesize }}{% endif %} {% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
                 {% endif %}
 
                 {{ content }}

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,9 +10,49 @@ namespace Rock.CodeGeneration.Dialogs
     /// <summary>
     /// Interaction logic for SelectEntityDialog.xaml
     /// </summary>
-    public partial class SelectEntityDialog : Window
+    public partial class SelectEntityDialog : Window, INotifyPropertyChanged
     {
+        #region Fields
+
+        /// <summary>
+        /// The <see cref="FilterValue"/> backing field.
+        /// </summary>
+        private string _filterValue;
+
+        /// <summary>
+        /// The backing field that stores all items to be filtered.
+        /// </summary>
+        private readonly List<EntityItem> _allItems;
+
+        #endregion
+
+        #region Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the filter value used to filter the types.
+        /// </summary>
+        /// <value>The filter value used to filter the types.</value>
+        public string FilterValue
+        {
+            get => _filterValue;
+            set
+            {
+                _filterValue = value;
+                PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( nameof( Items ) ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the items that should be shown in the list box.
+        /// </summary>
+        /// <value>The items that should be shown in the list box.</value>
+        public List<EntityItem> Items => _allItems.Where( i => string.IsNullOrWhiteSpace( FilterValue ) || i.Name.ToLower().Contains( FilterValue.ToLower() ) ).ToList();
 
         /// <summary>
         /// Gets the selected entity.
@@ -27,12 +69,8 @@ namespace Rock.CodeGeneration.Dialogs
         /// </summary>
         public SelectEntityDialog()
         {
-            DataContext = this;
-
-            InitializeComponent();
-
             // Find all entities in the Rock DLL and add them to the list.
-            EntityListBox.ItemsSource = Reflection.FindTypes( typeof( Data.IEntity ) )
+            _allItems = Reflection.FindTypes( typeof( Data.IEntity ) )
                 .Select( t => new EntityItem
                 {
                     Name = t.Value.FullName,
@@ -40,6 +78,10 @@ namespace Rock.CodeGeneration.Dialogs
                 } )
                 .OrderBy( t => t.Name )
                 .ToList();
+
+            DataContext = this;
+
+            InitializeComponent();
         }
 
         #endregion
@@ -65,7 +107,7 @@ namespace Rock.CodeGeneration.Dialogs
         /// <summary>
         /// A single item displayed in the list box.
         /// </summary>
-        private class EntityItem
+        public class EntityItem
         {
             #region Properties
 

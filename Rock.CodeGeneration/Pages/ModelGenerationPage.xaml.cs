@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -21,6 +22,8 @@ using System.Windows.Input;
 using System.Xml;
 
 using Rock;
+using Rock.CodeGeneration.Utility;
+using Rock.CodeGeneration.XmlDoc;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 
@@ -39,9 +42,22 @@ namespace Rock.CodeGeneration.Pages
 
         private readonly System.Windows.Forms.FolderBrowserDialog _fbdOutput = new System.Windows.Forms.FolderBrowserDialog();
 
+        private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
+
         #endregion
 
         #region Properties
+
+        public string DisplayedAssemblyPath
+        {
+            get => _displayedAssemblyPath;
+            set
+            {
+                _displayedAssemblyPath = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _displayedAssemblyPath;
 
         public string AssemblyPath
         {
@@ -273,10 +289,23 @@ namespace Rock.CodeGeneration.Pages
             string assemblyFileName = fi.FullName;
 
             AssemblyPath = assemblyFileName;
+            DisplayedAssemblyPath = assemblyFileName;
             AssemblyDateTimeElapsed = fi.LastWriteTime.ToElapsedString();
             AssemblyDateTime = fi.LastWriteTime.ToString();
 
             var assembly = Assembly.LoadFrom( assemblyFileName );
+
+            var rockWebBinRockDllFileName = Path.Combine( RootFolder().FullName, "RockWeb\\Bin\\Rock.dll" );
+            if ( File.Exists( rockWebBinRockDllFileName ) )
+            {
+                var rockWebBinRockDll = Assembly.ReflectionOnlyLoadFrom( rockWebBinRockDllFileName );
+
+                // if the files are identical (they should be), display the path of the RockWeb\Bin Rock.dll
+                if ( rockWebBinRockDll.ManifestModule.ModuleVersionId == rockAssembly.ManifestModule.ModuleVersionId )
+                {
+                    DisplayedAssemblyPath = rockWebBinRockDllFileName;
+                }
+            }
 
             foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
@@ -362,7 +391,9 @@ namespace Rock.CodeGeneration.Pages
                 {
                     if ( rootFolder != null )
                     {
-                        if ( IsClientChecked )
+                        bool allModelsAreSelected = _modelItems.Count == _modelItems.Count( i => i.IsChecked );
+
+                        if ( IsClientChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( ClientFolder, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -373,7 +404,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( Path.Combine( ClientFolder, "CodeGenerated" ) );
                         }
 
-                        if ( IsServiceChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsServiceChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( NamespaceFolder( ServiceFolder, "Rock.Model" ).FullName, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -384,7 +415,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( codeGenFolder );
                         }
 
-                        if ( IsRestChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsRestChecked && allModelsAreSelected )
                         {
                             // var filePath1 = Path.Combine( rootFolder, "Controllers" );
                             // var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
@@ -409,6 +440,7 @@ namespace Rock.CodeGeneration.Pages
                                 if ( IsServiceChecked )
                                 {
                                     WriteServiceFile( ServiceFolder, type );
+                                    EnsureEntityTypeSystemGuid( ServiceFolder, type );
                                 }
 
                                 if ( IsRestChecked )
@@ -617,6 +649,8 @@ namespace Rock.CodeGeneration.Pages
                         // types that OK based on how they are used
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Elasticsearch),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Lucene)
                         };
 
                         var ignoredThreadSafeFieldWarning = new string[]
@@ -912,6 +946,45 @@ GO
         }
 
         /// <summary>
+        /// Ensures the entity type Guid is in SystemGuid\EntityType
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="type">The type.</param>
+        private void EnsureEntityTypeSystemGuid( string rootFolder, Type type )
+        {
+            var entityTypeSystemGuid = type.GetCustomAttribute<SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
+            if ( !entityTypeSystemGuid.HasValue )
+            {
+                return;
+            }
+
+            var guidString = entityTypeSystemGuid.ToString();
+
+            var entityTypeSystemGuidFileName = new FileInfo( Path.Combine( rootFolder, "SystemGuid\\EntityType.cs" ) );
+
+            var fileLines = File.ReadAllLines( entityTypeSystemGuidFileName.FullName );
+            if ( fileLines.Any( x => x.IndexOf( guidString, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                // already in there
+                return;
+            }
+
+            var entityTypeConstName = type.Name.SplitCase().Replace( " ", "_" ).ToUpper();
+
+            string newEntityTypeGuidCode = $@"
+        /// <summary>
+        /// The EntityType Guid for <see cref=""{type.FullName}""/> 
+        /// </summary>
+        public const string {entityTypeConstName} = ""{guidString.ToUpper()}"";";
+
+            var updatedFileLines = fileLines.Where( a => a != "}" && a != "    }");
+            updatedFileLines = updatedFileLines.Append( newEntityTypeGuidCode );
+            updatedFileLines = updatedFileLines.Append( "    }");
+            updatedFileLines = updatedFileLines.Append( "}");
+            File.WriteAllLines( entityTypeSystemGuidFileName.FullName, updatedFileLines.ToArray() );
+        }
+
+        /// <summary>
         /// Writes the Service file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
@@ -1181,13 +1254,36 @@ namespace Rock.ViewModels.Entities
 
             foreach ( var property in properties )
             {
-                sb.AppendLine( $@"        /// <summary>
+                if ( property.SummaryComment.IsNotNullOrWhiteSpace() )
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    foreach ( var line in property.SummaryComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                    {
+                        sb.AppendLine( $"        /// {line}" );
+                    }
+                    sb.AppendLine( "        /// </summary>" );
+
+                    if ( property.ValueComment.IsNotNullOrWhiteSpace() )
+                    {
+                        sb.AppendLine( "        /// <value>" );
+                        foreach ( var line in property.ValueComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                        {
+                            sb.AppendLine( $"        /// {line}" );
+                        }
+                        sb.AppendLine( "        /// </value>" );
+                    }
+                }
+                else
+                {
+                    sb.AppendLine( $@"        /// <summary>
         /// Gets or sets the {property.Name}.
         /// </summary>
         /// <value>
         /// The {property.Name}.
-        /// </value>
-        public {property.TypeName} {property.Name} {{ get; set; }}
+        /// </value>" );
+                }
+
+                sb.AppendLine( $@"        public {property.TypeName} {property.Name} {{ get; set; }}
 " );
             }
 
@@ -1272,18 +1368,22 @@ namespace Rock.ViewModels.Entities
                         imports = new HashSet<string> { typeAttribute.ImportStatement };
                     }
 
+                    var comments = _xmlDoc.GetMemberComments( p.Value );
+
                     return new ViewModelProperty
                     {
                         Name = p.Key,
                         IsObsolete = obsolete != null,
                         IsEnum = isEnum,
                         IsNullable = isNullable,
+                        SummaryComment = comments.Summary?.PlainText,
                         TypeName =
                             ( isNullable && isEnum ) ? "int?" :
                             isEnum ? "int" :
                             PropertyTypeName( p.Value.PropertyType ),
                         TypeScriptImports = imports,
-                        TypeScriptType = tsType
+                        TypeScriptType = tsType,
+                        ValueComment = comments.Value?.PlainText
                     };
                 } )
                 .Where( p => !p.IsObsolete )
@@ -1625,12 +1725,17 @@ namespace Rock.ViewModels.Entities
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
-            var restControllerType = Type.GetType( $"{fullClassName}, {typeof(Rock.Rest.ApiControllerBase).Assembly.FullName}" );
+            var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
             if ( restControllerGuid == null )
             {
                 restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );
+            }
+
+            if ( restControllerGuid == null)
+            {
+                restControllerGuid = Guid.NewGuid();
             }
 
             var sb = new StringBuilder();
@@ -1838,6 +1943,10 @@ namespace Rock.ViewModels.Entities
                 {
                     return "Rock.Client.Enums." + type.Name;
                 }
+                else if ( type.Namespace?.StartsWith( "Rock.Enums." ) == true )
+                {
+                    return $"Rock.Client.Enums.{type.Namespace.Substring( 11 )}.{type.Name}";
+                }
                 else
                 {
                     return GetKeyName( "Int32" ) + " /* " + type.Name + "*/";
@@ -1933,6 +2042,18 @@ namespace Rock.ViewModels.Entities
         private void WriteRockClientEnumsFile( string rootFolder )
         {
             var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            var enumAssembly = typeof( Rock.Model.Gender ).Assembly;
+
+            var enumGroups = rockAssembly.GetTypes().Where( a => a.IsEnum )
+                .Union( enumAssembly.GetTypes().Where( a => a.IsEnum ) )
+                .Where( e => e.Namespace == "Rock.Model"
+                    || e.Namespace?.StartsWith( "Rock.Enums.") == true
+                    || e.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
+                .OrderBy( a => a.Name )
+                .ToList()
+                .GroupBy( e => e.Assembly == rockAssembly ? "Rock.Model" : e.Namespace );
+
+
             StringBuilder sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <auto-generated>" );
@@ -1959,17 +2080,22 @@ namespace Rock.ViewModels.Entities
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "" );
+            sb.AppendLine( "#pragma warning disable CS1591" );
+            sb.AppendLine( "" );
 
-            sb.AppendLine( "namespace Rock.Client.Enums" );
-            sb.AppendLine( "{" );
-            sb.AppendLine( "    #pragma warning disable CS1591" );
-
-            foreach ( var enumType in rockAssembly.GetTypes().Where( a => a.IsEnum ).OrderBy( a => a.Name ) )
+            foreach ( var enums in enumGroups )
             {
-                bool rockModelGenerateClientEnum = enumType.Namespace == "Rock.Model";
-                bool rockClientIncludeAttributeEnum = enumType.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null;
+                var namespaceSuffix = string.Empty;
 
-                if ( rockModelGenerateClientEnum || rockClientIncludeAttributeEnum )
+                if ( enums.Key?.StartsWith( "Rock.Enums." ) == true )
+                {
+                    namespaceSuffix = enums.Key.Substring( 10 );
+                }
+
+                sb.AppendLine( $"namespace Rock.Client.Enums{namespaceSuffix}" );
+                sb.AppendLine( "{" );
+
+                foreach ( var enumType in enums )
                 {
                     sb.AppendLine( "    /// <summary>" );
                     sb.AppendLine( "    /// </summary>" );
@@ -2002,10 +2128,12 @@ namespace Rock.ViewModels.Entities
                     sb.AppendLine( "    }" );
                     sb.AppendLine( "" );
                 }
+
+                sb.AppendLine( "}" );
+                sb.AppendLine( "" );
             }
 
-            sb.AppendLine( "    #pragma warning restore CS1591" );
-            sb.AppendLine( "}" );
+            sb.AppendLine( "#pragma warning restore CS1591" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
             WriteFile( file, sb );
@@ -2784,6 +2912,18 @@ namespace Rock.ViewModels.Entities
         /// The name of the type.
         /// </value>
         public string TypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary comment.
+        /// </summary>
+        /// <value>The summary comment.</value>
+        public string SummaryComment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value comment.
+        /// </summary>
+        /// <value>The value comment.</value>
+        public string ValueComment { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the type script.

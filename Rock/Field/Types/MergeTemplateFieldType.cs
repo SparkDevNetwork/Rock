@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MERGE_TEMPLATE )]
-    public class MergeTemplateFieldType : FieldType, IEntityFieldType
+    public class MergeTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
 
@@ -47,21 +48,29 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( value.IsNullOrWhiteSpace() )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
-                    if ( mergeTemplate != null )
-                    {
-                        formattedValue = mergeTemplate.Name;
-                    }
-                }
+                return value;
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            using ( var rockContext = new RockContext() )
+            {
+                var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
+                if ( mergeTemplate != null )
+                {
+                    return mergeTemplate.Name;
+                }
+            }
+            
+            return value;
         }
 
         #endregion
@@ -221,6 +230,47 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mergeTemplateId = new MergeTemplateService( rockContext ).GetId( guid.Value );
+
+                if ( !mergeTemplateId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<MergeTemplate>().Value, mergeTemplateId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Merge Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<MergeTemplate>().Value, nameof( MergeTemplate.Name ) )
+            };
+        }
+
         #endregion
     }
 }
