@@ -122,6 +122,9 @@ namespace Rock.Client
         public InteractiveExperience InteractiveExperience { get; set; }
 
         /// <summary />
+        public ICollection<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences { get; set; }
+
+        /// <summary />
         public ICollection<InteractiveExperienceScheduleCampus> InteractiveExperienceScheduleCampuses { get; set; }
 
         /// <summary />

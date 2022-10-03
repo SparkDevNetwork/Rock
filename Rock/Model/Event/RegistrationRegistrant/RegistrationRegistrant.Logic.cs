@@ -145,6 +145,7 @@ namespace Rock.Model
         /// The person.
         /// </value>
         [LavaVisible]
+        [NotMapped]
         public virtual Person Person
         {
             get

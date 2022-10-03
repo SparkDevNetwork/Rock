@@ -368,6 +368,12 @@ namespace RockWeb.Blocks.Fundraising
                     personAttribute.AddControl( phPersonAttributes.Controls, person.GetAttributeValue( personAttribute.Key ), "vgProfileEdit", true, true );
                 }
             }
+
+            // Set the requirements values only if there are requirements for this group / group type.
+            if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+            {
+                SetRequirementStatuses( new RockContext() );
+            }
         }
 
         /// <summary>
@@ -572,10 +578,10 @@ namespace RockWeb.Blocks.Fundraising
                 // Set the requirements values only if there are requirements for this group / group type.
                 if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
                 {
-                    gmrcRequirements.GroupMemberId = groupMemberId;
                     gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
                     gmrcRequirements.Visible = true;
-                    gmrcRequirements.DataBind();
+                    SetRequirementStatuses( rockContext );
+
                     var participantLavaTemplate = this.GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate );
                     lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
                 }
@@ -741,6 +747,21 @@ namespace RockWeb.Blocks.Fundraising
                 SetActiveTab( "Contributions" );
                 btnContributionsTab.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Sets the Requirement Statuses.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        private void SetRequirementStatuses( RockContext rockContext )
+        {
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMember = groupMemberService.Get( hfGroupMemberId.ValueAsInt() );
+
+            gmrcRequirements.RequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
+            gmrcRequirements.SelectedGroupRoleId = groupMember.GroupRoleId;
+            var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id );
+            gmrcRequirements.CreateRequirementStatusControls( groupMember.Id, currentPersonIsLeaderOfCurrentGroup, false );
         }
 
         /// <summary>

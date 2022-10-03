@@ -643,6 +643,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceAnswerBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceOccurrenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleCampusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\lavaShortcodeBag.d.ts" />

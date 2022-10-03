@@ -72,6 +72,14 @@
     <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202209291606147_Rollup_20220929.cs" />
+    <Compile Include="Migrations\202209291606147_Rollup_20220929.designer.cs">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.cs" />
+    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.designer.cs">
+      <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1332,6 +1340,12 @@
     <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209291606147_Rollup_20220929.resx">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.resx">
+      <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
     </EmbeddedResource>
@@ -2285,6 +2299,9 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
