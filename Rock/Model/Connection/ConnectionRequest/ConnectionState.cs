@@ -15,28 +15,31 @@
 // </copyright>
 //
 
-/// <summary>
-/// Type of connection state
-/// </summary>
-public enum ConnectionState
+namespace Rock.Model // Added the namespace as it was not present. Verify with Daniel if this is needed.
 {
     /// <summary>
-    /// Active
+    /// Type of connection state
     /// </summary>
-    Active = 0,
+    public enum ConnectionState
+    {
+        /// <summary>
+        /// Active
+        /// </summary>
+        Active = 0,
 
-    /// <summary>
-    /// Inactive
-    /// </summary>
-    Inactive = 1,
+        /// <summary>
+        /// Inactive
+        /// </summary>
+        Inactive = 1,
 
-    /// <summary>
-    /// Future Follow-up
-    /// </summary>
-    FutureFollowUp = 2,
+        /// <summary>
+        /// Future Follow-up
+        /// </summary>
+        FutureFollowUp = 2,
 
-    /// <summary>
-    /// Connected
-    /// </summary>
-    Connected = 3,
+        /// <summary>
+        /// Connected
+        /// </summary>
+        Connected = 3,
+    }
 }
