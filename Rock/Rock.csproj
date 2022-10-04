@@ -866,8 +866,6 @@
     <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
-    <Compile Include="Model\Group\GroupRequirementType\DueDateType.cs" />
-    <Compile Include="Model\Group\GroupRequirement\AppliesToAgeClassification.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
