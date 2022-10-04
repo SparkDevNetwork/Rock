@@ -124,8 +124,7 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.Campus:
                     componentProps.label = "Campus";
-                    componentProps.options = [...registrationEntryState.viewModel.campuses];
-
+                    componentProps.items = [...registrationEntryState.viewModel.campuses];
                     break;
 
                 case RegistrationPersonFieldType.Email:
@@ -148,17 +147,17 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.MaritalStatus:
                     componentProps.label = "Marital Status";
-                    componentProps.options = [...registrationEntryState.viewModel.maritalStatuses];
+                    componentProps.items = [...registrationEntryState.viewModel.maritalStatuses];
                     break;
 
                 case RegistrationPersonFieldType.ConnectionStatus:
                     componentProps.label = "Connection Status";
-                    componentProps.options = [...registrationEntryState.viewModel.connectionStatuses];
+                    componentProps.items = [...registrationEntryState.viewModel.connectionStatuses];
                     break;
 
                 case RegistrationPersonFieldType.Grade:
                     componentProps.label = "Grade";
-                    componentProps.options = [...registrationEntryState.viewModel.grades];
+                    componentProps.items = [...registrationEntryState.viewModel.grades];
                     break;
 
                 case RegistrationPersonFieldType.HomePhone:

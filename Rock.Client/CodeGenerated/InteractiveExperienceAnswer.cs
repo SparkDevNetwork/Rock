@@ -38,9 +38,6 @@ namespace Rock.Client
         public Rock.Client.Enums.Event.InteractiveExperienceApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -53,7 +50,7 @@ namespace Rock.Client
         public int InteractiveExperienceActionId { get; set; }
 
         /// <summary />
-        public int InteractiveExperienceScheduleId { get; set; }
+        public int InteractiveExperienceOccurrenceId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -103,12 +100,11 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ApprovalStatus = source.ApprovalStatus;
-            this.CampusId = source.CampusId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractiveExperienceActionId = source.InteractiveExperienceActionId;
-            this.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
+            this.InteractiveExperienceOccurrenceId = source.InteractiveExperienceOccurrenceId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
             this.Response = source.Response;
@@ -129,13 +125,10 @@ namespace Rock.Client
     public partial class InteractiveExperienceAnswer : InteractiveExperienceAnswerEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
         public InteractiveExperienceAction InteractiveExperienceAction { get; set; }
 
         /// <summary />
-        public InteractiveExperienceSchedule InteractiveExperienceSchedule { get; set; }
+        public InteractiveExperienceOccurrence InteractiveExperienceOccurrence { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

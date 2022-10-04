@@ -42,14 +42,6 @@ namespace Rock.ViewModels.Entities
         public int ApprovalStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock.Model.Campus associated with Interactive Experience Answer.
-        /// </summary>
-        /// <value>
-        /// An System.Int32 that represents the Id of the campus.
-        /// </value>
-        public int? CampusId { get; set; }
-
-        /// <summary>
         /// Gets or sets the Id of the Rock.Model.InteractionSession Session.
         /// </summary>
         /// <value>
@@ -66,12 +58,12 @@ namespace Rock.ViewModels.Entities
         public int InteractiveExperienceActionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this Interactive Experience Answer is associated with. This property is required.
+        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceSchedule that the Interactive Experience Answer is associated with.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceOccurrence that the Interactive Experience Answer is associated with.
         /// </value>
-        public int InteractiveExperienceScheduleId { get; set; }
+        public int InteractiveExperienceOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier.

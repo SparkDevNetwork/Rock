@@ -225,6 +225,7 @@ namespace Rock.Jobs
 
                     var workflowService = new WorkflowService( rockContext );
                     workflow = Rock.Model.Workflow.Activate( workflowTypeCache, workflowName, rockContext );
+                    workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
                     new WorkflowService( rockContext ).Process( workflow, groupMemberRequirement, out var workflowErrors );
 
                     if ( shouldRunNotMetWorkflow )

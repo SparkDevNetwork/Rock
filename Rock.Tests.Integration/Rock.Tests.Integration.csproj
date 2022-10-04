@@ -196,6 +196,7 @@
     <Compile Include="Lava\FileSystem\MockFileProvider.cs" />
     <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
     <Compile Include="Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Lava\Filters\EntityFilterTests.cs" />
     <Compile Include="Lava\Filters\PersonFilterTests.cs" />
     <Compile Include="Lava\Filters\WebFilterTests.cs" />
     <Compile Include="Lava\Filters\MiscellaneousFilterTests.cs" />

@@ -293,6 +293,7 @@
   }
 
   .person-name {
+    font-weight: 600;
     display: inline-block;
     padding: 6px 8px;
   }
@@ -374,8 +375,8 @@
   }
 
   .panel-title {
-    font-size: @font-size-base;
-    font-weight: 400;
+    font-size: @font-size-sm;
+    font-weight: @font-weight-semibold;
   }
 
 }
@@ -392,12 +393,5 @@
   .panel-heading & {
     width: 20px !important;
     text-align: right;
-  }
-}
-
-.panel-heading {
-  .placement-group-toggle-visibility {
-    height: 22px !important;
-    margin-top: .2em;
   }
 }

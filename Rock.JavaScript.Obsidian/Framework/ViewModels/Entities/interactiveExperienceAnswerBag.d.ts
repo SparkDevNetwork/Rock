@@ -28,17 +28,14 @@ export type InteractiveExperienceAnswerBag = {
     /** Gets or sets the approval status. */
     approvalStatus: number;
 
-    /** Gets or sets the Rock.Model.Campus associated with Interactive Experience Answer. */
-    campusId?: number | null;
-
     /** Gets or sets the Id of the Rock.Model.InteractionSession Session. */
     interactionSessionId?: number | null;
 
     /** Gets or sets the Id of the Rock.Model.InteractiveExperienceAction that this Interactive Experience Answer is associated with. This property is required. */
     interactiveExperienceActionId: number;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this Interactive Experience Answer is associated with. This property is required. */
-    interactiveExperienceScheduleId: number;
+    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required. */
+    interactiveExperienceOccurrenceId: number;
 
     /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;

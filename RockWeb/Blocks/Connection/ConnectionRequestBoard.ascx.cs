@@ -1272,7 +1272,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( @"<div class=""panel-labels"" style=""text-align: right;"">" );
+            stringBuilder.AppendLine( @"<div class=""panel-labels text-right"">" );
 
             if ( !viewModel.CampusName.IsNullOrWhiteSpace() )
             {

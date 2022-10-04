@@ -83,10 +83,9 @@ namespace Rock.Model
             {
                 IdKey = model.IdKey,
                 ApprovalStatus = ( int ) model.ApprovalStatus,
-                CampusId = model.CampusId,
                 InteractionSessionId = model.InteractionSessionId,
                 InteractiveExperienceActionId = model.InteractiveExperienceActionId,
-                InteractiveExperienceScheduleId = model.InteractiveExperienceScheduleId,
+                InteractiveExperienceOccurrenceId = model.InteractiveExperienceOccurrenceId,
                 PersonAliasId = model.PersonAliasId,
                 Response = model.Response,
                 ResponseDateTime = model.ResponseDateTime,
@@ -160,12 +159,11 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ApprovalStatus = source.ApprovalStatus;
-            target.CampusId = source.CampusId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InteractionSessionId = source.InteractionSessionId;
             target.InteractiveExperienceActionId = source.InteractiveExperienceActionId;
-            target.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
+            target.InteractiveExperienceOccurrenceId = source.InteractiveExperienceOccurrenceId;
             target.PersonAliasId = source.PersonAliasId;
             target.Response = source.Response;
             target.ResponseDateTime = source.ResponseDateTime;

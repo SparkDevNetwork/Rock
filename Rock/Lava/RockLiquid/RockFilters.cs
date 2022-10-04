@@ -6198,6 +6198,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets a flag indicating if the input entity exists in the result set of the specified Data View.
+        /// </summary>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The filter input, a reference to an Entity.</param>
+        /// <param name="dataViewIdentifier">A reference to a Data View.</param>
+        /// <returns><c>true</c> if the entity exists in the Data View result set.</returns>
+        public static bool IsInDataView( Context context, object input, object dataViewIdentifier )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.IsInDataView( lavaContext, input, dataViewIdentifier );
+        }
+
+        /// <summary>
         /// Translates a cached object into a fully database-backed entity object.
         /// </summary>
         /// <param name="context">The context.</param>

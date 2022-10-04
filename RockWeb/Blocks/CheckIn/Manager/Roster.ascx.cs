@@ -1263,6 +1263,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             nbWarning.Visible = false;
             lpLocation.Visible = true;
+            spSchedule.Visible = true;
             pnlSubPageNav.Visible = true;
             pnlRoster.Visible = true;
         }
@@ -1297,6 +1298,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             nbWarning.Text = warningMessage;
             nbWarning.Visible = true;
             lpLocation.Visible = !hideLocationPicker;
+            spSchedule.Visible = false;
             pnlSubPageNav.Visible = false;
             pnlRoster.Visible = false;
         }

@@ -95,6 +95,8 @@ namespace Rock.WebStartup
         {
             LogStartupMessage( "Application Starting" );
 
+            AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
+
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
 
@@ -1206,6 +1208,39 @@ namespace Rock.WebStartup
             {
                 // ignore
             }
+        }
+
+        /// <summary>
+        /// Handles the AssemblyResolve event of the AppDomain.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">The <see cref="ResolveEventArgs"/> instance containing the event data.</param>
+        /// <returns>The <see cref="Assembly"/> to use or <c>null</c> if not found.</returns>
+        private static Assembly AppDomain_AssemblyResolve( object sender, ResolveEventArgs args )
+        {
+            // args.Name contains the fully qualified assembly name, including
+            // culture and public key information. Extract just the assembly name.
+            var assemblyName = args.Name.Split( ',' )[0];
+
+            if ( assemblyName.IsNotNullOrWhiteSpace() )
+            {
+                var assemblyFile = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Bin", $"{assemblyName}.dll" );
+
+                // If the assembly file exists, load it.
+                if ( File.Exists( assemblyFile ) )
+                {
+                    try
+                    {
+                        return Assembly.LoadFrom( assemblyFile );
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

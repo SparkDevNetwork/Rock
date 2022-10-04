@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -100,6 +100,9 @@ namespace RockWeb.Blocks.Streaks
 
             InitializeActionButtons();
             InitializeSettingsNotification();
+
+            // Add lazyload so that person-link-popover javascript works
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
         }
 
         /// <summary>
@@ -528,7 +531,7 @@ namespace RockWeb.Blocks.Streaks
             btnDelete.Visible = canEdit;
 
             var achiever = GetAchiever();
-            lAchiever.Text = achiever == null ? "Unknown" : achiever.ToString();
+            lAchiever.Text = GetPersonHtml( achiever );
             lProgress.Text = GetProgressHtml();
 
             var descriptionList = new DescriptionList();
@@ -545,6 +548,33 @@ namespace RockWeb.Blocks.Streaks
             {
                 btnAchievement.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Gets the person HTML.
+        /// </summary>
+        /// <returns></returns>
+        private string GetPersonHtml( IEntity achiever )
+        {
+            var personImageStringBuilder = new StringBuilder();
+            const string photoFormat = "<div class=\"photo-icon photo-round photo-round-sm pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
+            const string nameLinkFormat = @"
+    {0}
+    <p><small><a href='/Person/{1}'>View Profile</a></small></p>
+";
+
+            if ( achiever is PersonAlias personAlias )
+            {
+                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName, personAlias.PersonId );
+            }
+            else
+            {
+                personImageStringBuilder.AppendFormat( photoFormat, null, null, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                personImageStringBuilder.Append( "Unknown" );
+            }
+
+            return personImageStringBuilder.ToString();
         }
 
         /// <summary>

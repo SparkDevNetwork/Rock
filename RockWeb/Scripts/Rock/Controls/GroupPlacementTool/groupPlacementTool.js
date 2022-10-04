@@ -735,6 +735,20 @@
                     self.expandOrHideRegistrantDetails(expand);
                 });
 
+                $('.js-toggle-group-details', self.$groupPlacementTool.closest('.block-instance')).click(function () {
+                    $('i', this).toggleClass('fa-angle-double-up fa-angle-double-down');
+                    // if toggle class is up, then show the details, otherwise hide them
+                    var groups = $(this).closest('.js-block-instance').find('.placement-group .js-group-details');
+                    var groupSlideIcon = $(this).closest('.js-block-instance').find('.js-placement-group-toggle-visibility i');
+                    if ($(this).find('i').hasClass('fa-angle-double-up')) {
+                        groups.slideDown();
+                        groupSlideIcon.attr('class', 'fa fa-chevron-up');
+                    } else {
+                        groups.slideUp();
+                        groupSlideIcon.attr('class', 'fa fa-chevron-down');
+                    }
+                });
+
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {
                     $('i', this).toggleClass('fa-chevron-down fa-chevron-up');
                     $(this).closest('.js-placement-group').find('.js-group-details').slideToggle();

@@ -55,14 +55,16 @@
                             <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="txtApiKey" runat="server" Label="API Key" />
+                            <Rock:RockTextBox ID="txtApiKey" runat="server" Label="API Key" Required="True" Help="The API key that will be used to secure your TV application." />
                         </div>
                     </div>
 
-                    <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Authentication Page" Help="The page on your public website that will be used in the authenication process." />
+                    <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Authentication Page" Help="The page on your public website that will be used in the authentication process." />
+
+                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
 
                     <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </asp:Panel>
                 
             </div>

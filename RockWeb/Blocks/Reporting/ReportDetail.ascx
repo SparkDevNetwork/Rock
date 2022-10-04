@@ -93,6 +93,14 @@
                                     <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <asp:Literal ID="lCategory" runat="server" />
+                                </div>
+                                <div class="col-md-6">
+                                    <asp:Literal ID="lDataView" runat="server" />
+                                </div>
+                            </div>
 
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                             <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
@@ -102,7 +110,6 @@
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <Rock:HighlightLabel ID="hlDataView" runat="server" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>

@@ -47,8 +47,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue("699EE5D5-9256-4A8D-BE08-ECBE8FA48767","EC43CF32-3BDF-4544-8B6A-CE9208DD7C81",@"e919e722-f895-44a4-b86d-38db8fba1844");
 
             UpdateAppleTvRoute();
+            ShowAppleTVAppsPage();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -67,6 +68,17 @@ namespace Rock.Migrations
         private void UpdateAppleTvRoute()
         {
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_SCREEN_DETAIL, "admin/cms/appletv-applications/{SiteId}/{SitePageId}" );
+        }
+
+        /// <summary>
+        /// NA: Show the Apple TV Apps Page
+        /// </summary>
+        private void ShowAppleTVAppsPage()
+        {
+            Sql( @"
+                UPDATE [Page]
+                SET [DisplayInNavWhen] = 0
+                WHERE [Guid] = 'C8B81EBE-E98F-43EF-9E39-0491685145E2'" );
         }
     }
 }

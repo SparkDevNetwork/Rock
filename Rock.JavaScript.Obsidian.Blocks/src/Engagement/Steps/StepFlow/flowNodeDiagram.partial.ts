@@ -450,8 +450,7 @@ export default defineComponent({
     justify-content: center;
     margin: 20px auto 0;
     gap: 12px;
-    width: 500px;
-    max-width: 100%;
+    width: 100%;
 }
 .flow-key {
     display: inline-flex;

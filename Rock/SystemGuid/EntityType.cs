@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1734,5 +1734,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceScheduleCampus"/> 
         /// </summary>
         public const string INTERACTIVE_EXPERIENCE_SCHEDULE_CAMPUS = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11";
+
+        /// <summary>
+        /// The Test Redirection Gateway entity type
+        /// </summary>
+        public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
     }
 }

@@ -2512,7 +2512,9 @@ namespace RockWeb.Blocks.Groups
 
             // Make sure that the Due Date controls are not visible unless the requirement has a due date.
             ddlDueDateGroupAttribute.Visible = false;
+            ddlDueDateGroupAttribute.Required = false;
             dpDueDate.Visible = false;
+            dpDueDate.Required = false;
 
             rblAppliesToAgeClassification.Items.Clear();
 
@@ -2540,12 +2542,14 @@ namespace RockWeb.Blocks.Groups
                 if ( groupRequirementType.DueDateType == DueDateType.GroupAttribute )
                 {
                     ddlDueDateGroupAttribute.Visible = true;
+                    ddlDueDateGroupAttribute.Required = true;
                     ddlDueDateGroupAttribute.SetValue( selectedGroupTypeGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupTypeGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
                 }
 
                 if ( groupRequirementType.DueDateType == DueDateType.ConfiguredDate )
                 {
                     dpDueDate.Visible = true;
+                    dpDueDate.Required = true;
                     dpDueDate.SelectedDate = selectedGroupTypeGroupRequirement.DueDateStaticDate.Value;
                 }
             }
@@ -3171,21 +3175,27 @@ namespace RockWeb.Blocks.Groups
                 case DueDateType.DaysAfterJoining:
                     {
                         ddlDueDateGroupAttribute.Visible = false;
+                        ddlDueDateGroupAttribute.Required = false;
                         dpDueDate.Visible = false;
+                        dpDueDate.Required = false;
                         break;
                     }
 
                 case DueDateType.ConfiguredDate:
                     {
                         ddlDueDateGroupAttribute.Visible = false;
+                        ddlDueDateGroupAttribute.Required = false;
                         dpDueDate.Visible = true;
+                        dpDueDate.Required = true;
                         break;
                     }
 
                 case DueDateType.GroupAttribute:
                     {
                         ddlDueDateGroupAttribute.Visible = true;
+                        ddlDueDateGroupAttribute.Required = true;
                         dpDueDate.Visible = false;
+                        dpDueDate.Required = false;
                         break;
                     }
             }

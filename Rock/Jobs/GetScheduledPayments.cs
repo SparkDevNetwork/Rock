@@ -175,7 +175,6 @@ namespace Rock.Jobs
             string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
             Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
 
-
             using ( var rockContext = new RockContext() )
             {
                 var targetGatewayQuery = new FinancialGatewayService( rockContext ).Queryable().Where( g => g.IsActive ).AsNoTracking();
@@ -216,29 +215,37 @@ namespace Rock.Jobs
                         }
                         else
                         {
-                            throw new Exception( errorMessage );
+                            processedPaymentsSummary.Add( financialGateway, errorMessage + Environment.NewLine );
                         }
                     }
                     catch ( Exception ex )
                     {
                         ExceptionLogService.LogException( ex, null );
                         exceptionMsgs.Add( ex.Message );
+                        processedPaymentsSummary.Add( financialGateway, ex.Message + Environment.NewLine );
                     }
                 }
             }
 
+            var summary = new StringBuilder();
+
             if ( exceptionMsgs.Any() )
             {
-                throw new Exception( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+                summary.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some Financial Gateways have errors. See exception log for details." );
+                summary.AppendLine();
             }
 
-            StringBuilder summary = new StringBuilder();
             foreach ( var item in processedPaymentsSummary )
             {
                 summary.AppendLine( $"Summary for {item.Key.Name}:<br/>{item.Value}" );
             }
 
             context.Result = summary.ToString();
+
+            if ( exceptionMsgs.Any() )
+            {
+                throw new RockJobWarningException( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+            }
         }
     }
 }
