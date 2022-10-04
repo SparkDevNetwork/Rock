@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,12 +28,12 @@ namespace Rock.Security.Authentication
     /// Authenticates a username using Active Directory
     /// </summary>
     [Description( "Active Directory Authentication Provider" )]
-    [Export(typeof(AuthenticationComponent))]
-    [ExportMetadata("ComponentName", "Active Directory")]
+    [Export( typeof( AuthenticationComponent ) )]
+    [ExportMetadata( "ComponentName", "Active Directory" )]
     [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
     [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
-    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server")]
-    [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6")]
+    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6" )]
     public class ActiveDirectory : AuthenticationComponent
     {
         /// <summary>
@@ -70,13 +70,78 @@ namespace Rock.Security.Authentication
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
             {
-                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
+                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), username );
             }
 
-            var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
+            var serverName = GetAttributeValue( "Server" );
+
+            var context = new PrincipalContext( ContextType.Domain, serverName );
             using ( context )
             {
-                return context.ValidateCredentials( user.UserName, password );
+                /* 09/29/2022 MDP 
+
+                   IMPORTANT!: ValidateCredentials can return a 'false-positive' if the Guest Account is enabled in the domain!
+                   See https://stackoverflow.com/questions/290548/validate-a-username-and-password-against-active-directory#comment8867466_499716
+                   which says 'if the domain-level Guest account is enabled, ValidateCredentials returns true if you give it a non-existant user'
+
+                   Also, when testing locally, it also returns true if the user exists but password is incorrect.
+
+                   In other words, when Guest Account is Enabled, ValidateCredentials always returns true no matter what!
+               */
+
+                // First see if ValidateCredentials returns false. If so, we know for sure that the password is invalid.
+                // However, if ValidateCredentials returns true, we need to make sure it isn't a false-positive, so we'll use
+                // FindByIdentity to make sure the username and password is actually valid.
+                var validateCredentials = context.ValidateCredentials( username, password );
+                if ( !validateCredentials )
+                {
+                    // Definitely an invalid username/password, so we can safely return false here.
+                    return false;
+                }
+
+               
+                UserPrincipal userPrincipal;
+
+                try
+                {
+                    /* 09/29/2022 MDP
+
+                     We have to pass the username and password to the new PrincipalContext, otherwise UserPrincipal.FindByIdentity won't work.
+                     In the case of an incorrect username/password, new PrincipalContext will still created (without an exception), but then 
+                     UserPrincipal.FindByIdentity will throw an 'invaid username/password' exception (see notes below).
+
+                     */
+
+                    var findByIdentityContext = new PrincipalContext( ContextType.Domain, serverName, username, password );
+                    userPrincipal = UserPrincipal.FindByIdentity( findByIdentityContext, username );
+                }
+                catch ( Exception )
+                {
+                    /* 10/3/2022 MDP
+
+                    In the case of possible False-Positive on ValidateCredentials:
+                         UserName/Password is valid: FindByIdentity finds the user/   
+                         Username/Password is invalid: FindByIdentity will throw 'Incorrect Username/Password exception'/
+                         UserName doesn't exist: FindByIdentity will throw 'Account Directory not available'/
+                         UserName/Password is valid, but account is disabled: FindByIdentity will throw 'Account Directory not available'.
+
+                    Also note that the Exception type is just a generic OLE exception with different messages on the problem, so we can't really check for specific exception.
+                    
+                     */
+
+                    userPrincipal = null;
+                }
+
+                if ( userPrincipal != null )
+                {
+                    // User exists, and password is valid, so return true.
+                    return true;
+                }
+                else
+                {
+                    // FindByIdentity either discovered that password is actually invalid, or that the user doesn't exist, so return false.
+                    return false;
+                }
             }
         }
 
@@ -145,9 +210,9 @@ namespace Rock.Security.Authentication
         /// </value>
         public override bool SupportsChangePassword
         {
-            get 
-            { 
-                return GetAttributeValue("AllowChangePassword").AsBoolean(); 
+            get
+            {
+                return GetAttributeValue( "AllowChangePassword" ).AsBoolean();
             }
         }
 
@@ -179,7 +244,7 @@ namespace Rock.Security.Authentication
                         userPrincipal.ChangePassword( oldPassword, newPassword );
                         return true;
                     }
-                    catch (PasswordException pex)
+                    catch ( PasswordException pex )
                     {
                         warningMessage = pex.Message;
                         return false;
