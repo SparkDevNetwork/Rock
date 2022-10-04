@@ -37,22 +37,6 @@ namespace Rock.Model
             return System.IO.File.Exists( blockPath );
         }
 
-
-        /// <summary>
-        /// Gets or sets a flag indicating if BlockType supports adding additional block type attributes at runtime.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsDynamicAttributesBlock()
-        {
-            if ( Path.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( Path );
-            return typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( blockControlType );
-        }
-
         #endregion
     }
 }

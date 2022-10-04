@@ -441,7 +441,7 @@ namespace Rock.Blocks.Core
 
         #endregion
 
-        #region IHasCustomAdministrateActions
+        #region IHasCustomActions
 
         /// <inheritdoc/>
         List<BlockCustomActionBag> IHasCustomActions.GetCustomActions( bool canEdit, bool canAdministrate )

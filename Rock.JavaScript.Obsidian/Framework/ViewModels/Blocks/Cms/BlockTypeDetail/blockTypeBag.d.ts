@@ -46,9 +46,6 @@ export type BlockTypeBag = {
     /** Gets or sets a flag indicating if this Block exists. */
     isBlockExists: boolean;
 
-    /** Gets or sets a flag indicating if BlockType supports adding additional block type attributes at runtime. */
-    isDynamicAttributesBlock: boolean;
-
     /** Gets or sets the name of the fully qualified page referencing Block Type. */
     pages?: string[] | null;
 

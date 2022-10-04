@@ -58,11 +58,6 @@ namespace Rock.ViewModels.Blocks.Cms.BlockTypeDetail
         public bool IsBlockExists { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if BlockType supports adding additional block type attributes at runtime.
-        /// </summary>
-        public bool IsDynamicAttributesBlock { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the fully qualified page referencing Block Type.
         /// </summary>
         public List<string> Pages { get; set; }

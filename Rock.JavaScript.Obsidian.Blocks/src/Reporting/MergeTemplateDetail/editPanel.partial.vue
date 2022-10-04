@@ -52,7 +52,7 @@
     import { Guid } from "@Obsidian/Types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids";
     import FileUploader from "@Obsidian/Controls/fileUploader";
-import { MergeTemplateOwnership } from "../../../../Rock.JavaScript.Obsidian/Framework/Enums/Controls/mergeTemplateOwnership";
+    import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 
     const props = defineProps({
         modelValue: {
@@ -82,10 +82,10 @@ import { MergeTemplateOwnership } from "../../../../Rock.JavaScript.Obsidian/Fra
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const mergeTemplateTypeEntityType = propertyRef(props.modelValue.mergeTemplateTypeEntityType ?? {}, "MergeTemplateTypeEntityType");
-    const templateBinaryFile = propertyRef(props.modelValue.templateBinaryFile ?? {}, "TemplateBinaryFile");
-    const category = propertyRef(props.modelValue.category ?? {}, "Category");
-    const personAlias = propertyRef(props.modelValue.personAlias ?? {}, "PersonAlias");
+    const mergeTemplateTypeEntityType = propertyRef(props.modelValue.mergeTemplateTypeEntityType ?? null, "MergeTemplateTypeEntityTypeId");
+    const templateBinaryFile = propertyRef(props.modelValue.templateBinaryFile ?? null, "TemplateBinaryFileId");
+    const category = propertyRef(props.modelValue.category ?? null, "CategoryId");
+    const personAlias = propertyRef(props.modelValue.personAlias ?? null, "PersonAliasId");
     const showPersonPicker = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal);
     const showCategory = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal || props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.Global);
     const entityTypeGuid = ref(props.entityTypeGuid);
@@ -115,10 +115,10 @@ import { MergeTemplateOwnership } from "../../../../Rock.JavaScript.Obsidian/Fra
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(mergeTemplateTypeEntityType, props.modelValue.mergeTemplateTypeEntityType ?? {});
-        updateRefValue(templateBinaryFile, props.modelValue.templateBinaryFile ?? {});
-        updateRefValue(category, props.modelValue.category ?? {});
-        updateRefValue(personAlias, props.modelValue.personAlias ?? {});
+        updateRefValue(mergeTemplateTypeEntityType, props.modelValue.mergeTemplateTypeEntityType ?? null);
+        updateRefValue(templateBinaryFile, props.modelValue.templateBinaryFile ?? null);
+        updateRefValue(category, props.modelValue.category ?? null);
+        updateRefValue(personAlias, props.modelValue.personAlias ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the

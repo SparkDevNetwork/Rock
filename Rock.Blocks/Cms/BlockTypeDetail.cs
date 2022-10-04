@@ -176,8 +176,7 @@ namespace Rock.Blocks.Cms
                 EntityType = entity.EntityType.ToListItemBag(),
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
-                Path = entity.Path,
-                IsDynamicAttributesBlock = entity.IsDynamicAttributesBlock()
+                Path = entity.Path
             };
         }
 
