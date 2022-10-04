@@ -16,8 +16,6 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -256,7 +254,7 @@ namespace Rock.Model
 
             selectedAccounts = parentAccounts.Select( v => new SimpleFinancialAccount {
                 Id = v.Id,
-                Name = HttpUtility.HtmlEncode( v.PublicName.IsNotNullOrWhiteSpace() ? v.PublicName : v.Name ),
+                Name = System.Net.WebUtility.HtmlEncode( v.PublicName.IsNotNullOrWhiteSpace() ? v.PublicName : v.Name ),
                 GlCode = v.GlCode,
                 IsActive = v.IsActive,
                 ParentId = v.ParentAccountId
