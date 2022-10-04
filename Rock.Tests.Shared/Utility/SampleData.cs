@@ -1746,7 +1746,7 @@ namespace Rock.Tests.Shared.Utility
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,
-                        ConnectionState = ConnectionState.Active,
+                        ConnectionState = global::ConnectionState.Active,
                         CreatedDateTime = date
                     };
 

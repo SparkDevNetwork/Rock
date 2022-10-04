@@ -18,7 +18,6 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    using Rock.Model;
 
     /// <summary>
     ///
@@ -69,8 +68,8 @@ namespace Rock.Migrations
             Sql( @"UPDATE [Block] SET [Order] = 0 WHERE [Guid] = 'E6880262-1A1C-4857-929C-958CAD8A6DEF'" );
 
             // Hide pages in system settings
-            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) DisplayInNavWhen.Never} WHERE [Guid] = '{SystemGuid.Page.WEB_FARM}';" );
-            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) DisplayInNavWhen.Never} WHERE [Guid] = '{SystemGuid.Page.BUS}';" );
+            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) Model.DisplayInNavWhen.Never} WHERE [Guid] = '{SystemGuid.Page.WEB_FARM}';" );
+            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) Model.DisplayInNavWhen.Never} WHERE [Guid] = '{SystemGuid.Page.BUS}';" );
         }
 
         private void FarmDown()
