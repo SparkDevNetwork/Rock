@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType, ref, watch } from "vue";
+import { defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
 import RockForm from "./rockForm";
 import RockButton from "./rockButton";
 import RockValidation from "./rockValidation";
@@ -74,7 +74,7 @@ export default defineComponent({
          * Event handler for when one of the close buttons is clicked.
          */
         const onClose = (): void => {
-            emit("update:modelValue", false);
+            internalModalVisible.value = false;
         };
 
         /**
@@ -122,7 +122,17 @@ export default defineComponent({
             }
 
             internalModalVisible.value = props.modelValue;
+        });
+
+        watch(internalModalVisible, () => {
             trackModalState(internalModalVisible.value);
+            emit("update:modelValue", internalModalVisible.value);
+        });
+
+        onBeforeUnmount(() => {
+            if (internalModalVisible.value) {
+                trackModalState(false);
+            }
         });
 
         return {
