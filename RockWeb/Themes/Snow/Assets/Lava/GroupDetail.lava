@@ -81,7 +81,7 @@
 	</div>
 	{% endif %}
 
-	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+	{% if LinkedPages.RosterPage and LinkedPages.AttendancePage and Group.GroupType.TakesAttendance == 'True' %}
 		<ul class="nav nav-tabs margin-v-lg">
 			{% if LinkedPages.RosterPage != '' %}
 				{% if LinkedPages.RosterPage == CurrentPage.Path %}
@@ -219,7 +219,7 @@
     						{% capture attendanceCheck %}
     								<i style='color:{{color}};' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="Last attended this group on {{ lastAttended.StartDateTime | Date:'MM/dd/yyyy' }}"></i>
     						{% endcapture %}
-							{% elseif lastAttended.Occurrence.Group.Id == Group.Id AND daysSinceAttendance <= 30%}
+							{% elseif lastAttended.Occurrence.Group.Id == Group.Id and daysSinceAttendance <= 30%}
     						{% capture attendanceCheck %}
     							<i style='color:#008cd0;' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="Last attended another group on {{ lastAttended.StartDateTime | Date:'mm/dd/yyyy' }}" ></i>
     						{% endcapture %}
