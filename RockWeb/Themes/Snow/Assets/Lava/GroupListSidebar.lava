@@ -1,9 +1,9 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    {% if ShowInactive -%}{% assign inactiveParamVal = 'Global' | PageParameter:InactiveParameter -%}
+    {% if ShowInactive -%}{% assign inactiveParamVal = "Global" | PageParameter:InactiveParameter -%}
     <div class="pull-right btn-group btn-toggle">
-      <a class="btn btn-default btn-xs {% if inactiveParamVal == '0' or InitialActive == 1 and inactiveParamVal == null %}active{% endif %}" href='{{ 'Global=''' | Page:'Path=''' }}?{{ InactiveParameter }}=0'>Active</a>
-      <a class="btn btn-default btn-xs {% if inactiveParamVal == '1' or InitialActive == 0 and PainactiveParamVal == null %}active{% endif %}" href='{{ 'Global=''' | Page:'Path=''' }}?{{ InactiveParameter }}=1'>All</a>
+      <a class="btn btn-default btn-xs {% if inactiveParamVal == '0' or InitialActive == 1 and inactiveParamVal == null %}active{% endif %}" href="{{ 'Global' | Page:'Path' }}?{{ InactiveParameter }}=0">Active</a>
+      <a class="btn btn-default btn-xs {% if inactiveParamVal == '1' or InitialActive == 0 and PainactiveParamVal == null %}active{% endif %}" href="{{ 'Global' | Page:'Path' }}?{{ InactiveParameter }}=1">All</a>
     </div>
     {% endif -%}
     Groups
