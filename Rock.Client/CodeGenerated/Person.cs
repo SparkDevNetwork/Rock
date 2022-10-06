@@ -156,6 +156,9 @@ namespace Rock.Client
         public int? RecordTypeValueId { get; set; }
 
         /// <summary />
+        public int? ReminderCount { get; set; }
+
+        /// <summary />
         public string ReviewReasonNote { get; set; }
 
         /// <summary />
@@ -254,6 +257,7 @@ namespace Rock.Client
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             this.RecordStatusValueId = source.RecordStatusValueId;
             this.RecordTypeValueId = source.RecordTypeValueId;
+            this.ReminderCount = source.ReminderCount;
             this.ReviewReasonNote = source.ReviewReasonNote;
             this.ReviewReasonValueId = source.ReviewReasonValueId;
             this.SuffixValueId = source.SuffixValueId;

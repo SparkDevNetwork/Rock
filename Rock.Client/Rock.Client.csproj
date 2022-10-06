@@ -293,6 +293,8 @@
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplatePlacement.cs" />
     <Compile Include="CodeGenerated\RelatedEntity.cs" />
+    <Compile Include="CodeGenerated\Reminder.cs" />
+    <Compile Include="CodeGenerated\ReminderType.cs" />
     <Compile Include="CodeGenerated\RemoteAuthenticationSession.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />

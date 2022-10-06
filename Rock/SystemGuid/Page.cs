@@ -1430,6 +1430,12 @@ namespace Rock.SystemGuid
         public const string MY_ACCOUNT_SECURITY = "290C53DC-0960-484C-B314-8301882A454C";
 
         /// <summary>
+        /// Gets the My Dashboard page guid
+        /// ParentPage: Internal Homepage
+        /// </summary>
+        public const string MY_DASHBOARD = "AE1818D8-581C-4599-97B9-509EA450376A";
+
+        /// <summary>
         /// Gets the My Settings page guid
         /// ParentPage: Internal Homepage
         /// </summary>
@@ -1655,6 +1661,24 @@ namespace Rock.SystemGuid
         /// ParentPage: Rock Shop
         /// </summary>
         public const string PURCHASES = "6A163569-2826-4EF2-8208-879DDBDC0896";
+
+        /// <summary>
+        /// Reminder Edit page.
+        /// ParentPage: Reminder List.
+        /// </summary>
+        public const string REMINDER_EDIT = "2640FF34-DCC9-4604-9C5B-9E2DA590D5A7";
+
+        /// <summary>
+        /// Reminder List page.
+        /// ParentPage: People > Manage.
+        /// </summary>
+        public const string REMINDER_LIST = "E1736347-1D4F-42A6-8EC4-7595286054A6";
+
+        /// <summary>
+        /// Reminder List page.
+        /// ParentPage: General Settings.
+        /// </summary>
+        public const string REMINDER_TYPES = "3A2BA8F8-B119-4D3E-BE76-FEC81F7AC1BB";
 
         /// <summary>
         /// Gets the Report Detail page guid

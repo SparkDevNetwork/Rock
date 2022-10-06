@@ -123,6 +123,7 @@ namespace Rock.Model
                 RecordStatusReasonValueId = model.RecordStatusReasonValueId,
                 RecordStatusValueId = model.RecordStatusValueId,
                 RecordTypeValueId = model.RecordTypeValueId,
+                ReminderCount = model.ReminderCount,
                 ReviewReasonNote = model.ReviewReasonNote,
                 ReviewReasonValueId = model.ReviewReasonValueId,
                 SuffixValueId = model.SuffixValueId,
@@ -238,6 +239,7 @@ namespace Rock.Model
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;
             target.RecordTypeValueId = source.RecordTypeValueId;
+            target.ReminderCount = source.ReminderCount;
             target.ReviewReasonNote = source.ReviewReasonNote;
             target.ReviewReasonValueId = source.ReviewReasonValueId;
             target.SuffixValueId = source.SuffixValueId;
