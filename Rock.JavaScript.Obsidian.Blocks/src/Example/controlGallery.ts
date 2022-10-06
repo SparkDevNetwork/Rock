@@ -351,116 +351,116 @@ export const GalleryAndResult = defineComponent({
     },
 
     template: `
-<v-style>
-.galleryContent-mainRow > div.well {
-    overflow-x: auto;
-}
+ <v-style>
+ .galleryContent-mainRow > div.well {
+     overflow-x: auto;
+ }
 
-.galleryContent-reflectionToggle {
-    display: flex;
-    justify-content: flex-end;
-}
+ .galleryContent-reflectionToggle {
+     display: flex;
+     justify-content: flex-end;
+ }
 
-.galleryContent-valueBox {
-    max-height: 300px;
-    overflow: auto;
-}
+ .galleryContent-valueBox {
+     max-height: 300px;
+     overflow: auto;
+ }
 
-.galleryContent-codeSampleWrapper {
-    position: relative;
-}
+ .galleryContent-codeSampleWrapper {
+     position: relative;
+ }
 
-.galleryContent-codeSample {
-    padding-right: 3rem;
-    overflow-x: auto;
-}
+ .galleryContent-codeSample {
+     padding-right: 3rem;
+     overflow-x: auto;
+ }
 
-.galleryContent-codeCopyButton {
-    position: absolute;
-    top: 1.4rem;
-    transform: translateY(-50%);
-    right: .5rem;
-    z-index: 1;
-}
+ .galleryContent-codeCopyButton {
+     position: absolute;
+     top: 1.4rem;
+     transform: translateY(-50%);
+     right: .5rem;
+     z-index: 1;
+ }
 
-.galleryContent-codeCopyButton::before {
-    content: "";
-    position: absolute;
-    top: -0.3rem;
-    right: -0.5rem;
-    bottom: -0.3rem;
-    left: -0.5rem;
-    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
-    z-index: -1;
-}
-</v-style>
+ .galleryContent-codeCopyButton::before {
+     content: "";
+     position: absolute;
+     top: -0.3rem;
+     right: -0.5rem;
+     bottom: -0.3rem;
+     left: -0.5rem;
+     background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
+     z-index: -1;
+ }
+ </v-style>
 
-<SectionHeader :title="componentName" :description="description" />
-<div class="galleryContent-mainRow mb-5 row">
-    <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
-        <h4 class="mt-0">Test Control</h4>
-        <slot name="default" />
+ <SectionHeader :title="componentName" :description="description" />
+ <div class="galleryContent-mainRow mb-5 row">
+     <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
+         <h4 class="mt-0">Test Control</h4>
+         <slot name="default" />
 
-        <div v-if="enableReflection" class="mt-3">
-            <div class="mb-3 galleryContent-reflectionToggle">
-                <Switch v-model="showReflection" text="Show Reflection" />
-            </div>
-            <TransitionVerticalCollapse>
-                <div v-if="showReflection">
-                    <h4 class="mt-0">Control Reflection</h4>
-                    <slot name="default" />
-                </div>
-            </TransitionVerticalCollapse>
-        </div>
-    </div>
-    <div v-if="value !== void 0" class="col-sm-6">
-        <div class="well">
-            <h4>Current Value</h4>
-            <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
-                <h5><code>{{ key }}</code></h5>
-                <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
-            </template>
-            <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
-        </div>
-    </div>
-</div>
-<div v-if="$slots.settings" class="mb-5">
-    <h4 class="mt-0">Settings</h4>
-    <slot name="settings" />
-</div>
-<div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
-    <h4 class="mt-0 mb-3">Usage Notes</h4>
-    <slot name="usage">
-        <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
-        <div v-if="importCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
-            <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-        <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
-        <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
-            <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-    </slot>
-</div>
+         <div v-if="enableReflection" class="mt-3">
+             <div class="mb-3 galleryContent-reflectionToggle">
+                 <Switch v-model="showReflection" text="Show Reflection" />
+             </div>
+             <TransitionVerticalCollapse>
+                 <div v-if="showReflection">
+                     <h4 class="mt-0">Control Reflection</h4>
+                     <slot name="default" />
+                 </div>
+             </TransitionVerticalCollapse>
+         </div>
+     </div>
+     <div v-if="value !== void 0" class="col-sm-6">
+         <div class="well">
+             <h4>Current Value</h4>
+             <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
+                 <h5><code>{{ key }}</code></h5>
+                 <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
+             </template>
+             <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
+         </div>
+     </div>
+ </div>
+ <div v-if="$slots.settings" class="mb-5">
+     <h4 class="mt-0">Settings</h4>
+     <slot name="settings" />
+ </div>
+ <div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
+     <h4 class="mt-0 mb-3">Usage Notes</h4>
+     <slot name="usage">
+         <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
+         <div v-if="importCode" class="galleryContent-codeSampleWrapper">
+             <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
+             <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+         </div>
+         <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
+         <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
+             <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
+             <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+         </div>
+     </slot>
+ </div>
 
-<div v-if="$slots.header">
-    <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
-</div>
+ <div v-if="$slots.header">
+     <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
+ </div>
 
-<div v-if="$attrs.splitWidth !== void 0">
-    <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
-</div>
+ <div v-if="$attrs.splitWidth !== void 0">
+     <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
+ </div>
 
-<div v-if="$slots.gallery">
-    <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="gallery" />
-</div>
-<div v-if="$slots.result">
-    <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="result" />
-</div>
-`
+ <div v-if="$slots.gallery">
+     <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
+     <slot name="gallery" />
+ </div>
+ <div v-if="$slots.result">
+     <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
+     <slot name="result" />
+ </div>
+ `
 });
 
 /**
@@ -595,6 +595,8 @@ const attributeValuesContainerGallery = defineComponent({
             }
         });
 
+        // const newAttrs = { "Description1": { "fieldTypeGuid": "9c204cd0-1233-41c5-818a-c5da439445aa", "attributeGuid": "9afc7328-2e1d-4f63-9bcb-438bb48b3379", "name": "Title", "key": "Description1", "description": "", "isRequired": false, "order": 0, "categories": null, "configurationValues": { "ispassword": "False" } }, "Strengths": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "8454bae8-154d-4f38-b151-b4fac159a39c", "name": "Strengths", "key": "Strengths", "description": "", "isRequired": false, "order": 1, "categories": null, "configurationValues": { "numberofrows": "" } }, "Challenges": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "be5497af-8575-4619-8e53-cced2c237465", "name": "Challenges", "key": "Challenges", "description": "", "isRequired": false, "order": 2, "categories": null, "configurationValues": { "numberofrows": "" } }, "UnderPressure": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "49aa57e0-af90-491a-a80d-cc7383634a30", "name": "Under Pressure", "key": "UnderPressure", "description": "", "isRequired": false, "order": 3, "categories": null, "configurationValues": { "numberofrows": "" } }, "Motivation": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "54167d4d-2890-4477-87bb-073353665685", "name": "Motivation", "key": "Motivation", "description": "", "isRequired": false, "order": 4, "categories": null, "configurationValues": { "numberofrows": "" } }, "LeadershipStyle": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "ee6796b4-6a7b-49d6-af40-3e4a01a0c8e8", "name": "Leadership Style", "key": "LeadershipStyle", "description": "", "isRequired": false, "order": 5, "categories": null, "configurationValues": { "numberofrows": "" } }, "FollowerStyle": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "4005ea8e-4243-4eba-b04d-7d54860bd61e", "name": "Follower Style", "key": "FollowerStyle", "description": "", "isRequired": false, "order": 6, "categories": null, "configurationValues": { "numberofrows": "" } }, "TeamContribution": { "fieldTypeGuid": "c28c7bf3-a552-4d77-9408-dedcf760ced0", "attributeGuid": "9bda13bb-2deb-47f5-86ca-71c2c1454fef", "name": "Team Contribution", "key": "TeamContribution", "description": "", "isRequired": false, "order": 7, "categories": null, "configurationValues": { "numberofrows": "" } } };
+
         const attributeValues = ref<Record<string, string>>({
             "text": "Default text value",
             "color": "#336699",
@@ -618,38 +620,39 @@ const attributeValuesContainerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{ attributes, modelValue: attributeValues }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <AttributeValuesContainer
-        v-model="attributeValues"
-        :attributes="attributes"
-        :isEditMode="isEditMode"
-        :showAbbreviatedName="showAbbreviatedName"
-        :showEmptyValues="showEmptyValues"
-        :displayAsTabs="displayAsTabs"
-        :showCategoryLabel="showCategoryLabel"
-        :numberOfColumns="numberOfColumns"
-        :entityTypeName="entityName" />
+ <GalleryAndResult
+     :value="{ attributes, modelValue: attributeValues }"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-6" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
-            <CheckBox formGroupClasses="col-sm-6" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
-        </div>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-6" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
-            <CheckBox formGroupClasses="col-sm-6" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
-        </div>
-        <CheckBox v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
-        <div class="row">
-            <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
-            <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <AttributeValuesContainer
+         v-model="attributeValues"
+         :attributes="attributes"
+         :isEditMode="isEditMode"
+         :showAbbreviatedName="showAbbreviatedName"
+         :showEmptyValues="showEmptyValues"
+         :displayAsTabs="displayAsTabs"
+         :showCategoryLabel="showCategoryLabel"
+         :numberOfColumns="numberOfColumns"
+         :entityTypeName="entityName" />
+
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-6" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
+             <CheckBox formGroupClasses="col-sm-6" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+         </div>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-6" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+             <CheckBox formGroupClasses="col-sm-6" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+         </div>
+         <CheckBox v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
+         <div class="row">
+             <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
+             <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a field visibility rules editor. */
@@ -889,18 +892,18 @@ const fieldFilterEditorGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:sources':sources }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <FieldFilterEditor :sources="sources" v-model="value" :title="title" />
+ <GalleryAndResult
+     :value="{ 'output:modelValue':value, 'input:sources':sources }"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <FieldFilterEditor :sources="sources" v-model="value" :title="title" />
 
-    <template #settings>
-        <TextBox v-model="title" label="Attribute Name" />
-        <CheckBox v-model="usePrefilled" text="Use prefilled data" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <TextBox v-model="title" label="Attribute Name" />
+         <CheckBox v-model="usePrefilled" text="Use prefilled data" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a phone number box */
@@ -918,17 +921,17 @@ const phoneNumberBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="phoneNumber"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
+ <GalleryAndResult
+     :value="phoneNumber"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
 
-    <template #settings>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a help block */
@@ -947,16 +950,16 @@ const helpBlockGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <HelpBlock :text="text" />
-    Hover over the symbol to the left to view HelpBlock in action
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <HelpBlock :text="text" />
+     Hover over the symbol to the left to view HelpBlock in action
 
-    <template #settings>
-        <TextBox label="Text" v-model="text" help="The text for the help tooltip to display" rules="required" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <TextBox label="Text" v-model="text" help="The text for the help tooltip to display" rules="required" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a drop down list */
@@ -995,26 +998,26 @@ const dropDownListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+ <GalleryAndResult
+     :value="{'output:modelValue': value, 'input:items': options}"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
-            <CheckBox formGroupClasses="col-sm-4" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            <CheckBox formGroupClasses="col-sm-4" label="Grouped" v-model="grouped" />
-            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
-        </div>
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+             <CheckBox formGroupClasses="col-sm-4" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             <CheckBox formGroupClasses="col-sm-4" label="Grouped" v-model="grouped" />
+             <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a radio button list */
@@ -1045,22 +1048,22 @@ const radioButtonListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+ <GalleryAndResult
+     :value="{'output:modelValue': value, 'input:items': options}"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
 
-    <template #settings>
-        <div class="row">
-            <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
-            <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
+             <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
+         </div>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a checkbox */
@@ -1079,18 +1082,18 @@ const checkBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CheckBox label="Check Box" text="Enable" v-model="isChecked" />
+ <GalleryAndResult
+     :value="isChecked"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <CheckBox label="Check Box" text="Enable" v-model="isChecked" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an inline checkbox */
@@ -1109,14 +1112,14 @@ const inlineCheckBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    description="Check Box with label that is displayed beside it instead of above it"
-    enableReflection >
-    <InlineCheckBox label="Inline Label" v-model="isChecked" />
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="isChecked"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     description="Check Box with label that is displayed beside it instead of above it"
+     enableReflection >
+     <InlineCheckBox label="Inline Label" v-model="isChecked" />
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a modal / dialog / pop-up */
@@ -1134,54 +1137,54 @@ const dialogGallery = defineComponent({
             isDismissible: ref(true),
             importCode: getControlImportPath("dialog"),
             exampleCode: `<Dialog v-model="isDialogVisible" :dismissible="true">
-    <template #header>
-        <h4>Dialog Header</h4>
-    </template>
-    <template #default>
-        <p>Dialog Main Content</p>
-    </template>
-    <template #footer>
-        <p>Dialog Footer (usually for buttons)</p>
-    </template>
-</Dialog>`
+     <template #header>
+         <h4>Dialog Header</h4>
+     </template>
+     <template #default>
+         <p>Dialog Main Content</p>
+     </template>
+     <template #footer>
+         <p>Dialog Footer (usually for buttons)</p>
+     </template>
+ </Dialog>`
         };
     },
     template: `
-<GalleryAndResult
-    :value="isDialogVisible"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <RockButton @click="isDialogVisible = true">Show</RockButton>
+ <GalleryAndResult
+     :value="isDialogVisible"
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <RockButton @click="isDialogVisible = true">Show</RockButton>
 
-    <Dialog v-model="isDialogVisible" :dismissible="isDismissible">
-        <template #header>
-            <h4>Romans 11:33-36</h4>
-        </template>
-        <template #default>
-            <p>
-                Oh, the depth of the riches<br />
-                and the wisdom and the knowledge of God!<br />
-                How unsearchable his judgments<br />
-                and untraceable his ways!<br />
-                For who has known the mind of the Lord?<br />
-                Or who has been his counselor?<br />
-                And who has ever given to God,<br />
-                that he should be repaid?<br />
-                For from him and through him<br />
-                and to him are all things.<br />
-                To him be the glory forever. Amen.
-            </p>
-        </template>
-        <template #footer>
-            <RockButton @click="isDialogVisible = false" btnType="primary">OK</RockButton>
-            <RockButton @click="isDialogVisible = false" btnType="default">Cancel</RockButton>
-        </template>
-    </Dialog>
+     <Dialog v-model="isDialogVisible" :dismissible="isDismissible">
+         <template #header>
+             <h4>Romans 11:33-36</h4>
+         </template>
+         <template #default>
+             <p>
+                 Oh, the depth of the riches<br />
+                 and the wisdom and the knowledge of God!<br />
+                 How unsearchable his judgments<br />
+                 and untraceable his ways!<br />
+                 For who has known the mind of the Lord?<br />
+                 Or who has been his counselor?<br />
+                 And who has ever given to God,<br />
+                 that he should be repaid?<br />
+                 For from him and through him<br />
+                 and to him are all things.<br />
+                 To him be the glory forever. Amen.
+             </p>
+         </template>
+         <template #footer>
+             <RockButton @click="isDialogVisible = false" btnType="primary">OK</RockButton>
+             <RockButton @click="isDialogVisible = false" btnType="default">Cancel</RockButton>
+         </template>
+     </Dialog>
 
-    <template #settings>
-        <CheckBox label="Dismissible" text="Show the close button" v-model="isDismissible" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <CheckBox label="Dismissible" text="Show the close button" v-model="isDismissible" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates check box list */
@@ -1208,21 +1211,21 @@ const checkBoxListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{'output:modelValue': items, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CheckBoxList label="CheckBoxList" v-model="items" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+ <GalleryAndResult
+     :value="{'output:modelValue': items, 'input:items': options}"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <CheckBoxList label="CheckBoxList" v-model="items" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
 
-    <template #settings>
-        <div class="row">
-            <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
-            <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
+             <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a list box */
@@ -1248,18 +1251,18 @@ const listBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="enhanced" />
+ <GalleryAndResult
+     :value="{'output:modelValue': value, 'input:items': options}"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="enhanced" />
 
-    <template #settings>
-        <InlineCheckBox v-model="enhanced" label="Use Enhanced Functionality" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <InlineCheckBox v-model="enhanced" label="Use Enhanced Functionality" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates date pickers */
@@ -1280,25 +1283,25 @@ const datePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
+ <GalleryAndResult
+     :value="date"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
-            </div>
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <div class="col-sm-4">
+                 <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
+             </div>
+             <div class="col-sm-4">
+                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+             </div>
+         </div>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates date range pickers */
@@ -1316,17 +1319,17 @@ const dateRangePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DateRangePicker label="Date Range" v-model="date" />
+ <GalleryAndResult
+     :value="date"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DateRangePicker label="Date Range" v-model="date" />
 
-    <template #settings>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates date time pickers */
@@ -1347,26 +1350,26 @@ const dateTimePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="date"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
+     <DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
-            </div>
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <div class="col-sm-4">
+                 <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
+             </div>
+             <div class="col-sm-4">
+                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+             </div>
+         </div>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates date part pickers */
@@ -1390,20 +1393,20 @@ const datePartsPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="datePartsModel"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DatePartsPicker label="Date" v-model="datePartsModel" :showYear="showYear" />
+ <GalleryAndResult
+     :value="datePartsModel"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DatePartsPicker label="Date" v-model="datePartsModel" :showYear="showYear" />
 
-    <template #settings>
-        <Toggle label="Show Year" v-model="showYear" />
-        <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <Toggle label="Show Year" v-model="showYear" />
+         <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a textbox */
@@ -1421,19 +1424,19 @@ const textBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="text"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />
-    <TextBox label="Text 2" v-model="text" />
-    <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
+ <GalleryAndResult
+     :value="text"
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />
+     <TextBox label="Text 2" v-model="text" />
+     <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a color picker */
@@ -1451,18 +1454,18 @@ const colorPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ColorPicker label="Color" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <ColorPicker label="Color" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a number box */
@@ -1494,24 +1497,24 @@ const numberBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <RockForm>
-        <NumberBox label="Number" v-model="value" :minimumValue="numericMinimumValue" :maximumValue="numericMaximumValue" />
-        <RockButton btnType="primary" type="submit">Test Validation</RockButton>
-    </RockForm>
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <RockForm>
+         <NumberBox label="Number" v-model="value" :minimumValue="numericMinimumValue" :maximumValue="numericMaximumValue" />
+         <RockButton btnType="primary" type="submit">Test Validation</RockButton>
+     </RockForm>
 
-    <template #settings>
-        <TextBox label="Minimum Value" v-model="minimumValue" />
-        <TextBox label="Maximum Value" v-model="maximumValue" />
+     <template #settings>
+         <TextBox label="Minimum Value" v-model="minimumValue" />
+         <TextBox label="Maximum Value" v-model="maximumValue" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a number box */
@@ -1529,18 +1532,18 @@ const numberRangeBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <NumberRangeBox label="Number Range" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <NumberRangeBox label="Number Range" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a gender picker */
@@ -1558,18 +1561,18 @@ const genderDropDownListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <GenderDropDownList label="Your Gender" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <GenderDropDownList label="Your Gender" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a social security number box */
@@ -1587,18 +1590,18 @@ const socialSecurityNumberBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <SocialSecurityNumberBox label="SSN" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <SocialSecurityNumberBox label="SSN" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a time picker */
@@ -1616,18 +1619,18 @@ const timePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <TimePicker label="Time" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <TimePicker label="Time" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a rating picker */
@@ -1647,18 +1650,18 @@ const ratingGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <Rating label="How Would You Rate God?" v-model="value" :maxRating="maximumValue || 5" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <Rating label="How Would You Rate God?" v-model="value" :maxRating="maximumValue || 5" />
 
-    <template #settings>
-        <NumberBox label="Maximum Rating" v-model="maximumValue" />
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <NumberBox label="Maximum Rating" v-model="maximumValue" />
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a switch */
@@ -1676,18 +1679,18 @@ const switchGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <Switch text="Switch" v-model="isChecked" />
+ <GalleryAndResult
+     :value="isChecked"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <Switch text="Switch" v-model="isChecked" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an inline switch */
@@ -1707,18 +1710,18 @@ const inlineSwitchGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <InlineSwitch label="Inline Switch" v-model="isChecked" :isBold="isBold" />
+ <GalleryAndResult
+     :value="isChecked"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <InlineSwitch label="Inline Switch" v-model="isChecked" :isBold="isBold" />
 
-    <template #settings>
-        <CheckBox label="Is Bold" v-model="isBold" />
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <CheckBox label="Is Bold" v-model="isBold" />
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a currency box */
@@ -1736,18 +1739,18 @@ const currencyBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CurrencyBox label="Currency" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <CurrencyBox label="Currency" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an email box */
@@ -1765,18 +1768,18 @@ const emailBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <EmailBox label="Email" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <EmailBox label="Email" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a number up down control */
@@ -1794,18 +1797,18 @@ const numberUpDownGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <NumberUpDown label="Number" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <NumberUpDown label="Number" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a static form control */
@@ -1823,12 +1826,12 @@ const staticFormControlGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <StaticFormControl label="Static Value" v-model="value" />
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <StaticFormControl label="Static Value" v-model="value" />
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an address control */
@@ -1846,16 +1849,16 @@ const addressControlGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <AddressControl label="Address" v-model="value" />
+ <GalleryAndResult :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <AddressControl label="Address" v-model="value" />
 
-    <template #settings>
-        <p>All props match that of a <code>Rock Form Field</code></p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>All props match that of a <code>Rock Form Field</code></p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a toggle button */
@@ -1884,21 +1887,21 @@ const toggleGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <Toggle label="Toggle" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <Toggle label="Toggle" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
 
-    <template #settings>
-        <TextBox label="True Text" v-model="trueText" />
-        <TextBox label="False Text" v-model="falseText" />
-        <DropDownList label="Button Size" v-model="btnSize" :items="sizeOptions" />
+     <template #settings>
+         <TextBox label="True Text" v-model="trueText" />
+         <TextBox label="False Text" v-model="falseText" />
+         <DropDownList label="Button Size" v-model="btnSize" :items="sizeOptions" />
 
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a progress tracker */
@@ -1929,15 +1932,15 @@ const progressTrackerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <ProgressTracker :items="items" :currentIndex="value" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <ProgressTracker :items="items" :currentIndex="value" />
 
-    <template #settings>
-        <NumberUpDown label="Index" v-model="value" :min="0" :max="10" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <NumberUpDown label="Index" v-model="value" :min="0" :max="10" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an items with pre and post html control */
@@ -1956,36 +1959,36 @@ const itemsWithPreAndPostHtmlGallery = defineComponent({
             ]),
             importCode: getControlImportPath("itemsWithPreAndPostHtml"),
             exampleCode: `<ItemsWithPreAndPostHtml :items="value">
-    <template #item1>
-        <div>This is item 1</div>
-    </template>
-    <template #item2>
-        <div>This is item 2</div>
-    </template>
-</ItemsWithPreAndPostHtml>`
+     <template #item1>
+         <div>This is item 1</div>
+     </template>
+     <template #item2>
+         <div>This is item 2</div>
+     </template>
+ </ItemsWithPreAndPostHtml>`
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <ItemsWithPreAndPostHtml :items="value">
-        <template #item1>
-            <div class="padding-all-sm text-center bg-primary">This is item 1</div>
-        </template>
-        <template #item2>
-            <div class="padding-all-sm text-center bg-primary">This is item 2</div>
-        </template>
-    </ItemsWithPreAndPostHtml>
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <ItemsWithPreAndPostHtml :items="value">
+         <template #item1>
+             <div class="padding-all-sm text-center bg-primary">This is item 1</div>
+         </template>
+         <template #item2>
+             <div class="padding-all-sm text-center bg-primary">This is item 2</div>
+         </template>
+     </ItemsWithPreAndPostHtml>
 
-    <template #settings>
-        <TextBox label="Item 1 - Pre Html" v-model="value[0].preHtml" />
-        <TextBox label="Item 1 - Post Html" v-model="value[0].postHtml" />
-        <TextBox label="Item 2 - Pre Html" v-model="value[1].preHtml" />
-        <TextBox label="Item 2 - Post Html" v-model="value[1].postHtml" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <TextBox label="Item 1 - Pre Html" v-model="value[0].preHtml" />
+         <TextBox label="Item 1 - Post Html" v-model="value[0].postHtml" />
+         <TextBox label="Item 2 - Pre Html" v-model="value[1].preHtml" />
+         <TextBox label="Item 2 - Post Html" v-model="value[1].postHtml" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a URL link box */
@@ -2003,18 +2006,18 @@ const urlLinkBoxGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <UrlLinkBox label="URL" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <UrlLinkBox label="URL" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -2033,24 +2036,24 @@ const fullscreenGallery = defineComponent({
             value: ref(false),
             importCode: getControlImportPath("fullscreen"),
             exampleCode: `<Fullscreen v-model="value" :isPageOnly="true">
-    <p>Content to make full screen</p>
-</Fullscreen>`
+     <p>Content to make full screen</p>
+ </Fullscreen>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <Fullscreen v-model="value" :isPageOnly="pageOnly">
-        <div class="bg-info padding-all-md" style="width:100%; height: 100%; min-height: 300px; display: grid; place-content: center;">
-            <InlineSwitch v-model="value" label="Fullscreen" :isBold="true" />
-        </div>
-    </Fullscreen>
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <Fullscreen v-model="value" :isPageOnly="pageOnly">
+         <div class="bg-info padding-all-md" style="width:100%; height: 100%; min-height: 300px; display: grid; place-content: center;">
+             <InlineSwitch v-model="value" label="Fullscreen" :isBold="true" />
+         </div>
+     </Fullscreen>
 
-    <template #settings>
-        <CheckBox v-model="pageOnly" label="Is Page Only" help="If true, fills content window. If false, hides the browser chrome and fills entire screen." />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <CheckBox v-model="pageOnly" label="Is Page Only" help="If true, fills content window. If false, hides the browser chrome and fills entire screen." />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates the panel component. */
@@ -2145,90 +2148,90 @@ const panelGallery = defineComponent({
             value: ref(true),
             importCode: getControlImportPath("panel"),
             exampleCode: `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
-    <template #helpContent>Help Content</template>
-    <template #drawer>Drawer Content</template>
-    <template #headerActions>Header Actions</template>
-    <template #subheaderLeft>Sub Header Left</template>
-    <template #subheaderRight>Sub Header Right</template>
-    <template #footerActions>Footer Actions</template>
-    <template #footerSecondaryActions>Footer Secondary Actions</template>
+     <template #helpContent>Help Content</template>
+     <template #drawer>Drawer Content</template>
+     <template #headerActions>Header Actions</template>
+     <template #subheaderLeft>Sub Header Left</template>
+     <template #subheaderRight>Sub Header Right</template>
+     <template #footerActions>Footer Actions</template>
+     <template #footerSecondaryActions>Footer Secondary Actions</template>
 
-    Main Panel Content
-</Panel>`
+     Main Panel Content
+ </Panel>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
-        <template v-if="simulateHelp" #helpContent>
-            This is some help text.
-        </template>
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+         <template v-if="simulateHelp" #helpContent>
+             This is some help text.
+         </template>
 
-        <template v-if="simulateDrawer" #drawer>
-            <div style="text-align: center;">Drawer Content</div>
-        </template>
+         <template v-if="simulateDrawer" #drawer>
+             <div style="text-align: center;">Drawer Content</div>
+         </template>
 
-        <template v-if="simulateHeaderActions" #headerActions>
-            <span class="action">
-                <i class="fa fa-star-o"></i>
-            </span>
+         <template v-if="simulateHeaderActions" #headerActions>
+             <span class="action">
+                 <i class="fa fa-star-o"></i>
+             </span>
 
-            <span class="action">
-                <i class="fa fa-user"></i>
-            </span>
-        </template>
+             <span class="action">
+                 <i class="fa fa-user"></i>
+             </span>
+         </template>
 
-        <template v-if="simulateSubheaderLeft" #subheaderLeft>
-            <span class="label label-warning">Warning</span>&nbsp;
-            <span class="label label-default">Default</span>
-        </template>
+         <template v-if="simulateSubheaderLeft" #subheaderLeft>
+             <span class="label label-warning">Warning</span>&nbsp;
+             <span class="label label-default">Default</span>
+         </template>
 
-        <template v-if="simulateSubheaderRight" #subheaderRight>
-            <span class="label label-info">Info</span>&nbsp;
-            <span class="label label-default">Default</span>
-        </template>
+         <template v-if="simulateSubheaderRight" #subheaderRight>
+             <span class="label label-info">Info</span>&nbsp;
+             <span class="label label-default">Default</span>
+         </template>
 
-        <template v-if="simulateFooterActions" #footerActions>
-            <RockButton btnType="primary">Action 1</RockButton>
-            <RockButton btnType="primary">Action 2</RockButton>
-        </template>
+         <template v-if="simulateFooterActions" #footerActions>
+             <RockButton btnType="primary">Action 1</RockButton>
+             <RockButton btnType="primary">Action 2</RockButton>
+         </template>
 
-        <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
-            <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
-            <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
-        </template>
+         <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
+             <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
+             <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
+         </template>
 
 
-        <h4>Romans 11:33-36</h4>
-        <p>
-            Oh, the depth of the riches<br />
-            and the wisdom and the knowledge of God!<br />
-            How unsearchable his judgments<br />
-            and untraceable his ways!<br />
-            For who has known the mind of the Lord?<br />
-            Or who has been his counselor?<br />
-            And who has ever given to God,<br />
-            that he should be repaid?<br />
-            For from him and through him<br />
-            and to him are all things.<br />
-            To him be the glory forever. Amen.
-        </p>
-    </Panel>
+         <h4>Romans 11:33-36</h4>
+         <p>
+             Oh, the depth of the riches<br />
+             and the wisdom and the knowledge of God!<br />
+             How unsearchable his judgments<br />
+             and untraceable his ways!<br />
+             For who has known the mind of the Lord?<br />
+             Or who has been his counselor?<br />
+             And who has ever given to God,<br />
+             that he should be repaid?<br />
+             For from him and through him<br />
+             and to him are all things.<br />
+             To him be the glory forever. Amen.
+         </p>
+     </Panel>
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-3" v-model="collapsibleValue" label="Collapsible" />
-            <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
-            <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
-            <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
-        </div>
-        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-3" v-model="collapsibleValue" label="Collapsible" />
+             <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
+             <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
+             <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+         </div>
+         <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a person picker */
@@ -2246,17 +2249,17 @@ const personPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value ?? null"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <PersonPicker v-model="value" label="Person" />
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value ?? null"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <PersonPicker v-model="value" label="Person" />
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates the file uploader component. */
@@ -2280,31 +2283,31 @@ const fileUploaderGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <FileUploader v-model="value"
-        label="File Uploader"
-        :uploadAsTemporary="uploadAsTemporary"
-        :binaryFileTypeGuid="binaryFileTypeGuid"
-        :uploadButtonText="uploadButtonText"
-        :showDeleteButton="showDeleteButton" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <FileUploader v-model="value"
+         label="File Uploader"
+         :uploadAsTemporary="uploadAsTemporary"
+         :binaryFileTypeGuid="binaryFileTypeGuid"
+         :uploadButtonText="uploadButtonText"
+         :showDeleteButton="showDeleteButton" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
-            <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-        </div>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
-            <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
-        </div>
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
+             <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+         </div>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
+             <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
+         </div>
 
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates the image uploader component. */
@@ -2328,31 +2331,31 @@ const imageUploaderGallery = defineComponent({
         };
     },
     template: `
-    <GalleryAndResult
-        :value="value"
-        :importCode="importCode"
-        :exampleCode="exampleCode"
-        enableReflection >
-        <ImageUploader v-model="value"
-            label="Image Uploader"
-            :uploadAsTemporary="uploadAsTemporary"
-            :binaryFileTypeGuid="binaryFileTypeGuid"
-            :uploadButtonText="uploadButtonText"
-            :showDeleteButton="showDeleteButton" />
+     <GalleryAndResult
+         :value="value"
+         :importCode="importCode"
+         :exampleCode="exampleCode"
+         enableReflection >
+         <ImageUploader v-model="value"
+             label="Image Uploader"
+             :uploadAsTemporary="uploadAsTemporary"
+             :binaryFileTypeGuid="binaryFileTypeGuid"
+             :uploadButtonText="uploadButtonText"
+             :showDeleteButton="showDeleteButton" />
 
-        <template #settings>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
-                <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-            </div>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
-                <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
-            </div>
+         <template #settings>
+             <div class="row">
+                 <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
+                 <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+             </div>
+             <div class="row">
+                 <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
+                 <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
+             </div>
 
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-        </template>
-    </GalleryAndResult>`
+             <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+         </template>
+     </GalleryAndResult>`
 });
 
 /** Demonstrates a sliding date range picker */
@@ -2374,17 +2377,17 @@ const slidingDateRangePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
 
-    <template #settings>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates defined value picker */
@@ -2394,34 +2397,50 @@ const definedValuePickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         DefinedValuePicker,
-        TextBox
+        TextBox,
+        RockForm
     },
     setup() {
+
+        function onsubmit(): void {
+            alert("control gallery form submitted");
+        }
+
+        const multiple = ref(false);
+        const enhanceForLongLists = ref(false);
+        const displayStyle = computed(() => (multiple.value && !enhanceForLongLists.value) ? PickerDisplayStyle.List : PickerDisplayStyle.Auto);
+
         return {
+            onsubmit,
+            allowAdd: ref(false),
             definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
-            enhanceForLongLists: ref(false),
-            multiple: ref(false),
-            value: ref({ "value": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2", "text": "Visitor" }),
+            enhanceForLongLists,
+            multiple,
+            displayStyle,
+            value: ref(null),
             importCode: getControlImportPath("definedValuePicker"),
             exampleCode: `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`
         };
     },
     template: `
-<GalleryAndResult
+ <GalleryAndResult
     :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" />
+
+    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
 
     <template #settings>
-        <TextBox label="Defined Type" v-model="definedTypeGuid" />
-        <CheckBox label="Multiple" v-model="multiple" />
-        <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Defined Type" v-model="definedTypeGuid" />
+            <CheckBox formGroupClasses="col-md-2" label="Multiple" v-model="multiple" />
+            <CheckBox formGroupClasses="col-md-3" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            <CheckBox formGroupClasses="col-md-3" label="Allow Adding Values" v-model="allowAdd" />
+        </div>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
-</GalleryAndResult>`
+ </GalleryAndResult>`
 });
 
 /** Demonstrates entity type picker */
@@ -2449,53 +2468,53 @@ const entityTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <EntityTypePicker label="Entity Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :includeGlobalOption="includeGlobalOption"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <EntityTypePicker label="Entity Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :includeGlobalOption="includeGlobalOption"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-3">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-3">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-3">
-                <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
-            </div>
+             <div class="col-md-3">
+                 <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
+             </div>
 
-            <div class="col-md-3">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-3">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-3">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-3">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-3">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-3">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-3">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
+             <div class="col-md-3">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Achievement type picker */
@@ -2522,45 +2541,45 @@ const achievementTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <AchievementTypePicker label="Achievement Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <AchievementTypePicker label="Achievement Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-3">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-3">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-3">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-3">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-3">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-3">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-3">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-3">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-3">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-3">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Badge Component picker */
@@ -2589,44 +2608,44 @@ const badgeComponentPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <BadgeComponentPicker label="Badge Component"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :entityTypeGuid="entityTypeGuid?.value" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-4">
-                <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <BadgeComponentPicker label="Badge Component"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :entityTypeGuid="entityTypeGuid?.value" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-4">
+                 <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates the SectionHeader component */
@@ -2657,36 +2676,36 @@ const sectionHeaderGallery = defineComponent({
             description,
             importCode: getControlImportPath("sectionHeader"),
             exampleCode: `<SectionHeader title="This is a SectionHeader" description="A Description" :isSeparatorHidden="false">
-    <template #actions>Action Buttons</template>
-</SectionHeader>`
+     <template #actions>Action Buttons</template>
+ </SectionHeader>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <SectionHeader
-        title="This is a SectionHeader"
-        :description="description"
-        :isSeparatorHidden="!showSeparator" >
-        <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
-        </template>
-    </SectionHeader>
+     <SectionHeader
+         title="This is a SectionHeader"
+         :description="description"
+         :isSeparatorHidden="!showSeparator" >
+         <template v-if="showActionBar" #actions>
+             <div>
+                 <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                 <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                 <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+             </div>
+         </template>
+     </SectionHeader>
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-xs-4" v-model="showSeparator" label="Show Separator" />
-            <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
-            <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-xs-4" v-model="showSeparator" label="Show Separator" />
+             <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
+             <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates the SectionContainer component */
@@ -2717,40 +2736,40 @@ const sectionContainerGallery = defineComponent({
             description,
             importCode: getControlImportPath("sectionContainer"),
             exampleCode: `<SectionContainer title="This is a Section Container" description="A Description" v-model="showContent" toggleText="Show">
-    <template #actions>Action Buttons</template>
-    Main Content
-</SectionContainer>`
+     <template #actions>Action Buttons</template>
+     Main Content
+ </SectionContainer>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <SectionContainer
-        title="This is a Section Container"
-        :description="description"
-        v-model="showContent"
-        :toggleText="showContentToggle ? 'Show' : ''" >
-        <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
-        </template>
-        Here's some content to put in here.
-    </SectionContainer>
+     <SectionContainer
+         title="This is a Section Container"
+         :description="description"
+         v-model="showContent"
+         :toggleText="showContentToggle ? 'Show' : ''" >
+         <template v-if="showActionBar" #actions>
+             <div>
+                 <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                 <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                 <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+             </div>
+         </template>
+         Here's some content to put in here.
+     </SectionContainer>
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
-            <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
-            <CheckBox formGroupClasses="col-xs-4" v-model="showContentToggle" label="Show Content Toggle" />
-        </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
+             <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
+             <CheckBox formGroupClasses="col-xs-4" v-model="showContentToggle" label="Show Content Toggle" />
+         </div>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates category picker */
@@ -2783,28 +2802,28 @@ const categoryPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
 
-    <template #settings>
+     <template #settings>
 
-        <div class="row">
-            <div class="col-md-6">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-6">
-                <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
-            </div>
-        </div>
+         <div class="row">
+             <div class="col-md-6">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-6">
+                 <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
+             </div>
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates location picker */
@@ -2824,19 +2843,19 @@ const locationPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <LocationPicker label="Location" v-model="value" :multiple="multiple" />
 
-    <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
+     <template #settings>
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates connection request picker */
@@ -2856,19 +2875,19 @@ const connectionRequestPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ConnectionRequestPicker label="ConnectionRequest" v-model="value" :multiple="multiple" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <ConnectionRequestPicker label="ConnectionRequest" v-model="value" :multiple="multiple" />
 
-    <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
+     <template #settings>
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates copy button */
@@ -2896,21 +2915,21 @@ const copyButtonGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <CopyButton :value="value" :tooltip="tooltip" :btnSize="buttonSize" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
+     <CopyButton :value="value" :tooltip="tooltip" :btnSize="buttonSize" />
 
-    <template #settings>
-        <div class="row">
-            <TextBox formGroupClasses="col-sm-4" v-model="value" label="Value to Copy to Clipboard" />
-            <TextBox formGroupClasses="col-sm-4" v-model="tooltip" label="Tooltip" />
-            <DropDownList formGroupClasses="col-sm-4" label="Button Size" v-model="buttonSize" :items="sizeOptions" />
-        </div>
+     <template #settings>
+         <div class="row">
+             <TextBox formGroupClasses="col-sm-4" v-model="value" label="Value to Copy to Clipboard" />
+             <TextBox formGroupClasses="col-sm-4" v-model="tooltip" label="Tooltip" />
+             <DropDownList formGroupClasses="col-sm-4" label="Button Size" v-model="buttonSize" :items="sizeOptions" />
+         </div>
 
-        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates entity tag list */
@@ -2933,16 +2952,16 @@ const entityTagListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
 
-    <template #settings>
-        <CheckBox label="Disabled" v-model="disabled" />
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <CheckBox label="Disabled" v-model="disabled" />
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates following control. */
@@ -2966,27 +2985,27 @@ const followingGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Disabled" v-model="disabled" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Disabled" v-model="disabled" />
+             </div>
 
-            <div class="col-md-4">
-                <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
-            </div>
+             <div class="col-md-4">
+                 <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+             </div>
 
-            <div class="col-md-4">
-                <TextBox label="Entity Key" v-model="entityKey" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <TextBox label="Entity Key" v-model="entityKey" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates assessment type picker */
@@ -3014,53 +3033,53 @@ const assessmentTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <AssessmentTypePicker label="Assessment Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :isInactiveIncluded="isInactiveIncluded"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <AssessmentTypePicker label="Assessment Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :isInactiveIncluded="isInactiveIncluded"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Include Inactive" v-model="isInactiveIncluded" help="When set, inactive assessments will be included in the list." />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Include Inactive" v-model="isInactiveIncluded" help="When set, inactive assessments will be included in the list." />
+             </div>
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -3088,48 +3107,48 @@ const assetStorageProviderPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <AssetStorageProviderPicker label="Asset Storage Provider"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <AssetStorageProviderPicker label="Asset Storage Provider"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -3157,45 +3176,45 @@ const binaryFileTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <BinaryFileTypePicker label="Binary File Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <BinaryFileTypePicker label="Binary File Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -3227,50 +3246,50 @@ const binaryFilePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <BinaryFilePicker label="Binary File"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :binaryFileTypeGuid="binaryFileType.value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <BinaryFilePicker label="Binary File"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :binaryFileTypeGuid="binaryFileType.value" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
 
-            <div class="col-md-4">
-                <BinaryFileTypePicker label="Binary File Type" v-model="binaryFileType" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <BinaryFileTypePicker label="Binary File Type" v-model="binaryFileType" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Event Item picker */
@@ -3298,50 +3317,50 @@ const eventItemPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <EventItemPicker label="Event Item"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :includeInactive="includeInactive" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <EventItemPicker label="Event Item"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :includeInactive="includeInactive" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Include Inactive Items" v-model="includeInactive" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <CheckBox label="Include Inactive Items" v-model="includeInactive" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -3366,27 +3385,27 @@ const dataViewPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DataViewPicker label="Data Views"
-        v-model="value"
-        :multiple="multiple"
-        :showBlankItem="showBlankItem"
-        :entityTypeGuid="entityTypeGuid?.value" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DataViewPicker label="Data Views"
+         v-model="value"
+         :multiple="multiple"
+         :showBlankItem="showBlankItem"
+         :entityTypeGuid="entityTypeGuid?.value" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -3411,28 +3430,28 @@ const workflowTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <WorkflowTypePicker label="Data Views"
-        v-model="value"
-        :multiple="multiple"
-        :showBlankItem="showBlankItem"
-        :includeInactiveItems="includeInactiveItems" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <WorkflowTypePicker label="Data Views"
+         v-model="value"
+         :multiple="multiple"
+         :showBlankItem="showBlankItem"
+         :includeInactiveItems="includeInactiveItems" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Financial Gateway picker */
@@ -3461,55 +3480,55 @@ const financialGatewayPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <FinancialGatewayPicker label="Financial Gateway"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :includeInactive="includeInactive"
-        :showAllGatewayComponents="showAllGatewayComponents" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <FinancialGatewayPicker label="Financial Gateway"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :includeInactive="includeInactive"
+         :showAllGatewayComponents="showAllGatewayComponents" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
 
-            <div class="col-md-2">
-                <CheckBox label="Show Inactive Gateways" v-model="includeInactive" />
-            </div>
+             <div class="col-md-2">
+                 <CheckBox label="Show Inactive Gateways" v-model="includeInactive" />
+             </div>
 
-            <div class="col-md-2">
-                <CheckBox label="Show All Gateway Components" v-model="showAllGatewayComponents" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-2">
+                 <CheckBox label="Show All Gateway Components" v-model="showAllGatewayComponents" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Financial Statement Template picker */
@@ -3536,45 +3555,45 @@ const financialStatementTemplatePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <FinancialStatementTemplatePicker label="Financial Statement Template"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <FinancialStatementTemplatePicker label="Financial Statement Template"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Field Type picker */
@@ -3601,45 +3620,45 @@ const fieldTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <FieldTypePicker label="Field Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <FieldTypePicker label="Field Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates audit detail. */
@@ -3661,23 +3680,23 @@ const auditDetailGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+             </div>
 
-            <div class="col-md-4">
-                <TextBox label="Entity Key" v-model="entityKey" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <TextBox label="Entity Key" v-model="entityKey" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates modal. */
@@ -3698,18 +3717,18 @@ const modalGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <CheckBox label="Is Open" v-model="isOpen" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <CheckBox label="Is Open" v-model="isOpen" />
 
-    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
-        <TextBox label="Required Value" v-model="value" rules="required" />
-    </Modal>
+     <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+         <TextBox label="Required Value" v-model="value" rules="required" />
+     </Modal>
 
-    <template #settings>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates  Component picker */
@@ -3738,44 +3757,44 @@ const componentPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ComponentPicker label="Component"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :containerType="containerType" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-5">
-                <TextBox label="Container Assembly Name" v-model="containerType" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <ComponentPicker label="Component"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :containerType="containerType" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-3">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-5">
+                 <TextBox label="Container Assembly Name" v-model="containerType" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Grade Picker */
@@ -3805,48 +3824,48 @@ const gradePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <GradePicker label="Grade"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :useAbbreviation="useAbbreviation"
-        :useGuidAsValue="useGuidAsValue" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-3">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox label="Use Abbreviations" v-model="useAbbreviation" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox label="Use GUID Value" v-model="useGuidAsValue" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <GradePicker label="Grade"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :useAbbreviation="useAbbreviation"
+         :useGuidAsValue="useGuidAsValue" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-3">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-3">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox label="Use Abbreviations" v-model="useAbbreviation" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox label="Use GUID Value" v-model="useGuidAsValue" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Group Member Picker */
@@ -3876,44 +3895,44 @@ const groupMemberPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <GroupMemberPicker label="Group Member"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :groupGuid="groupGuid" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-4">
-                <NumberBox label="Group ID" v-model="groupGuid" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <GroupMemberPicker label="Group Member"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :groupGuid="groupGuid" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-4">
+                 <NumberBox label="Group ID" v-model="groupGuid" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Interaction Channel Picker */
@@ -3942,40 +3961,40 @@ const interactionChannelPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <InteractionChannelPicker label="Interaction Channel"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <InteractionChannelPicker label="Interaction Channel"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Interaction Component Picker */
@@ -4006,44 +4025,44 @@ const interactionComponentPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <InteractionComponentPicker label="Interaction Component"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :interactionChannelGuid="interactionChannelGuid?.value" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-4">
-                <InteractionChannelPicker label="Interaction Channel" v-model="interactionChannelGuid" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <InteractionComponentPicker label="Interaction Component"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :interactionChannelGuid="interactionChannelGuid?.value" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-4">
+                 <InteractionChannelPicker label="Interaction Channel" v-model="interactionChannelGuid" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Lava Command Picker */
@@ -4072,40 +4091,40 @@ const lavaCommandPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <LavaCommandPicker label="Lava Command"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <LavaCommandPicker label="Lava Command"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Remote Auths Picker */
@@ -4134,40 +4153,40 @@ const remoteAuthsPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <RemoteAuthsPicker label="Remote Auths"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <RemoteAuthsPicker label="Remote Auths"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Step Program Picker */
@@ -4196,40 +4215,40 @@ const stepProgramPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <StepProgramPicker label="Step Program"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <StepProgramPicker label="Step Program"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Step Status Picker */
@@ -4260,44 +4279,44 @@ const stepStatusPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <StepStatusPicker label="Step Status"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :stepProgramGuid="stepProgramGuid?.value" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <StepStatusPicker label="Step Status"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :stepProgramGuid="stepProgramGuid?.value" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-4">
+                 <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Step Type Picker */
@@ -4328,44 +4347,44 @@ const stepTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <StepTypePicker label="Step Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :stepProgramGuid="stepProgramGuid?.value" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-            <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <StepTypePicker label="Step Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem"
+         :stepProgramGuid="stepProgramGuid?.value" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+             <div class="col-md-4">
+                 <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Streak Type Picker */
@@ -4394,40 +4413,40 @@ const streakTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <StreakTypePicker label="Streak Type"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <StreakTypePicker label="Streak Type"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Badge Picker */
@@ -4456,41 +4475,41 @@ const badgePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <BadgePicker label="Badge"
-        v-model="value"
-        :multiple="multiple"
-        :columnCount="columnCount"
-        :enhanceForLongLists="enhanceForLongLists"
-        :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <BadgePicker label="Badge"
+         v-model="value"
+         :multiple="multiple"
+         :columnCount="columnCount"
+         :enhanceForLongLists="enhanceForLongLists"
+         :displayStyle="displayStyle"
+         :showBlankItem="showBlankItem" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-            </div>
-            <div class="col-md-4">
-                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+             </div>
+             <div class="col-md-4">
+                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates an alert list */
@@ -4514,20 +4533,20 @@ const alertGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <Alert :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss">This is an alert!</Alert>
+     <Alert :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss">This is an alert!</Alert>
 
-    <template #settings>
-        <div class="row">
-            <DropDownList formGroupClasses="col-md-4" label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
-            <CheckBox formGroupClasses="col-md-4" label="Dismissable" v-model="isDismissible" />
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <DropDownList formGroupClasses="col-md-4" label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
+             <CheckBox formGroupClasses="col-md-4" label="Dismissable" v-model="isDismissible" />
+         </div>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a badge list */
@@ -4561,21 +4580,21 @@ const badgeListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
+     <BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
 
-    <template #settings>
-        <div class="row">
-            <EntityTypePicker formGroupClasses="col-md-4" label="Entity Type" v-model="entityType" enhanceForLongLists />
-            <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
-            <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeTypes" showBlankItem multiple />
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <EntityTypePicker formGroupClasses="col-md-4" label="Entity Type" v-model="entityType" enhanceForLongLists />
+             <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
+             <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeTypes" showBlankItem multiple />
+         </div>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a basic time picker */
@@ -4593,18 +4612,18 @@ const basicTimePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <BasicTimePicker label="Time" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <BasicTimePicker label="Time" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates birthday picker */
@@ -4628,21 +4647,21 @@ const birthdayPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="datePartsModel"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection>
+ <GalleryAndResult
+     :value="datePartsModel"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection>
 
-    <BirthdayPicker label="Birthday" v-model="datePartsModel" :showYear="showYear" />
+     <BirthdayPicker label="Birthday" v-model="datePartsModel" :showYear="showYear" />
 
-    <template #settings>
-        <Toggle label="Show Year" v-model="showYear" />
-        <p class="mt-4 mb-4">This simply wraps the <a href="#DatePartsPickerGallery">Date Parts Picker</a> and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <Toggle label="Show Year" v-model="showYear" />
+         <p class="mt-4 mb-4">This simply wraps the <a href="#DatePartsPickerGallery">Date Parts Picker</a> and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates countdown timer */
@@ -4667,21 +4686,21 @@ const countdownTimerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="seconds"
-    :importCode="importCode"
-    :exampleCode="exampleCode">
+ <GalleryAndResult
+     :value="seconds"
+     :importCode="importCode"
+     :exampleCode="exampleCode">
 
-    Counting down:
-    <CountdownTimer v-model="seconds" />
+     Counting down:
+     <CountdownTimer v-model="seconds" />
 
-    <template #settings>
-        <form class="form-inline" @submit.prevent="reset">
-            <TextBox label="Reset Timer to (seconds)" v-model="setToSeconds" />
-            <RockButton type="submit">Set Timer</RockButton>
-        </form>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <form class="form-inline" @submit.prevent="reset">
+             <TextBox label="Reset Timer to (seconds)" v-model="setToSeconds" />
+             <RockButton type="submit">Set Timer</RockButton>
+         </form>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates electronic signature */
@@ -4703,20 +4722,20 @@ const electronicSignatureGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="signature"
-    :importCode="importCode"
-    :exampleCode="exampleCode">
+ <GalleryAndResult
+     :value="signature"
+     :importCode="importCode"
+     :exampleCode="exampleCode">
 
-    <ElectronicSignature v-model="signature" :isDrawn="isDrawn" :documentTerm="term" />
+     <ElectronicSignature v-model="signature" :isDrawn="isDrawn" :documentTerm="term" />
 
-    <template #settings>
-        <div class="row">
-            <Toggle formGroupClasses="col-md-4" label="Signature Type" trueText="Drawn" falseText="Typed" v-model="isDrawn" />
-            <TextBox formGroupClasses="col-md-4" label="Document Type Term" v-model="term" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <Toggle formGroupClasses="col-md-4" label="Signature Type" trueText="Drawn" falseText="Typed" v-model="isDrawn" />
+             <TextBox formGroupClasses="col-md-4" label="Document Type Term" v-model="term" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates field type editor */
@@ -4737,20 +4756,20 @@ const fieldTypeEditorGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />
+     <FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-4" label="Read Only Field Type" v-model="readOnly" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-md-4" label="Read Only Field Type" v-model="readOnly" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates inline slider */
@@ -4774,23 +4793,23 @@ const inlineSliderGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+     <InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
-            <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
-            <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
+             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
+             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates javascript anchor */
@@ -4810,12 +4829,12 @@ const javaScriptAnchorGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <JavaScriptAnchor @click="onClick">This link can run code, but does not link to a page.</JavaScriptAnchor>
-</GalleryAndResult>`
+     <JavaScriptAnchor @click="onClick">This link can run code, but does not link to a page.</JavaScriptAnchor>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates javascript anchor */
@@ -4859,24 +4878,24 @@ const keyValueListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:valueOptions':valueOptions }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="{ 'output:modelValue':value, 'input:valueOptions':valueOptions }"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
+     <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
+             <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
+             <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+             <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates loading component */
@@ -4895,19 +4914,19 @@ const loadingGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <Loading :isLoading="isLoading">Check the box below to start loading</Loading>
+     <Loading :isLoading="isLoading">Check the box below to start loading</Loading>
 
-    <template #settings>
-        <div class="row mb-3">
-            <CheckBox formGroupClasses="col-md-3" label="Is Loading" v-model="isLoading" />
-        </div>
-        <p>Internally, this uses the <a href="#LoadingIndicatorGallery">LoadingIndicator</a> component.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row mb-3">
+             <CheckBox formGroupClasses="col-md-3" label="Is Loading" v-model="isLoading" />
+         </div>
+         <p>Internally, this uses the <a href="#LoadingIndicatorGallery">LoadingIndicator</a> component.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates loading indicator component */
@@ -4924,16 +4943,16 @@ const loadingIndicatorGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <LoadingIndicator />
+     <LoadingIndicator />
 
-    <template #settings>
-        <p>It's best to use the <a href="#LoadingGallery">Loading</a> component instead of using this one directly.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>It's best to use the <a href="#LoadingGallery">Loading</a> component instead of using this one directly.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates number up down group */
@@ -4958,15 +4977,15 @@ const numberUpDownGroupGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:options':options }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="{ 'output:modelValue':value, 'input:options':options }"
+     hasMultipleValues
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <NumberUpDownGroup v-model="value" :options="options" />
-</GalleryAndResult>`
+     <NumberUpDownGroup v-model="value" :options="options" />
+ </GalleryAndResult>`
 });
 
 /** Demonstrates panel widget */
@@ -4980,34 +4999,34 @@ const panelWidgetGallery = defineComponent({
         return {
             importCode: getControlImportPath("panelWidget"),
             exampleCode: `<PanelWidget :isDefaultOpen="false">
-    <template #header>Header</template>
-    Main Content...
-</PanelWidget>`
+     <template #header>Header</template>
+     Main Content...
+ </PanelWidget>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <PanelWidget :isDefaultOpen="false">
-        <template #header>Panel Widget Header</template>
-        <h4>Romans 11:33-36</h4>
-        <p>
-            Oh, the depth of the riches<br />
-            and the wisdom and the knowledge of God!<br />
-            How unsearchable his judgments<br />
-            and untraceable his ways!<br />
-            For who has known the mind of the Lord?<br />
-            Or who has been his counselor?<br />
-            And who has ever given to God,<br />
-            that he should be repaid?<br />
-            For from him and through him<br />
-            and to him are all things.<br />
-            To him be the glory forever. Amen.
-        </p>
-    </PanelWidget>
-</GalleryAndResult>`
+     <PanelWidget :isDefaultOpen="false">
+         <template #header>Panel Widget Header</template>
+         <h4>Romans 11:33-36</h4>
+         <p>
+             Oh, the depth of the riches<br />
+             and the wisdom and the knowledge of God!<br />
+             How unsearchable his judgments<br />
+             and untraceable his ways!<br />
+             For who has known the mind of the Lord?<br />
+             Or who has been his counselor?<br />
+             And who has ever given to God,<br />
+             that he should be repaid?<br />
+             For from him and through him<br />
+             and to him are all things.<br />
+             To him be the glory forever. Amen.
+         </p>
+     </PanelWidget>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates progress bar */
@@ -5026,21 +5045,21 @@ const progressBarGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <ProgressBar :percent="value" />
+     <ProgressBar :percent="value" />
 
-    <template #settings>
-        <div class="row">
-            <label>Percent Done</label>
-            <InlineSlider formGroupClasses="col-md-6" label="Integer Only" v-model="value" showValueBar isIntegerOnly />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <label>Percent Done</label>
+             <InlineSlider formGroupClasses="col-md-6" label="Integer Only" v-model="value" showValueBar isIntegerOnly />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Rock Button */
@@ -5085,38 +5104,38 @@ const rockButtonGallery = defineComponent({
             loadingText: ref("Loading..."),
             importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
             exampleCode: `<RockButton
-    :btnSize="BtnSize.Default"
-    :btnType="BtnType.Default"
-    @click="onClick"
-    :isLoading="isLoading"
-    :autoLoading="autoLoading"
-    :autoDisable="autoDisable"
-    :loadingText="loadingText">
-    Button Text
-</RockButton>`
+     :btnSize="BtnSize.Default"
+     :btnType="BtnType.Default"
+     @click="onClick"
+     :isLoading="isLoading"
+     :autoLoading="autoLoading"
+     :autoDisable="autoDisable"
+     :loadingText="loadingText">
+     Button Text
+ </RockButton>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText">Click Here to Fire Async Operation</RockButton>
+     <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText">Click Here to Fire Async Operation</RockButton>
 
-    <template #settings>
-        <div class="row">
-            <DropDownList formGroupClasses="col-md-3" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
-            <DropDownList formGroupClasses="col-md-3" label="Button Type" v-model="btnType" :items="typeOptions" :showBlankItem="false" />
-            <CheckBox formGroupClasses="col-md-3" label="Auto Loading Indicator" v-model="autoLoading" />
-            <CheckBox formGroupClasses="col-md-3" label="Auto Disable" v-model="autoDisable" />
-        </div>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
-            <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <DropDownList formGroupClasses="col-md-3" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+             <DropDownList formGroupClasses="col-md-3" label="Button Type" v-model="btnType" :items="typeOptions" :showBlankItem="false" />
+             <CheckBox formGroupClasses="col-md-3" label="Auto Loading Indicator" v-model="autoLoading" />
+             <CheckBox formGroupClasses="col-md-3" label="Auto Disable" v-model="autoDisable" />
+         </div>
+         <div class="row">
+             <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
+             <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a rock form */
@@ -5133,12 +5152,12 @@ const rockLabelGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <RockLabel help="This is the help message">This is a Rock Label. Hover icon for help.</RockLabel>
-</GalleryAndResult>`
+     <RockLabel help="This is the help message">This is a Rock Label. Hover icon for help.</RockLabel>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a rock validation */
@@ -5160,16 +5179,16 @@ const rockValidationGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <RockValidation :errors="errors" />
+     <RockValidation :errors="errors" />
 
-    <template #settings>
-        <p>The <code>errors</code> parameter takes an array of <code>FormError</code> objects. <code>FormError</code> type is defined in <code>@Obsidian/Utility/form</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>The <code>errors</code> parameter takes an array of <code>FormError</code> objects. <code>FormError</code> type is defined in <code>@Obsidian/Utility/form</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates slider */
@@ -5193,23 +5212,23 @@ const sliderGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+     <Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
-            <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
-            <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
+             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
+             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates tabbed content */
@@ -5226,30 +5245,30 @@ const tabbedContentGallery = defineComponent({
             list: ["Matthew", "Mark", "Luke", "John"],
             importCode: getControlImportPath("tabbedContent"),
             exampleCode: `<TabbedContent :tabList="arrayOfItems">
-    <template #tab="{item}">
-        {{ item }}
-    </template>
-    <template #tabpane="{item}">
-        This is the content for {{item}}.
-    </template>
-</TabbedContent>`
+     <template #tab="{item}">
+         {{ item }}
+     </template>
+     <template #tabpane="{item}">
+         This is the content for {{item}}.
+     </template>
+ </TabbedContent>`
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
 
-    <TabbedContent :tabList="list">
-        <template #tab="{item}">
-            {{ item }}
-        </template>
-        <template #tabpane="{item}">
-            This is the content for {{item}}.
-        </template>
-    </TabbedContent>
-</GalleryAndResult>`
+     <TabbedContent :tabList="list">
+         <template #tab="{item}">
+             {{ item }}
+         </template>
+         <template #tabpane="{item}">
+             This is the content for {{item}}.
+         </template>
+     </TabbedContent>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates vertical collapse transition */
@@ -5265,17 +5284,17 @@ const transitionVerticalCollapseGallery = defineComponent({
             showContent: ref(false),
             importCode: getControlImportPath("transitionVerticalCollapse"),
             exampleCode: `<TransitionVerticalCollapse>
-    <div v-if="showContent">Content to transition in</div>
-</TransitionVerticalCollapse>`
+     <div v-if="showContent">Content to transition in</div>
+ </TransitionVerticalCollapse>`
         };
     },
     template: `
-<GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
-    <RockButton btnType="primary" class="mb-3" @click="showContent = !showContent">Show Content</RockButton>
-    <TransitionVerticalCollapse>
-        <div v-if="showContent">God so loved the world...</div>
-    </TransitionVerticalCollapse>
-</GalleryAndResult>`
+ <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+     <RockButton btnType="primary" class="mb-3" @click="showContent = !showContent">Show Content</RockButton>
+     <TransitionVerticalCollapse>
+         <div v-if="showContent">God so loved the world...</div>
+     </TransitionVerticalCollapse>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a value detail list */
@@ -5296,16 +5315,16 @@ const valueDetailListGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode" >
 
-    <ValueDetailList :modelValue="modelValue" />
+     <ValueDetailList :modelValue="modelValue" />
 
-    <template #settings>
-        <p>The <code>modelValue</code> parameter takes an array of <code>ValueDetailListItem</code> objects. <code>ValueDetailListItem</code> type is defined in <code>@Obsidian/Types/Controls/valueDetailListItem</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p>The <code>modelValue</code> parameter takes an array of <code>ValueDetailListItem</code> objects. <code>ValueDetailListItem</code> type is defined in <code>@Obsidian/Types/Controls/valueDetailListItem</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates code editor. */
@@ -5389,27 +5408,27 @@ const codeEditorGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <CodeEditor :theme="theme" :mode="mode" :editorHeight="editorHeight" />
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <CodeEditor :theme="theme" :mode="mode" :editorHeight="editorHeight" />
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Theme" v-model="theme" :items="themeItems" />
-            </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-4">
+                 <DropDownList label="Theme" v-model="theme" :items="themeItems" />
+             </div>
 
-            <div class="col-md-4">
-                <DropDownList label="Mode" v-model="mode" :items="modeItems" />
-            </div>
+             <div class="col-md-4">
+                 <DropDownList label="Mode" v-model="mode" :items="modeItems" />
+             </div>
 
-            <div class="col-md-4">
-                <NumberBox label="Editor Height" v-model="editorHeight" />
-            </div>
-        </div>
-    </template>
-</GalleryAndResult>`
+             <div class="col-md-4">
+                 <NumberBox label="Editor Height" v-model="editorHeight" />
+             </div>
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -5437,29 +5456,29 @@ const pagePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <PagePicker label="Page" v-model="value" :multiple="multiple" :promptForPageRoute="promptForPageRoute" :showSelectCurrentPage="showSelectCurrentPage" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <PagePicker label="Page" v-model="value" :multiple="multiple" :promptForPageRoute="promptForPageRoute" :showSelectCurrentPage="showSelectCurrentPage" />
 
-    <template #settings>
+     <template #settings>
 
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Show 'Select Current Page' Button" v-model="showSelectCurrentPage" />
-            </div>
-            <div class="col-md-4">
-                <CheckBox label="Prompt for Route" v-model="promptForPageRoute" help="Only works if not selecting multiple values" />
-            </div>
-        </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <div class="row">
+             <div class="col-md-4">
+                 <CheckBox label="Multiple" v-model="multiple" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Show 'Select Current Page' Button" v-model="showSelectCurrentPage" />
+             </div>
+             <div class="col-md-4">
+                 <CheckBox label="Prompt for Route" v-model="promptForPageRoute" help="Only works if not selecting multiple values" />
+             </div>
+         </div>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates group picker */
@@ -5481,35 +5500,35 @@ const groupPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <GroupPicker label="Group"
-        v-model="value"
-        :multiple="multiple"
-        :limitToSchedulingEnabled="limitToSchedulingEnabled"
-        :limitToRSVPEnabled="limitToRSVPEnabled" />
+     <GroupPicker label="Group"
+         v-model="value"
+         :multiple="multiple"
+         :limitToSchedulingEnabled="limitToSchedulingEnabled"
+         :limitToRSVPEnabled="limitToRSVPEnabled" />
 
-    <template #settings>
+     <template #settings>
 
-    <div class="row">
-        <div class="col-md-4">
-            <CheckBox label="Multiple" v-model="multiple" />
-        </div>
-        <div class="col-md-4">
-            <CheckBox label="Limit to Scheduling Enabled" v-model="limitToSchedulingEnabled" />
-        </div>
-        <div class="col-md-4">
-            <CheckBox label="Limit to RSVP Enabled" v-model="limitToRSVPEnabled" />
-        </div>
-    </div>
+     <div class="row">
+         <div class="col-md-4">
+             <CheckBox label="Multiple" v-model="multiple" />
+         </div>
+         <div class="col-md-4">
+             <CheckBox label="Limit to Scheduling Enabled" v-model="limitToSchedulingEnabled" />
+         </div>
+         <div class="col-md-4">
+             <CheckBox label="Limit to RSVP Enabled" v-model="limitToRSVPEnabled" />
+         </div>
+     </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates merge template picker */
@@ -5538,31 +5557,31 @@ const mergeTemplatePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <MergeTemplatePicker label="Merge Template"
-        v-model="value"
-        :multiple="multiple"
-        :mergeTemplateOwnership="ownership" />
+     <MergeTemplatePicker label="Merge Template"
+         v-model="value"
+         :multiple="multiple"
+         :mergeTemplateOwnership="ownership" />
 
-    <template #settings>
+     <template #settings>
 
-    <div class="row">
-        <div class="col-md-4">
-            <CheckBox label="Multiple" v-model="multiple" />
-        </div>
-        <div class="col-md-4">
-            <DropDownList label="Ownership" v-model="ownership" :items="ownershipOptions" />
-        </div>
-    </div>
+     <div class="row">
+         <div class="col-md-4">
+             <CheckBox label="Multiple" v-model="multiple" />
+         </div>
+         <div class="col-md-4">
+             <DropDownList label="Ownership" v-model="ownership" :items="ownershipOptions" />
+         </div>
+     </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates metric category picker */
@@ -5583,22 +5602,22 @@ const metricCategoryPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <MetricCategoryPicker label="Metric Category"
-        v-model="value"
-        :multiple="multiple" />
+     <MetricCategoryPicker label="Metric Category"
+         v-model="value"
+         :multiple="multiple" />
 
-    <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
+     <template #settings>
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates metric item picker */
@@ -5619,22 +5638,22 @@ const metricItemPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <MetricItemPicker label="Metric Item"
-        v-model="value"
-        :multiple="multiple" />
+     <MetricItemPicker label="Metric Item"
+         v-model="value"
+         :multiple="multiple" />
 
-    <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
+     <template #settings>
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates registration template picker */
@@ -5655,24 +5674,24 @@ const registrationTemplatePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <RegistrationTemplatePicker label="Registration Template"
-        v-model="value"
-        :multiple="multiple"
-        :mergeTemplateOwnership="ownership" />
+     <RegistrationTemplatePicker label="Registration Template"
+         v-model="value"
+         :multiple="multiple"
+         :mergeTemplateOwnership="ownership" />
 
-    <template #settings>
+     <template #settings>
 
-        <CheckBox label="Multiple" v-model="multiple" />
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates report picker */
@@ -5693,23 +5712,23 @@ const reportPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <ReportPicker label="Report"
-        v-model="value"
-        :multiple="multiple" />
+     <ReportPicker label="Report"
+         v-model="value"
+         :multiple="multiple" />
 
-    <template #settings>
+     <template #settings>
 
-        <CheckBox label="Multiple" v-model="multiple" />
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates schedule picker */
@@ -5730,23 +5749,23 @@ const schedulePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <SchedulePicker label="Schedule"
-        v-model="value"
-        :multiple="multiple" />
+     <SchedulePicker label="Schedule"
+         v-model="value"
+         :multiple="multiple" />
 
-    <template #settings>
+     <template #settings>
 
-        <CheckBox label="Multiple" v-model="multiple" />
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates workflow action type picker */
@@ -5767,23 +5786,23 @@ const workflowActionTypePickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <WorkflowActionTypePicker label="Workflow Action Type"
-        v-model="value"
-        :multiple="multiple" />
+     <WorkflowActionTypePicker label="Workflow Action Type"
+         v-model="value"
+         :multiple="multiple" />
 
-    <template #settings>
+     <template #settings>
 
-        <CheckBox label="Multiple" v-model="multiple" />
+         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a day of week picker */
@@ -5806,24 +5825,24 @@ const dayOfWeekPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
-            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
-            <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
-        </div>
+     <template #settings>
+         <div class="row">
+             <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+             <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+             <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
+         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a month/day picker */
@@ -5843,18 +5862,18 @@ const monthDayPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a month/year picker */
@@ -5874,18 +5893,18 @@ const monthYearPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates a cacheability picker */
@@ -5905,18 +5924,18 @@ const cacheabilityPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CacheabilityPicker label="Cacheability" v-model="value" />
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
+     <CacheabilityPicker label="Cacheability" v-model="value" />
 
-    <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Button Group */
@@ -5966,22 +5985,22 @@ const buttonGroupGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <ButtonGroup v-model="value" :btnSize="btnSize" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" :items="buttonOptions" />
+     <ButtonGroup v-model="value" :btnSize="btnSize" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" :items="buttonOptions" />
 
-    <template #settings>
-        <div class="row">
-            <DropDownList formGroupClasses="col-md-4" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
-            <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
-            <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <DropDownList formGroupClasses="col-md-4" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+             <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+             <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 /** Demonstrates Interval Picker */
@@ -6015,21 +6034,21 @@ const intervalPickerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
+ <GalleryAndResult
+     :value="value"
+     :importCode="importCode"
+     :exampleCode="exampleCode"
+     enableReflection >
 
-    <IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
+     <IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
 
-    <template #settings>
-        <div class="row">
-            <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
-            <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
-        </div>
-    </template>
-</GalleryAndResult>`
+     <template #settings>
+         <div class="row">
+             <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+             <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+         </div>
+     </template>
+ </GalleryAndResult>`
 });
 
 
@@ -6327,59 +6346,59 @@ const detailBlockGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode">
-    <DetailBlock name="Sample Entity"
-        :entityTypeGuid="entityTypeGuid"
-        entityTypeName="Entity Type"
-        entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2"
-        :headerActions="headerActions"
-        :headerSecondaryActions="headerSecondaryActions"
-        :labels="labels"
-        :footerActions="footerActions"
-        :footerSecondaryActions="footerSecondaryActions"
-        :isAuditHidden="isAuditHidden"
-        :isEditVisible="isEditVisible"
-        :isDeleteVisible="isDeleteVisible"
-        :isFollowVisible="isFollowVisible"
-        :isBadgesVisible="isBadgesVisible"
-        :isSecurityHidden="isSecurityHidden"
-        :isTagsVisible="isTagsVisible">
-        <template v-if="simulateHelp" #helpContent>
-            This is some help text.
-        </template>
-        <div v-for="c in colors" :style="{ background: c, height: '1px' }"></div>
-    </DetailBlock>
+ <GalleryAndResult
+     :importCode="importCode"
+     :exampleCode="exampleCode">
+     <DetailBlock name="Sample Entity"
+         :entityTypeGuid="entityTypeGuid"
+         entityTypeName="Entity Type"
+         entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2"
+         :headerActions="headerActions"
+         :headerSecondaryActions="headerSecondaryActions"
+         :labels="labels"
+         :footerActions="footerActions"
+         :footerSecondaryActions="footerSecondaryActions"
+         :isAuditHidden="isAuditHidden"
+         :isEditVisible="isEditVisible"
+         :isDeleteVisible="isDeleteVisible"
+         :isFollowVisible="isFollowVisible"
+         :isBadgesVisible="isBadgesVisible"
+         :isSecurityHidden="isSecurityHidden"
+         :isTagsVisible="isTagsVisible">
+         <template v-if="simulateHelp" #helpContent>
+             This is some help text.
+         </template>
+         <div v-for="c in colors" :style="{ background: c, height: '1px' }"></div>
+     </DetailBlock>
 
-    <template #settings>
-        <div class="row">
-            <div class="col-md-3">
-                <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isBadgesVisible" label="Is Badges Visible" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isDeleteVisible" label="Is Delete Visible" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
-            </div>
-            <div class="col-md-3">
-                <CheckBox v-model="isTagsVisible" label="Is Tags Visible" />
-            </div>
-        </div>
+     <template #settings>
+         <div class="row">
+             <div class="col-md-3">
+                 <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isBadgesVisible" label="Is Badges Visible" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isDeleteVisible" label="Is Delete Visible" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
+             </div>
+             <div class="col-md-3">
+                 <CheckBox v-model="isTagsVisible" label="Is Tags Visible" />
+             </div>
+         </div>
 
-        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal />
-    </template>
-</GalleryAndResult>`
+         <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal />
+     </template>
+ </GalleryAndResult>`
 });
 
 const templateGalleryComponents = [
@@ -6433,54 +6452,54 @@ export default defineComponent({
     },
 
     template: `
-<v-style>
-.galleryContainer {
-    margin: -18px;
-}
+ <v-style>
+ .galleryContainer {
+     margin: -18px;
+ }
 
-.galleryContainer > * {
-    padding: 24px;
-}
+ .galleryContainer > * {
+     padding: 24px;
+ }
 
-.gallerySidebar {
-    border-radius: 0;
-    margin: -1px 0 -1px -1px;
-}
+ .gallerySidebar {
+     border-radius: 0;
+     margin: -1px 0 -1px -1px;
+ }
 
-.gallerySidebar li.current {
-    font-weight: 700;
-}
-</v-style>
-<Panel type="block">
-    <template #title>
-        Obsidian Control Gallery
-    </template>
-    <template #default>
-        <div class="galleryContainer row">
+ .gallerySidebar li.current {
+     font-weight: 700;
+ }
+ </v-style>
+ <Panel type="block">
+     <template #title>
+         Obsidian Control Gallery
+     </template>
+     <template #default>
+         <div class="galleryContainer row">
 
-            <div class="gallerySidebar well col-sm-3">
-                <h4>Components</h4>
+             <div class="gallerySidebar well col-sm-3">
+                 <h4>Components</h4>
 
-                <ul class="list-unstyled mb-0">
-                    <li v-for="(component, key) in controlGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
-                        <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
-                    </li>
-                </ul>
+                 <ul class="list-unstyled mb-0">
+                     <li v-for="(component, key) in controlGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                         <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
+                     </li>
+                 </ul>
 
-                <h4 class="mt-3">Templates</h4>
+                 <h4 class="mt-3">Templates</h4>
 
-                <ul class="list-unstyled mb-0">
-                    <li v-for="(component, key) in templateGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
-                        <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
-                    </li>
-                </ul>
-            </div>
+                 <ul class="list-unstyled mb-0">
+                     <li v-for="(component, key) in templateGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                         <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
+                     </li>
+                 </ul>
+             </div>
 
-            <div class="galleryContent col-sm-9">
-                <component :is="currentComponent" />
-            </div>
+             <div class="galleryContent col-sm-9">
+                 <component :is="currentComponent" />
+             </div>
 
-        </div>
-    </template>
-</Panel>`
+         </div>
+     </template>
+ </Panel>`
 });

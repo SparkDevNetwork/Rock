@@ -37,6 +37,8 @@
     <Content Include="Framework\Controls\buttonGroup.vue" />
     <Content Include="Framework\Controls\cacheabilityPicker.vue" />
     <Content Include="Framework\Controls\dayOfWeekPicker.vue" />
+    <Content Include="Framework\Controls\definedValueEditor.vue" />
+    <Content Include="Framework\Controls\definedValuePicker.vue" />
     <Content Include="Framework\Controls\intervalPicker.vue" />
     <Content Include="Framework\Controls\monthDayPicker.vue" />
     <Content Include="Framework\Controls\monthYearPicker.vue" />
@@ -164,7 +166,6 @@
     <TypeScriptCompile Include="Framework\Controls\connectionRequestPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\copyButton.ts" />
     <TypeScriptCompile Include="Framework\Controls\dataViewPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\eventItemPicker.ts" />
@@ -759,6 +760,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\connectionRequestPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetAttributesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerSaveNewValueOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListAddEntityTagOptionsBag.d.ts" />

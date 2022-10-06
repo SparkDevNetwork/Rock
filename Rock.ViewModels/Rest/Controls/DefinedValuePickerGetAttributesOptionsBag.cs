@@ -16,39 +16,26 @@
 //
 
 using System;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the SaveNewValue API action of
-    /// the DefinedValuePicker control for adding a new Defined Value
+    /// The options that can be passed to the GetAttributes API action of
+    /// the DefinedValuePicker control.
     /// </summary>
-    public class DefinedValuePickerSaveNewValueOptionsBag
+    public class DefinedValuePickerGetAttributesOptionsBag
     {
         /// <summary>
-        /// The GUID of the defined type of the value we're saving
+        /// Gets or sets the unique identifier of the defined type to get attributes of.
         /// </summary>
+        /// <value>The unique identifier of the defined type to load values from.</value>
         public Guid DefinedTypeGuid { get; set; }
 
         /// <summary>
-        /// The value property of the new defined value
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
         /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// The description property of the new defined value
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// A collection of attribute values for the new defined value
-        /// </summary>
-        public Dictionary<string, string> AttributeValues{ get; set; }
-
-        /// <summary>
-        /// Gets or sets the security grant token to use when performing authorization checks.
-        /// </summary>
+        /// <value>The security grant token.</value>
         public string SecurityGrantToken { get; set; }
     }
 }

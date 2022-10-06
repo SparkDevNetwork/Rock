@@ -722,7 +722,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
-        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetDefinedValuesOptionsBag options )
+        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -857,14 +857,20 @@ namespace Rock.Rest.v2
 
                 definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
 
+                // Assign Attributes
                 Attribute.Helper.LoadAttributes( definedValue );
-                // definedValue.AttributeValues[attribute.Key **"Country"**] = new AttributeValueCache { AttributeId = attribute.Id **990**, EntityId = definedValue.Id **0**, Value = editValue **"6af92411-d991-4156-b701-96b937d74fa2"** };
+
+                foreach(KeyValuePair<string, AttributeValueCache> attr in definedValue.AttributeValues)
+                {
+                    definedValue.AttributeValues[attr.Key].Value = options.AttributeValues.GetValueOrNull( attr.Key );
+                }
 
                 if ( !definedValue.IsValid )
                 {
                     return InternalServerError();
                 }
 
+                // Save the new value
                 rockContext.WrapTransaction( () =>
                 {
                     if ( definedValue.Id.Equals( 0 ) )
