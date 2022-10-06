@@ -966,7 +966,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Values the tuple.
+        /// Updates the page layout.
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="layoutGuid">The layout unique identifier.</param>
@@ -4752,6 +4752,58 @@ END
         #endregion
 
         #region Security/Auth
+
+        /// <summary>
+        /// Inserts the security settings (Auth records) for the destination entity that exist on the source entity.
+        /// Does not insert duplicates or delete any settings from source or destination. Run N safe.
+        /// Auth records inserted will have a new generated GUID.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="sourceEntityGuid">The source entity unique identifier.</param>
+        /// <param name="destEntityGuid">The dest entity unique identifier.</param>
+        public void CopySecurityForEntity( string entityTypeGuid, string sourceEntityGuid, string destEntityGuid )
+        {
+            string sql = $@"
+                DECLARE @EntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
+                DECLARE @SourceBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = '{sourceEntityGuid}')
+                DECLARE @DestBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = '{destEntityGuid}')
+
+                INSERT INTO [Auth] ([EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid], [PersonAliasId])
+                SELECT 
+	                  a1.[EntityTypeId]
+	                , @DestBlockId
+	                , a1.[Order]
+	                , a1.[Action]
+	                , a1.[AllowOrDeny]
+	                , a1.[SpecialRole]
+	                , a1.[GroupId]
+	                , NEWID()
+                    , a1.[PersonAliasId]
+                FROM [Auth] a1
+                WHERE a1.[EntityTypeId] = @EntityTypeId
+	                AND a1.[EntityId] = @SourceBlockId
+	                AND NOT EXISTS (
+		                SELECT
+			                  a2.[EntityTypeId]
+			                , a2.[EntityId]
+			                , a2.[Order]
+			                , a2.[Action]
+			                , a2.[AllowOrDeny]
+			                , a2.[SpecialRole]
+			                , a2.[GroupId]
+                            , a2.[PersonAliasId]
+		                FROM [Auth] a2
+		                WHERE a2.[EntityTypeId] = a1.[EntityTypeId]
+			                AND a2.[EntityId] = @DestBlockId
+			                AND a2.[Order] = a1.[Order]
+			                AND a2.[Action] = a1.[Action]
+			                AND a2.[AllowOrDeny] = a1.[AllowOrDeny]
+			                AND a2.[SpecialRole] = a1.[SpecialRole]
+			                AND a2.[GroupId] = a1.[GroupId]
+                            AND a2.[PersonAliasId] = a1.[PersonAliasId])";
+
+            Migration.Sql( sql );
+        }
 
         /// <summary>
         /// Adds the security role group.
