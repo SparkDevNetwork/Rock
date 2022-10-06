@@ -283,20 +283,30 @@ namespace DotLiquid
 		/// <param name="parameters"></param>
 		public void Render(TextWriter result, RenderParameters parameters)
 		{
-			RenderInternal(result, parameters);
+			RenderInternal(result, parameters, out _);
 		}
 
-		/// <summary>
-		/// Renders the template into the specified Stream.
-		/// </summary>
-		/// <param name="stream"></param>
-		/// <param name="parameters"></param>
-		public void Render(Stream stream, RenderParameters parameters)
+        /// <summary>
+        /// Renders the template into the specified StreamWriter.
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parameters"></param>
+        public void Render( TextWriter result, RenderParameters parameters, out List<Exception> errors )
+        {
+            RenderInternal( result, parameters, out errors );
+        }
+
+        /// <summary>
+        /// Renders the template into the specified Stream.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="parameters"></param>
+        public void Render(Stream stream, RenderParameters parameters)
 		{
 			// Can't dispose this new StreamWriter, because it would close the
 			// passed-in stream, which isn't up to us.
 			StreamWriter streamWriter = new StreamWriter(stream);
-			RenderInternal(streamWriter, parameters);
+			RenderInternal(streamWriter, parameters, out _);
 			streamWriter.Flush();
 		}
 
@@ -312,10 +322,13 @@ namespace DotLiquid
 		/// * <tt>registers</tt> : hash with register variables. Those can be accessed from
 		/// filters and tags and might be useful to integrate liquid more with its host application
 		/// </summary>
-		private void RenderInternal(TextWriter result, RenderParameters parameters)
+		private void RenderInternal(TextWriter result, RenderParameters parameters, out List<Exception> errors )
 		{
-			if (Root == null)
-				return;
+            if ( Root == null )
+            {
+                errors = new List<Exception>();
+                return;
+            }
 
 			Context context;
 			Hash registers;
@@ -342,15 +355,16 @@ namespace DotLiquid
                 {
                     _errors = context.Errors;
                 }
+                errors = context.Errors;
 			}
 		}
 
-		/// <summary>
-		/// Uses the <tt>Liquid::TemplateParser</tt> regexp to tokenize the passed source
-		/// </summary>
-		/// <param name="source"></param>
-		/// <returns></returns>
-		internal static List<string> Tokenize(string source)
+        /// <summary>
+        /// Uses the <tt>Liquid::TemplateParser</tt> regexp to tokenize the passed source
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        internal static List<string> Tokenize(string source)
 		{
 			if (string.IsNullOrEmpty(source))
 				return new List<string>();

@@ -1435,17 +1435,10 @@ namespace RockWeb.Blocks.Finance
             hlViewBenevolenceType.Text = $"{benevolenceRequest?.BenevolenceType?.Name}";
             hlViewBenevolenceType.LabelType = LabelType.Type;
 
-            var campus = _requester?.GetCampus();
+            var campus = benevolenceRequest?.Campus;
 
             hlViewCampus.LabelType = LabelType.Campus;
-            if ( campus != null )
-            {
-                hlViewCampus.Text = $"{campus?.Name}";
-            }
-            else
-            {
-                hlViewCampus.Text = $"{CampusCache.All()?.FirstOrDefault()?.Name}";
-            }
+            hlViewCampus.Text = ( campus != null ? campus.Name : string.Empty );
 
             switch ( benevolenceRequest?.RequestStatusValue?.Value.ToUpper() )
             {
@@ -1459,7 +1452,7 @@ namespace RockWeb.Blocks.Finance
                     hlViewStatus.LabelType = LabelType.Danger;
                     break;
             }
-            
+
             hlViewStatus.Text = $"{benevolenceRequest?.RequestStatusValue?.Value}";
 
             DisplayPersonName();
