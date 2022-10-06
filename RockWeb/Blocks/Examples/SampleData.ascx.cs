@@ -74,12 +74,25 @@ namespace RockWeb.Blocks.Examples
         DefaultBooleanValue = true,
         Order = 3 )]
 
+    [BooleanField( "Process Only Giving Data",
+        Description = "If true, the only giving data will be loaded.",
+        Key = AttributeKey.ProcessOnlyGivingData,
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [BooleanField( "Delete Data First",
+        Description = "If true, data will be deleted first.",
+        Key = AttributeKey.DeleteDataFirst,
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
     [IntegerField( "Random Number Seed",
         Description = "If given, the randomizer used during the creation of attendance and financial transactions will be predictable. Use 0 to use a random seed.",
         Key = AttributeKey.RandomNumberSeed,
         IsRequired = false,
         DefaultIntegerValue = 1,
-        Order = 4 )]
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "A42E0031-B2B9-403A-845B-9C968D7716A6" )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
@@ -91,6 +104,8 @@ namespace RockWeb.Blocks.Examples
             public const string FabricateAttendance = "FabricateAttendance";
             public const string EnableStopwatch = "EnableStopwatch";
             public const string EnableGiving = "EnableGiving";
+            public const string ProcessOnlyGivingData = "'ProcessOnlyGivingData";
+            public const string DeleteDataFirst = "'DeleteDataFirst";
             public const string RandomNumberSeed = "RandomNumberSeed";
         }
 
@@ -579,22 +594,26 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                //// First delete any sample data that might exist already 
+                // If DeleteDataFirst is enabled...
+                // delete any sample data that might exist already
                 // using RockContext in case there are multiple saves (like Attributes)
                 rockContext.WrapTransaction( () =>
                 {
                     _stopwatch.Start();
                     AppendFormat( "00:00.00 started <br/>" );
 
-                    // Delete this stuff that might have people attached to it
-                    DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    if ( GetAttributeValue( AttributeKey.DeleteDataFirst ).AsBoolean() )
+                    {
+                        // Delete this stuff that might have people attached to it
+                        DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
 
-                    // Now we'll clean up by deleting any previously created data such as
-                    // families, addresses, people, photos, attendance data, etc.
-                    DeleteExistingGroups( elemGroups, rockContext );
-                    DeleteExistingFamilyData( elemFamilies, rockContext );
+                        // Now we'll clean up by deleting any previously created data such as
+                        // families, addresses, people, photos, attendance data, etc.
+                        DeleteExistingGroups( elemGroups, rockContext );
+                        DeleteExistingFamilyData( elemFamilies, rockContext );
 
-                    LogElapsed( "data deleted" );
+                        LogElapsed( "data deleted" );
+                    }
                 } );
 
                 // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
@@ -604,60 +623,68 @@ namespace RockWeb.Blocks.Examples
                 // using RockContext in case there are multiple saves (like Attributes)
                 rockContext.WrapTransaction( () =>
                 {
-                    // Now we can add the families (and people) and then groups.... etc.
-                    AddFamilies( elemFamilies, rockContext );
-                    LogElapsed( "families added" );
-
-                    AddRelationships( elemRelationships, rockContext );
-                    LogElapsed( "relationships added" );
-
-                    AddLocations( elemLocations, rockContext );
-                    LogElapsed( "locations added" );
-
-                    AddCampuses( elemCampuses, rockContext );
-                    LogElapsed( "campuses added" );
-
-                    AddGroups( elemGroups, rockContext );
-                    LogElapsed( "groups added" );
-
-                    AddConnections( elemConnections, rockContext );
-                    LogElapsed( "people connection requests added" );
-
-                    AddFollowing( elemFollowing, rockContext );
-                    LogElapsed( "people following added" );
-
-                    AddToSecurityGroups( elemSecurityGroups, rockContext );
-                    LogElapsed( "people added to security roles" );
-
-                    AddFinancialGateways( financialGateways, rockContext );
-                    LogElapsed( "financialGateways added" );
-
-                    AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
-                    LogElapsed( "registration templates added" );
-
-                    AddRegistrationInstances( elemRegistrationInstances, rockContext );
-                    LogElapsed( "registration instances added..." );
-
-                    rockContext.ChangeTracker.DetectChanges();
-                    rockContext.SaveChanges( disablePrePostProcessing: true );
-                    LogElapsed( "...changes saved" );
-
-                    // add logins, but only if we were supplied a password
-                    if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                    if ( GetAttributeValue( AttributeKey.ProcessOnlyGivingData ).AsBoolean() )
                     {
-                        AddPersonLogins( rockContext );
-                        LogElapsed( "person logins added" );
+                        AddAllFamilyGiving( elemFamilies, rockContext );
                     }
+                    else
+                    {
+                        // Now we can add the families (and people) and then groups.... etc.
+                        AddFamilies( elemFamilies, rockContext );
+                        LogElapsed( "families added" );
 
-                    // Add Person Notes
-                    AddPersonNotes( elemFamilies, rockContext );
-                    rockContext.SaveChanges( disablePrePostProcessing: true );
-                    LogElapsed( "notes added" );
+                        AddRelationships( elemRelationships, rockContext );
+                        LogElapsed( "relationships added" );
 
-                    // Add Person Previous LastNames
-                    AddPeoplesPreviousNames( elemFamilies, rockContext );
-                    rockContext.SaveChanges( disablePrePostProcessing: true );
-                    LogElapsed( "previous names added" );
+                        AddLocations( elemLocations, rockContext );
+                        LogElapsed( "locations added" );
+
+                        AddCampuses( elemCampuses, rockContext );
+                        LogElapsed( "campuses added" );
+
+                        AddGroups( elemGroups, rockContext );
+                        LogElapsed( "groups added" );
+
+                        AddConnections( elemConnections, rockContext );
+                        LogElapsed( "people connection requests added" );
+
+                        AddFollowing( elemFollowing, rockContext );
+                        LogElapsed( "people following added" );
+
+                        AddToSecurityGroups( elemSecurityGroups, rockContext );
+                        LogElapsed( "people added to security roles" );
+
+	                    AddFinancialGateways( financialGateways, rockContext );
+	                    LogElapsed( "financialGateways added" );
+
+	                    AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
+	                    LogElapsed( "registration templates added" );
+                    
+
+                        AddRegistrationInstances( elemRegistrationInstances, rockContext );
+                        LogElapsed( "registration instances added..." );
+
+                        rockContext.ChangeTracker.DetectChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+                        LogElapsed( "...changes saved" );
+
+                        // add logins, but only if we were supplied a password
+                        if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                        {
+                            AddPersonLogins( rockContext );
+                            LogElapsed( "person logins added" );
+                        }
+
+                        // Add Person Notes
+                        AddPersonNotes( elemFamilies, rockContext );
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+                        LogElapsed( "notes added" );
+
+                        // Add Person Previous LastNames
+                        AddPeoplesPreviousNames( elemFamilies, rockContext );
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+                        LogElapsed( "previous names added" );
+                    }
                 } );
 
                 // since some PostSaveChanges was disabled, call these cleanup tasks
@@ -1695,7 +1722,23 @@ namespace RockWeb.Blocks.Examples
             // Now re-process the family section looking for any giving data.
             // We do this last because we need the personAliases that were just added.
             // Persist the storage type's settings specific to the contribution binary file type
-            settings = new Dictionary<string, string>();
+            AddAllFamilyGiving( elemFamilies, rockContext );
+
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
+        }
+
+        /// <summary>
+        /// This method will add all family giving data.  It can be used stand-alone to only process/add giving data.
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        /// <param name="rockContext"></param>
+        private void AddAllFamilyGiving( XElement elemFamilies, RockContext rockContext)
+        {
+            // Now re-process the family section looking for any giving data.
+            // We do this last because we need the personAliases that were just added.
+            // Persist the storage type's settings specific to the contribution binary file type
+            var settings = new Dictionary<string, string>();
             if ( _checkImageBinaryFileType.Attributes == null )
             {
                 _checkImageBinaryFileType.LoadAttributes();
@@ -2260,7 +2303,7 @@ namespace RockWeb.Blocks.Examples
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,
-                        ConnectionState = global::ConnectionState.Active,
+                        ConnectionState = ConnectionState.Active,
                         CreatedDateTime = date
                     };
 
@@ -2713,7 +2756,7 @@ namespace RockWeb.Blocks.Examples
 
             // Now create the giving data for this recipe set
             CreateGiving( personGuid, startingDate, endDate, frequency, percentGive, growRatePercent, growFrequencyWeeks, specialGiftPercent, accountAmountDict, circularImageList, rockContext );
-            AppendFormat( "{0:00}:{1:00}.{2:00} added giving data {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, familyName );
+            AppendFormat( "{0:00}:{1:00}.{2:00} added giving data {3} ({4})<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, familyName, frequency );
         }
 
         /// <summary>
@@ -2785,13 +2828,30 @@ namespace RockWeb.Blocks.Examples
                     _contributionBatches.Add( date, batch );
                 }
 
+                // Find the person alias via the dictrionary or look them up and add to dictionary:
+                int? personAliasId;
+                if ( _peopleAliasDictionary.ContainsKey( personGuid ) )
+                {
+                    personAliasId = _peopleAliasDictionary[personGuid];
+                }
+                else
+                {
+                    personAliasId = new PersonService( rockContext ).Get( personGuid ).PrimaryAliasId;
+                    if ( personAliasId == null )
+                    {
+                        // this should not happen
+                        continue;
+                    }
+                    _peopleAliasDictionary.Add( personGuid, personAliasId.Value );
+                }
+
                 // Set up the new transaction
                 FinancialTransaction financialTransaction = new FinancialTransaction
                 {
                     TransactionTypeValueId = _transactionTypeContributionId,
                     Guid = Guid.NewGuid(),
                     TransactionDateTime = date,
-                    AuthorizedPersonAliasId = _peopleAliasDictionary[personGuid]
+                    AuthorizedPersonAliasId = personAliasId
                 };
 
                 financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();

@@ -175,6 +175,7 @@
     <Compile Include="Field.Types\MergeTemplateFieldTypeTests.cs" />
     <Compile Include="Field.Types\MetricCategoriesFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
+    <Compile Include="Issues\Issues_v14.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
     <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
@@ -212,7 +213,7 @@
     <Compile Include="Lava\Commands\ShortcodeCodeTests.cs" />
     <Compile Include="Lava\Commands\CommandTests.cs" />
     <Compile Include="Lava\Commands\ShortcodeTemplateTests.cs" />
-    <Compile Include="Lava\SqlTests.cs" />
+    <Compile Include="Lava\Commands\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />

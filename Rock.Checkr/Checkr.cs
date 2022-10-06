@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -411,7 +411,7 @@ namespace Rock.Checkr
         /// <param name="status">The status.</param>
         /// <param name="documentId">The document identifier.</param>
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
-        private static bool UpdateBackgroundCheckAndWorkFlow( string candidateId, Enums.WebhookTypes webhookTypes, string packageName = null, string status = null, string documentId = null )
+        private static bool UpdateBackgroundCheckAndWorkFlow( string candidateId, CheckrApi.Enums.WebhookTypes webhookTypes, string packageName = null, string status = null, string documentId = null )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -719,9 +719,9 @@ namespace Rock.Checkr
                 return false;
             }
 
-            if ( genericWebhook.Type == Enums.WebhookTypes.InvitationCompleted ||
-                genericWebhook.Type == Enums.WebhookTypes.InvitationCreated ||
-                genericWebhook.Type == Enums.WebhookTypes.InvitationExpired )
+            if ( genericWebhook.Type == CheckrApi.Enums.WebhookTypes.InvitationCompleted ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.InvitationCreated ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.InvitationExpired )
             {
                 InvitationWebhook invitationWebhook = JsonConvert.DeserializeObject<InvitationWebhook>( postedData );
                 if ( invitationWebhook == null )
@@ -733,16 +733,16 @@ namespace Rock.Checkr
 
                 return UpdateBackgroundCheckAndWorkFlow( invitationWebhook.Data.Object.CandidateId, genericWebhook.Type, invitationWebhook.Data.Object.Package, genericWebhook.Type.ConvertToString( false ) );
             }
-            else if ( genericWebhook.Type == Enums.WebhookTypes.ReportCreated ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportCompleted ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportDisputed ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportEngaged ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportPostAdverseAction ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportPreAdverseAction ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportResumed ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportSuspended ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportUpgraded ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportUpdated )
+            else if ( genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportCreated ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportCompleted ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportDisputed ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportEngaged ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportPostAdverseAction ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportPreAdverseAction ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportResumed ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportSuspended ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportUpgraded ||
+                genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportUpdated )
             {
                 ReportWebhook reportWebhook = JsonConvert.DeserializeObject<ReportWebhook>( postedData );
                 if ( reportWebhook == null )
@@ -753,7 +753,7 @@ namespace Rock.Checkr
                 }
 
                 string documentId = null;
-                if ( genericWebhook.Type == Enums.WebhookTypes.ReportCompleted )
+                if ( genericWebhook.Type == CheckrApi.Enums.WebhookTypes.ReportCompleted )
                 {
                     documentId = GetDocumentIdFromReport( reportWebhook.Data.Object.Id ) ?? string.Empty;
 
