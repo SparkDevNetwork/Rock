@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
 import LocationPicker from "@Obsidian/Controls/locationPicker";

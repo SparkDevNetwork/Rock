@@ -21,6 +21,7 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
+ * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
@@ -47,7 +48,6 @@
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
 import { ObjectUtils } from "@Obsidian/Utility";
 import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
-import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -99,7 +99,7 @@ import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderP
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
 import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
@@ -623,6 +623,7 @@ const attributeValuesContainerGallery = defineComponent({
     hasMultipleValues
     :importCode="importCode"
     :exampleCode="exampleCode" >
+
     <AttributeValuesContainer
         v-model="attributeValues"
         :attributes="attributes"
@@ -2394,14 +2395,27 @@ const definedValuePickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         DefinedValuePicker,
-        TextBox
+        TextBox,
+        RockForm
     },
     setup() {
+
+        function onsubmit(): void {
+            alert("control gallery form submitted");
+        }
+
+        const multiple = ref(false);
+        const enhanceForLongLists = ref(false);
+        const displayStyle = computed(() => (multiple.value && !enhanceForLongLists.value) ? PickerDisplayStyle.List : PickerDisplayStyle.Auto);
+
         return {
+            onsubmit,
+            allowAdd: ref(false),
             definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
-            enhanceForLongLists: ref(false),
-            multiple: ref(false),
-            value: ref({ "value": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2", "text": "Visitor" }),
+            enhanceForLongLists,
+            multiple,
+            displayStyle,
+            value: ref(null),
             importCode: getControlImportPath("definedValuePicker"),
             exampleCode: `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`
         };
@@ -2412,13 +2426,16 @@ const definedValuePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" />
+
+    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
 
     <template #settings>
-        <TextBox label="Defined Type" v-model="definedTypeGuid" />
-        <CheckBox label="Multiple" v-model="multiple" />
-        <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Defined Type" v-model="definedTypeGuid" />
+            <CheckBox formGroupClasses="col-md-2" label="Multiple" v-model="multiple" />
+            <CheckBox formGroupClasses="col-md-3" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            <CheckBox formGroupClasses="col-md-3" label="Allow Adding Values" v-model="allowAdd" />
+        </div>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
 </GalleryAndResult>`
