@@ -138,7 +138,7 @@ namespace Rock.Workflow.Action
                         request.ConnectionStatusId = status.Id;
                     }
                 }
-                else if ( request.ConnectionOpportunity.ConnectionTypeId != opportunity.ConnectionTypeId )
+                else if ( request.ConnectionTypeId != opportunity.ConnectionTypeId )
                 {
                     request.ConnectionStatusId = status.Id;
                 }
