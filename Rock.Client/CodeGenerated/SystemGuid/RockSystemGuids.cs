@@ -929,6 +929,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
         public const string FINANCIAL_GATEWAY = "122EFE60-84A6-4C7A-A852-30E4BD89A662";
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+        public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
         public const string FINANCIAL_PAYMENT_DETAIL = "F3659077-43FD-4805-BC42-BC8A3F9C3008";
         public const string FINANCIAL_PERSON_BANK_ACCOUNT = "EC1AE861-BDFE-4A08-9741-2E1D2293456F";
         public const string FINANCIAL_PERSON_SAVED_ACCOUNT = "F5244E64-53DB-4707-A398-D248616A776D";
@@ -1167,7 +1168,6 @@ namespace Rock.Client.SystemGuid
         public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
         public const string ASSET_STORAGE_SYSTEM = "A57109EE-35A2-45D0-A575-02DBBDFBC0D0";
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
-        public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
         public const string AUDIO_FILE = "9772CB1F-3BC4-432E-80DD-D635CDB2DA32";
         public const string AUDIO_URL = "3B2D8714-421C-4CB8-A892-58B83521EF8A";
         public const string BACKGROUNDCHECK = "D05B3808-803A-4531-9680-DD4AAB8ADF1A";
@@ -1286,7 +1286,6 @@ namespace Rock.Client.SystemGuid
         public const string TIME_ZONE = "3FC8C1D3-3EBB-4887-A5A4-B9F300FC7B90";
         public const string URL_LINK = "C0D0D7E2-C3B0-4004-ABEA-4BBFAD10D5D2";
         public const string VALUE_LIST = "7BDAE237-6E49-47AC-9961-A45AFB69E240";
-        public const string VIDEO = "FA398F9D-5B01-41EA-9A93-112F910A277D";
         public const string VIDEO_FILE = "F1F5B59D-F086-4627-A94A-DFA7E67950F3";
         public const string VIDEO_URL = "E6FD57F3-1704-4E96-91A7-3D3E85346393";
         public const string WORKFLOW = "0F72D8FD-983F-41FB-A7A3-E6403EB04EDB";
@@ -1776,7 +1775,6 @@ namespace Rock.Client.SystemGuid
         public const string SEND_PHOTO_REQUESTS = "B64D0429-488C-430E-8C32-5C7F32589F73";
         public const string SHORT_LINK = "A9188D7A-80D9-4865-9C77-9F90E992B65C";
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
-        public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
         public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
         public const string SQL_COMMAND = "03C49950-9C4C-4668-9C65-9A0DF43D1B33";
         public const string STEP_FLOW = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC";
@@ -1979,15 +1977,6 @@ namespace Rock.Client.SystemGuid
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
         public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
-    }
-
-    /// <summary>
-    /// </summary>
-    public class SystemSetting
-    {
-        public const string DO_NOT_DISTURB_ACTIVE = "1BE30413-5C90-4B78-B324-BD31AA83C002";
-        public const string DO_NOT_DISTURB_END = "661802FC-E636-4CE2-B75A-4AC05595A347";
-        public const string DO_NOT_DISTURB_START = "4A558666-32C7-4490-B860-0F41358E14CA";
     }
 
     /// <summary>
