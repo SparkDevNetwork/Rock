@@ -34,6 +34,9 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
+    <Content Include="src\Cms\lavaShortcodeDetail.vue" />
+    <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.vue" />
+    <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\categoryDetail.vue" />
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
@@ -62,6 +65,7 @@
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
+    <Folder Include="src\Cms\LavaShortcodeDetail\" />
     <Folder Include="src\Cms\LayoutDetail\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
@@ -120,6 +124,7 @@
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\filterGrid.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\filtersContainer.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\LavaShortcodeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\layoutDetail.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\types.d.ts" />

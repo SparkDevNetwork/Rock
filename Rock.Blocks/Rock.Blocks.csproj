@@ -62,6 +62,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
+    <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Cms\LayoutDetail.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Cms\MediaFolderDetail.cs" />

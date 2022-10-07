@@ -24,16 +24,18 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** LavaShortcode View Model */
 export type LavaShortcodeBag = {
+    /**
+     * Gets or sets the collection of Categories that this Rock.Model.LavaShortcode is associated with.
+     * NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+     */
+    categories?: ListItemBag[] | null;
+
     /** Gets or sets the Description of the Lava Shortcode. */
     description?: string | null;
 
     /** Gets or sets the documentation. This serves as the technical description of the internals of the shortcode. */
     documentation?: string | null;
-
-    /** Gets or sets a comma-delimited list of enabled LavaCommands */
-    enabledLavaCommands?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
@@ -47,26 +49,11 @@ export type LavaShortcodeBag = {
     /** Gets or sets the public name of the shortcode. */
     name?: string | null;
 
-    /** Gets or sets the parameters. */
-    parameters?: string | null;
-
     /** Gets or sets the name of the tag. */
     tagName?: string | null;
 
-    /** Gets or sets the type of the tag (inline or block). A tag type of block requires an end tag. */
-    tagType: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
+    /** Gets or sets the type of the tag. */
+    tagType: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -76,4 +63,7 @@ export type LavaShortcodeBag = {
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the tag types. **/
+    tagTypes: ListItemBag[] | [];
 };

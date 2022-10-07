@@ -62,6 +62,8 @@
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchQueryBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultSourceBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutDetail\LayoutBag.cs" />
     <Compile Include="Blocks\Cms\LayoutDetail\LayoutDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountBag.cs" />

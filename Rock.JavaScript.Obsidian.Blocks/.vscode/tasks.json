@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "build-fast",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build-fast",
+			"detail": "node build/build-fast.js"
+		}
+	]
+}
