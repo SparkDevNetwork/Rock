@@ -475,18 +475,6 @@ namespace Rock
         /// </summary>
         /// <param name="attributeQuery">The attribute query.</param>
         /// <returns></returns>
-        [Obsolete( "Use ToAttributeCacheList instead", true )]
-        [RockObsolete( "1.9" )]
-        public static List<AttributeCache> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
-        {
-            return attributeQuery.ToAttributeCacheList();
-        }
-
-        /// <summary>
-        /// Selects just the Id from the Attribute Query and reads the Ids into a list of AttributeCache
-        /// </summary>
-        /// <param name="attributeQuery">The attribute query.</param>
-        /// <returns></returns>
         public static List<AttributeCache> ToAttributeCacheList( this IQueryable<Rock.Model.Attribute> attributeQuery )
         {
             return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList().Where( a => a != null ).ToList();

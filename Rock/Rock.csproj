@@ -2083,7 +2083,6 @@
     <Compile Include="Mobile\MobileHelper.cs" />
     <Compile Include="Utility\JsonInterfaceContractResolver.cs" />
     <Compile Include="Utility\DynamicPropertyMapContractResolver.cs" />
-    <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
@@ -2383,7 +2382,6 @@
     <Compile Include="Financial\ReferencePaymentInfo.cs" />
     <Compile Include="Financial\SwipePaymentInfo.cs" />
     <Compile Include="Financial\TestGateway.cs" />
-    <Compile Include="Financial\ThreeStepGatewayComponent.cs" />
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\EventContainer.cs" />
     <Compile Include="Follow\Event\PersonAnniversary.cs" />
@@ -3281,7 +3279,6 @@
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRulesEditor.cs" />
-    <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
     <Compile Include="Web\UI\Controls\ScreenKeyboard.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SingleEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepStatusPicker.cs" />

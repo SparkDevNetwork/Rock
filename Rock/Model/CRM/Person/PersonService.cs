@@ -2395,7 +2395,7 @@ namespace Rock.Model
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter" )]
+        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter", true )]
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
         {
             return GetPersonFromMobilePhoneNumber( phoneNumber, false );

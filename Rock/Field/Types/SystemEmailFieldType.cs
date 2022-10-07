@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a system email. Stored as SystemEmail.Guid
     /// </summary>
-    [Obsolete( "Use SystemCommunicationFieldType instead." )]
+    [Obsolete( "Use SystemCommunicationFieldType instead.", true )]
     [RockObsolete( "1.10" )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_EMAIL )]

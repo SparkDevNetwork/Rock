@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -686,7 +686,7 @@ namespace Rock.Model
         /// The scheduled system email identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
@@ -706,7 +706,7 @@ namespace Rock.Model
         /// The schedule reminder system email identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; set; }
 
@@ -936,7 +936,7 @@ namespace Rock.Model
         /// The scheduled system email.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead.", true )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
 
@@ -947,7 +947,7 @@ namespace Rock.Model
         /// The schedule reminder system email.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunication instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunication instead.", true )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
 
@@ -1084,11 +1084,6 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleConfirmationSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            this.HasOptional( p => p.ScheduleConfirmationSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemEmailId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ScheduleReminderSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemEmailId ).WillCascadeOnDelete( false );
-#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 

@@ -25,20 +25,6 @@ namespace Rock.Model
     public class FeeInfo
     {
         /// <summary>
-        /// Gets or sets the option.
-        /// </summary>
-        /// <value>
-        /// The option.
-        /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use RegistrationTemplateFeeItemId + FeeLabel instead", true )]
-        public string Option
-        {
-            get => this.FeeLabel;
-            set => this.FeeLabel = value;
-        }
-
-        /// <summary>
         /// Gets or sets the fee label.
         /// </summary>
         /// <value>
@@ -119,22 +105,6 @@ namespace Rock.Model
         /// </summary>
         public FeeInfo()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FeeInfo"/> class.
-        /// </summary>
-        /// <param name="option">The option.</param>
-        /// <param name="quantity">The quantity.</param>
-        /// <param name="cost">The cost.</param>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use other FeeInfo constructor", true )]
-        public FeeInfo( string option, int quantity, decimal cost )
-            : this()
-        {
-            Option = option;
-            Quantity = quantity;
-            Cost = cost;
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [RockObsolete( "1.10" )]
-    [Obsolete( "Use BadgeCache instead.", false )]
+    [Obsolete( "Use BadgeCache instead.", true )]
     [Serializable]
     [DataContract]
     public class PersonBadgeCache

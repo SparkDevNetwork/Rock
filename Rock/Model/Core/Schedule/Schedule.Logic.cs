@@ -492,19 +492,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetICalEvent() instead ", true )]
-        public virtual DDay.iCal.Event GetCalenderEvent()
-        {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-        }
-
-        /// <summary>
-        /// Gets the Schedule's iCalender Event.
-        /// </summary>
-        /// <value>
-        /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
-        /// </value>
         [RockObsolete( "1.12" )]
         [Obsolete( "Use GetICalEvent() instead " )]
         public virtual DDay.iCal.Event GetCalendarEvent()

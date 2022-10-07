@@ -49,13 +49,6 @@ namespace Rock.SystemGuid
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
 
         /// <summary>
-        /// Audio field type
-        /// </summary>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use AUDIO_FILE or AUDIO_URL instead", true )]
-        public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
-
-        /// <summary>
         /// Audio File field type
         /// </summary>
         public const string AUDIO_FILE = "9772CB1F-3BC4-432E-80DD-D635CDB2DA32";
@@ -644,13 +637,6 @@ namespace Rock.SystemGuid
         /// Value List field type
         /// </summary>
         public const string VALUE_LIST = "7BDAE237-6E49-47AC-9961-A45AFB69E240";
-
-        /// <summary>
-        /// Video field type
-        /// </summary>
-        [RockObsolete( "1.9" )]
-        [Obsolete("Use VIDEO_FILE or VIDEO_URL Instead", true )]
-        public const string VIDEO = "FA398F9D-5B01-41EA-9A93-112F910A277D";
 
         /// <summary>
         /// Video File field type

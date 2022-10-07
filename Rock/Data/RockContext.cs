@@ -2121,7 +2121,7 @@ namespace Rock.Data
         /// The system emails.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use SystemCommunications instead." )]
+        [Obsolete( "Use SystemCommunications instead.", true )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
 
         /// <summary>

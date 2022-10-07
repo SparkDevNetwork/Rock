@@ -479,7 +479,6 @@
     <Compile Include="Filters\ValidateAttribute.cs" />
     <Compile Include="Handler\RockApiExceptionHandler.cs" />
     <Compile Include="Handler\RockApiExceptionLogger.cs" />
-    <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Swagger\SwaggerExtensions.cs" />
     <Compile Include="Utility\HttpRequestMessageExtensions.cs" />
