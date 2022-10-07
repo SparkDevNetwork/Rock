@@ -17,28 +17,28 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the timespan represented by each of the <see cref="StreakType"/> bits.
+    /// Represents the timespan represented by each of the StreakType bits.
     /// </summary>
     [Enums.EnumDomain( "Engagement" )]
     public enum StreakOccurrenceFrequency
     {
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a day.
+        /// The StreakType has bits that represent a day.
         /// </summary>
         Daily = 0,
 
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a week.
+        /// The StreakType has bits that represent a week.
         /// </summary>
         Weekly = 1,
 
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a month.
+        /// The StreakType has bits that represent a month.
         /// </summary>
         Monthly = 2,
 
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a year.
+        /// The StreakType has bits that represent a year.
         /// </summary>
         Yearly = 3
     }

@@ -24,17 +24,17 @@ namespace Rock.Model
     public enum NoteApprovalStatus
     {
         /// <summary>
-        /// The <see cref="Note"/> is pending approval.
+        /// The Note is pending approval.
         /// </summary>
         PendingApproval = 0,
 
         /// <summary>
-        /// The <see cref="Note"/> has been approved.
+        /// The Note has been approved.
         /// </summary>
         Approved = 1,
 
         /// <summary>
-        /// The <see cref="Note"/> was denied.
+        /// The Note was denied.
         /// </summary>
         Denied = 2
     }

@@ -18,18 +18,18 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the view mode of a <see cref="ConnectionType"/>.
+    /// Represents the view mode of a ConnectionType.
     /// </summary>
     [Enums.EnumDomain( "Connection" )]
     public enum ConnectionTypeViewMode
     {
         /// <summary>
-        /// The <see cref="ConnectionType"/> is viewed as list.
+        /// The ConnectionType is viewed as list.
         /// </summary>
         List = 0,
 
         /// <summary>
-        /// The <see cref="ConnectionType"/> is viewed as a board.
+        /// The ConnectionType is viewed as a board.
         /// </summary>
         Board = 1
     }

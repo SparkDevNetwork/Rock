@@ -18,7 +18,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents how a <see cref="Rock.Model.Page"/> should be displayed in the page navigation controls.
+    /// Represents how a Page should be displayed in the page navigation controls.
     /// </summary>
     [Enums.EnumDomain( "Cms" )]
     public enum DisplayInNavWhen

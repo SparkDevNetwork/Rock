@@ -18,7 +18,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents and indicates the participation type or mode used in a Fundraising Opportunity <see cref="Rock.Model.GroupType"/> to determine the way contributions and participants are displayed.
+    /// Represents and indicates the participation type or mode used in a Fundraising Opportunity Rock.Model.GroupType to determine the way contributions and participants are displayed.
     /// </summary>
     [Enums.EnumDomain( "Group" )]
     public enum ParticipationType

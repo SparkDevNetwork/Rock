@@ -18,7 +18,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents and indicates the  attendance rule to use when a <see cref="Rock.Model.Person"/> checks in to a <see cref="Rock.Model.Group"/> of this <see cref="Rock.Model.GroupType"/>
+    /// Represents and indicates the  attendance rule to use when a Rock.Model.Person checks in to a Rock.Model.Group of this Rock.Model.GroupType
     /// </summary>
     [Enums.EnumDomain( "Group" )]
     public enum AttendanceRule

@@ -19,61 +19,61 @@ using System.ComponentModel;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the attendance association of a <see cref="StreakType"/>.
+    /// Represents the attendance association of a StreakType.
     /// </summary>
     [Enums.EnumDomain( "Engagement" )]
     public enum StreakStructureType
     {
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with any attendance record.
+        /// The StreakType is associated with any attendance record.
         /// </summary>
         [Description( "Attendance: Any" )]
         AnyAttendance = 0,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to a single group.
+        /// The StreakType is associated with attendance to a single group.
         /// </summary>
         [Description( "Attendance: Group" )]
         Group = 1,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to groups of a given type.
+        /// The StreakType is associated with attendance to groups of a given type.
         /// </summary>
         [Description( "Attendance: Group Type" )]
         GroupType = 2,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to groups within group types of a common purpose (defined type).
+        /// The StreakType is associated with attendance to groups within group types of a common purpose (defined type).
         /// </summary>
         [Description( "Attendance: Group Type Purpose" )]
         GroupTypePurpose = 3,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
+        /// The StreakType is associated with attendance specified by a check-in configuration.
         /// </summary>
         [Description( "Attendance: Check-In Configuration" )]
         CheckInConfig = 4,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
+        /// The StreakType is associated with interactions in a certain channel.
         /// </summary>
         [Description( "Interaction: Channel" )]
         InteractionChannel = 5,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions in a certain component.
+        /// The StreakType is associated with interactions in a certain component.
         /// </summary>
         [Description( "Interaction: Component" )]
         InteractionComponent = 6,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions over a certain.
+        /// The StreakType is associated with interactions over a certain.
         /// </summary>
         [Description( "Interaction: Medium" )]
         InteractionMedium = 7,
 
         /// <summary>
-        /// The <see cref="StreakType"/> is associated with financial transactions.
+        /// The StreakType is associated with financial transactions.
         /// </summary>
         [Description( "Financial Transaction" )]
         FinancialTransaction = 8
