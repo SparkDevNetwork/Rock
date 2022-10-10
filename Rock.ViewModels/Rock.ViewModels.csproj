@@ -399,6 +399,7 @@
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />
     <Compile Include="Utility\EntityAuditBag.cs" />
+    <Compile Include="Utility\ITaskActivityProgressMessage.cs" />
     <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />
@@ -410,6 +411,9 @@
     <Compile Include="Utility\PublicEditableAttributeBag.cs" />
     <Compile Include="Utility\ListItemBag.cs" />
     <Compile Include="Finance\SavedFinancialAccountListItemBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressLogBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressStatusBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressUpdateBag.cs" />
     <Compile Include="Utility\TreeItemBag.cs" />
     <Compile Include="Entities.Partials\AttributeValueBag.partial.cs" />
     <Compile Include="Entities.Partials\AttributeBag.partial.cs" />
