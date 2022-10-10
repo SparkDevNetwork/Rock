@@ -1318,7 +1318,7 @@ Rock.settings.initialize({{
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
                                             rockBlockEntity.RequestContext = new RockRequestContext( Request );
-                                            rockBlockEntity.RequestContext.AddContextEntitiesForPage( _pageCache );
+                                            rockBlockEntity.RequestContext.PrepareRequestForPage( _pageCache );
 
                                             var wrapper = new RockBlockTypeWrapper
                                             {

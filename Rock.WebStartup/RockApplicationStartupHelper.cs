@@ -1112,6 +1112,21 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
+        /// Called by App_Code/Startup.cs to initialize the real-time system.
+        /// </summary>
+        /// <remarks>
+        /// This exists and uses a generic object for the hubConfiguration so
+        /// that we can keep AspNetEngine internal and also not have to put
+        /// a reference to SignalR on this assembly.
+        /// </remarks>
+        public static void InitializeRockRealTime( object hubConfiguration )
+        {
+            LogStartupMessage( "Initializing the RealTime system." );
+            Rock.RealTime.RealTimeHelper.Initialize( new Rock.RealTime.AspNetEngine( hubConfiguration ) );
+            ShowDebugTimingMessage( "Initialized the RealTime system." );
+        }
+
+        /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
         /// <param name="ex">The ex.</param>

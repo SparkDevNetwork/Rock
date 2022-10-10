@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "CommonJS",
+    "target": "ES2016",
+    "lib": [ "ES2016", "DOM" ],
+    "sourceMap": true,
+    "strict": true,
+    "rootDir": "src",
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

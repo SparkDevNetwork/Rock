@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -57,11 +58,7 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
             // Note that httpRequest.Cookies.Get will create the cookie if it doesn't exist, so make sure to check if it exists first.
@@ -76,6 +73,15 @@ namespace Rock.Personalization
                 cookieValue = string.Empty;
             } 
 
+            var comparisonValue = ComparisonValue ?? string.Empty;
+
+            return cookieValue.CompareTo( comparisonValue, ComparisonType );
+        }
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            var cookieValue = request.GetCookieValue( this.Key ) ?? string.Empty;
             var comparisonValue = ComparisonValue ?? string.Empty;
 
             return cookieValue.CompareTo( comparisonValue, ComparisonType );

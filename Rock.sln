@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29409.12
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -117,6 +117,8 @@ Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian.Bl
 	ProjectSection(ProjectDependencies) = postProject
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
 	EndProjectSection
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript", "Rock.JavaScript\Rock.JavaScript.njsproj", "{A5935F9E-DA78-46D6-806F-39C782C6A3C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -276,6 +278,10 @@ Global
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5935F9E-DA78-46D6-806F-39C782C6A3C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5935F9E-DA78-46D6-806F-39C782C6A3C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5935F9E-DA78-46D6-806F-39C782C6A3C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5935F9E-DA78-46D6-806F-39C782C6A3C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

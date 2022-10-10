@@ -19,6 +19,13 @@ import LoadingIndicator from "./loadingIndicator";
 import { ValidationField } from "./gatewayControl";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
+/*
+ * 10/10/2022 - DSH
+ *
+ * This payment control does not currently work and is not supported.
+ * It will likely be removed in the future.
+ */
+
 type Settings = {
     publicApiKey: string;
     gatewayUrl: string;
