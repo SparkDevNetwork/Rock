@@ -510,6 +510,7 @@ namespace RockWeb.Blocks.Crm
                     var binaryFileService = new BinaryFileService( rockContext );
                     var phoneNumberService = new PhoneNumberService( rockContext );
                     var taggedItemService = new TaggedItemService( rockContext );
+                    var followingService = new FollowingService( rockContext );
                     var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
@@ -707,6 +708,9 @@ namespace RockWeb.Blocks.Crm
 
                         rockContext.SaveChanges();
 
+                        // Merge Following records that are for PersonAlias types.
+                        MergeFollowing( primaryPersonId, rockContext, personService, followingService, primaryPerson );
+
                         // Merge search keys on merge
                         var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                         var personSearchKeys = primaryPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
@@ -832,6 +836,54 @@ namespace RockWeb.Blocks.Crm
             }
 
             NavigateToLinkedPage( AttributeKey.PersonDetailPage, isBusiness ? "BusinessId" : "PersonId", primaryPersonId.Value );
+        }
+
+        /// <summary>
+        /// Merge the Following records when the MergeData People are followed or followers.
+        /// </summary>
+        /// <param name="primaryPersonId"></param>
+        /// <param name="rockContext"></param>
+        /// <param name="personService"></param>
+        /// <param name="followingService"></param>
+        /// <param name="primaryPerson"></param>
+        private void MergeFollowing( int? primaryPersonId, RockContext rockContext, PersonService personService, FollowingService followingService, Person primaryPerson )
+        {
+            // Merge Following records so that only the primary PersonAliasId is listed.
+            var personIDs = MergeData.People.Where( p => p.Id != primaryPersonId.Value ).Select( p => p.Id ).ToHashSet<int>();
+
+            var personAliasIds = personService.Queryable().Where(
+                p => personIDs.Contains( p.Id ) )
+            .SelectMany( p => p.Aliases ).Select( a => a.Id ).ToHashSet<int>();
+
+            var personAliasService = new PersonAliasService( rockContext );
+
+            // Follows that are of PersonAlias entity types, and are following a Person Alias that is getting merged.
+            var personAliasEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON_ALIAS.AsGuid() );
+            var followsByAliases = followingService.Queryable().Where(
+                f => f.EntityType.Guid == personAliasEntityType.Guid
+                && personAliasIds.Contains( f.EntityId ) );
+
+            // Updates all followings where the merged people were followed.
+            foreach ( var followRecord in followsByAliases )
+            {
+                followingService.ToggleFollowing( followRecord.EntityTypeId, followRecord.EntityId, followRecord.PersonAliasId, followRecord.PurposeKey );
+                followingService.GetOrAddFollowing( followRecord.EntityTypeId, primaryPerson.PrimaryAliasId.Value, followRecord.PersonAliasId, followRecord.PurposeKey );
+            }
+
+            rockContext.SaveChanges();
+
+            // Updates all the followings where the merged people were following others.
+            var followersByAliases = followingService.Queryable().Where(
+                f => f.EntityType.Guid == personAliasEntityType.Guid
+                && personAliasIds.Contains( f.PersonAliasId ) );
+
+            foreach ( var followerRecord in followersByAliases )
+            {
+                followingService.ToggleFollowing( followerRecord.EntityTypeId, followerRecord.EntityId, followerRecord.PersonAliasId, followerRecord.PurposeKey );
+                followingService.GetOrAddFollowing( followerRecord.EntityTypeId, followerRecord.EntityId, primaryPerson.PrimaryAliasId.Value, followerRecord.PurposeKey );
+            }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -1395,7 +1447,6 @@ namespace RockWeb.Blocks.Crm
                 warningMessage = "Different " + warningMessageIssues.AsDelimited( " and " ) + " are associated with this merge.";
                 if ( hasMobilePhoneNumbers || hasEmailsAddresses )
                 {
-
                     // Even nobody person has a login, if any person has a phone number or email address, it might be possible to hijack the account;
                     warningMessage += " This could be an attempt to hijack the account.";
                 }
