@@ -245,6 +245,7 @@
     <Compile Include="StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="StorageTests\BaseStorageComponentTests.cs" />
     <Compile Include="StorageTests\GoogleCloudComponentTests.cs" />
+    <Compile Include="TestData\EventTestDataHelper.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />

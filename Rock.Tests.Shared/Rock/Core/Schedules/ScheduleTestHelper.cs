@@ -22,6 +22,7 @@ using Ical.Net;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Ical.Net.CalendarComponents;
+using System.Linq;
 
 namespace Rock.Tests
 {
@@ -39,6 +40,35 @@ namespace Rock.Tests
 
             var calendar = GetCalendar( calendarEvent, recurrence );
 
+            var schedule = GetSchedule( calendar );
+
+            return schedule;
+        }
+
+        public static Schedule GetScheduleWithSpecificDates( List<DateTime> dates, TimeSpan? startTime = null, TimeSpan? eventDuration = null )
+        {
+            if ( dates == null || !dates.Any() )
+            {
+                throw new ArgumentException( nameof( dates ) );
+            }
+
+            // Get the template calendar event.
+            var firstDate = dates.First().Date.Add( startTime.GetValueOrDefault() );
+            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
+
+            //var startDateTime = dates.First().Add( startTime.GetValueOrDefault() );
+
+            var calendarEvent = GetCalendarEvent( firstDate, eventDuration );
+
+            var recurrenceDates = new PeriodList();
+            foreach ( var datetime in dates )
+            {
+                recurrenceDates.Add( new CalDateTime( datetime ) );
+            }
+
+            calendarEvent.RecurrenceDates.Add( recurrenceDates );
+
+            var calendar = GetCalendar( calendarEvent );
             var schedule = GetSchedule( calendar );
 
             return schedule;
@@ -78,20 +108,22 @@ namespace Rock.Tests
                 throw new Exception( "The Event Start Date must have a Kind of Unspecified. Calendar Events do not store timezone information." );
             }
 
-            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+            //eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+            var calendarEvent = new CalendarEvent
+            {
+                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day )
+            };
 
             var dtStart = new CalDateTime( eventStartDate );
             dtStart.HasTime = true;
+            calendarEvent.DtStart = dtStart;
 
-            var dtEnd = dtStart.Add( eventDuration.Value );
-            dtEnd.HasTime = true;
-
-            var calendarEvent = new CalendarEvent
+            if ( eventDuration != null )
             {
-                DtStart = dtStart,
-                DtEnd = dtEnd,
-                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
-            };
+                var dtEnd = dtStart.Add( eventDuration.Value );
+                dtEnd.HasTime = true;
+                calendarEvent.DtEnd = dtEnd;
+            }
 
             return calendarEvent;
         }

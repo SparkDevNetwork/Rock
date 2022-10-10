@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -436,22 +437,8 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
         { 
             var rockContext = new RockContext();
 
-            // Add a new campus
-            var campusService = new CampusService( rockContext );
-
-            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
-
-            if ( campus2 == null )
-            {
-                campus2 = new Campus();
-
-                campusService.Add( campus2 );
-            }
-
-            campus2.Name = "Stepping Stone";
-            campus2.Guid = SecondaryCampusGuidString.AsGuid();
-
-            rockContext.SaveChanges();
+            // Get Campus 2.
+            var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
 
             // Get existing schedules.
             var scheduleService = new ScheduleService( rockContext );
@@ -474,7 +461,7 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
             }
 
             var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
-            var secondCampusId = CampusCache.GetId( SecondaryCampusGuidString.AsGuid() );
+            var secondCampusId = campus2.Id;
 
             financeEvent1.Location = "Meeting Room 1";
             financeEvent1.ForeignKey = TestDataForeignKey;
