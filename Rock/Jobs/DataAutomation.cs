@@ -663,7 +663,7 @@ Update Family Status: {updateFamilyStatus}
                                 .Select( a => a.Id )
                                 .ToList();
 
-                            personCampusAttendance = personCampusAttendance.Where( a => !excludeSchedules.Contains( a.ScheduleId.Value ) ).ToList();
+                            personCampusAttendance = personCampusAttendance.Where( a => !a.ScheduleId.HasValue || !excludeSchedules.Contains( a.ScheduleId.Value ) ).ToList();
                         }
                     }
 
