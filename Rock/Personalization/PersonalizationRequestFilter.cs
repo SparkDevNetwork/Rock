@@ -27,7 +27,17 @@ namespace Rock.Personalization
         /// Determines whether the specified HTTP request meets the criteria of this filter.
         /// </summary>
         /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified HTTP request is a match; otherwise, <c>false</c>.</returns>
         public abstract bool IsMatch( HttpRequest httpRequest );
+
+        /// <summary>
+        /// Determines whether the specified HTTP request meets the criteria of this filter.
+        /// </summary>
+        /// <param name="request">The request to be matched against.</param>
+        /// <returns><c>true</c> if the specified request is a match; otherwise, <c>false</c>.</returns>
+        internal virtual bool IsMatch( Net.RockRequestContext request )
+        {
+            return false;
+        }
     }
 }

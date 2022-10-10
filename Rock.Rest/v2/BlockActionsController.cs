@@ -229,7 +229,7 @@ namespace Rock.Rest.v2
                     actionParameters.AddOrReplace( q.Key, JToken.FromObject( q.Value.ToString() ) );
                 }
 
-                requestContext.AddContextEntitiesForPage( pageCache );
+                requestContext.PrepareRequestForPage( pageCache );
 
                 return await InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
             }
