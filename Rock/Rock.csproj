@@ -941,6 +941,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
