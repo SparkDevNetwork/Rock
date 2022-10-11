@@ -218,6 +218,8 @@ namespace RockWeb
 
             StartCompileThemesThread();
 
+            StartEnsureChromeEngineThread();
+
             Rock.Bus.RockMessageBus.IsRockStarted = true;
         }
 
@@ -254,6 +256,24 @@ namespace RockWeb
             } );
 
             CompileThemesThread.Start();
+        }
+
+        private static void StartEnsureChromeEngineThread()
+        {
+            new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                try
+                {
+                    Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( ex, null );
+                }
+            } ).Start();
         }
 
         /// <summary>
@@ -442,7 +462,8 @@ namespace RockWeb
 
                             // Check for client\remote host disconnection error specifically SignalR or web-socket connections
                             // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if(httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                            if( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                                httpEx.Message.Contains( "The remote host closed the connection." ) &&
                                 httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                             {
                                 context.ClearError();

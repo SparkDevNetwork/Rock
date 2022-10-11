@@ -2,9 +2,9 @@ set nocount on
 
 /* Change these settings to your liking*/
 declare
-    @yearsBack int = 5,
+    @yearsBack int = 10,
     @randomizePersonList bit = 1,  /* set to false to use a consistent set of X people (ordered by Person.Id) instead of using a randomized set */
-    @maxPersonCount INT = 100, /* limit to a count of X persons in the database (Handy for testing Statement Generator) */
+    @maxPersonCount INT = 1000, /* limit to a count of X persons in the database (Handy for testing Statement Generator) */
     @maxTransactionCount int = 500000, 
     @maxBatchNumber INT = 1000
 
@@ -83,10 +83,21 @@ BEGIN
     DEALLOCATE personAliasIdCursor;
 END
 
--- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
-declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select top( @maxPersonCount ) Id from PersonAlias 
+declare @personAliasIds table ( id Int not null );
+
+-- Get a list of person alias ids into a temporary table so that the loop uses the same set of PersonAliasIds every time
+-- Exclude Giver Anonymous and Anonymous Visitor
+insert into @personAliasIds
+select top( @maxPersonCount ) pa.Id from 
+    PersonAlias pa
+    inner join Person p on pa.PersonId = p.Id
+    where p.[Guid] not in ('7ebc167b-512d-4683-9d80-98b6bb02e1b9', '802235dc-3ca5-94b0-4326-aace71180f48') 
     order by 
     case when @randomizePersonList = 1 then CHECKSUM(NEWID()) else PersonId end
+
+
+-- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
+declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select Id from @personAliasIds 
 
 open personAliasIdCursor;
 
@@ -128,7 +139,7 @@ begin
         SET @transactionAmount = (SELECT round(w.r, 1)
                 FROM (
                     SELECT (
-                            CASE floor(rand(CHECKSUM(newid())) * 10)
+                            CASE floor(rand(CHECKSUM(newid())) * 12)
                                 WHEN 1
                                     THEN 100.00
                                 WHEN 2

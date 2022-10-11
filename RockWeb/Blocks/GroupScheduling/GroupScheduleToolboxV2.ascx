@@ -62,9 +62,9 @@
                         <div class="col-md-4">
                             <div class="schedule-actions">
                                 <asp:Literal ID="lActionHeader" runat="server" />
-                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" />
-                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
-                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
+                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" CausesValidation="false" />
                             </div>
                         </div>
                     </div>
@@ -72,6 +72,7 @@
 
                 <%-- Sign-up --%>
                 <asp:Panel ID="pnlSignup" CssClass="schedule-toolbox-signup js-navigation-panel" runat="server">
+                    <asp:Literal ID="lSignupHeader" runat="server" />
                     <asp:Literal ID="lSignupMsg" runat="server" />
                     <div class="row">
                         <div class="col-md-8">
@@ -86,6 +87,7 @@
                 </asp:Panel>
                 <%-- Preferences --%>
                 <asp:Panel ID="pnlPreferences" CssClass="schedule-toolbox-preferences js-navigation-panel" runat="server">
+                    <asp:Literal ID="lPreferencesHeader" runat="server" />
                     <Rock:NotificationBox ID="nbNoScheduledGroups" runat="server" Visible="false" Text="You are currently not in any scheduled groups." NotificationBoxType="Info" />
 
                     <%-- Per Group Preferences --%>
@@ -157,6 +159,7 @@
                 </asp:Panel>
                 <%-- Unavailability Schedule --%>
                 <asp:Panel ID="pnlUnavailabilitySchedule" CssClass="schedule-toolbox-unavailability js-navigation-panel" runat="server">
+                    <asp:Literal ID="lUnavailabilityScheduleHeader" runat="server" />
                     <asp:ValidationSummary ID="valSummaryAddBlackoutDates" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="UnavailabilitySchedule" />
                     <Rock:DateRangePicker ID="drpUnavailabilityDateRange" runat="server" Label="Date Range" ValidationGroup="UnavailabilitySchedule" Required="true" RequiredErrorMessage="Date Range is required" />
                     <Rock:RockTextBox ID="tbUnavailabilityDateDescription" runat="server" Label="Description" MaxLength="100" Help="A short description of why you'll be unavailable" ValidationGroup="UnavailabilitySchedule" />
@@ -168,12 +171,15 @@
                     </div>
                 </asp:Panel>
                 <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>
-                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick" Title="Add/Edit Assignment" >
+                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick"
+                    Title="Add/Edit Assignment" ValidationGroup="GroupScheduleAssignment">
                     <Content>
                         <asp:HiddenField ID="hfGroupScheduleAssignmentGroupId" runat="server" />
                         <asp:HiddenField ID="hfGroupScheduleAssignmentId" runat="server" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged" Label="Schedule" Required="true" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" Label="Schedule"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged"
+                            Required="true" ValidationGroup="GroupScheduleAssignment" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" ValidationGroup="GroupScheduleAssignment" />
                     </Content>
                 </Rock:ModalDialog>
             </div>

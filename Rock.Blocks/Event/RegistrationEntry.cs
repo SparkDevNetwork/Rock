@@ -453,6 +453,8 @@ namespace Rock.Blocks.Event
             List<int> previousRegistrantPersonIds = null;
             var isNewRegistration = context.Registration == null;
 
+            var personService = new PersonService( rockContext );
+
             if ( isNewRegistration )
             {
                 // This is a new registration
@@ -469,6 +471,22 @@ namespace Rock.Blocks.Event
                 {
                     registrar = currentPerson;
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
+                }
+                else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                {
+                    var registrantInfo = args.Registrants.FirstOrDefault();
+
+                    var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+                    var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+                    var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+                    var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+                    var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+                    bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                    var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                    registrar = personService.FindPerson( personQuery, forceEmailUpdate );
+                    context.Registration.PersonAliasId = registrar?.PrimaryAliasId;
                 }
             }
             else
@@ -509,10 +527,7 @@ namespace Rock.Blocks.Event
             var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
             History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
             context.Registration.DiscountAmount = discountAmount;
-
             // If the registrar person record does not exist, find or create that record
-            var personService = new PersonService( rockContext );
-
             if ( registrar == null )
             {
                 /**
@@ -729,6 +744,7 @@ namespace Rock.Blocks.Event
                 foreach ( var registrantInfo in args.Registrants )
                 {
                     var forceWaitlist = context.SpotsRemaining < 1;
+                    bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
                         rockContext,
@@ -739,7 +755,8 @@ namespace Rock.Blocks.Event
                         index,
                         multipleFamilyGroupIds,
                         ref singleFamilyId,
-                        forceWaitlist );
+                        forceWaitlist,
+                        isCreatedAsRegistrant );
 
                     index++;
                 }
@@ -1278,6 +1295,7 @@ namespace Rock.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <param name="isWaitlist">if set to <c>true</c> [is waitlist].</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> person has already been created as registrar</param>
         private void UpsertRegistrant(
             RockContext rockContext,
             RegistrationContext context,
@@ -1287,7 +1305,8 @@ namespace Rock.Blocks.Event
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
-            bool isWaitlist )
+            bool isWaitlist,
+            bool isCreatedAsRegistrant  )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
             isWaitlist |= ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
@@ -1392,23 +1411,42 @@ namespace Rock.Blocks.Event
 
             if ( person == null )
             {
-                // If a match was not found, create a new person
-                person = new Person();
-                person.FirstName = firstName;
-                person.LastName = lastName;
-                person.IsEmailActive = true;
-                person.Email = email;
-                person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
-                if ( dvcConnectionStatus != null )
+                /**
+                  * 06/07/2022 - KA
+                  * 
+                  * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                  * then chances are a Person was created or found for the first Registrant and used
+                  * as the Registrar. In that case then we don't create a new Person for the first
+                  * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                  * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                  * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                  * any time it is called. This prevents us from creating duplicate Person entities for
+                  * both the Registrar and first Registrant who are the same person in this scenario.
+                */
+                if ( isCreatedAsRegistrant )
                 {
-                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    person = registrar;
                 }
-
-                if ( dvcRecordStatus != null )
+                else
                 {
-                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                    // If a match was not found, create a new person
+                    person = new Person();
+                    person.FirstName = firstName;
+                    person.LastName = lastName;
+                    person.IsEmailActive = true;
+                    person.Email = email;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                    if ( dvcConnectionStatus != null )
+                    {
+                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    }
+
+                    if ( dvcRecordStatus != null )
+                    {
+                        person.RecordStatusValueId = dvcRecordStatus.Id;
+                    }
                 }
             }
 
@@ -1817,8 +1855,25 @@ namespace Rock.Blocks.Event
             }
 
             // If the registration is existing, then add the args that describe it to the view model
-            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+
+            /*
+	            9/7/2022 - SMC / DSH / NA
+                
+                isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
+                RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
+                (like Pushpay) may not return the RegistrationId parameter.
+
+                This will result loading the registration from the database, which previously caused a security error if the
+                currently logged in person (i.e., CurrentPerson) does not match the person who created the Registration (the
+                "registrar").  This error seems to have been related to the protection profiles and the creation of new person
+                records (for the registrar).  We no longer believe this is happening, so it should be okay to set the
+                RegistrationGuid argument.
+
+                Reason:  Resolving errors when processing additional payments from redirection gateways.
+            */
+
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
@@ -1831,18 +1886,9 @@ namespace Rock.Blocks.Event
                     FieldValues = session.FieldValues,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
-                    RegistrationGuid = null,
+                    RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
-
-                // Only populate the RegistrationGuid if this is an existing registration.
-                // Otherwise a security check on the current person will be performed
-                // which may throw an incorrect error since the current person may not
-                // match the person that was created as the registrar.
-                if ( isExistingRegistration )
-                {
-                    args.RegistrationGuid = session.RegistrationGuid;
-                }
 
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
@@ -2158,6 +2204,7 @@ namespace Rock.Blocks.Event
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
+                IsExistingRegistration = isExistingRegistration,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
                 Campuses = campusClientService.GetCampusesAsListItems(),

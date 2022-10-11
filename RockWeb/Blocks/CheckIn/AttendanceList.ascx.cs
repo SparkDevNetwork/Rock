@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Checkin
     /// Block for displaying the attendance list of a group with schedule on selected date.
     /// </summary>
     [DisplayName( "Attendance List" )]
-    [Category( "Checkin" )]
+    [Category( "Check-in" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
     public partial class AttendanceList : RockBlock, ICustomGridColumns
     {

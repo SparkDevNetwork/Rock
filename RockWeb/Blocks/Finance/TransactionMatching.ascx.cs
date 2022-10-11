@@ -1238,12 +1238,12 @@ namespace RockWeb.Blocks.Finance
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
 
-            /* 07/24/2014 (added engineer note on 2020-09-23) MDP 
-             * 
+            /* 07/24/2014 (added engineer note on 2020-09-23) MDP
+             *
              * Note: The logic for this isn't what you might expect!
-             * 
+             *
              * A FinancialTransaction should only have amounts if it is matched to a person, so
-             
+
              - If individual is not selected, don't save any amounts, even if they entered amounts on the UI. So we will ignore them since an individual wasn't selected.
              - If they 'Unmatched' (the transaction had previously been matched to an individual, but now it isn't) clear out any amounts (even if amounts were specified in the UI)
 
@@ -2099,6 +2099,16 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private Location GetAddressLocation( RockContext rockContext, AddressControl addressControl )
         {
+            // Only verify if at least one address field contains a value.
+            // Ignore State as it is always prefilled with a value.
+            if ( acAddPersonAddress.Street1.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.Street2.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.City.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.PostalCode.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var locationService = new LocationService( rockContext );
             return locationService.Get(
                 addressControl.Street1,

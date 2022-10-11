@@ -1392,11 +1392,16 @@ namespace RockWeb.Blocks.Connection
         protected void dlgWorkflowDetails_SaveClick( object sender, EventArgs e )
         {
             Guid guid = hfWorkflowGuid.Value.AsGuid();
-            var workflowTypeStateObj = WorkflowsState.Where( w => w.Guid.Equals( guid ) ).FirstOrDefault();
+            WorkflowTypeStateObj workflowTypeStateObj = null;
+            if ( !guid.IsEmpty() )
+            {
+                workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
             if ( workflowTypeStateObj == null )
             {
                 workflowTypeStateObj = new WorkflowTypeStateObj();
-                workflowTypeStateObj.Guid = guid;
+                workflowTypeStateObj.Guid = Guid.NewGuid();
                 WorkflowsState.Add( workflowTypeStateObj );
             }
 
@@ -1656,7 +1661,6 @@ namespace RockWeb.Blocks.Connection
                 w.ConnectionTypeId
             } )
             .OrderByDescending( w => w.Inherited )
-            .ThenBy( w => w.WorkflowTypeName )
             .ToList();
             gConnectionOpportunityWorkflows.DataBind();
         }

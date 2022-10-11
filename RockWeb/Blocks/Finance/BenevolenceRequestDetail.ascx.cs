@@ -12,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// </copyright>
+// </copyright>hlEditStatus
 //
 using System;
 using System.Collections.Generic;
@@ -1427,20 +1427,35 @@ namespace RockWeb.Blocks.Finance
             _requester = benevolenceRequest?.RequestedByPersonAlias?.Person;
             _assignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
-            lViewBenevolenceType.Text = $"<span class='label label-info'><small>{benevolenceRequest?.BenevolenceType?.Name}</small></span>";
+            hlViewBenevolenceType.Text = $"{benevolenceRequest?.BenevolenceType?.Name}";
+            hlViewBenevolenceType.LabelType = LabelType.Type;
 
             var campus = _requester?.GetCampus();
 
+            hlViewCampus.LabelType = LabelType.Campus;
             if ( campus != null )
             {
-                lViewCampus.Text = $"<span class='label label-orange'><small>{campus?.Name}</small></span>";
+                hlViewCampus.Text = $"{campus?.Name}";
             }
             else
             {
-                lViewCampus.Text = $"<span class='label label-orange'><small>{CampusCache.All()?.FirstOrDefault()?.Name}</small></span>";
+                hlViewCampus.Text = $"{CampusCache.All()?.FirstOrDefault()?.Name}";
             }
 
-            lViewStatus.Text = $"<span class='label label-gray'><small>{benevolenceRequest?.RequestStatusValue?.Value}</small></span>";
+            switch ( benevolenceRequest?.RequestStatusValue?.Value.ToUpper() )
+            {
+                case "APPROVED":
+                    hlViewStatus.LabelType = LabelType.Success;
+                    break;
+                case "PENDING":
+                    hlViewStatus.LabelType = LabelType.Default;
+                    break;
+                case "DENIED":
+                    hlViewStatus.LabelType = LabelType.Danger;
+                    break;
+            }
+            
+            hlViewStatus.Text = $"{benevolenceRequest?.RequestStatusValue?.Value}";
 
             DisplayPersonName();
 
@@ -1553,7 +1568,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( ( benevolenceRequest?.GovernmentId?.IsNotNullOrWhiteSpace() ).GetValueOrDefault( false ) && GetAttributeValue( AttributeKey.DisplayGovernmentId ).AsBoolean() )
             {
-                lViewGovernmentId.Text = $"<small>Government Id: {benevolenceRequest?.GovernmentId}</small>";
+                lViewGovernmentId.Visible = true;
+                lViewGovernmentId.Text = $"{benevolenceRequest?.GovernmentId}";
             }
         }
 
@@ -1585,7 +1601,7 @@ namespace RockWeb.Blocks.Finance
 
             divViewAttributes.Visible = ( benevolenceRequest?.Attributes?.Any() ).GetValueOrDefault( false );
 
-            lViewBenevolenceTypeDescription.Text = $"<small>{benevolenceRequest?.RequestText}</small>";
+            lViewBenevolenceTypeDescription.Text = $"{benevolenceRequest?.RequestText}";
 
             avcViewBenevolenceTypeAttributes.AddDisplayControls( benevolenceRequest );
 

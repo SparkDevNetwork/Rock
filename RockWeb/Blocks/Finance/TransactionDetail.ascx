@@ -40,6 +40,7 @@
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbTransactionDetailValidationMessage" runat="server" NotificationBoxType="Validation" Text="An amount for at least one account is required." Visible="false" />
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
                                     <Rock:CurrencyBox ID="tbSingleAccountAmountMinusFeeCoverageAmount" Label="Amount" runat="server" CssClass="input-width-lg" />

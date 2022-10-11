@@ -33,9 +33,11 @@ BEGIN
 			AND [EntityTypeQualifierValue] = @ConnectionRequestBoardKeepId
 			AND [Key] = @AttributeKey)
 
-		UPDATE [AttributeValue]
-		SET [AttributeId] = @KeepAttributeId
-		WHERE [Id] = @AttributeValueId
+		IF (@KeepAttributeId IS NOT NULL) BEGIN
+            UPDATE [AttributeValue]
+		    SET [AttributeId] = @KeepAttributeId
+		    WHERE [Id] = @AttributeValueId
+        END
 
         -- Delete the old attribute
         DELETE [Attribute] WHERE [Id] = @AttributeId

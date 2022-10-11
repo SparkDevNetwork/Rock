@@ -371,8 +371,6 @@ namespace Rock.Model
 
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
             {
@@ -454,6 +452,8 @@ namespace Rock.Model
 
                             if ( scheduledTransaction != null )
                             {
+                                // This is the normal case where we create new transaction as a result of
+                                // a new scheduled transaction that the gateway processed.
                                 scheduledTransactionIds.Add( scheduledTransaction.Id );
                                 if ( payment.ScheduleActive.HasValue )
                                 {
@@ -463,19 +463,31 @@ namespace Rock.Model
                                 transaction.ScheduledTransactionId = scheduledTransaction.Id;
                                 transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = scheduledTransaction.SourceTypeValueId;
+                                if ( scheduledTransaction.TransactionTypeValueId.HasValue )
+                                {
+                                    transaction.TransactionTypeValueId = scheduledTransaction.TransactionTypeValueId.Value;
+                                }
+                                else
+                                {
+                                    var defaultTransactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Value;
+                                    transaction.TransactionTypeValueId = defaultTransactionTypeId;
+                                }
+
                                 financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail;
                                 scheduledTransaction.ScheduledTransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
                             else
                             {
+                                // This handles an edge-case where there is a mismatch between what the Gateway thinks the amount is and what Rock thinks the amount is.
+                                // If there is a mismatch, this will end up creating a new transaction to correct the amounts
                                 transaction.AuthorizedPersonAliasId = originalTxn.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = originalTxn.SourceTypeValueId;
+                                transaction.TransactionTypeValueId = originalTxn.TransactionTypeValueId;
                                 financialPaymentDetail = originalTxn.FinancialPaymentDetail;
                                 originalTxn.TransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
 
                             transaction.FinancialGatewayId = gateway.Id;
-                            transaction.TransactionTypeValueId = contributionTxnType.Id;
 
                             if ( txnAmount < 0.0M )
                             {

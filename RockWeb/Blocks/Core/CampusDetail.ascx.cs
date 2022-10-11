@@ -1026,6 +1026,7 @@ namespace RockWeb.Blocks.Core
         private void ShowCampusScheduleEdit( Guid campusScheduleGuid )
         {
             hfCampusScheduleGuid.Value = campusScheduleGuid.ToString();
+            dvpScheduleType.DefinedTypeId = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.SCHEDULE_TYPE.AsGuid()).Id;
             dlgSchedule.Show();
 
             if ( campusScheduleGuid == Guid.Empty )

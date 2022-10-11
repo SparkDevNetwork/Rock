@@ -495,7 +495,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             var rosterAttendee = e.Row.DataItem as RosterAttendee;
             var btnPresentLinkButton = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnPresent" );
-            btnPresentLinkButton.Visible = rosterAttendee.RoomHasEnablePresence;
+            btnPresentLinkButton.Visible = rosterAttendee.RoomHasEnablePresence || GetAttributeValue( AttributeKey.EnableMarkPresentButton ).AsBoolean();
         }
 
         /// <summary>

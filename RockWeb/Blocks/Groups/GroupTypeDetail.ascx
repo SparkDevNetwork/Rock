@@ -87,9 +87,10 @@
 
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." />
+                                        <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." OnSelectedIndexChanged="ddlGroupCapacityRule_SelectedIndexChanged" AutoPostBack="true"/>
                                     </div>
                                     <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbRequireCapacityRule" runat="server" Label="Required" Help="When checked a value for Group Capacity will be required on all groups of this type." Visible="false" />
                                     </div>
                                 </div>
 
@@ -132,7 +133,7 @@
                                         <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"
                                             Help="Determines if groups of this type are allowed to have their own Group Member Attributes. This will show/hide the Member Attributes section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
                                         <Rock:RockCheckBox ID="cbEnableSpecificGroupReq" runat="server" Label="Enable Specific Group Requirements"
-                                            Help="Determines if groups of this type are allowed to have Group Requirements. This will show/hide the Group Requirements section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
+                                            Help="Determines if groups of this type are allowed to have Group Requirements. If enabled, this will show the Group Requirements section on the Group Details block. If disabled, the Group Requirements section will still be shown if the group already has specific requirements." />
                                         <Rock:NotificationBox ID="nbGroupHistoryWarning" runat="server" NotificationBoxType="Warning" Text="Turning off group history will delete history for all groups and group members of this group type." Visible="false" />
                                         <Rock:RockCheckBox ID="cbEnableGroupHistory" runat="server" Label="Enable Group History"
                                             Help="Determines if groups of this type will keep a history of group and group member changes." AutoPostBack="true" OnCheckedChanged="cbEnableGroupHistory_CheckedChanged" />
@@ -245,7 +246,7 @@
                     <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbSchedulingEnabled" runat="server" Label="Scheduling Enabled" Help="Indicates whether scheduling is enabled for groups of this type."/>
+                                <Rock:RockCheckBox ID="cbSchedulingEnabled" runat="server" Label="Scheduling Enabled" AutoPostBack="true" OnCheckedChanged="cbSchedulingEnabled_CheckedChanged" Help="Indicates whether scheduling is enabled for groups of this type."/>
                             </div>
                             <div class="col-md-6">
                             </div>

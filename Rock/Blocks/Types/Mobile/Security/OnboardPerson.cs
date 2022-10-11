@@ -1895,8 +1895,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                if ( ShowNotificationsRequest )
+                                {
+                                    personalDevice.DeviceRegistrationId = request.Details.PushToken;
+                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                }
 
                                 rockContext.SaveChanges();
                             }
@@ -1979,8 +1982,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            personalDevice.DeviceRegistrationId = details.PushToken;
-                            personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            if ( ShowNotificationsRequest )
+                            {
+                                personalDevice.DeviceRegistrationId = details.PushToken;
+                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            }
                         }
                     }
 

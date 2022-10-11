@@ -297,6 +297,7 @@ upnlFiles.ClientID // {2}
         {
             AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
             var component = assetStorageProvider.GetAssetStorageComponent();
+            var rootFolder = component.GetRootFolder( assetStorageProvider );
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -305,6 +306,11 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
+                    if ( !key.StartsWith( rootFolder ) )
+                    {
+                        throw new Exception( "Invalid File Path" );
+                    }
+
                     Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();

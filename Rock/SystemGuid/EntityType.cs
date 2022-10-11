@@ -180,6 +180,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.Document
+        /// </summary>
+        public const string DOCUMENT = "7CEFA340-9D98-4B2C-B462-313C61944B6C";
+
+        /// <summary>
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
@@ -675,5 +680,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
+        /// </summary>
+        public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
     }
 }

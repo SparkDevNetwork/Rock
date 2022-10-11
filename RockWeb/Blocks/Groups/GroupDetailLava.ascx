@@ -74,7 +74,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                 </div>
             </div>
 
@@ -140,7 +140,7 @@
                         <asp:ListItem Text="SMS" Value="2" />
                     </Rock:RockRadioButtonList>
                     <asp:Panel ID="pnlGroupMemberAttributes" runat="server">
-                        <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
+                        <Rock:AttributeValuesContainer ID="avcGroupMemberAttributes" runat="server" />
                     </asp:Panel>
                 </div>
             </div>

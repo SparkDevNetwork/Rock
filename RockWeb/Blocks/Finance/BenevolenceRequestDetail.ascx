@@ -4,12 +4,9 @@
         background-color: #fafafa;
         background-size: cover;
         border: none;
-        border-color: #cccccc;
         border-radius: 50%;
-        width: 117px;
-        height: 117px;
         background-size: cover;
-        border: 1px solid #dfe0e1
+        border: 1px solid #dfe0e1;
     }
 
     .person-image-small {
@@ -32,21 +29,6 @@
         font-weight: 400;
         color: #737475;
         letter-spacing: 0.32px;
-    }
-
-    .label-info {
-        background-color: #009ce3;
-        color: #ffffff;
-    }
-
-    .label-orange {
-        background-color: #ee7725;
-        color: #ffffff;
-    }
-
-    .label-gray {
-        background-color: #767676;
-        color: #ffffff;
     }
 </style>
 
@@ -71,7 +53,7 @@
                             <Rock:DatePicker ID="dpEditRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" AutoPostBack="true" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true"/>
+                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" AutoPostBack="true" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-3">
                             <Rock:DefinedValuePicker ID="dvpEditRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
@@ -183,20 +165,22 @@
                 <h1 class="panel-title"><i class="fa fa-plug"></i>Benevolence Request</h1>
 
                 <div class="panel-labels">
-                    <asp:Literal ID="lViewBenevolenceType" runat="server" />
-                    <asp:Literal ID="lViewCampus" runat="server" />
-                    <asp:Literal ID="lViewStatus" runat="server" />
+                    <Rock:HighlightLabel ID="hlViewBenevolenceType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlViewCampus" runat="server" LabelType="Campus" />
+
+                    <!-- LabelType specified in  BenevolenceRequestDetail.ascx.cs -->
+                    <Rock:HighlightLabel ID="hlViewStatus" runat="server" />
                 </div>
             </div>
-            <div class="panel panel-body">
+            <div class="panel-body">
                 <!-- Person & Request Information  -->
                 <div class="row">
-                    <div class="col-md-7">
+                    <div class="col-xs-12 col-md-7">
                         <div class="row">
-                            <div class="col-md-4 col-lg-2">
+                            <div class="col-xs-6 col-sm-4 col-lg-2">
                                 <asp:Image CssClass="person-image img-responsive" ID="imgViewRequestor" runat="server" />
                             </div>
-                            <div class="col-md-8 col-lg-10">
+                            <div class="col-xs-12 col-sm-8 col-lg-10">
                                 <h3>
                                     <asp:Literal ID="lName" runat="server" />
                                 </h3>
@@ -206,20 +190,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <h6>Assigned To</h6>
+                    <div class="col-xs-12 col-md-3">
+                        <h6 class="mt-0 static-control-label">Assigned To</h6>
                         <asp:Image CssClass="person-image-small float-left" ID="imgViewAssignedTo" runat="server" />
                         <asp:Literal ID="lViewAssignedTo" runat="server"></asp:Literal>
                     </div>
-                    <div class="col-md-2">
-                        <span class="request-date">Request Date</span><br />
-                        <asp:Literal ID="lViewRequestDate" runat="server"></asp:Literal>
+                    <div class="col-xs-12 col-md-2">
+                        <Rock:RockLiteral ID="lViewRequestDate" runat="server" Label="Request Date" />
                     </div>
                 </div>
                 <!-- Contact Information -->
                 <div class="row mt-3">
                     <div class="col-md-12">
-                        <h6>Contact Information</h6>
+                        <h5>Contact Information</h5>
                     </div>
                 </div>
                 <div class="row">
@@ -237,12 +220,11 @@
                     </div>
                     <div class="col-md-3">
                         <div class="address">
-                            <small>Home</small><br />
-                            <asp:Literal ID="lViewAddress" runat="server" />
+                            <Rock:RockLiteral ID="lViewAddress" Label="Address" runat="server" />
                         </div>
                     </div>
                     <div class="col-md-5">
-                        <asp:Literal ID="lViewGovernmentId" runat="server" />
+                        <Rock:RockLiteral ID="lViewGovernmentId" Label="Government Id" Visible="false" runat="server" />
                     </div>
                 </div>
                 <!-- Workflows -->
@@ -267,22 +249,14 @@
                         </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <asp:Literal ID="lViewBenevolenceTypeLava" runat="server"></asp:Literal>
-                    </div>
-                </div>
+                <asp:Literal ID="lViewBenevolenceTypeLava" runat="server"></asp:Literal>
+
                 <!-- Details -->
                 <hr />
                 <div class="row mt-3">
                     <div class="col-md-12">
                         <h5>Request Details</h5>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <h6>Description of Request</h6>
-                        <asp:Literal ID="lViewBenevolenceTypeDescription" runat="server"></asp:Literal>
+                        <Rock:RockLiteral ID="lViewBenevolenceTypeDescription" Label="Description of Request" runat="server" />
                     </div>
                 </div>
                 <div id="divViewAttributes" class="row mt-3" runat="server">
@@ -312,21 +286,11 @@
                     <div class="col-md-12">
                         <h5>Summary of Results</h5>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6">
-                        <h6>Results Summary</h6>
+                        <Rock:RockLiteral ID="lViewSummaryResults" Label="Results Summary" runat="server" />
                     </div>
                     <div class="col-md-6">
-                        <h6>Next Steps Provided</h6>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <asp:Literal ID="lViewSummaryResults" runat="server"></asp:Literal>
-                    </div>
-                    <div class="col-md-6">
-                        <asp:Literal ID="lViewSummaryNextSteps" runat="server"></asp:Literal>
+                        <Rock:RockLiteral ID="lViewSummaryNextSteps" Label="Next Steps Provided" runat="server" />
                     </div>
                 </div>
                 <asp:Panel ID="pnlResults" runat="server" class="row mt-3">

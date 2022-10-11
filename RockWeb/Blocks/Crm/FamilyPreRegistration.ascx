@@ -15,7 +15,7 @@
 
                 <asp:Panel ID="pnlVisit" runat="server" CssClass="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Visit Information</h3>
+                        <h3 ID="pnlVisitTitle" runat="server" class="panel-title">Visit Information</h3>
                     </div>
                     <div class="panel-body">
                         <div class="row">
@@ -174,7 +174,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" />
+                    <asp:LinkButton ID="lbCancel" runat="server" Text="Clear" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                 </div>
 
             </div>

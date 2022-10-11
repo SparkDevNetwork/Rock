@@ -389,6 +389,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowDetail()
         {
+            var rockContext = new RockContext();
             var transactionTypes = BindTransactionTypes();
             BindAccounts();
 
@@ -406,14 +407,11 @@ namespace RockWeb.Blocks.Finance
 
             if ( savedAccountGuids.Any() )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var accountService = new FinancialAccountService( rockContext );
-                    accounts = accountService.Queryable()
-                        .AsNoTracking()
-                        .Where( a => savedAccountGuids.Contains( a.Guid ) )
-                        .ToList();
-                }
+                var accountService = new FinancialAccountService( rockContext );
+                accounts = accountService.Queryable()
+                    .AsNoTracking()
+                    .Where( a => savedAccountGuids.Contains( a.Guid ) )
+                    .ToList();
             }
 
             // Sync the system setting values to the controls

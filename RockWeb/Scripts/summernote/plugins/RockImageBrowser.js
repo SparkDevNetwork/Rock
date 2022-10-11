@@ -6,6 +6,8 @@
         contents: '<i class="fa fa-picture-o"/>',
         tooltip: 'Image Browser',
         click: function () {
+            // If we have a target image, store it before the selection is modified when the modal dialog receives focus.
+            var imgTarget = $( context.layoutInfo.editable.data( 'target' ) )[0];
 
             context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
@@ -34,8 +36,7 @@
                         // Ensure the string is not double-encoded.
                         var url = encodeURI(decodeURI(Rock.settings.get('baseUrl') + resultParts[0]));
                         var altText = resultParts[1];
-                        
-                        var imgTarget = context.invoke('editor.restoreTarget');
+
                         // if they already have an img selected, just change the src of the image
                         if (imgTarget) {
                             imgTarget.src = url;
@@ -50,7 +51,10 @@
                             });
                         }
 
-                        context.invoke('triggerEvent', 'change');
+                        // Invoke the change event and ensure the updated content is correctly
+                        // passed to other event subscribers.
+                        var html = context.code();
+                        context.invoke('triggerEvent', 'change', html);
                     }
                 });
 

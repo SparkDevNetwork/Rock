@@ -17,8 +17,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -38,12 +40,29 @@ namespace Rock.Model
         /// <returns></returns>
         public List<GroupHistoricalSummary> GetGroupHistoricalSummary( int personId, DateTime? startDateTime, DateTime? stopDateTime, List<int> groupTypeIds )
         {
+            return GetGroupHistoricalSummary( personId, startDateTime, stopDateTime, groupTypeIds, null );
+        }
+
+        /// <summary>
+        /// Gets the group historical summary for the specified Person during the specified timeframe
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="stopDateTime">The stop date time.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns></returns>
+        public List<GroupHistoricalSummary> GetGroupHistoricalSummary( int personId, DateTime? startDateTime, DateTime? stopDateTime, List<int> groupTypeIds, Person currentPerson )
+        {
             var rockContext = this.Context as RockContext;
 
-            var personGroupMemberIdQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.PersonId == personId ).Select( a => a.Id );
+            var personGroupMemberIdList = new GroupMemberService( rockContext ).AsNoFilter().Include( a => a.Group ).Where( a => a.PersonId == personId ).ToList()
+                .Where( member => member.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .Select( a => a.Id )
+                .ToList();
 
             // get all GroupMemberHistorical records for the Person
-            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
+            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdList.Contains( a.GroupMemberId ) );
 
             if ( startDateTime.HasValue )
             {
@@ -55,11 +74,11 @@ namespace Rock.Model
                 groupMemberHistoricalQuery = groupMemberHistoricalQuery.Where( a => a.EffectiveDateTime < stopDateTime.Value );
             }
 
-            if ( groupTypeIds?.Any() == true)
+            if ( groupTypeIds?.Any() == true )
             {
                 groupMemberHistoricalQuery = groupMemberHistoricalQuery.Where( a => groupTypeIds.Contains( a.Group.GroupTypeId ) );
             }
-             
+
             return this.GetGroupHistoricalSummary( groupMemberHistoricalQuery );
         }
 
@@ -76,7 +95,7 @@ namespace Rock.Model
             // Also, IsArchive is redundant since they know the StartStop times of when they were in the group
             var groupMemberHistoricalByGroupList = groupMemberHistoricalQuery
                 .Where( a => a.IsArchived == false && a.GroupMemberStatus != GroupMemberStatus.Inactive )
-                .Select(a => new { a.Group, GroupMemberHistorical = a, a.EffectiveDateTime, GroupMemberDateTimeAdded = a.GroupMember.DateTimeAdded } )
+                .Select( a => new { a.Group, GroupMemberHistorical = a, a.EffectiveDateTime, GroupMemberDateTimeAdded = a.GroupMember.DateTimeAdded } )
                 .GroupBy( a => a.Group ).ToList();
 
             var groupNameHistoryLookup = new GroupHistoricalService( rockContext ).Queryable()

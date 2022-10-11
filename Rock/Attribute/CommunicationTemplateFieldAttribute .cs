@@ -16,10 +16,12 @@
 //
 using System;
 
+using Rock.Model;
+
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more communication templates
+    /// Field Attribute to select a <see cref="CommunicationTemplate" />. Stored as the CommunicationTemplate's Guid.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CommunicationTemplateFieldAttribute : FieldAttribute

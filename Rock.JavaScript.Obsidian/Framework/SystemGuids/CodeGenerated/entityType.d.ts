@@ -286,5 +286,7 @@ export const enum EntityType {
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
     /** The EntityType Guid for   */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
+    /** The EntityType Guid for  */
+    WorkflowLog = "332CFF36-D637-414D-B732-370B330B8D73",
 }
 

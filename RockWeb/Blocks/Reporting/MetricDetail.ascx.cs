@@ -39,7 +39,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Metric Detail" )]
     [Category( "Reporting" )]
@@ -71,6 +71,12 @@ namespace RockWeb.Blocks.Reporting
         "Combine Chart Series",
         Key = AttributeKey.CombineChartSeries,
         Order = 3 )]
+
+    [LinkedPage( "Data View Page",
+        Key = AttributeKey.DataViewPage,
+        Description = "The page to edit data views",
+        IsRequired = true,
+        Order = 4 )]
     #endregion Block Attributes
 
     public partial class MetricDetail : RockBlock
@@ -86,6 +92,7 @@ namespace RockWeb.Blocks.Reporting
             public const string SlidingDateRange = "SlidingDateRange";
             public const string CombineChartSeries = "CombineChartSeries";
             public const string ChartStyle = "ChartStyle";
+            public const string DataViewPage = "DataViewPage";
         }
 
         #endregion
@@ -426,7 +433,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( !metric.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -491,7 +498,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     rockContext.SaveChanges();
                 }
 
-                // update MetricCategories for Metric            
+                // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
@@ -1209,6 +1216,20 @@ The Lava can include Lava merge fields:";
             }
 
             lblMainDetails.Text = descriptionListMain.Html;
+
+            if ( metric.DataView != null )
+            {
+                hlDataView.Visible = UserCanEdit;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "DataViewId", metric.DataViewId.ToString() );
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.ToolTip = (metric.DataView.Name.Length > 30) ? metric.DataView.Name : null;
+            }
+            else
+            {
+                hlDataView.Visible = false;
+            }
         }
 
         private void CreateChart( Metric metric )
@@ -1788,7 +1809,7 @@ The Lava can include Lava merge fields:";
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ScheduleSelectionType
         {

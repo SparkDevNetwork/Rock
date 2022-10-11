@@ -77,7 +77,7 @@ namespace Rock.Follow.Event
                             a.PersonAlias.PersonId == personAlias.PersonId &&
                             a.Occurrence.Group != null &&
                             a.Occurrence.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) )
-                        .Min( a => a.StartDateTime );
+                        .Min( a => ( DateTime? ) a.StartDateTime );
 
                     if ( firstAttended.HasValue )
                     {
@@ -100,6 +100,5 @@ namespace Rock.Follow.Event
         }
 
         #endregion
-
     }
 }

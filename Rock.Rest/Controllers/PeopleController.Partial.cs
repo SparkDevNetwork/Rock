@@ -648,6 +648,28 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Saves the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/SetBlockUserPreference/{blockGuid}" )]
+        [HttpPost]
+        public IHttpActionResult SetBlockUserPreference( Guid blockGuid, string userPreferenceKey, string value )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+
+            if ( blockId == null )
+            {
+                return BadRequest( "Unable to find the specific block." );
+            }
+
+            SetBlockUserPreference( blockId.Value, userPreferenceKey, value );
+            return Ok();
+        }
+
+        /// <summary>
         /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference.
         /// Note: If the user preference is for a specific block, use ~/api/People/GetBlockUserPreference instead.
         /// </summary>
@@ -679,6 +701,26 @@ namespace Rock.Rest.Controllers
             return userPreferenceValue;
         }
 
+        /// <summary>
+        /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/GetBlockUserPreference/{blockGuid}" )]
+        [HttpGet]
+        public string GetBlockUserPreference( Guid blockGuid, string userPreferenceKey )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+            if ( blockId == null )
+            {
+                return string.Empty;
+            }
+
+            return GetBlockUserPreference( blockId.Value, userPreferenceKey );
+        }
+
         #endregion
 
         #region Search
@@ -706,6 +748,8 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
+            // Enable Proxy Creation so that LazyLoading will work. 
+            SetProxyCreation( true );
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
 
@@ -816,11 +860,10 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetSearchDetails" )]
         public string GetSearchDetails( int id )
         {
+            SetProxyCreation( true );
             PersonSearchResult personSearchResult = new PersonSearchResult();
 
             var person = this.Get()
-                .Include( a => a.PhoneNumbers )
-                .Include( "PrimaryFamily.GroupLocations.Location" )
                 .Where( a => a.Id == id )
                 .FirstOrDefault();
 
@@ -848,8 +891,6 @@ namespace Rock.Rest.Controllers
             var phoneNumbersQry = new PhoneNumberService( rockContext ).Queryable();
 
             var sortedPersonList = sortedPersonQry
-                .Include( a => a.PhoneNumbers )
-                .Include( "PrimaryFamily.GroupLocations.Location" )
                 .AsNoTracking()
                 .ToList();
 
@@ -894,7 +935,6 @@ namespace Rock.Rest.Controllers
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
 
             // figure out Family, Address, Spouse
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
@@ -917,7 +957,14 @@ namespace Rock.Rest.Controllers
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
-            personSearchResult.PhoneNumbers = person.PhoneNumbers
+            var phoneNumbers = new PhoneNumberService( rockContext ).Queryable().Where( a => a.PersonId == person.Id ).Select( a => new
+            {
+                a.NumberTypeValueId,
+                a.IsUnlisted,
+                a.NumberFormatted
+            } ).ToList();
+
+            personSearchResult.PhoneNumbers = phoneNumbers
                 .Select( p => new PersonSearchPhoneNumber
                 {
                     Type = DefinedValueCache.Get( p.NumberTypeValueId ?? 0 )?.Value ?? string.Empty,
@@ -979,27 +1026,31 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            var primaryLocation = person.PrimaryFamily?.GroupLocations
-                .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId )
-                .Select( a => a.Location )
-                .FirstOrDefault();
-
-            if ( primaryLocation != null )
+            if ( person.PrimaryFamilyId.HasValue )
             {
-                var fullStreetAddress = primaryLocation.GetFullStreetAddress();
-                string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
-                personSearchResult.Address = fullStreetAddress;
-                personInfoHtmlBuilder.Append( addressHtml );
+                var primaryLocation = new GroupService( rockContext ).GetSelect( person.PrimaryFamilyId.Value, s => s.GroupLocations
+                       .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId )
+                       .Select( a => a.Location )
+                       .FirstOrDefault() );
+
+                if ( primaryLocation != null )
+                {
+                    var fullStreetAddress = primaryLocation.GetFullStreetAddress();
+                    string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
+                    personSearchResult.Address = fullStreetAddress;
+                    personInfoHtmlBuilder.Append( addressHtml );
+                }
             }
 
             // Generate the HTML for Email and PhoneNumbers
-            if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
+            if ( !string.IsNullOrWhiteSpace( person.Email ) || phoneNumbers.Any() )
             {
                 StringBuilder sbEmailAndPhoneHtml = new StringBuilder();
                 sbEmailAndPhoneHtml.Append( "<div class='margin-t-sm'>" );
                 sbEmailAndPhoneHtml.Append( "<span class='email'>" + person.Email + "</span>" );
                 string phoneNumberList = "<ul class='phones list-unstyled'>";
-                foreach ( var phoneNumber in person.PhoneNumbers )
+
+                foreach ( var phoneNumber in phoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
@@ -1475,6 +1526,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// A phone number that will be included in the search results.
     /// </summary>
+    [RockClientInclude( "Search result PersonSearchResult.PhoneNumbers from api/People/Search" )]
     public class PersonSearchPhoneNumber
     {
         /// <summary>

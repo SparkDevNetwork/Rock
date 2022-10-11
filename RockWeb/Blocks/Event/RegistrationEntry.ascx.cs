@@ -875,6 +875,21 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Updates the RegistrationInstanceState property with info from the DB. This is to ensure that any change to the RegistrationInstnaceState made while the user was registering
+        /// is considered. e.g. If the registration was at capacity, made inactive, or the period ended then the user can be prevented from saving it.
+        /// </summary>
+        private void UpdateRegistrationInstanceStateInfo()
+        {
+            if ( RegistrationInstanceState == null || RegistrationInstanceState.Id == 0 )
+            {
+                return;
+            }
+
+            RegistrationInstanceState = new RegistrationInstanceService( new RockContext() ).Get( RegistrationInstanceState.Id );
+
+        }
+
+        /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
         /// based on the current page reference.  This function is called during the page's
         /// oninit to load any initial breadcrumbs.
@@ -1177,7 +1192,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
+                pnlRegistrationAttributesEndProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                 lRegistrationAttributesEndTitle.Text = this.RegistrationAttributeTitleEnd;
                 avcRegistrationAttributesEnd.ShowCategoryLabel = false;
@@ -2389,6 +2404,8 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
             {
+                UpdateRegistrationInstanceStateInfo();
+
                 var rockContext = new RockContext();
 
                 var registrationService = new RegistrationService( rockContext );
@@ -2405,6 +2422,21 @@ namespace RockWeb.Blocks.Event
                             .Where( r => r.PersonAlias != null )
                             .Select( r => r.PersonAlias.PersonId )
                             .ToList();
+                    }
+                }
+
+                if ( isNewRegistration )
+                {
+                    if ( RegistrationInstanceState.EndDateTime < RockDateTime.Now )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} closed on {RegistrationInstanceState.EndDateTime}." );
+                        return null;
+                    }
+
+                    if ( !RegistrationInstanceState.IsActive )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} is no longer active." );
+                        return null;
                     }
                 }
 
@@ -2592,7 +2624,7 @@ namespace RockWeb.Blocks.Event
                             var parameters = new Dictionary<string, string>();
                             parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                             parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                            item.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                         }
 
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
@@ -2740,8 +2772,29 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // otherwise look for one and one-only match by name/email
-                    registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    if ( RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                    {
+                        // So, here we should probably grab the "first" registrant from the State.
+                        var firstRegistrantInfo = RegistrationState.Registrants.FirstOrDefault();
+                        bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                        string firstName = firstRegistrantInfo.GetFirstName( RegistrationTemplate );
+                        string lastName = firstRegistrantInfo.GetLastName( RegistrationTemplate );
+                        string email = firstRegistrantInfo.GetEmail( RegistrationTemplate );
+                        var birthday = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
+                        var mobilePhone = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
+
+                        // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                        registrar = personService.FindPerson( personQuery, forceEmailUpdate );
+                    }
+                    else
+                    {
+                        // otherwise look for one and one-only match by name/email
+                        registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    }
+
                     if ( registrar != null )
                     {
                         registration.PersonAliasId = registrar.PrimaryAliasId;
@@ -2918,24 +2971,45 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    /**
+                      * 06/07/2022 - KA
+                      * 
+                      * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                      * then chances are a Person was created or found for the first Registrant and used
+                      * as the Registrar. In that case then we don't create a new Person for the first
+                      * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                      * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                      * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                      * any time it is called. This prevents us from creating duplicate Person entities for
+                      * both the Registrar and first Registrant who are the same person in this scenario.
+                    */
+                    bool isCreatedAsRegistrant = RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == RegistrationState.Registrants.FirstOrDefault();
+
                     if ( person == null )
                     {
-                        // If a match was not found, create a new person
-                        person = new Person();
-                        person.FirstName = firstName;
-                        person.LastName = lastName;
-                        person.IsEmailActive = true;
-                        person.Email = email;
-                        person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        if ( dvcConnectionStatus != null )
+                        if ( isCreatedAsRegistrant )
                         {
-                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                            person = registrar;
                         }
-
-                        if ( dvcRecordStatus != null )
+                        else
                         {
-                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                            // If a match was not found, create a new person
+                            person = new Person();
+                            person.FirstName = firstName;
+                            person.LastName = lastName;
+                            person.IsEmailActive = true;
+                            person.Email = email;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
+                            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            if ( dvcConnectionStatus != null )
+                            {
+                                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                            }
+
+                            if ( dvcRecordStatus != null )
+                            {
+                                person.RecordStatusValueId = dvcRecordStatus.Id;
+                            }
                         }
                     }
 

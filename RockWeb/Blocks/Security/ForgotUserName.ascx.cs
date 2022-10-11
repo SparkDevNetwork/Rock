@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -136,6 +137,13 @@ namespace RockWeb.Blocks.Security
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
+            var rootUri = new Uri( RootPath );
+            var hostName = rootUri.Host;
+            if ( !CheckHostConfiguration( hostName ) )
+            {
+                throw new Exception( "Invalid request." );
+            }
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
             var results = new List<IDictionary<string, object>>();
@@ -208,6 +216,26 @@ namespace RockWeb.Blocks.Security
             else
             {
                 pnlWarning.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the specified host name is configured within a Rock Site to avoid creating
+        /// invalid link URLs.
+        /// </summary>
+        /// <param name="hostName">The host name</param>
+        /// <returns>True if the specified host name is configured in Rock.</returns>
+        private bool CheckHostConfiguration( string hostName )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var siteService = new SiteService( rockContext );
+                var siteHostNames = siteService.Queryable().AsNoTracking()
+                    .SelectMany( s => s.SiteDomains )
+                    .Select( d => d.Domain )
+                    .ToList();
+
+                return siteHostNames.Contains( hostName );
             }
         }
 

@@ -678,6 +678,34 @@ namespace Rock.Tests.UnitTests.Lava
             } );
         }
 
+        /// <summary>
+        /// Requesting the difference between a target date affected by Daylight Saving Time (DST) and a DateTimeOffset should return a result that accounts for the input time zone.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_WithDaylightSavingDateTimeObjectAsInput_AdjustsResultForDst()
+        {
+            LavaTestHelper.SetRockDateTimeToDaylightSavingTimezone();
+
+            // Get a date that occurs within daylight saving time for the Central Standard Time timezone.
+            var testDate = new DateTime( 2022, 9, 1, 10, 0, 0 );
+            try
+            {
+                Assert.IsTrue( RockDateTime.OrgTimeZoneInfo.IsDaylightSavingTime( testDate ), "Test date is not within a daylight saving period." );
+
+                var testDateFormatted = testDate.ToString( "yyyy-MM-d hh:mm:ss" );
+                var template = "{{ '<inputDate>' | DateDiff:inputDate,'s' }}"
+                    .Replace( "<inputDate>", testDateFormatted );
+
+                var lavaValues = new LavaDataDictionary() { { "inputDate", testDate } };
+
+                TestHelper.AssertTemplateOutput( "0", template, lavaValues );
+            }
+            finally
+            {
+                LavaTestHelper.SetRockDateTimeToLocalTimezone();
+            }
+        }
+
         #endregion
 
         #region Filter Tests: DatesFromICal

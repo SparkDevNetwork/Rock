@@ -17,6 +17,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbEnableMultipleTimeZone" runat="server" Label="Enable Multiple Time Zone Support" ValidationGroup="GeneralSetting" Help="When checked, Mutliple Time Zone is supported." />
+                            <Rock:UrlLinkBox ID="tbPDFExternalRenderEndpoint" runat="server" Label="PDF External Render Endpoint" Help="Specify a URL to use an external service like browserless.io to generate PDFs instead of using the internal PDF Generator." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />

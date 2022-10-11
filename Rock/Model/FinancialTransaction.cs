@@ -641,14 +641,17 @@ namespace Rock.Model
 
             HistoryChangeList = new History.HistoryChangeList();
             BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
+            string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
+            if ( person.IsNullOrWhiteSpace() )
+            {
+                person = "Anonymous";
+            }
 
             switch ( entry.State )
             {
                 case EntityState.Added:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
-
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
 
                         History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
                         History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
@@ -678,7 +681,7 @@ namespace Rock.Model
                 case EntityState.Modified:
                     {
                         string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
+
                         History.EvaluateChange( HistoryChangeList, "Authorized Person", origPerson, person );
 
                         int? origBatchId = entry.OriginalValues["BatchId"].ToStringSafe().AsIntegerOrNull();
@@ -742,7 +745,6 @@ namespace Rock.Model
                         if ( batchId.HasValue )
                         {
                             string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
-                            string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
                             var batchChanges = new History.HistoryChangeList();
                             batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
 

@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [Description( "Allows a person to confirm a schedule RSVP and view pending schedules.  Uses PersonActionIdentifier in 'Person' with action 'ScheduleConfirm' when supplied." )]
 
     [CodeEditorField( "Confirm Heading Template",
-        Description = "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>",
+        Description = "Text to display when a person confirms a schedule RSVP. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.ConfirmHeadingTemplate )]
 
     [CodeEditorField( "Decline Heading Template",
-        Description = "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>",
+        Description = "Heading to display when a person declines a schedule RSVP. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
@@ -54,42 +54,52 @@ namespace RockWeb.Blocks.GroupScheduling
         Order = 2,
         Key = AttributeKey.DeclineHeadingTemplate )]
 
+    [CodeEditorField( "Decline Message Template",
+        Description = "Message to display when a person declines a schedule RSVP. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = DeclineMessageTemplateDefaultValue,
+        Order = 3,
+        Key = AttributeKey.DeclineMessageTemplate )]
+
     [BooleanField( "Scheduler Receive Confirmation Emails",
         Description = "If checked, the scheduler will receive an email response for each confirmation or decline.",
         DefaultBooleanValue = false,
-        Order = 3,
+        Order = 4,
         Key = AttributeKey.SchedulerReceiveConfirmationEmails )]
 
     [BooleanField( "Require Decline Reasons",
         Description = "If checked, a person must choose one of the ‘Decline Reasons’ to submit their decline status.",
         DefaultBooleanValue = true,
-        Order = 4,
+        Order = 5,
         Key = AttributeKey.RequireDeclineReasons )]
 
     [BooleanField( "Enable Decline Note",
         Description = "If checked, a note will be shown for the person to elaborate on why they cannot attend.",
         DefaultBooleanValue = false,
-        Order = 5,
+        Order = 6,
         Key = AttributeKey.EnableDeclineNote )]
 
     [BooleanField( "Require Decline Note",
         Description = "If checked, a custom note response will be required in order to save their decline status.",
         DefaultBooleanValue = false,
-        Order = 6,
+        Order = 7,
         Key = AttributeKey.RequireDeclineNote )]
 
     [TextField( "Decline Note Title",
         Description = "A custom title for the decline elaboration note.",
         IsRequired = false,
         DefaultValue = "Please elaborate on why you cannot attend.",
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.DeclineNoteTitle )]
 
     [SystemCommunicationField( "Scheduling Response Email",
         Description = "The system email that will be used for sending responses back to the scheduler.",
         IsRequired = false,
         DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE,
-        Order = 8,
+        Order = 9,
         Key = AttributeKey.SchedulingResponseEmail )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
@@ -99,6 +109,7 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             public const string ConfirmHeadingTemplate = "ConfirmHeadingTemplate";
             public const string DeclineHeadingTemplate = "DeclineHeadingTemplate";
+            public const string DeclineMessageTemplate = "DeclineMessageTemplate";
             public const string SchedulerReceiveConfirmationEmails = "SchedulerReceiveConfirmationEmails";
             public const string RequireDeclineReasons = "RequireDeclineReasons";
             public const string EnableDeclineNote = "EnableDeclineNote";
@@ -116,6 +127,8 @@ namespace RockWeb.Blocks.GroupScheduling
 <p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
 {{ Group.Name }}<br>
 {{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>";
+
+        protected const string DeclineMessageTemplateDefaultValue = @"<div class='alert alert-success'><strong>Thank You</strong> We’ll try to schedule another person for: {{ ScheduledItem.Occurrence.Group.Name }}.</div>";
 
         #region Fields
 
@@ -311,13 +324,11 @@ namespace RockWeb.Blocks.GroupScheduling
         /// Shows the decline message after submit.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        private void ShowDeclineMessageAfterSubmit( Attendance attendance )
+        private void ShowDeclineMessageAfterSubmit( Attendance attendance, IDictionary<string, object> mergeFields )
         {
-            lResponse.Visible = false;
-            nbError.Title = "Thank you";
-            nbError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
-            nbError.Text = string.Format( "Thanks for letting us know. We’ll try to schedule another person for: {0}", attendance.Occurrence.Group.Name );
-            nbError.Visible = true;
+            nbError.Visible = false;
+            lResponse.Text = GetAttributeValue( AttributeKey.DeclineMessageTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
+            lResponse.Visible = true;
 
             DetermineRecipientAndSendResponseEmails( attendance?.Id );
         }
@@ -545,7 +556,8 @@ namespace RockWeb.Blocks.GroupScheduling
                             rockContext.SaveChanges();
                         }
 
-                        ShowDeclineMessageAfterSubmit( attendance );
+                        var mergeFields = MergeFields( attendance, this.ContextEntity<Person>() );
+                        ShowDeclineMessageAfterSubmit( attendance, mergeFields );
                     }
                 }
 
@@ -553,7 +565,7 @@ namespace RockWeb.Blocks.GroupScheduling
             }
             catch ( Exception ex )
             {
-                // ignore but log 
+                // ignore but log
                 ExceptionLogService.LogException( ex );
             }
         }

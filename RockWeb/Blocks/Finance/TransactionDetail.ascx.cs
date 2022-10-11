@@ -386,18 +386,16 @@ namespace RockWeb.Blocks.Finance
 
             if ( isValid && savedTransactionId.HasValue )
             {
-                // Requery the batch to support EF navigation properties
-                var savedTxn = GetTransaction( savedTransactionId.Value );
-                if ( savedTxn != null )
-                {
-                    savedTxn.LoadAttributes();
-                    if ( savedTxn.FinancialPaymentDetail != null )
-                    {
-                        savedTxn.FinancialPaymentDetail.LoadAttributes();
-                    }
-
-                    ShowReadOnlyDetails( savedTxn );
-                }
+                /**
+                  * 08/07/2022 - KA
+                  *
+                  * We reload the page with the new transaction here so the recently added Transaction is displayed along with the History of the transaction.
+                  * This is the ideal option because the call to RockPage.UpdateBlocks( "~/Blocks/Core/HistoryLog.ascx" ) on line 651 will trigger a page reload
+                  * but without the newly created transactionId thus the page will not display the transaction details.
+                */
+                var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
+                pageRef.Parameters.Add( "TransactionId", savedTransactionId.ToString() );
+                NavigateToPage( pageRef );
             }
         }
 
@@ -530,6 +528,24 @@ namespace RockWeb.Blocks.Finance
                     {
                         return;
                     }
+                }
+
+                bool hasValidAmount;
+                if ( UseSimpleAccountMode )
+                {
+                    var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M;
+                    var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
+                    hasValidAmount = accountAmountMinusFeeCoverageAmount != 0.0M || ( accountAmountFeeCoverageAmount.HasValue && accountAmountFeeCoverageAmount.Value != 0.0M );
+                }
+                else
+                {
+                    hasValidAmount = TransactionDetailsState.Any( d => d.Amount != 0.0M || ( d.FeeCoverageAmount.HasValue && d.FeeCoverageAmount.Value != 0.0M ) );
+                }
+
+                if ( !hasValidAmount )
+                {
+                    nbTransactionDetailValidationMessage.Visible = true;
+                    return;
                 }
 
                 rockContext.WrapTransaction( () =>
@@ -997,6 +1013,13 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BindAccounts();
+
+                if ( nbTransactionDetailValidationMessage.Visible )
+                {
+                    // If a message about no amounts is showing, hide it now that they have added one.
+                    // It'll get re-checked when saved.
+                    nbTransactionDetailValidationMessage.Visible = false;
+                }
             }
 
             HideDialog();
