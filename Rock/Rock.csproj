@@ -991,6 +991,7 @@
     <Compile Include="RealTime\AspNet\RealTimeHub.cs" />
     <Compile Include="RealTime\TopicProxyFactory.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
     <Compile Include="SystemGuid\EntityTypeGuidAttribute.cs" />
