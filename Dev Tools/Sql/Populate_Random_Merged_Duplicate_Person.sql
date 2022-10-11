@@ -12,7 +12,7 @@
 
 SET NOCOUNT ON
 
-DECLARE @maxPerson INT = 100
+DECLARE @maxPerson INT = 1000
     ,@genderInt INT
     ,@countryCode nvarchar(3) = null
     ,@personRecordType INT = (
@@ -66,7 +66,7 @@ DECLARE @maxPerson INT = 100
 	,@kidCounter int
 	,@kidPersonId int
 	,@kidPersonGuid uniqueidentifier
-    ,@familyGroupType INT = (
+    ,@familyGroupTypeId INT = (
         SELECT id
         FROM GroupType
         WHERE guid = '790E3215-3B10-442B-AF69-616C0DCB998E'
@@ -256,7 +256,7 @@ BEGIN
             )
         VALUES (
             0
-            ,@familyGroupType
+            ,@familyGroupTypeId
             ,@lastName + ' Family'
             ,0
             ,1
@@ -272,6 +272,7 @@ BEGIN
             ,GroupId
             ,PersonId
             ,GroupRoleId
+            ,GroupTypeId
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
@@ -281,6 +282,7 @@ BEGIN
             ,@groupId
             ,@clonedPersonId
             ,@adultRole
+            ,@familyGroupTypeId
             ,newid()
             ,1
 			,SYSDATETIME()

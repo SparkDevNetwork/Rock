@@ -120,6 +120,101 @@ namespace Rock.Model
             return following;
         }
 
+
+        /// <summary>
+        /// Updates or removes following records for the specified entity, person, and purpose, based on the new entity Id.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        /// <param name="newEntityId">The new entity identifier.</param>
+        /// <returns>The count of following records that were changed (updated or deleted).</returns>
+        public int UpdateOrRemoveFollowingEntity( int entityTypeId, int entityId, int personAliasId, string purposeKey, int newEntityId )
+        {
+            purposeKey = purposeKey ?? string.Empty;
+
+            // Get the followings with the old / former entity Id.
+            var followingsForOldEntityId = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == personAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
+                .ToList();
+
+            // Get the followings with the new entity Id.
+            var followingsForNewEntityId = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == newEntityId &&
+                    f.PersonAliasId == personAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
+                .ToList();
+
+            // If there is already a following record for the entityTypeId, personAliasId, purposeKey and the new entity Id,
+            // then we can remove the old followings.
+            if ( followingsForNewEntityId.Any() )
+            {
+                DeleteRange( followingsForOldEntityId );
+            }
+            else
+            {
+                foreach ( var following in followingsForOldEntityId )
+                {
+                    following.EntityId = newEntityId;
+                }
+            }
+            return followingsForOldEntityId.Count();
+        }
+
+        /// <summary>
+        /// Updates or removes following records for the specified entity, person, and purpose, based on the new PersonAlias Id.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        /// <param name="newPersonAliasId">The new PersonAlias identifier.</param>
+        /// <returns>The count of following records that were changed (updated or deleted).</returns>
+        public int UpdateOrRemoveFollowingPersonAlias( int entityTypeId, int entityId, int personAliasId, string purposeKey, int newPersonAliasId )
+        {
+            purposeKey = purposeKey ?? string.Empty;
+
+            // Get the followings with the old / former PersonAlias Id.
+            var followingsForOldPersonAliasId = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == personAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
+                .ToList();
+
+            // Get the followings with the new PersonAlias Id.
+            var followingsForNewPersonAliasId = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == newPersonAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
+                .ToList();
+
+            // If there is already a following record for the entityTypeId, entityId, purposeKey and the new PersonAlias Id,
+            // then we can remove the old followings.
+            if ( followingsForNewPersonAliasId.Any() )
+            {
+                DeleteRange( followingsForOldPersonAliasId );
+            }
+            else
+            {
+                foreach ( var following in followingsForOldPersonAliasId )
+                {
+                    following.PersonAliasId = newPersonAliasId;
+                }
+            }
+            return followingsForOldPersonAliasId.Count();
+        }
+
         /// <summary>
         /// Gets the entity query
         /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following

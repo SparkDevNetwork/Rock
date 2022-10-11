@@ -292,6 +292,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord( dataMap ) );
 
+            RunCleanupTask( "updated following", () => this.CleanupPersonFollowing( dataMap ) );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -417,7 +419,7 @@ namespace Rock.Jobs
         {
             if ( result.HasException )
             {
-                return $"<i class='fa fa-circle text-danger'></i> { result.Title}";
+                return $"<i class='fa fa-circle text-danger'></i> {result.Title}";
             }
             else
             {
@@ -2411,6 +2413,88 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             return updateCount;
+        }
+
+        /// <summary>
+        /// Updates or removes any Following record where
+        /// the PersonAliasId is not the <see cref="Person.PrimaryAlias"> primary alias</see> of the follower.
+        /// or the followed <see cref="PersonAlias">person aliases</see> are not the primary person alias.
+        /// </summary>
+        /// <remarks>This job cleans up Follows that are of PersonAlias entity types, and are following a Person Alias that is getting merged.</remarks>
+        /// <returns>The number of Following records that were updated.</returns>
+        private int CleanupPersonFollowing( JobDataMap dataMap )
+        {
+            // Set up variables for the job.
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+            var followingService = new FollowingService( rockContext );
+            var personService = new PersonService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+            int followingsUpdated = 0;
+            StringBuilder updatedPeopleLog = new StringBuilder();
+
+            var personAliasEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON_ALIAS.AsGuid() );
+
+            //// First: Update the Followers where their PersonAliasId is not the Person's Primary Alias Id.
+
+            // Find followings by people that have more than one alias with updates since the last run time.
+            var followingsByPeopleWithMultipleAliases = followingService.Queryable().Where( f => f.ModifiedDateTime > lastRunDateTime )
+                .GroupBy( f => f.PersonAlias.Person ).Select( p => p.Key ).Where( p => p.Aliases.Count() > 1 );
+
+            // Find followings where those people who have multiple aliases have multiple following records.
+            var followingsWhereFollowingPersonIsFollowingByMultiplePersonAliases = followingService.Queryable().Where( f => f.ModifiedDateTime > lastRunDateTime )
+                .GroupBy( f => f.PersonAlias.Person ).Where( pf => followingsByPeopleWithMultipleAliases.Contains( pf.Key ) ).Where( p => p.Distinct().Count() > 1 );
+            updatedPeopleLog.AppendLine( $"<strong>Followers to update: {followingsWhereFollowingPersonIsFollowingByMultiplePersonAliases.Count()}</strong><br />" );
+            foreach ( var followingGroup in followingsWhereFollowingPersonIsFollowingByMultiplePersonAliases )
+            {
+                Person p = personService.Get( followingGroup.Key.Id );
+                foreach ( var following in followingGroup )
+                {
+                    // Updates or removes Following records where the PersonAliasId is not the PrimaryAliasId for the person.
+                    if ( p.PrimaryAliasId != following.PersonAliasId )
+                    {
+                        followingsUpdated += followingService.UpdateOrRemoveFollowingPersonAlias(
+                            following.EntityTypeId, following.EntityId, following.PersonAliasId, following.PurposeKey, p.PrimaryAliasId.Value );
+                        updatedPeopleLog.AppendLine( $"{p.FullName} was following a person with PersonAliasId ({following.EntityId}) with a non-primary PersonAliasId ({following.PersonAliasId}).<br />" );
+                    }
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            //// Second: Update or remove Followings where the entities are from multiple person aliases.
+
+            followingService = new FollowingService( rockContext );
+
+            // Find followings with people that have more than one alias with updates since the last run time.
+            var followedPersonsWithAliases = followingService.Queryable().Where( f => f.EntityTypeId == personAliasEntityType.Id && f.ModifiedDateTime > lastRunDateTime ).Join(
+                personAliasService.Queryable(),
+                f => f.EntityId,
+                e => e.Id,
+                ( f, e ) => e ).GroupBy( pf => pf.Person ).Where( pf => pf.Distinct().Count() > 1 );
+
+            var allFollowingsWithDuplicatePersonAliasIds = followingService.Queryable().Where( f => followedPersonsWithAliases.SelectMany( pf => pf.Select( p => p.Id ) ).Contains( f.EntityId ) );
+            updatedPeopleLog.AppendLine( $"<strong>Followed to update: {allFollowingsWithDuplicatePersonAliasIds.Count()}</strong><br />" );
+
+            // Updates Following records where the EntityId is not the PrimaryAliasId for the person.
+            foreach ( var following in allFollowingsWithDuplicatePersonAliasIds )
+            {
+                Person p = personAliasService.GetPerson( following.EntityId );
+                if ( p.PrimaryAliasId != following.EntityId )
+                {
+                    followingsUpdated += followingService.UpdateOrRemoveFollowingEntity(
+                        following.EntityTypeId, following.EntityId, following.PersonAliasId, following.PurposeKey, p.PrimaryAliasId.Value );
+                    updatedPeopleLog.AppendLine( $"{p.FullName}, under a non-primary PersonAliasId ({following.EntityId}), was being followed by a person with PersonAliasId ({following.PersonAliasId}).<br />" );
+                }
+            }
+
+            rockContext.SaveChanges();
+            if ( updatedPeopleLog.Length > 0 )
+            {
+                ExceptionLogService.LogException( updatedPeopleLog.ToString() );
+            }
+
+            return followingsUpdated;
         }
 
         /// <summary>
