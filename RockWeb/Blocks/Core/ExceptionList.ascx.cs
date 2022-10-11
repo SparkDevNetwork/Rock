@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1247,7 +1247,9 @@ namespace RockWeb.Blocks.Administration
 
             // Filter for top-level exceptions that have a datestamp.
             var filterQuery = exceptionService.Queryable().AsNoTracking()
-                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null );
+                .Where( e => e.CreatedDateTime != null );
+
+            filterQuery = exceptionService.FilterByOutermost( filterQuery );
 
             // Filter by: SiteId
             if ( args.SiteId.GetValueOrDefault(0) != 0 )
@@ -1287,14 +1289,11 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Exclude all inner exceptions.
-            filterQuery = exceptionService.FilterByOutermost( filterQuery );
-
             return filterQuery;
         }
 
         private GetExceptionQueryArgs GetExceptionQueryArguments()
-        {            
+        {
             var filterSettingsKeyValueMap = OnStoreFilterSettings();
 
             var args = new GetExceptionQueryArgs();
@@ -1593,11 +1592,9 @@ namespace RockWeb.Blocks.Administration
         private IEnumerable<ExceptionChartData> GetChartData( IQueryable<ExceptionLog> exceptionsQuery )
         {
             // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
-            var rockContext = new RockContext();
-            var exceptionService = new ExceptionLogService( rockContext );
-
             var exceptionList = exceptionsQuery.AsNoTracking()
-                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null ).Select( s => new
+                .Where( e => e.CreatedDateTime != null )
+                .Select( s => new
                 {
                     s.CreatedDateTime,
                     s.ExceptionType
@@ -1611,7 +1608,7 @@ namespace RockWeb.Blocks.Administration
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
             } )
             .OrderBy( eg => eg.DateValue ).ToList();
-            
+
             var allCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
             {
                 CreatedDate = c.DateValue,

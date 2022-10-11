@@ -123,7 +123,7 @@ namespace Rock.Blocks.Cms
     </div>
 </div>
 <div class=""actions"">
-   <a href=""#"" class=""btn btn-default show-more"">Show More</a>
+   <a href=""#"" class=""btn btn-default js-more"">Show More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
@@ -132,9 +132,9 @@ namespace Rock.Blocks.Cms
         Description = "The lava template to use to render a single result.",
         DefaultValue = @"<div class=""result-item"">
     <a href=""#"" class=""list-group-item"">
-        <h4>{{ Item.Name }}</h4>
+        <h4>{{ Item.Name | Escape }}</h4>
         <p>Posted on {{ Item.RelevanceDateTime  | AsDateTime | Date:'MMM dd, yyyy' }}</p>
-        {{ Item.Content | StripHtml | Truncate:100 }}
+        {{ Item.Content | StripHtml | Truncate:100 | Escape }}
         <span class=""pull-right pt-4 pl-2 text-primary"">
             <i class=""fa fa-arrow-right""></i>
         </span>
