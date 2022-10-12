@@ -31,6 +31,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Scheduled Job History" )]
     [Category( "Core" )]
     [Description( "Lists all scheduled job's History." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B6E289D5-610D-4D85-83BE-B70D5B5E2EEB" )]
     public partial class ScheduledJobHistoryList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

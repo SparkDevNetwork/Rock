@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Crm
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "A8456E2D-1930-4FF7-8A46-FB0800AC31E0" )]
     public partial class Documents : RockBlock, ISecondaryBlock
     {
         private static class AttributeKeys

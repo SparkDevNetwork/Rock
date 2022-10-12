@@ -28,6 +28,7 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Mobile Entry")]
     [Category("Check-in")]
     [Description("Helps to configure the checkin for mobile devices.")]
+    [Rock.SystemGuid.BlockTypeGuid( "67E9E493-1D11-4C73-8E59-6D3C2C25CA25" )]
     public partial class MobileEntry : CheckInBlock
     {
         protected override void OnInit( EventArgs e )

@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
         /// <summary>

@@ -31,9 +31,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Transaction Report" )]
     [Category( "Finance" )]
     [Description( "Block that reports transactions for the currently logged in user with filters." )]
@@ -46,6 +43,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5 )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D" )]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
         #region Properties

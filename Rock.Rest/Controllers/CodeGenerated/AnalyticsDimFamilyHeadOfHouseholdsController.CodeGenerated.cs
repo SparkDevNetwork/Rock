@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AnalyticsDimFamilyHeadOfHouseholds REST API
     /// </summary>
+    [RestControllerGuid( "00B71A3C-BB1F-475D-BF9A-4D54EB3B6267" )]
     public partial class AnalyticsDimFamilyHeadOfHouseholdsController : Rock.Rest.ApiController<Rock.Model.AnalyticsDimFamilyHeadOfHousehold>
     {
         /// <summary>

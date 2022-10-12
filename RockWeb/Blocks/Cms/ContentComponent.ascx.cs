@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.FilterId )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_COMPONENT )]
     public partial class ContentComponent : RockBlock
     {
         #region Attribute Keys
@@ -284,6 +285,14 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ShowView()
         {
+            // Disable content rendering for configuration mode to improve efficiency.
+            // This is also necessary to avoid an issue where Lava content may fail to render if the template
+            // uses {% include %} to reference files that do not exist in the filesystem of the current theme.
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                return;
+            }
+
             int? outputCacheDuration = GetAttributeValue( AttributeKey.OutputCacheDuration ).AsIntegerOrNull();
             int? itemCacheDuration = GetAttributeValue( AttributeKey.ItemCacheDuration ).AsIntegerOrNull();
 

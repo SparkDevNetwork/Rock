@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page/Zone Blocks Editor" )]
     [Category( "CMS" )]
     [Description( "Edit the Blocks for a Zone on a specific page/layout." )]
+    [Rock.SystemGuid.BlockTypeGuid( "1063D63E-8136-479A-BA96-57E93E0194B5" )]
     public partial class PageZoneBlocksEditor : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods

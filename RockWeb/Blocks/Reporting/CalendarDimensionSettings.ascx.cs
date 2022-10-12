@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Reporting
     [DateField( "EndDate", "", false, "", "CustomSetting", 0 )]
     [IntegerField( "FiscalStartMonth", "", false, 1, "CustomSetting", 0 )]
     [BooleanField( "GivingMonthUseSundayDate", "", false, "CustomSetting", 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43" )]
     public partial class CalendarDimensionSettings : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

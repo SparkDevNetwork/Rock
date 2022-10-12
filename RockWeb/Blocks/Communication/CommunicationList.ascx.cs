@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "56ABBD0F-8F62-4094-88B3-161E71F21419" )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

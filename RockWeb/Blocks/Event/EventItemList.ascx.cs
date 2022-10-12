@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Lists all the event items in the given calendar." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "EC8DFDC5-C177-4208-8ABA-1F85010FBBFF" )]
     public partial class EventItemList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables

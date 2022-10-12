@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 7 )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "3F69E04F-F966-4CAE-B89D-F97DFEF6407A" )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

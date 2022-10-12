@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Finance
         Order = 0 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "1ACCF349-73A5-4568-B801-2A6A620791D9" )]
     public partial class BusinessList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

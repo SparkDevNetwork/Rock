@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
     [CodeEditorField( "Contents", @"The Lava template to use for displaying activities assigned to current user.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% include '/Assets/Lava/MyWorkflowsSortable.lava' %}", "", 3 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the block name.", required: false, order: 4 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header.", required: false, order: 5 )]
+    [Rock.SystemGuid.BlockTypeGuid( "4F217A7F-A34E-489E-AE0E-2B7EDCF69CD1" )]
     public partial class MyWorkflowsLava : Rock.Web.UI.RockBlock
     {
         #region Fields

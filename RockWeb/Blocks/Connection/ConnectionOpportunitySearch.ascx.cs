@@ -111,6 +111,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.CampusLabel )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "C0D58DEE-D266-4AA8-8750-414A3CC26C07" )]
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

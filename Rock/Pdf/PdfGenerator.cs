@@ -82,7 +82,7 @@ namespace Rock.Pdf
                 var revisionInfo = AsyncHelper.RunSync( () => browserFetcher.GetRevisionInfoAsync() );
                 var localInstallExists = revisionInfo.Local;
 
-                // If checking for an incomplete install, check if there is an orpaned ".installing" file. Also make sure that the chrome.exe exists
+                // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
                 // (just in case files were deleted, but folders were not).
                 bool reinstall = checkForIncompleteInstall && ( File.Exists( installingFlagFileName ) || ( localInstallExists && !File.Exists( executablePath ) ) );
                 try
@@ -98,7 +98,7 @@ namespace Rock.Pdf
                 catch ( Exception ex )
                 {
                     // If we get an error when attempting to re-install, log the exception and continue on in case it'll work even if we got an exception.
-                    Rock.Model.ExceptionLogService.LogException( new PdfGeneratorException( "Error rei-nstalling PDF Generator", ex ) );
+                    Rock.Model.ExceptionLogService.LogException( new PdfGeneratorException( "Error re-installing PDF Generator", ex ) );
                 }
 
                 if ( localInstallExists )

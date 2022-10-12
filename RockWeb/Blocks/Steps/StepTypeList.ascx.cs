@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "3EFB4302-9AB4-420F-A818-48B1B06AD109" )]
     public partial class StepTypeList : ContextEntityBlock, ISecondaryBlock
     {
         #region Attribute Keys

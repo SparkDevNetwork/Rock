@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         Order = 0,
         Key = AttributeKey.EntityType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "BEC5B592-9E9E-4C55-BD0D-2B8065A1802E" )]
     public partial class NoteTypeList : RockBlock
     {
         public static class AttributeKey

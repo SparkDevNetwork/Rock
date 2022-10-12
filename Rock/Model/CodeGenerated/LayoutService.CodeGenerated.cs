@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// Layout View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Layout ) )]
-    public partial class LayoutViewModelHelper : ViewModelHelper<Layout, Rock.ViewModel.LayoutViewModel>
+    public partial class LayoutViewModelHelper : ViewModelHelper<Layout, LayoutBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.LayoutViewModel CreateViewModel( Layout model, Person currentPerson = null, bool loadAttributes = true )
+        public override LayoutBag CreateViewModel( Layout model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.LayoutViewModel
+            var viewModel = new LayoutBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 FileName = model.FileName,
                 IsSystem = model.IsSystem,
@@ -188,7 +188,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.LayoutViewModel ToViewModel( this Layout model, Person currentPerson = null, bool loadAttributes = false )
+        public static LayoutBag ToViewModel( this Layout model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new LayoutViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

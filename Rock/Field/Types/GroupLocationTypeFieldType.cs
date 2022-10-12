@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,8 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class GroupLocationTypeFieldType : FieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_LOCATION_TYPE )]
+    public class GroupLocationTypeFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Configuration
@@ -132,9 +134,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            var definedValueGuid = value.AsGuidOrNull();
+            var definedValueGuid = privateValue.AsGuidOrNull();
             if ( definedValueGuid.HasValue )
             {
                 var definedValue = DefinedValueCache.Get( definedValueGuid.Value );
@@ -143,8 +153,7 @@ namespace Rock.Field.Types
                     formattedValue = definedValue.Value;
                 }
             }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -236,6 +245,46 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var definedValueId = new DefinedValueService( rockContext ).GetId( guid.Value );
+
+                if ( !definedValueId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, definedValueId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Defined Value and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
+        }
         #endregion
     }
 }

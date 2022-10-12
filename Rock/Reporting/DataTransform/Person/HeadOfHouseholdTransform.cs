@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to Head of Household" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Head of Household Transformation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "BFE088F6-EACF-47BE-9363-3464D9FB556F")]
     public class HeadOfHouseholdTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>

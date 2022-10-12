@@ -111,6 +111,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             + Rock.SystemGuid.Badge.BAPTISM + ","
             + Rock.SystemGuid.Badge.IN_SERVING_TEAM,
         Order = 7 )]
+    [Rock.SystemGuid.BlockTypeGuid( "48BBB7A7-1E1D-461E-9B64-E9CAD815E9E1" )]
     public partial class Person : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

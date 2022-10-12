@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to edit text in Markdown format and rendered as processed Markdown
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MARKDOWN )]
     public class MarkdownFieldType : FieldType
     {
         #region Configuration
@@ -107,6 +109,41 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue.ConvertMarkdownToHtml()?.StripHtml() ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue.ConvertMarkdownToHtml()?.Trim().StripHtml().Truncate( 100 ) ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue.ConvertMarkdownToHtml() ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var result = privateValue.ConvertMarkdownToHtml() ?? string.Empty;
+
+            // TrimEnd is added because ConvertMarkdownToHtml add two newlines. Described in: https://github.com/Knagis/CommonMark.NET/issues/107
+            result = result.Trim();
+
+            // Remove paragraph tags for condensed values to remove unnecessary whitespace above and below the value.
+            if ( result.StartsWith( "<p>" ) && result.EndsWith( "</p>" ) )
+            {
+                result = result.Substring( 3, result.Length - 7 );
+            }
+
+            return result.Truncate( 100 );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -117,22 +154,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var result = value.ConvertMarkdownToHtml();
+            var result = !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+
             result = HtmlSanitizer.SanitizeHtml( result );
-
-            if ( condensed )
-            {
-                // TrimEnd is added because ConvertMarkdownToHtml add two newlines. Described in: https://github.com/Knagis/CommonMark.NET/issues/107
-                result = result?.Trim() ?? string.Empty;
-                // Remove paragraph tags for values in grids and filter indicators to remove unnecessary whitespace above and below the value.
-                if ( result.StartsWith("<p>") && result.EndsWith("</p>"))
-                {
-                    result = result.Substring( 3, result.Length - 7 );
-                }
-
-                return result.Truncate( 100 );
-            }
-
             return result;
         }
 

@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "991507B6-D222-45E5-BA0D-B61EA72DFB64" )]
     public partial class ContentChannelList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Attribute Keys

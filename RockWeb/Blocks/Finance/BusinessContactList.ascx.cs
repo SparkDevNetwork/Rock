@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The page used to view the details of a business contact",
         Key = AttributeKey.PersonProfilePage,
         Order = 0 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E8F41C21-7D0F-41AC-B5D7-2BA3FA016CB4" )]
     public partial class BusinessContactList : RockBlock, ISecondaryBlock
     {
         private static class AttributeKey

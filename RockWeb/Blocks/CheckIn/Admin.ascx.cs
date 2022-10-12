@@ -70,6 +70,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = AttributeCategory.CategoryNone,
         Order = 8 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3B5FBE9A-2904-4220-92F3-47DD16E805C0" )]
     public partial class Admin : CheckInBlock
     {
         #region Attribute Keys

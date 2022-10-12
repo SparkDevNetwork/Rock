@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Fundraising
     [DisplayName( "Fundraising Progress" )]
     [Category( "Fundraising" )]
     [Description( "Progress for all people in a fundraising opportunity" )]
+    [Rock.SystemGuid.BlockTypeGuid( "75D2BC14-34DF-42EA-8DBB-3F5294B290A9" )]
     public partial class FundraisingProgress : RockBlock
     {
 

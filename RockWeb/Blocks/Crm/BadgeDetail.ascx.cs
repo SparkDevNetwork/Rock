@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows the details of a particular badge." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "A79336CD-2265-4E36-B915-CF49956FD689" )]
     public partial class BadgeDetail : RockBlock
     {
 

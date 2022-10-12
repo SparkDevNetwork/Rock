@@ -125,7 +125,7 @@ namespace Rock.Utility.Settings.Giving
         public List<Guid> FinancialAccountGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets the are child accounts included. This defaults to false.
+        /// Gets or sets if child accounts (all descendants) are included. This defaults to false.
         /// </summary>
         /// <value>
         /// The are child accounts included.

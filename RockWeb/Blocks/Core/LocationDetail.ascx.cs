@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
         Key = AttributeKey.MapStyle )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "08189564-1245-48F8-86CC-560F4DD48733" )]
     public partial class LocationDetail : RockBlock
     {
         public static class AttributeKey

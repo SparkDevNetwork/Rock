@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
     [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
     [BooleanField( "Show Members Grid", "Show Members Grid if GroupMemberId is not specified in the URL", true, order: 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "EA6EA2E7-6504-41FE-AB55-0B1E7D04B226" )]
     public partial class GroupMemberHistory : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Base Control Methods

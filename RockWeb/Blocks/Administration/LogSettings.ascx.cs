@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Administration
     [System.ComponentModel.Category( "Administration" )]
     [System.ComponentModel.Description( "Block to edit rock log settings." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "6ABC44FD-C4D7-4E30-8537-3A065B493453" )]
     public partial class LogSettings : RockBlock
     {
         #region Control Methods

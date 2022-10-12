@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Instance Send Payment Reminder" )]
     [Category( "Event" )]
     [Description( "Sends payment reminders for paid registrations that have a remaining balance." )]
+    [Rock.SystemGuid.BlockTypeGuid( "ED56CD0A-0A8D-4758-A689-55B7BEC1B589" )]
     public partial class RegistrationInstancePaymentReminder : Rock.Web.UI.RockBlock
     {
         #region Fields

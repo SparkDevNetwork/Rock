@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Link Organization" )]
     [Category( "Store" )]
     [Description( "Links a Rock organization to the store." )]
+    [Rock.SystemGuid.BlockTypeGuid( "41DFED6E-2ECD-4198-80C3-816B27241EB4" )]
     public partial class LinkOrganization : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -200,7 +201,7 @@ namespace RockWeb.Blocks.Store
             if ( canAuthicate )
             {
                 lMessages.Text = @"<div class='alert alert-warning margin-t-md'>It appears that no organizations have been configured for this account. You can 
-                                set up an organization on the Rock RMS website. Simply login and then select 'My Account' from the dropdown in the top right
+                                set up an organization on the Rock RMS website. Simply log in and then select 'My Account' from the dropdown in the top right
                                 corner or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
             }
             else

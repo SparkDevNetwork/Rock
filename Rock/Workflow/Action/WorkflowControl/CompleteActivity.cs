@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     [Description( "Marks the activity as complete" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Activity Complete" )]
+    [Rock.SystemGuid.EntityTypeGuid( "0D5E33A5-8700-4168-A42E-74D78B62D717")]
     public class CompleteActivity : ActionComponent
     {
         /// <summary>

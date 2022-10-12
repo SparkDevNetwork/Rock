@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "2760F435-3E89-4016-85D9-13C019D0C58F" )]
     public partial class RSSFeed : RockBlock
     {
         #region Attribute Keys

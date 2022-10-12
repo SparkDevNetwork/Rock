@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Lists Person Merge Requests" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "4CBFB5FC-0174-489A-8B95-90BB8FAA2144" )]
     public partial class PersonMergeRequestList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

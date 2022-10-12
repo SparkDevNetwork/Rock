@@ -317,12 +317,24 @@ namespace RockWeb
             {
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
-            else
+            
+            if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
-                if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
-                }
+                throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
+            }
+
+            if ( binaryFileType.MaxFileSizeBytes != null && uploadedFile.ContentLength > binaryFileType.MaxFileSizeBytes )
+            {
+                throw new Rock.Web.FileUploadException(
+                    $"The maximum file size for file type \"{binaryFileType.Name}\" is {Rock.Utility.FileUtilities.FileSizeSuffixFormatter( binaryFileType.MaxFileSizeBytes.Value )}",
+                    System.Net.HttpStatusCode.Forbidden );
+            }
+
+            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+            if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 || uploadedFile.FileName.EndsWith( "." ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
             }
 
             // always create a new BinaryFile record of IsTemporary when a file is uploaded

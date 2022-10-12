@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for displaying people that have been suggested to current person to follow." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3726D4D5-EAA4-4AB7-A2BC-DDE8199E16FA" )]
     public partial class PersonSuggestionList : RockBlock, ICustomGridColumns
     {
 

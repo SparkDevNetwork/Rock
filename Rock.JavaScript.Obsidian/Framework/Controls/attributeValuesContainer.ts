@@ -15,17 +15,17 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import { PublicAttribute } from "../ViewModels";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import RockSuspense from "./rockSuspense";
+import LoadingIndicator from "./loadingIndicator";
+import { List } from "@Obsidian/Utility/linq";
 import TabbedContent from "./tabbedContent";
 import RockField from "./rockField";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import { PublicAttributeValueCategory } from "../ViewModels/publicAttributeValueCategory";
-import { List } from "../Util/linq";
-import { emptyGuid } from "../Util/guid";
+import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
-
-type CategorizedAttributes = PublicAttributeValueCategory & {
-    attributes: PublicAttribute[]
+type CategorizedAttributes = PublicAttributeCategoryBag & {
+    attributes: PublicAttributeBag[]
 };
 
 
@@ -34,6 +34,7 @@ export default defineComponent({
     components: {
         RockField,
         LoadingIndicator,
+        RockSuspense,
         TabbedContent,
     },
     props: {
@@ -46,7 +47,7 @@ export default defineComponent({
             default: false
         },
         attributes: {
-            type: Object as PropType<Record<string, PublicAttribute>>,
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
         },
         showEmptyValues: {
@@ -76,7 +77,7 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        const validAttributes = computed((): PublicAttribute[] => {
+        const validAttributes = computed((): PublicAttributeBag[] => {
             return new List(Object.values(props.attributes))
                 .orderBy(a => a.order)
                 .toArray();
@@ -95,12 +96,12 @@ export default defineComponent({
 
             validAttributes.value.forEach(attr => {
                 // Skip empty attributes if we are not set to display empty values or we're not editing values
-                if (!props.showEmptyValues && !props.isEditMode && (props.modelValue[attr.key] ?? "") == "") {
+                if (!props.showEmptyValues && !props.isEditMode && attr.key && (props.modelValue[attr.key] ?? "") == "") {
                     return;
                 }
 
                 if (attr.categories && attr.categories.length > 0) {
-                    const categories = [...attr.categories]; // copy, so sort doesn't cause updates
+                    const categories = [...attr.categories] as PublicAttributeCategoryBag[]; // copy, so sort doesn't cause updates
 
                     categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
                         const newCat: CategorizedAttributes = { attributes: [], ...cat }; // copy and convert to CategorizedAttributes
@@ -186,7 +187,7 @@ export default defineComponent({
     },
 
     template: `
-<Suspense>
+<RockSuspense>
     <template #default>
         <TabbedContent v-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
             <template #tab="{item}">
@@ -226,9 +227,9 @@ export default defineComponent({
             </div>
         </template>
     </template>
-    <template #fallback>
+    <template #loading>
         <LoadingIndicator />
     </template>
-</Suspense>
+</RockSuspense>
 `
 });

@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -172,7 +173,7 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
-        #region Methods        
+        #region Methods
         /// <summary>
         /// Registers the java script.
         /// </summary>

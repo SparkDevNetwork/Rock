@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Description = "The badges to display.",
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.BADGES )]
     public partial class Badges : ContextEntityBlock
     {
         #region Attribute Keys

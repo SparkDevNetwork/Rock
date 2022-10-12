@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Follow
     [Description( "Block for viewing list of following events." )]
     [LinkedPage( "Detail Page" )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to change following events." )]
+    [Rock.SystemGuid.BlockTypeGuid( "0C3CEBAD-3CCB-493B-9CBA-9D0D33852050" )]
     public partial class EventList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

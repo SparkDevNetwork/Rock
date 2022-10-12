@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.LoadLastPrayedCollection )]
     
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "1FEE129E-E46A-4805-AF5A-6F98E1DA7A16" )]
     public partial class PrayerCardView : RockBlock
     {
         #region Constants
@@ -197,6 +198,7 @@ function ReviewFlag(elem) {
         {
             public const string CampusId = "CampusId";
             public const string CategoryId = "CategoryId";
+            public const string GroupGuid = "GroupGuid";
         }
 
         private static class AttributeKey
@@ -475,12 +477,16 @@ function ReviewFlag(elem) {
                 }
             }
 
+            var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+
             IEnumerable<PrayerRequest> qryPrayerRequests = prayerRequestService.GetPrayerRequests( new PrayerRequestQueryOptions
             {
                 IncludeEmptyCampus = true,
                 IncludeNonPublic = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
                 Campuses = campusGuids,
-                Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null
+                Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null,
+                GroupGuids = groupGuidQryString.HasValue ? new List<Guid> { groupGuidQryString.Value } : null,
+                IncludeGroupRequests = !groupGuidQryString.HasValue
             } );
 
             // Order by how the block has been configured.

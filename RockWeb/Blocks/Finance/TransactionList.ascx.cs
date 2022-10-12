@@ -148,6 +148,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.ShowDaysSinceLastTransaction
         )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
         #region Keys
@@ -253,7 +254,6 @@ namespace RockWeb.Blocks.Finance
         private Dictionary<int, string> _currencyTypes;
         private Dictionary<int, string> _creditCardTypes;
         private List<PersonDetail> _personDetails;
-        private Dictionary<int, FinancialAccount> _financialAccountLookup;
         private Dictionary<int, List<int>> _imageBinaryFileIdLookupByTransactionId;
 
         private string _batchPageRoute = null;
@@ -630,8 +630,7 @@ namespace RockWeb.Blocks.Finance
                     var accountIds = e.Value.SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                     if ( accountIds.Any() && apAccount.Visible )
                     {
-                        var service = new FinancialAccountService( new RockContext() );
-                        var accountNames = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+                        var accountNames = FinancialAccountCache.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
                         e.Value = accountNames;
                     }
                     else
@@ -1267,8 +1266,7 @@ namespace RockWeb.Blocks.Finance
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
             if ( accountIds.Any() )
             {
-                var service = new FinancialAccountService( new RockContext() );
-                var accounts = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
+                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
                 apAccount.SetValues( accounts );
             }
             else
@@ -1542,7 +1540,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             var rockContext = new RockContext();
-            _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
 
             SortProperty sortProperty = gTransactions.SortProperty;
 
@@ -2035,8 +2032,8 @@ namespace RockWeb.Blocks.Finance
                 var summaryQryList = accountSummaryQry1.ToList().Select( a => new AccountSummaryRow
                 {
                     AccountId = a.AccountId,
-                    Order = _financialAccountLookup[a.AccountId].Order,
-                    Name = _financialAccountLookup[a.AccountId].Name,
+                    Order = FinancialAccountCache.Get( a.AccountId )?.Order ?? 0,
+                    Name = FinancialAccountCache.Get( a.AccountId )?.Name,
                     TotalAmount = a.TotalAmount
                 } );
 
@@ -2089,14 +2086,14 @@ namespace RockWeb.Blocks.Finance
                 List<string> summary = null;
                 if ( txn.TransactionDetail != null )
                 {
-                    string summaryLine = string.Format( "{0}: {1}", _financialAccountLookup[txn.TransactionDetail.AccountId].Name, txn.TransactionDetail.Amount.FormatAsCurrency() );
+                    string summaryLine = string.Format( "{0}: {1}", FinancialAccountCache.Get( txn.TransactionDetail.AccountId )?.Name, txn.TransactionDetail.Amount.FormatAsCurrency() );
                     summary = new List<string>();
                     summary.Add( summaryLine );
                 }
                 else if ( txn.TransactionDetails != null )
                 {
                     var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                    summary = txn.TransactionDetails.Select( a => new { Account = _financialAccountLookup[a.AccountId], a.Amount } )
+                    summary = txn.TransactionDetails.Select( a => new { Account = FinancialAccountCache.Get( a.AccountId ), a.Amount } )
                     .Select( d => new
                     {
                         IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),

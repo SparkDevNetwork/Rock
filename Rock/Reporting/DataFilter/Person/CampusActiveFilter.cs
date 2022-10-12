@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with a specific active campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Active Campus Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "528F19E8-9DF2-4BD2-A471-E9F50A2DA9BF")]
     public class CampusActiveFilter : CampusFilter
     {
         #region Properties

@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Layout Block List")]
     [Category("CMS")]
     [Description("Lists blocks that are on a given site layout.")]
+    [Rock.SystemGuid.BlockTypeGuid( "CD3C0C1D-2171-4FCC-B840-FC6E6F72EEEF" )]
     public partial class LayoutBlockList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods

@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.DetailPage )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "D25F0658-3038-45B0-A6AA-DFFC4053EE13" )]
     public partial class ConnectionTypeList : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

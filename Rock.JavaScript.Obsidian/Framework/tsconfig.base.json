@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "outDir": "../dist/Framework",
+    "rootDir": ".",
+    "incremental": true,
+    "noImplicitAny": false,
+    "noImplicitOverride": true,
+    "noEmitOnError": true,
+    "removeComments": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "target": "ES2016",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true,
+    "importHelpers": true,
+    "lib": [
+      "DOM",
+      "ES2016",
+      "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
+    ],
+    "paths": {
+      "@Obsidian/Controls/*": [ "./Controls/*" ],
+      "@Obsidian/Core/*": [ "./Core/*" ],
+      "@Obsidian/Directives/*": [ "./Directives/*" ],
+      "@Obsidian/Enums/*": [ "./Enums/*" ],
+      "@Obsidian/FieldTypes/*": [ "./FieldTypes/*" ],
+      "@Obsidian/Libs/*": [ "./Libs/*" ],
+      "@Obsidian/PageState": [ "./PageState" ],
+      "@Obsidian/SystemGuids": [ "./SystemGuids" ],
+      "@Obsidian/Types": [ "./Types" ],
+      "@Obsidian/Types/*": [ "./Types/*" ],
+      "@Obsidian/Utility": [ "./Utility" ],
+      "@Obsidian/Utility/*": [ "./Utility/*" ],
+      "@Obsidian/ValidationRules": [ "./ValidationRules" ],
+      "@Obsidian/ViewModels/*": [ "./ViewModels/*" ]
+    }
+  },
+  "exclude": [
+    "./Tests/**/*"
+  ]
+}

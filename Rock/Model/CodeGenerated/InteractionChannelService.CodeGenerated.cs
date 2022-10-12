@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// InteractionChannel View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( InteractionChannel ) )]
-    public partial class InteractionChannelViewModelHelper : ViewModelHelper<InteractionChannel, Rock.ViewModel.InteractionChannelViewModel>
+    public partial class InteractionChannelViewModelHelper : ViewModelHelper<InteractionChannel, InteractionChannelBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.InteractionChannelViewModel CreateViewModel( InteractionChannel model, Person currentPerson = null, bool loadAttributes = true )
+        public override InteractionChannelBag CreateViewModel( InteractionChannel model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.InteractionChannelViewModel
+            var viewModel = new InteractionChannelBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ChannelData = model.ChannelData,
                 ChannelDetailTemplate = model.ChannelDetailTemplate,
                 ChannelEntityId = model.ChannelEntityId,
@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.InteractionChannelViewModel ToViewModel( this InteractionChannel model, Person currentPerson = null, bool loadAttributes = false )
+        public static InteractionChannelBag ToViewModel( this InteractionChannel model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new InteractionChannelViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

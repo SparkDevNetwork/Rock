@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/RecentEngagement/{streakTypeId}/{personId}" )]
+        [Rock.SystemGuid.RestActionGuid( "76B588F0-362A-4385-96BB-D23961BEA2A8" )]
         public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, int personId, [FromUri] int unitCount = 24 )
         {
             var service = Service as StreakTypeService;
@@ -77,6 +78,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/RecentEngagement/{streakTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "96D8CEE6-3F2D-4871-80EB-D54DF33D574C" )]
         public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, [FromUri] int? personId = null, [FromUri] int? unitCount = 24 )
         {
             // If not specified, use the current person id
@@ -99,6 +101,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/Enroll/{streakTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "B8C5E76C-4127-4879-B296-6EB7C47BEE99" )]
         public virtual HttpResponseMessage Enroll( int streakTypeId, [FromUri] int? personId = null, [FromUri] DateTime? enrollmentDate = null, [FromUri] int? locationId = null )
         {
             // Make sure the streak type exists
@@ -149,6 +152,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/StreakTypes/Locations/{streakTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "3FAAF9AE-F244-4E3E-B47D-F21266DC52C9" )]
         public virtual IQueryable<Location> GetLocations( int streakTypeId )
         {
             // Make sure the streak type exists
@@ -189,6 +193,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/StreakTypes/LocationSchedules/{streakTypeId}/{locationId}" )]
+        [Rock.SystemGuid.RestActionGuid( "CE54BF07-97B2-4025-89B8-6E9CFD69F3B8" )]
         public virtual IQueryable<Schedule> GetLocationSchedules( int streakTypeId, int locationId )
         {
             // Make sure the streak type exists
@@ -234,6 +239,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/StreakData/{streakTypeIdList}" )]
+        [Rock.SystemGuid.RestActionGuid( "EEC82FE7-4F4A-4C90-9BA6-3C5F98BF61DA" )]
         public virtual List<StreakData> GetStreakData( string streakTypeIdList,
             [FromUri] int? personId = null, [FromUri] DateTime? startDate = null, [FromUri] DateTime? endDate = null,
             [FromUri] bool createObjectArray = false, [FromUri] bool includeBitMaps = false, [FromUri] int? maxStreaksToReturn = null )
@@ -273,7 +279,7 @@ namespace Rock.Rest.Controllers
                     throw new HttpResponseException( errorResponse );
                 }
 
-                // Get the data from the service                
+                // Get the data from the service
                 var streakData = streakTypeService.GetStreakData( streakTypeCache, personId.Value, out var errorMessage,
                     startDate, endDate, createObjectArray, includeBitMaps, maxStreaksToReturn );
 
@@ -310,6 +316,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/StreakTypes/MarkEngagement/{streakTypeId}" )]
         [Obsolete( "The groupId and scheduleId params will be removed. Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead." )]
         [RockObsolete( "1.12" )]
+        [Rock.SystemGuid.RestActionGuid( "B75E5A2B-399A-4652-9008-45089B98E150" )]
         public virtual HttpResponseMessage MarkEngagement( int streakTypeId, [FromUri] int? personId = null,
             [FromUri] DateTime? dateOfEngagement = null, [FromUri] int? groupId = null, [FromUri] int? locationId = null, [FromUri] int? scheduleId = null )
         {
@@ -391,6 +398,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/MarkInteractionEngagement/{streakTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "0EE72F4B-17BC-4657-B7E7-E924A6BFAA8F" )]
         public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody] InteractionEngagementArgs interactionEngagementArgs,
             [FromUri] int? personId = null, [FromUri] DateTime? dateOfEngagement = null, [FromUri] bool returnAchievements = false )
         {
@@ -448,6 +456,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/MarkAttendanceEngagement/{streakTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "21121485-E80C-4B7E-810F-F34F986FECDB" )]
         public virtual HttpResponseMessage MarkAttendanceEngagement( int streakTypeId, [FromBody] AttendanceEngagementArgs attendanceEngagementArgs,
             [FromUri] int? personId = null, [FromUri] DateTime? dateOfEngagement = null, [FromUri] bool returnAchievements = false )
         {

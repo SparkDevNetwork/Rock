@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 180,
         Order = 4 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
     public partial class DataViewDetail : RockBlock
     {
         #region Attribute Keys

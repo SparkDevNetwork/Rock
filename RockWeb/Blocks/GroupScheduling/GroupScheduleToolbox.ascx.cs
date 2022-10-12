@@ -99,6 +99,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.SchedulingResponseEmail,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7F9CEA6F-DCE5-4F60-A551-924965289F1D" )]
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey

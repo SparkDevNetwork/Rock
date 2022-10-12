@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "HtmlEditor FileBrowser" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockFileBrowser HtmlEditor Plugin" )]
+    [Rock.SystemGuid.BlockTypeGuid( "17A1687B-A2C7-4160-BF2B-2424DF69E9D5" )]
     public partial class HtmlEditorFileBrowser : RockBlock
     {
         #region Page Parameter Keys

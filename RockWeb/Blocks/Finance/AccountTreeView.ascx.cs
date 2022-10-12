@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order: 4 )]
     [LinkedPage( "Order Top-Level Page", key: "OrderTopLevelPage", order: 5 )]
     [BooleanField( "Use Public Name", "Determines if the public name to be displayed for accounts.", defaultValue: false, order: 6 )]
+    [Rock.SystemGuid.BlockTypeGuid( "EC6ECB2B-665F-43FC-9FF4-A6B1CD5F2AE6" )]
     public partial class AccountTreeView : RockBlock
     {
         #region Fields

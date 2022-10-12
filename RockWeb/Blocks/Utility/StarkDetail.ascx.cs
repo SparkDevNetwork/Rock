@@ -22,9 +22,6 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Stark Detail" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new detail block." )]
@@ -46,6 +43,7 @@ namespace RockWeb.Blocks.Utility
         Order = 2 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "D6B14847-B652-49E2-9D4B-658D502F0AEC" )]
     public partial class StarkDetail : Rock.Web.UI.RockBlock
     {
 

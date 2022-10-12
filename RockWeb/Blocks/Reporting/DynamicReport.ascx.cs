@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
 
     [TextField( "DataFiltersPrePostHtmlConfig", "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", false, "", "CustomSetting" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB" )]
     public partial class DynamicReport : RockBlockCustomSettings
     {
         private List<Guid> _selectedDataFilterGuids = null;

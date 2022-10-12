@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = false,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7764E323-7460-4CB7-8024-056136C99603" )]
     public partial class PhotoUpload : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

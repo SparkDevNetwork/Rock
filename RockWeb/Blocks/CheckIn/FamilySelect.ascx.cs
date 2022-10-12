@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 8,
         Key = AttributeKey.PrioritizeFamiliesForThisCampus )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "6B050E12-A232-41F6-94C5-B190F4520607" )]
     public partial class FamilySelect : CheckInBlock
     {
         /* 2021-08/13 ETD

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,14 +18,14 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class WorkflowsController
     {
@@ -37,6 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{WorkflowTypeId}" )]
+        [Rock.SystemGuid.RestActionGuid( "16F650EB-59BB-4BFA-AFF1-DD6E90FAC8A4" )]
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -47,7 +48,8 @@ namespace Rock.Rest.Controllers
                 var workflow = Rock.Model.Workflow.Activate( workflowType, "Workflow From REST" );
 
                 // set workflow attributes from querystring
-                foreach(var parm in Request.GetQueryStrings()){
+                foreach ( var parm in Request.GetQueryStrings() )
+                {
                     workflow.SetAttributeValue( parm.Key, parm.Value );
                 }
 
@@ -58,7 +60,7 @@ namespace Rock.Rest.Controllers
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 return workflow;
             }
-            else 
+            else
             {
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound );
             }

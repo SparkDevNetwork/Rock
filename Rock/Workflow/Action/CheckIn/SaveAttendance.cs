@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,7 @@ namespace Rock.Workflow.Action.CheckIn
          DefaultValue = @"
 {{ Person.FullName }} was not able to be checked into {{ Group.Name }} in {{ Location.Name }} at {{ Schedule.Name }} due to a capacity limit. Please re-check {{ Person.NickName }} in to a new room.",
         Order = 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "50B2FEE6-DB7A-43C0-9DCF-19F61CD02BC6")]
     public class SaveAttendance : CheckInActionComponent
     {
         private static class AttributeKey

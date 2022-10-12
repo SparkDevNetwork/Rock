@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Invalid Password Caption","", false, "The password is not valid.", "Captions", 0 )]
     [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 1 )]
     [TextField( "Change Password Not Supported Caption", "", false, "Changing your password is not supported.", "Captions", 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "3C12DE99-2D1B-40F2-A9B8-6FE7C2524B37" )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Security
 
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
-                DisplayMessage( "You must login before changing your password", NotificationBoxType.Warning );
+                DisplayMessage( "You must log in before changing your password", NotificationBoxType.Warning );
                 pnlChangePassword.Visible = false;
             }
             else

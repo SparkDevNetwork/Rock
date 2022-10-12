@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-import { Directive } from "vue";
-import { loadJavaScriptAsync } from "../Util/page";
+import { Directive, Ref } from "vue";
+import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+import { newGuid } from "@Obsidian/Utility/guid";
 
 const dragulaScriptPromise = loadJavaScriptAsync("/Scripts/dragula.min.js", () => window.dragula !== undefined);
 
@@ -349,7 +350,7 @@ class DragDropService {
             return false;
         }
 
-        this.options.mirrorContainer = elementOptions.options.mirrorContainer;
+        this.options.mirrorContainer = elementOptions.options.mirrorContainer || container;
 
         // User has defined their own custom logic to determine if a drag
         // operation can begin.
@@ -366,8 +367,11 @@ class DragDropService {
 
         // No canStartDrag defined. Use default behavior. Check if they defined
         // a handleSelector value and use that to see if the handle is valid.
+        // If the handle selector matches the handle exactly or the handle
+        // is a descendant of any element matching handle selector, then drag.
         if (elementOptions.options.handleSelector) {
-            return Array.from(container.querySelectorAll(elementOptions.options.handleSelector)).includes(handle);
+            return Array.from(container.querySelectorAll(elementOptions.options.handleSelector))
+                .some(n => n.contains(handle));
         }
 
         // Default is to always allow drag.
@@ -755,3 +759,86 @@ export const DragTarget: Directive<HTMLElement, string | IDragTargetOptions> = {
         }
     }
 };
+
+/**
+ * Defines the source and target of a drag and drop reorder operation.
+ *
+ * When using a v-for to display the items, ensure you use a unique :key. Otherwise
+ * when you .splice() after a drop weird things will happen.
+ */
+export const DragReorder: Directive<HTMLElement, IDragSourceOptions> = {
+    mounted(element, binding) {
+        if (!binding.value || !binding.value.id) {
+            console.error("DragReorder must have a valid identifier.");
+            return;
+        }
+
+        dragulaScriptPromise.then(() => {
+            const service = getDragDropService(binding.value.id);
+
+            service.addSourceContainer(element, binding.value);
+            service.addTargetContainer(element, binding.value);
+        });
+    },
+
+    unmounted(element, binding) {
+        if (!binding.value || !binding.value.id) {
+            return;
+        }
+
+        const service = getExistingDragDropService(binding.value.id);
+
+        if (service) {
+            service.removeTargetContainer(element);
+            service.removeSourceContainer(element);
+
+            if (service.isFinished()) {
+                destroyService(service);
+            }
+        }
+    }
+};
+
+/**
+ * Get the drag source options for re-ordering the sections. This allows the user
+ * to drag and drop existing sections to move them around the form. The contents
+ * of the array are modified to match the new order.
+ *
+ * @param values The values that can be reordered.
+ * @param reorder The function to call when items have been reordered.
+ *
+ * @returns The IDragSourceOptions object to use for the DragReorder directive.
+ */
+export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?: ((value: T, beforeValue: T | null) => void)): IDragSourceOptions {
+    return {
+        id: newGuid(),
+        copyElement: false,
+        handleSelector: ".reorder-handle",
+        dragDrop(operation) {
+            if (operation.targetIndex === undefined || operation.sourceIndex === operation.targetIndex) {
+                return;
+            }
+
+            if (!values.value || operation.sourceIndex >= values.value.length) {
+                return;
+            }
+
+            const targetIndex = operation.sourceIndex > operation.targetIndex
+                ? operation.targetIndex
+                : operation.targetIndex + 1;
+
+            const value = values.value[operation.sourceIndex];
+            const beforeValue = targetIndex < values.value.length ? values.value[targetIndex] : null;
+
+            // Update the values ordered list. Do this operation last because
+            // in the future there might be a function parameter that disables
+            // the actual modification of the array.
+            values.value.splice(operation.sourceIndex, 1);
+            values.value.splice(operation.targetIndex, 0, value);
+
+            if (reorder) {
+                reorder(value, beforeValue);
+            }
+        }
+    };
+}

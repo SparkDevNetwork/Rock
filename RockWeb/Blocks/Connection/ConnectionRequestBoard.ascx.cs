@@ -157,9 +157,18 @@ namespace RockWeb.Blocks.Connection
         Order = 15,
         Key = AttributeKey.ConnectionRequestHistoryPage )]
 
+    [LinkedPage(
+        "Bulk Update Requests",
+        Description = "Page used to update selected connection requests",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUESTS_BULK_UPDATE,
+        Order = 16,
+        Key = AttributeKey.BulkUpdateRequestsPage )]
+
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
+    [Rock.SystemGuid.BlockTypeGuid( "28DBE708-E99B-4879-A64D-656C030D25B5" )]
     public partial class ConnectionRequestBoard : ContextEntityBlock
     {
         /*
@@ -174,6 +183,23 @@ namespace RockWeb.Blocks.Connection
                  - Transfer
              - Add/Edit Mode
          */
+
+        #region Fields
+
+        private List<ConnectionRequestViewModelWithModel> _ConnectionRequestViewModelsWithFullModel;
+
+        #endregion
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableAttributes { get; set; }
+
+        #endregion
 
         #region Defaults
 
@@ -229,6 +255,8 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
             public const string CampusId = "CampusId";
+            public const string ConnectionTypeId = "ConnectionTypeId";
+            public const string EntitySetId = "EntitySetId";
         }
 
         /// <summary>
@@ -250,6 +278,7 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
+            public const string BulkUpdateRequestsPage = "BulkUpdateRequestsPage";
         }
 
         /// <summary>
@@ -319,6 +348,24 @@ namespace RockWeb.Blocks.Connection
             public const string PastDueOnly = "PastDueOnly";
         }
 
+        /// <summary>
+        /// Keys to use for ViewState.
+        /// </summary>
+        private class ViewStateKey
+        {
+            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string ConnectionRequestId = "ConnectionRequestId";
+            public const string CurrentActivityId = "CurrentActivityId";
+            public const string ViewAllActivities = "ViewAllActivities";
+            public const string IsRequestModalAddEditMode = "IsRequestModalAddEditMode";
+            public const string ConnectorPersonAliasId = "ConnectorPersonAliasId";
+            public const string IsCardViewMode = "IsCardViewMode";
+            public const string RequestModalSubMode = "RequestModalSubMode";
+            public const string CurrentSortProperty = "CurrentSortProperty";
+            public const string CampusId = "CampusId";
+            public const string AvailableAttributeIds = "AvailableAttributeIds";
+        }
+
         #endregion Keys
 
         #region ViewState Properties
@@ -333,7 +380,7 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["ConnectionOpportunityId"].ToStringSafe().AsIntegerOrNull();
+                return ViewState[ViewStateKey.ConnectionOpportunityId].ToStringSafe().AsIntegerOrNull();
             }
 
             set
@@ -342,7 +389,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( currentValue != value )
                 {
-                    ViewState["ConnectionOpportunityId"] = value;
+                    ViewState[ViewStateKey.ConnectionOpportunityId] = value;
                     SetBlockUserPreference( UserPreferenceKey.ConnectionOpportunityId, value.ToStringSafe() );
                 }
             }
@@ -355,12 +402,12 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["ConnectionRequestId"].ToStringSafe().AsIntegerOrNull();
+                return ViewState[ViewStateKey.ConnectionRequestId].ToStringSafe().AsIntegerOrNull();
             }
 
             set
             {
-                ViewState["ConnectionRequestId"] = value;
+                ViewState[ViewStateKey.ConnectionRequestId] = value;
             }
         }
 
@@ -371,12 +418,12 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["CurrentActivityId"].ToStringSafe().AsIntegerOrNull();
+                return ViewState[ViewStateKey.CurrentActivityId].ToStringSafe().AsIntegerOrNull();
             }
 
             set
             {
-                ViewState["CurrentActivityId"] = value;
+                ViewState[ViewStateKey.CurrentActivityId] = value;
             }
         }
 
@@ -387,12 +434,12 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["ViewAllActivities"].ToStringSafe().AsBoolean();
+                return ViewState[ViewStateKey.ViewAllActivities].ToStringSafe().AsBoolean();
             }
 
             set
             {
-                ViewState["ViewAllActivities"] = value;
+                ViewState[ViewStateKey.ViewAllActivities] = value;
             }
         }
 
@@ -403,12 +450,12 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["IsRequestModalAddEditMode"].ToStringSafe().AsBoolean();
+                return ViewState[ViewStateKey.IsRequestModalAddEditMode].ToStringSafe().AsBoolean();
             }
 
             set
             {
-                ViewState["IsRequestModalAddEditMode"] = value;
+                ViewState[ViewStateKey.IsRequestModalAddEditMode] = value;
             }
         }
 
@@ -424,12 +471,12 @@ namespace RockWeb.Blocks.Connection
                     return CurrentPersonAliasId;
                 }
 
-                return ViewState["ConnectorPersonAliasId"].ToStringSafe().AsIntegerOrNull();
+                return ViewState[ViewStateKey.ConnectorPersonAliasId].ToStringSafe().AsIntegerOrNull();
             }
 
             set
             {
-                ViewState["ConnectorPersonAliasId"] = value;
+                ViewState[ViewStateKey.ConnectorPersonAliasId] = value;
             }
         }
 
@@ -440,7 +487,7 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                var valueToReturn = ViewState["IsCardViewMode"].ToStringSafe().AsBooleanOrNull();
+                var valueToReturn = ViewState[ViewStateKey.IsCardViewMode].ToStringSafe().AsBooleanOrNull();
 
                 if ( !valueToReturn.HasValue )
                 {
@@ -455,7 +502,7 @@ namespace RockWeb.Blocks.Connection
 
             set
             {
-                ViewState["IsCardViewMode"] = value;
+                ViewState[ViewStateKey.IsCardViewMode] = value;
             }
         }
 
@@ -466,12 +513,12 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["RequestModalSubMode"].ToStringSafe();
+                return ViewState[ViewStateKey.RequestModalSubMode].ToStringSafe();
             }
 
             set
             {
-                ViewState["RequestModalSubMode"] = value;
+                ViewState[ViewStateKey.RequestModalSubMode] = value;
             }
         }
 
@@ -487,7 +534,7 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                var value = ViewState["CurrentSortProperty"].ToStringSafe();
+                var value = ViewState[ViewStateKey.CurrentSortProperty].ToStringSafe();
                 ConnectionRequestViewModelSortProperty sortProperty;
 
                 if ( !value.IsNullOrWhiteSpace() && Enum.TryParse( value, out sortProperty ) )
@@ -500,7 +547,7 @@ namespace RockWeb.Blocks.Connection
 
             set
             {
-                ViewState["CurrentSortProperty"] = value;
+                ViewState[ViewStateKey.CurrentSortProperty] = value;
             }
         }
 
@@ -511,18 +558,34 @@ namespace RockWeb.Blocks.Connection
         {
             get
             {
-                return ViewState["CampusId"].ToStringSafe().AsIntegerOrNull();
+                return ViewState[ViewStateKey.CampusId].ToStringSafe().AsIntegerOrNull();
             }
 
             set
             {
-                ViewState["CampusId"] = value;
+                ViewState[ViewStateKey.CampusId] = value;
             }
         }
 
         #endregion ViewState Properties
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            if ( ViewState[ViewStateKey.AvailableAttributeIds] != null )
+            {
+                AvailableAttributes = ( ViewState[ViewStateKey.AvailableAttributeIds] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            }
+
+            AddDynamicControls();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -538,6 +601,18 @@ namespace RockWeb.Blocks.Connection
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             BlockUpdated += Block_BlockUpdated;
             AddConfigurationUpdateTrigger( upnlRoot );
+
+            // Hide default bulk update and replace with custom action.
+            gRequests.Actions.ShowBulkUpdate = false;
+            // Add a custom button with an EventHandler for bulk updates
+            var customActionConfigEventButton = new CustomActionConfigEvent
+            {
+                IconCssClass = "fa fa-truck fa-fw",
+                HelpText = "Update selected requests",
+                EventHandler = LbUpdateConnections_Click
+            };
+
+            gRequests.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
 
             // Configure the badge types
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
@@ -559,6 +634,57 @@ namespace RockWeb.Blocks.Connection
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
             pnlRequestModalViewModeBadges.Visible = true;
+        }
+
+        private void LbUpdateConnections_Click( object sender, EventArgs e )
+        {
+            var selectedItems = new List<int>();
+            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+
+            if ( selectedItems.Count == 0 )
+            {
+                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+            }
+            else
+            {
+                var connectionType = GetConnectionType();
+                int entitySetId = GetEntitySetId( selectedItems );
+                int connectionTypeId = connectionType.Id;
+
+                var queryParams = new Dictionary<string, string>()
+                {
+                    { PageParameterKey.ConnectionTypeId, connectionTypeId.ToString() },
+                    { PageParameterKey.EntitySetId, entitySetId.ToString() }
+                };
+
+                NavigateToLinkedPage( AttributeKey.BulkUpdateRequestsPage, queryParams );
+            }
+        }
+
+        private int GetEntitySetId( List<int> ids )
+        {
+            var rockContext = new RockContext();
+            var entitySet = new EntitySet();
+            entitySet.EntityTypeId = gRequests.EntityTypeId ?? ConnectionRequestEntityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddDays( 1 );
+
+            var service = new EntitySetService( rockContext );
+            service.Add( entitySet );
+            rockContext.SaveChanges();
+
+            List<EntitySetItem> entitySetItems = new List<EntitySetItem>();
+
+            foreach ( var id in ids )
+            {
+                var item = new EntitySetItem();
+                item.EntitySetId = entitySet.Id;
+                item.EntityId = id;
+                entitySetItems.Add( item );
+            }
+
+            rockContext.BulkInsert( entitySetItems );
+
+            return entitySet.Id;
         }
 
         /// <summary>
@@ -604,6 +730,24 @@ namespace RockWeb.Blocks.Connection
             // Refresh the page on board attribute settings changes. This is done because of the unique challenges of
             // resetting all of the JavaScript events on this block.
             NavigateToCurrentPage( QueryParameters().ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToString() ) );
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState[ViewStateKey.AvailableAttributeIds] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
+            return base.SaveViewState();
         }
 
         #endregion Base Control Methods
@@ -1351,7 +1495,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -1841,16 +1985,21 @@ namespace RockWeb.Blocks.Connection
 
             BindConnectorOptions( ddlRequestModalAddEditModeConnector, true, campusId, connectorPersonAliasId );
 
-            ConnectionState[] ignoredConnectionTypes = { };
+            List<ConnectionState> ignoredConnectionTypes = new List<ConnectionState>();
 
             // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
             if ( !connectionType.EnableFutureFollowup )
             {
-                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
+                ignoredConnectionTypes.Add( ConnectionState.FutureFollowUp );
+            }
+
+            if ( viewModel == null || viewModel.ConnectionState != ConnectionState.Connected )
+            {
+                ignoredConnectionTypes.Add( ConnectionState.Connected );
             }
 
             // Ignore binding the Connection Types that are in the provided array.
-            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
+            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes.ToArray() );
 
             // Status
             rblRequestModalAddEditModeStatus.Items.Clear();
@@ -2020,42 +2169,40 @@ namespace RockWeb.Blocks.Connection
             var workflowService = new WorkflowService( rockContext );
             List<string> workflowErrors;
 
-            if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
+            // Process the workflow and exit if any errors occur.
+            if ( !workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
             {
-                if ( workflow.Id != 0 )
+                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                return;
+            }
+
+            // If the workflow is persisted, create a link between the workflow and this connection request.
+            if ( workflow.Id != 0 )
+            {
+                new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
                 {
-                    new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
-                    {
-                        ConnectionRequestId = connectionRequest.Id,
-                        WorkflowId = workflow.Id,
-                        ConnectionWorkflowId = connectionWorkflow.Id,
-                        TriggerType = connectionWorkflow.TriggerType,
-                        TriggerQualifier = connectionWorkflow.QualifierValue
-                    } );
+                    ConnectionRequestId = connectionRequest.Id,
+                    WorkflowId = workflow.Id,
+                    ConnectionWorkflowId = connectionWorkflow.Id,
+                    TriggerType = connectionWorkflow.TriggerType,
+                    TriggerQualifier = connectionWorkflow.QualifierValue
+                } );
 
-                    rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
 
-                    if ( workflow.HasActiveEntryForm( CurrentPerson ) )
-                    {
-                        var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
+            // Notify the user that the workflow has been processed.
+            // If the workflow has an active entry form, load the form in a separate browser window or tab.
+            if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+            {
+                var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
 
-                        RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
-                    }
-                    else
-                    {
-                        var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                        mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                    }
-                }
-                else
-                {
-                    var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                    mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                }
+                RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
             }
             else
             {
-                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
+                mdWorkflowLaunched.Show( message, ModalAlertType.Information );
             }
         }
 
@@ -2081,15 +2228,25 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Binds the grid.
+        /// Get the grid panel.
+        /// </summary>
+        private void GetRequestsGrid()
+        {
+            BindAttributes();
+            AddDynamicControls();
+            BindRequestsGrid();
+        }
+
+        /// <summary>
+        /// Get the grid panel.
         /// </summary>
         private void BindRequestsGrid()
         {
             var connectionRequestEntityId = ConnectionRequestEntityTypeId;
 
             gRequests.EntityIdField = "Id";
-            gRequests.PersonIdField = "PersonId";
             gRequests.EntityTypeId = connectionRequestEntityId;
+            gRequests.PersonIdField = "PersonAlias.PersonId";
             gRequests.RowItemText = "Connection Request";
             gRequests.DataKeyNames = new string[] { "Id" };
 
@@ -2106,8 +2263,10 @@ namespace RockWeb.Blocks.Connection
 
             // Bind the data
             var rockContext = new RockContext();
-            var viewModelQuery = GetConnectionRequestViewModelQuery( rockContext );
-            gRequests.SetLinqDataSource( viewModelQuery );
+            var modelQuery = GetConnectionRequestModelWithFullModelQuery( rockContext );
+            _ConnectionRequestViewModelsWithFullModel = modelQuery.ToList();
+            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+            gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
             gRequests.DataBind();
         }
 
@@ -2181,19 +2340,20 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var viewModel = e.Row.DataItem as ConnectionRequestViewModel;
-
-            if ( viewModel == null )
+            var model = e.Row.DataItem as ConnectionRequest;
+            if ( model == null )
             {
                 return;
             }
+
+            var connectionRequestViewModel = _ConnectionRequestViewModelsWithFullModel.FirstOrDefault( a => a.Id == model.Id );
 
             // Status icons
             var lStatusIcons = e.Row.FindControl( "lStatusIcons" ) as Literal;
 
             if ( lStatusIcons != null )
             {
-                lStatusIcons.Text = GetStatusIconHtml( viewModel );
+                lStatusIcons.Text = GetStatusIconHtml( connectionRequestViewModel );
             }
 
             // Status
@@ -2203,8 +2363,8 @@ namespace RockWeb.Blocks.Connection
             {
                 lStatus.Text = string.Format(
                     @"<span class=""label label-default"" style=""background-color: {0}"">{1}</span>",
-                    viewModel.StatusHighlightColor,
-                    viewModel.StatusName );
+                    connectionRequestViewModel.StatusHighlightColor,
+                    connectionRequestViewModel.StatusName );
             }
 
             // State
@@ -2212,8 +2372,43 @@ namespace RockWeb.Blocks.Connection
 
             if ( lState != null )
             {
-                lState.Text = viewModel.StateLabel;
+                lState.Text = connectionRequestViewModel.StateLabel;
             }
+
+            var lFullname = e.Row.FindControl( "lFullname" ) as Literal;
+            if ( lFullname != null )
+            {
+                lFullname.Text = connectionRequestViewModel.PersonFullname;
+            }
+
+            var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
+            if ( lGroupName != null )
+            {
+                lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+            }
+
+            var lConnectorPersonFullname = e.Row.FindControl( "lConnectorPersonFullname" ) as Literal;
+            if ( lConnectorPersonFullname != null )
+            {
+                lConnectorPersonFullname.Text = connectionRequestViewModel.ConnectorPersonFullname;
+            }
+
+            var lLastActivityText = e.Row.FindControl( "lLastActivityText" ) as Literal;
+            if ( lLastActivityText != null )
+            {
+                lLastActivityText.Text = connectionRequestViewModel.LastActivityText;
+            }
+
+            var personProfileLinkFieldColumnIndex = gRequests.GetColumnIndex( gRequests.Columns.OfType<HyperLinkField>().First() );
+            var personProfileLinkField = e.Row.Cells[personProfileLinkFieldColumnIndex].ControlsOfTypeRecursive<HyperLink>().FirstOrDefault();
+            if ( personProfileLinkField != null && GetAttributeValue( AttributeKey.PersonProfilePage ).IsNotNullOrWhiteSpace() )
+            {
+                personProfileLinkField.ControlStyle.CssClass = "btn btn-default btn-sm";
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "PersonId", connectionRequestViewModel.PersonId.ToString() );
+                personProfileLinkField.NavigateUrl = LinkedPageUrl( AttributeKey.PersonProfilePage, queryParams );
+            }
+
         }
 
         #endregion Request Grid Events
@@ -2608,7 +2803,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -2638,7 +2833,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
 
             ShowRequestModal();
@@ -2894,7 +3089,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            BindRequestsGrid();
+                            GetRequestsGrid();
                         }
 
                         RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
@@ -2909,7 +3104,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -3128,7 +3323,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -3182,7 +3377,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -4016,7 +4211,7 @@ namespace RockWeb.Blocks.Connection
             {
                 upnlBoardView.Visible = false;
                 upnlGridView.Visible = true;
-                BindRequestsGrid();
+                GetRequestsGrid();
             }
         }
 
@@ -4977,6 +5172,41 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Gets the connection request view model with full model.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<ConnectionRequestViewModelWithModel> GetConnectionRequestModelWithFullModelQuery( RockContext rockContext )
+        {
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+
+            var minDate = sdrpLastActivityDateRangeFilter.SelectedDateRange.Start;
+            var maxDate = sdrpLastActivityDateRangeFilter.SelectedDateRange.End;
+            var requesterPersonAliasId = ppRequesterFilter.PersonAliasId;
+            var statuses = cblStatusFilter.SelectedValuesAsInt;
+            var states = cblStateFilter.SelectedValues
+                .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
+                .ToList();
+            var activityTypeIds = cblLastActivityFilter.SelectedValuesAsInt;
+
+            return connectionRequestService.GetConnectionRequestViewModelWithFullModelQuery(
+                CurrentPersonAliasId ?? 0,
+                ConnectionOpportunityId ?? 0,
+                new ConnectionRequestViewModelQueryArgs
+                {
+                    CampusId = CampusId,
+                    ConnectorPersonAliasId = ConnectorPersonAliasId,
+                    MinDate = minDate,
+                    MaxDate = maxDate,
+                    RequesterPersonAliasId = requesterPersonAliasId,
+                    StatusIds = statuses,
+                    ConnectionStates = states,
+                    LastActivityTypeIds = activityTypeIds,
+                    SortProperty = CurrentSortProperty,
+                    IsFutureFollowUpPastDueOnly = rcbPastDueOnly.Checked
+                } );
+        }
+
+        /// <summary>
         /// Gets the connection activity types.
         /// </summary>
         /// <returns></returns>
@@ -5739,5 +5969,104 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion View Models
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeAndButtonColumns();
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    bool columnExists = gRequests.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+
+                        gRequests.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            AddRowButtonsToEnd();
+        }
+
+        private void RemoveAttributeAndButtonColumns()
+        {
+            // Remove added button columns
+            DataControlField buttonColumn = gRequests.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gRequests.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gRequests.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "person-profile-link" );
+            if ( buttonColumn != null )
+            {
+                gRequests.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns
+            foreach ( var column in gRequests.Columns.OfType<AttributeField>().ToList() )
+            {
+                gRequests.Columns.Remove( column );
+            }
+        }
+
+        private void AddRowButtonsToEnd()
+        {
+            // Add Link to Profile Page Column
+            var personProfileLinkField = new HyperLinkField();
+            personProfileLinkField.Text = "<i class='fa fa-user'></i>";
+            personProfileLinkField.ItemStyle.CssClass = "person-profile-link";
+            gRequests.Columns.Add( personProfileLinkField );
+
+            // Hold a reference to the delete column
+            var deleteField = new DeleteField();
+            deleteField.Click += gRequests_Delete;
+            gRequests.Columns.Add( deleteField );
+        }
+
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters
+            AvailableAttributes = new List<AttributeCache>();
+            if ( _connectionOpportunity != null )
+            {
+                var rockContext = new RockContext();
+                int entityTypeId = new ConnectionRequest().TypeId;
+                string groupQualifier = _connectionOpportunity.Id.ToString();
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionOpportunityId", groupQualifier, true )
+                    .Where( a => a.IsGridColumn )
+                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                    .ThenBy( a => a.Order )
+                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
+                {
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( attribute );
+                    }
+                }
+
+                foreach ( var inheritedGridColumnAttribute in ( new ConnectionRequest() { ConnectionOpportunityId = _connectionOpportunity.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                {
+                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                    }
+                }
+            }
+        }
     }
 }

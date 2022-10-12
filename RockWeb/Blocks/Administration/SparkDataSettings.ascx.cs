@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Spark Data Settings" )]
     [Category( "Administration" )]
     [Description( "Block used to set values specific to Spark Data (NCOA, Etc)." )]
+    [Rock.SystemGuid.BlockTypeGuid( "6B6A429D-E42C-70B5-4A04-98E886C45E7A" )]
     public partial class SparkDataSettings : RockBlock
     {
         #region private variables

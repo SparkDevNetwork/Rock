@@ -32,9 +32,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Member Add From URL" )]
     [Category( "Groups" )]
     [Description( "Adds a person to a group based on inputs from the URL query string." )]
@@ -49,6 +46,7 @@ namespace RockWeb.Blocks.Groups
     [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
     [GroupTypesField( "Limit Group Type", "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.", false )]
     [BooleanField( "Enable Passing Group Id", "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.", true, "" )]
+    [Rock.SystemGuid.BlockTypeGuid( "42CF3822-A70C-4E07-9394-21607EED7018" )]
     public partial class GroupMemberAddFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields

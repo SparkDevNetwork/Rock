@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Order = 5,
         Key = AttributeKey.BarChartCommittedNoShowColor )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3037D2F8-C9B0-40BF-B2E3-8C5CBA7F4900" )]
     public partial class GroupSchedulerAnalytics : RockBlock
     {
         private static class AttributeKey

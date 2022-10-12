@@ -86,6 +86,7 @@ namespace RockWeb.Blocks.Reporting
 {% endfor %}
 	      " )]
     [IntegerField( "Page Size", "The number of interactions to show per page.", true, 20, "", 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "468119E3-41AB-4EC4-B631-77F326632B35" )]
     public partial class InteractionList : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.StatementGenerator.Rest
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
     [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
     [RockObsolete( "1.12.4" )]
+    [Rock.SystemGuid.RestControllerGuid( "745A5C57-6091-4563-A447-566BC649C776")]
     public class StatementGeneratorFinancialTransactionsController : Rock.Rest.ApiControllerBase
     {
         /// <summary>

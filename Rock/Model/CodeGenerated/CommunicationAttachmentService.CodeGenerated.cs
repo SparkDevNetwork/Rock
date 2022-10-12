@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// CommunicationAttachment View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( CommunicationAttachment ) )]
-    public partial class CommunicationAttachmentViewModelHelper : ViewModelHelper<CommunicationAttachment, Rock.ViewModel.CommunicationAttachmentViewModel>
+    public partial class CommunicationAttachmentViewModelHelper : ViewModelHelper<CommunicationAttachment, CommunicationAttachmentBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.CommunicationAttachmentViewModel CreateViewModel( CommunicationAttachment model, Person currentPerson = null, bool loadAttributes = true )
+        public override CommunicationAttachmentBag CreateViewModel( CommunicationAttachment model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.CommunicationAttachmentViewModel
+            var viewModel = new CommunicationAttachmentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BinaryFileId = model.BinaryFileId,
                 CommunicationId = model.CommunicationId,
                 CommunicationType = ( int ) model.CommunicationType,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.CommunicationAttachmentViewModel ToViewModel( this CommunicationAttachment model, Person currentPerson = null, bool loadAttributes = false )
+        public static CommunicationAttachmentBag ToViewModel( this CommunicationAttachment model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new CommunicationAttachmentViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

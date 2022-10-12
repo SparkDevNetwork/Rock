@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Finance
     #endregion Advanced options
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "F1ADF375-7442-4B30-BAC3-C387EA9B6C18" )]
     public partial class ScheduledTransactionEditV2 : RockBlock
     {
         #region constants

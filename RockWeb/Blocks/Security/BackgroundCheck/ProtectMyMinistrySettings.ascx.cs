@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Block for updating the settings used by the Protect My Ministry integration." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "AF36FA7E-BD2A-42A3-AF30-2FEBC1C46663" )]
     public partial class ProtectMyMinistrySettings : Rock.Web.UI.RockBlock
     {
         private const string GET_STARTED_URL = "https://www.rockrms.com/Redirect/PMMSignup";

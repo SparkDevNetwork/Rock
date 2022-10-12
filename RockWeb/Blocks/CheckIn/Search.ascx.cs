@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [TextField( "Title", "Title to display. Use {0} for search type.", false, "Search", "Text", 5 )]
     [TextField( "No Option Message", "", false, "There were not any families that match the search criteria.", "Text", 6 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E3A99534-6FD9-49AD-AC52-32D53B2CEDD7" )]
     public partial class Search : CheckInSearchBlock
     {
         /// <summary>

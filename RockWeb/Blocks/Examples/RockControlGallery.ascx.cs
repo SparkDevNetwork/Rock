@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Examples
     [Description( "Allows you to see and try various Rock UI controls." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
+    [Rock.SystemGuid.BlockTypeGuid( "55468258-18B9-4FAE-90E8-F173F7704E23" )]
     public partial class RockControlGallery : RockBlock
     {
         private Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );

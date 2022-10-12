@@ -1,0 +1,429 @@
+// Legacy Badge Styles
+// To enable use @enable-legacy-badges: true;
+// -------------------------
+@badge-icon-height: 45px;
+@badge-count-width: 18px;
+
+.personprofilebar-badge {
+  .rockbadge-container {
+
+    .badge {
+      display: inline-block; // fixes issue in default browser on Android
+      padding: 3px 6px 0;
+      background-color: inherit;
+
+      &:empty {
+        display: none;
+      }
+
+      .tooltip-inner {
+        max-width: 300px;
+        padding: 12px;
+      }
+    }
+
+    .badge-grid {
+      margin: -5px 0;
+    }
+  }
+}
+
+.badge-grid {
+  font-size: 0;
+
+  .badge {
+    width: 1em;
+    height: 1em;
+    padding: 0 !important;
+    margin: 0 .08333em .08333em;
+    font-size: 24px;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.533)";
+    line-height: 1;
+
+    .fa-stack {
+      width: 1em;
+      line-height: 1em;
+    }
+
+    .fa-stack-1x {
+      font-size: .5em;
+      color: #fff;
+    }
+
+    .fa-stack-2x {
+      font-size: 1em;
+    }
+  }
+
+  .badge-row:last-child .badge {
+    padding-bottom: 0;
+  }
+}
+
+// Used to provide background in :before
+.badge-background {
+  display: block;
+  width: 1em;
+  height: 1em;
+  content: " ";
+  background: currentColor;
+  border-radius: .1em;
+}
+
+.badge-step {
+  position: relative;
+  padding: 0 !important;
+  margin: 0 4px;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+
+  &::before {
+    &:extend(.badge-background);
+  }
+
+  .badge-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: .5777em;
+    line-height: 1.85em;
+    color: #fff;
+  }
+
+  .badge-count {
+    position: absolute;
+    top: -(@badge-count-width/3);
+    right: -(@badge-count-width/3);
+    width: @badge-count-width;
+    height: @badge-count-width;
+    font-size: .266em;
+    font-weight: @font-weight-normal;
+    line-height: @badge-count-width;
+    color: #fff;
+    background-color: @brand-danger;
+    border-radius: 50%;
+  }
+}
+
+.badge-baptism {
+  color: @badge-baptism-color;
+}
+
+.badge-era {
+  position: relative;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+  color: @brand-success;
+
+  &::before {
+    &:extend(.badge-background);
+    border-radius: 50%;
+  }
+
+  &.era-loss {
+    color: @badge-era-loss-color;
+  }
+
+  span {
+    position: absolute;
+    top: 1.0625em;
+    right: 0;
+    left: 0;
+    font-size: .3555em; // 16px
+    color: #fff;
+  }
+}
+
+.badge-icon {
+  font-size: @badge-icon-height;
+  font-size: var(--badge-size, 45px);
+
+  &.badge-disabled {
+    color: @badge-disabled-color;
+    opacity: .2;
+  }
+}
+
+.badge-disc {
+  position: relative;
+
+  .badge-disc-chart {
+    display: table;
+    width: 1em;
+    height: .888em;
+    margin: 0 auto;
+    //http://codepen.io/Victa/pen/xDqbf
+    font-size: 45px;
+    font-size: var(--badge-size, 45px);
+    table-layout: fixed;
+
+    li {
+      position: relative;
+      display: table-cell;
+      width: 3px;
+      height: 100%;
+      vertical-align: bottom;
+
+      span {
+        display: block;
+        width: .2222em;
+        min-height: 2px;
+        background: lighten(@badge-disc-primary-color, 20%);
+
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+          // needed for chrome but kills ie
+          position: absolute;
+          bottom: 0;
+        }
+      }
+
+      &.badge-disc-primary {
+        span {
+          background: @badge-disc-primary-color;
+        }
+      }
+
+      &.badge-disc-disabled {
+        span {
+          background-color: @badge-disc-disabled-color;
+          opacity: .2;
+        }
+      }
+    }
+  }
+
+  .requested {
+    position: absolute;
+    top: 14px;
+    left: 12px;
+    padding: 1px 5px;
+    font-size: 24px;
+    background-color: @badge-disc-requested-color;
+    border-radius: 99px;
+    opacity: .8;
+  }
+
+  &.animate {
+    ul.badge-disc-chart li span {
+      -webkit-animation: bar-grow 1s ease-in-out;
+      -moz-animation: bar-grow 1s ease-in-out;
+      animation: bar-grow 1s ease-in-out;
+    }
+  }
+}
+
+.badge-attendingduration {
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+
+  .duration-metric {
+    position: relative;
+    color: @badge-attending-weeks-color;  // Default (.duration-weeks)
+    &::before {
+      &:extend(.badge-background);
+      border-radius: 50%;
+    }
+
+    &.duration-new {
+      color: @badge-attending-new-color;
+    }
+
+    &.duration-months {
+      color: @badge-attending-months-color;
+    }
+
+    &.duration-years {
+      color: @badge-attending-years-color;
+    }
+
+    .metric-value {
+      position: absolute;
+      top: .6em; // 14px
+      right: 0;
+      left: 0;
+      font-size: .444em; // 20px
+      font-weight: @font-weight-bold;
+      line-height: .6em; //12px
+      color: #fff;
+      text-align: center;
+    }
+
+    .metric-unit {
+      display: block;
+      font-size: .55em;
+      font-weight: @font-weight-normal;
+    }
+
+    &.duration-new .metric-value {
+      top: 0; //18px
+      font-size: .3111em; //14px
+      font-weight: @font-weight-semibold;
+      line-height: 3.2142em;
+    }
+  }
+}
+
+.badge-weeksattendanceduration {
+  .weeks-metric {
+    position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
+    color: #686576;
+
+    &::before {
+      &:extend(.badge-background);
+      background-color: @brand-warning;
+    }
+
+    .weeks-attended {
+      position: absolute;
+      top: .388em; // 7px
+      left: .2em; // 4px
+      display: block;
+      width: 1em; // 18px
+      font-size: .45em; //20px
+      font-weight: @font-weight-bold;
+      text-align: center;
+      letter-spacing: -2px;
+    }
+
+    .week-duration {
+      position: absolute;
+      right: .363em;
+      bottom: .9em;
+      font-size: .275em; // 11px
+      font-weight: @font-weight-semibold;
+    }
+  }
+}
+
+.badge-content {
+  &.fa-layers {
+    width: 50px;
+    height: 43px;
+    font-size: 4em;
+  }
+}
+
+.badge-lastvisitonsite {
+  .badge-content {
+    position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
+    color: @badge-lastvisitonsite-color;
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    &.today {
+      .duration {
+        top: 1em;
+        font-size: .275em;
+      }
+    }
+
+    &.recent {
+      opacity: .8;
+    }
+
+    &.moderate {
+      opacity: .6;
+    }
+
+    &.not-recent {
+      opacity: .4;
+    }
+
+    &.old {
+      opacity: .2;
+    }
+
+    .duration {
+      position: absolute;
+      top: .5em; // 8px
+      right: .3em;
+      left: .3em;
+      font-size: .4em; // 16px
+      font-weight: @font-weight-bold;
+      text-align: center;
+    }
+  }
+}
+
+.badge-signal {
+  .badge-content {
+    position: relative;
+    font-size: 45px;
+    font-size: var(--badge-size, 45px);
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    .signal {
+      position: absolute;
+      top: .875em; //10px
+      right: 0;
+      left: 0;
+      padding-left: .5em;
+      font-size: .355em; //16px
+      font-weight: @font-weight-bold;
+      color: @persondetails-badge-bg;
+      text-align: center;
+    }
+  }
+}
+
+.badge-assessment {
+  a {
+    color: inherit;
+  }
+
+  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
+  &.not-requested {
+    color: fade(@badge-disabled-color, 20%) !important;
+  }
+
+  &.requested {
+    color: @persondetails-badge-color !important;
+  }
+
+  .fa-stack-1x {
+    color: #fff;
+  }
+
+  .fa-stack-2x {
+    color: currentColor;
+  }
+}
+
+.badge-personaldevice {
+  .badge-content {
+    position: relative;
+    font-size: 40px;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
+    color: @badge-personaldevice-color;
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    .deviceCount {
+      position: absolute;
+      top: .7142em;
+      right: 0;
+      left: 0;
+      font-size: .35em; // 14px
+      font-weight: @font-weight-bold;
+      text-align: center;
+    }
+  }
+}
+
+.badge-attendance {
+  width: 220px;
+  height: 40px;
+  height: var(--badge-size, 40px);
+}

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/PostScanned" )]
+        [Rock.SystemGuid.RestActionGuid( "C2DCF928-D0CD-4A5A-A5F8-794DCC383870" )]
         public HttpResponseMessage PostScanned( [FromBody] FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
             FinancialTransaction financialTransaction = financialTransactionScannedCheck.FinancialTransaction;
@@ -74,6 +75,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/Process" )]
+        [Rock.SystemGuid.RestActionGuid( "D9027A44-BAF1-4D6F-9681-9E461ED9D071" )]
         public virtual HttpResponseMessage ProcessPayment( [FromBody] AutomatedPaymentArgs automatedPaymentArgs, [FromUri] bool enableDuplicateChecking = true, [FromUri] bool enableScheduleAdherenceProtection = true )
         {
             var errorMessage = string.Empty;
@@ -132,6 +134,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/Refund/{transactionId}" )]
+        [Rock.SystemGuid.RestActionGuid( "B2681263-2EB1-457F-914B-003D306D5F42" )]
         public System.Net.Http.HttpResponseMessage Refund( int transactionId )
         {
             SetProxyCreation( true );
@@ -180,6 +183,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/AlreadyScanned" )]
+        [Rock.SystemGuid.RestActionGuid( "001C7C76-F70D-4A5A-8462-C9CE35FECF46" )]
         public bool AlreadyScanned( [FromBody] string scannedCheckMicr )
         {
             // NOTE: scannedCheckMicr param is [FromBody] so that it will be encrypted when using SSL
@@ -199,6 +203,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionPersonGroupAddress" )]
         [Obsolete( "Became obsolete in 1.7.0. Marked obsolete in 1.12.4. Use ~/api/FinancialGivingStatement/ endpoints instead" )]
         [RockObsolete( "1.12.4" )]
+        [Rock.SystemGuid.RestActionGuid( "D215BF93-F221-44D2-86C2-578A035438FE" )]
         public DataSet GetContributionPersonGroupAddress( [FromBody] ContributionStatementOptions options )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -301,6 +306,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}" )]
         [Obsolete( "Became obsolete in 1.7.0. Marked obsolete in 1.12.4. Use ~/api/FinancialGivingStatement/ endpoints instead" )]
         [RockObsolete( "1.12.4" )]
+        [Rock.SystemGuid.RestActionGuid( "F3137BB1-C817-4099-9AEB-8DC61374719B" )]
         public DataSet GetContributionTransactions( int groupId, [FromBody] ContributionStatementOptions options )
         {
             return GetContributionTransactions( groupId, null, options );
@@ -319,6 +325,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}" )]
         [Obsolete( "Became obsolete in 1.7.0. Marked obsolete in 1.12.4. Use ~/api/FinancialGivingStatement/ endpoints instead" )]
         [RockObsolete( "1.12.4" )]
+        [Rock.SystemGuid.RestActionGuid( "C0C91ED5-EB41-46E3-8DDE-B761DEC1B40B" )]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody] ContributionStatementOptions options )
         {
             var qry = Get().Where( a => a.TransactionDateTime >= options.StartDate );
@@ -435,6 +442,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/FinancialTransactions/GetByGivingId/{givingId}" )]
+        [Rock.SystemGuid.RestActionGuid( "6C883A6E-C9A2-4562-ABBB-019C2E34BD13" )]
         public IQueryable<FinancialTransaction> GetByGivingId( string givingId )
         {
             if ( string.IsNullOrWhiteSpace( givingId ) || !( givingId.StartsWith( "P" ) || givingId.StartsWith( "G" ) ) )
@@ -468,6 +476,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialTransactions/Export" )]
+        [Rock.SystemGuid.RestActionGuid( "17A9A378-1313-43BA-B8CA-7825641C8F98" )]
         public FinancialTransactionsExport Export(
             int page = 1,
             int pageSize = 1000,
@@ -515,6 +524,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialTransactions/GivingHistory" )]
+        [Rock.SystemGuid.RestActionGuid( "3E990853-2F05-4D4B-93FD-928EB152EC03" )]
         public virtual List<Gift> GetGivingHistoryForTheCurrentPerson( [FromUri] int? year = null, [FromUri] bool includeGivingGroup = true, [FromUri] Guid? transactionTypeGuid = null,
             [FromUri] string excludedStatus = null, [FromUri] Guid? excludedSourceTypeGuid = null )
         {
@@ -542,6 +552,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialTransactions/GivingHistory/{personAliasId}" )]
+        [Rock.SystemGuid.RestActionGuid( "21458199-05B9-4094-972B-59F550D2ACD6" )]
         public virtual List<Gift> GetGivingHistory( int personAliasId,
             [FromUri] int? year = null, [FromUri] bool includeGivingGroup = true, [FromUri] Guid? transactionTypeGuid = null,
             [FromUri] string excludedStatus = null, [FromUri] Guid? excludedSourceTypeGuid = null )
@@ -761,7 +772,7 @@ namespace Rock.Rest.Controllers
             public int? ScheduledTransactionId { get; set; }
 
             /// <summary>
-            /// For Credit Card transactions, this is the response code that the gateway returns. 
+            /// For Credit Card transactions, this is the response code that the gateway returns.
             /// For Scanned Checks, this is the check number.
             /// </summary>
             /// <value>
@@ -931,7 +942,7 @@ namespace Rock.Rest.Controllers
             /// FinancialAccount does not have a parent, this property will be null.
             /// </summary>
             /// <value>
-            /// A <see cref="int"/> representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. 
+            /// A <see cref="int"/> representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount.
             /// This property will be null if the FinancialAccount does not have a parent.
             /// </value>
             public int? ParentAccountId { get; set; }

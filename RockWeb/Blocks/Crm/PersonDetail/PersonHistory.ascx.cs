@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person History" )]
     [Category( "CRM > Person Detail" )]
     [Description( "NOTE: This block is obsolete. Use Core > HistoryLog instead." )]
+    [Rock.SystemGuid.BlockTypeGuid( "854C7AE2-6FA4-4D1A-BBB5-012484EA436E" )]
     public partial class PersonHistory : PersonBlock
     {
 

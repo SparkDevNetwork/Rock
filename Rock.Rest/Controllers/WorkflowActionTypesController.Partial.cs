@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -25,11 +25,10 @@ using Rock.Workflow;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class WorkflowActionTypesController
     {
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -37,6 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/WorkflowActionTypes/GetChildren/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "A1994526-1BC0-4CC6-A895-8C043D0FCD7C" )]
         public IQueryable<TreeViewItem> GetChildren( string id )
         {
             var list = new List<TreeViewItem>();
@@ -46,7 +46,7 @@ namespace Rock.Rest.Controllers
             if ( string.IsNullOrWhiteSpace( id ) || ( idAsInt.HasValue && idAsInt.Value == 0 ) )
             {
                 // Root
-                foreach( var category in ActionContainer.Instance.Categories )
+                foreach ( var category in ActionContainer.Instance.Categories )
                 {
                     var item = new TreeViewItem();
                     item.Id = category.Key.ToString();
@@ -71,7 +71,7 @@ namespace Rock.Rest.Controllers
                             {
                                 var item = new TreeViewItem();
                                 item.Id = entityType.Id.ToString();
-                                item.Name = ActionContainer.GetComponentName(entityType.Name);
+                                item.Name = ActionContainer.GetComponentName( entityType.Name );
                                 item.HasChildren = false;
                                 item.IconCssClass = "fa fa-cube";
                                 list.Add( item );

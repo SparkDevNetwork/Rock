@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Mobile
     [DisplayName( "Mobile Page Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile page." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E3C4547A-E29B-4CBA-9610-6C19D939183B" )]
     public partial class MobilePageDetail : RockBlock
     {
         #region PageParameterKeys

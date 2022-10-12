@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ConnectionStatusAutomation View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionStatusAutomation ) )]
-    public partial class ConnectionStatusAutomationViewModelHelper : ViewModelHelper<ConnectionStatusAutomation, Rock.ViewModel.ConnectionStatusAutomationViewModel>
+    public partial class ConnectionStatusAutomationViewModelHelper : ViewModelHelper<ConnectionStatusAutomation, ConnectionStatusAutomationBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,21 +72,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionStatusAutomationViewModel CreateViewModel( ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionStatusAutomationBag CreateViewModel( ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionStatusAutomationViewModel
+            var viewModel = new ConnectionStatusAutomationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutomationName = model.AutomationName,
                 DataViewId = model.DataViewId,
                 DestinationStatusId = model.DestinationStatusId,
                 GroupRequirementsFilter = ( int ) model.GroupRequirementsFilter,
+                Order = model.Order,
                 SourceStatusId = model.SourceStatusId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -162,6 +163,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupRequirementsFilter = source.GroupRequirementsFilter;
+            target.Order = source.Order;
             target.SourceStatusId = source.SourceStatusId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
@@ -178,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionStatusAutomationViewModel ToViewModel( this ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionStatusAutomationBag ToViewModel( this ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionStatusAutomationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

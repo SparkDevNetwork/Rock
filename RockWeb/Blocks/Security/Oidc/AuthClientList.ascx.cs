@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Security.Oidc
         "OpenID Connect Scopes Page",
         Key = AttributeKey.ScopePage,
         Order = 2)]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_CLIENT_LIST )]
     public partial class AuthClientList : RockBlock, ICustomGridColumns
     {
         public class AttributeKey

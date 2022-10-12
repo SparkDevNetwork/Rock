@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System file types. */
 export const enum Attribute {
     /** The binaryfiletype filestorage rootpath attribute */
     BinaryfiletypeFilestorageRootpath = "3CAFA34D-9208-439B-A046-CB727FB729DE",
@@ -308,14 +309,16 @@ export const enum Attribute {
     PersonGivingPreferredCurrency = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F",
     /** Preferred Source - Defined Type */
     PersonGivingPreferredSource = "0567B279-1F4D-4573-9AA7-927A7278443E",
-    /** Frequency Label. See . */
+    /** Frequency Label. See Rock.Financial.FinancialGivingAnalyticsFrequencyLabel. */
     PersonGivingFrequencyLabel = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5",
     /** Percent of Gifts Scheduled - Integer */
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",
     /** Gift Amount: Median - Currency */
     PersonGivingAmountMedian = "327F1CFF-A013-42B5-80A7-5922A40480EC",
-    /** Gift Amount: IQR - Currency
-IQR = Interquartile Range calculated from the past 12 months of giving */
+    /**
+     * Gift Amount: IQR - Currency
+     * IQR = Interquartile Range calculated from the past 12 months of giving
+     */
     PersonGivingAmountIqr = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7",
     /** Gift Frequency Days: Mean -  Decimal */
     PersonGivingFrequencyMeanDays = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA",
@@ -327,11 +330,15 @@ IQR = Interquartile Range calculated from the past 12 months of giving */
     PersonGivingPercentile = "D03ACAB8-EB0C-4835-A04C-4C357014D935",
     /** Next Expected Gift Date - Date */
     PersonGivingNextExpectedGiftDate = "65D7CF79-BD80-44B2-9F5F-96D81B9B4990",
-    /** Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
-Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification. */
+    /**
+     * Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
+     * Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification.
+     */
     PersonGivingLastClassificationDate = "7220B230-03CE-4D1E-985B-26AA28BE06F8",
-    /** Giving History JSON - Code - gets the JSON array of giving data by month objects.
-[{ Year: 2020, Month: 1, AccountId: 1, Amount: 550.67 }, ...] */
+    /**
+     * Giving History JSON - Code - gets the JSON array of giving data by month objects.
+     * [{ Year: 2020, Month: 1, AccountId: 1, Amount: 550.67 }, ...]
+     */
     PersonGivingHistoryJson = "3BF34F25-4D50-4417-B436-37FEA3FA5473",
     /** Giving Total past 12 months - Currency */
     PersonGiving12Months = "ADD9BE86-49CA-46C4-B4EA-547F2F277294",
@@ -379,5 +386,6 @@ Classification is updated after each new gift, but if they stop giving we’ll u
     StreakAchievementTimeSpanInDays = "80030537-ED8E-41BA-BF61-AF242B9073CC",
     /** The statement generator configuration */
     StatementGeneratorConfig = "3C6B81A5-63AB-4EA7-A671-836505B9E444",
+    /** The category treeview search results */
+    CategoryTreeviewSearchResults = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E",
 }
-

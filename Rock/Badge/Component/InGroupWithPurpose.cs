@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -35,6 +37,7 @@ namespace Rock.Badge.Component
     [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on." )]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key: "BadgeIconCss" )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1844AC11-7117-4C91-8D82-A6340D50323E")]
     public class InGroupWithPurpose : BadgeComponent
     {
         /// <summary>
@@ -47,33 +50,25 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
 
-            writer.Write( String.Format( "<div class='badge badge-ingroupwithpurpose badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
+            writer.Write( String.Format( "<div class='rockbadge rockbadge-ingroupwithpurpose rockbadge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var groupTypePurposeGuid = GetAttributeValue( badge, "GroupTypePurpose" ).AsGuidOrNull();
 
-            if ( Person == null || !groupTypePurposeGuid.HasValue )
+            if ( !( entity is Person person ) || !groupTypePurposeGuid.HasValue )
             {
                 return null;
             }
@@ -101,11 +96,11 @@ $.ajax({{
                 badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
                 var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
             }}
-            $('.badge-ingroupwithpurpose.badge-id-{3}').html(badgeHtml);
-            $('.badge-ingroupwithpurpose.badge-id-{3}').attr('data-original-title', labelText);
+            $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').html(badgeHtml);
+            $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').attr('data-original-title', labelText);
         }}
     }},
-}});", Person.Id.ToString(), groupTypePurposeGuid.ToString(), badgeColor, badge.Id, GetAttributeValue( badge, "BadgeIconCss" ) );
+}});", person.Id.ToString(), groupTypePurposeGuid.ToString(), badgeColor, badge.Id, GetAttributeValue( badge, "BadgeIconCss" ) );
         }
     }
 }

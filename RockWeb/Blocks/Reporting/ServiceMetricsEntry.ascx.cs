@@ -122,6 +122,7 @@ namespace RockWeb.Blocks.Reporting
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "535E1879-CD4C-432B-9312-B27B3A668D88" )]
     public partial class ServiceMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

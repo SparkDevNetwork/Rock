@@ -19,13 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -42,6 +41,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DetailPage )]
 
     [ContextAware( typeof( Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "256F6FDB-B241-4DE6-9C38-0E9DA0270A22" )]
     public partial class SignatureDocumentList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -73,10 +73,9 @@ namespace RockWeb.Blocks.Core
             TargetPerson = ContextEntity<Person>();
 
             gSignatureDocuments.DataKeyNames = new string[] { "Id" };
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.Actions.AddClick += gSignatureDocuments_Add;
+            gSignatureDocuments.Actions.ShowAdd = false;
             gSignatureDocuments.GridRebind += gSignatureDocuments_GridRebind;
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.IsDeleteEnabled = true;
         }
 
@@ -196,6 +195,9 @@ namespace RockWeb.Blocks.Core
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue )
                 {
+                    var isLegacyTemplate = new SignatureDocumentTemplateService( new RockContext() ).GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
+                    gSignatureDocuments.Actions.ShowAdd = isLegacyTemplate;
+
                     qry = qry.Where( d =>
                         d.SignatureDocumentTemplateId == documentTypeId.Value );
 
@@ -211,7 +213,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                qry = qry.OrderByDescending( d => d.LastInviteDate );
+                qry = qry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
             }
 
             gSignatureDocuments.DataSource = qry.Select( d => new
@@ -224,10 +226,12 @@ namespace RockWeb.Blocks.Core
                 d.SignedByPersonAlias,
                 d.Status,
                 d.LastInviteDate,
+                d.SignedDateTime,
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-text-o fa-lg'></i>" : "",
                 FileId = d.BinaryFileId ?? 0
             } ).ToList();
+
             gSignatureDocuments.DataBind();
         }
 

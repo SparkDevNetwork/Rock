@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Streaks
         IsRequired = false,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9C1236AE-4FF0-480C-A7DF-0E5277CA75FB" )]
     public partial class AchievementAttemptList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Keys

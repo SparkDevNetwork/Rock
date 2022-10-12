@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// GroupMemberScheduleTemplate View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupMemberScheduleTemplate ) )]
-    public partial class GroupMemberScheduleTemplateViewModelHelper : ViewModelHelper<GroupMemberScheduleTemplate, Rock.ViewModel.GroupMemberScheduleTemplateViewModel>
+    public partial class GroupMemberScheduleTemplateViewModelHelper : ViewModelHelper<GroupMemberScheduleTemplate, GroupMemberScheduleTemplateBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupMemberScheduleTemplateViewModel CreateViewModel( GroupMemberScheduleTemplate model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupMemberScheduleTemplateBag CreateViewModel( GroupMemberScheduleTemplate model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupMemberScheduleTemplateViewModel
+            var viewModel = new GroupMemberScheduleTemplateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 GroupTypeId = model.GroupTypeId,
                 Name = model.Name,
                 ScheduleId = model.ScheduleId,
@@ -180,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupMemberScheduleTemplateViewModel ToViewModel( this GroupMemberScheduleTemplate model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupMemberScheduleTemplateBag ToViewModel( this GroupMemberScheduleTemplate model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupMemberScheduleTemplateViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

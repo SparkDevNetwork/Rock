@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -47,6 +49,7 @@ namespace Rock.Badge.Component
         order: 2,
         key: AttributeKey.IsCondensed )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "3246EFE4-76E4-44C9-9DF0-1A7C3EAD4597")]
     public class Steps : BadgeComponent
     {
         #region Keys
@@ -79,14 +82,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
@@ -99,19 +98,15 @@ namespace Rock.Badge.Component
             }
 
             var isCondensed = IsCondensed( badge );
-            var domElementKey = GenerateBadgeKey( badge );
+            var domElementKey = GenerateBadgeKey( badge, entity );
             var html = GetHtmlTemplate( isCondensed, domElementKey );
             writer.Write( html );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -123,9 +118,9 @@ namespace Rock.Badge.Component
                 return null;
             }
 
-            var domElementKey = GenerateBadgeKey( badge );
+            var domElementKey = GenerateBadgeKey( badge, person );
             var isCondensed = IsCondensed( badge );
-            return GetScript( stepProgramGuid.Value, Person.Id, domElementKey, isCondensed );
+            return GetScript( stepProgramGuid.Value, person.Id, domElementKey, isCondensed );
         }
 
         /// <summary>
@@ -161,17 +156,15 @@ namespace Rock.Badge.Component
             if ( isCondensed )
             {
                 return
-$@"<div class=""badge"">
-    <div class=""badge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"">
-        <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
-        <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
-    </div>
+$@"<div class=""rockbadge rockbadge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"">
+    <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
+    <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
 </div>";
             }
             else
             {
                 return
-$@"<div class=""badge"" data-placeholder-key=""{domElementKey}""></div>";
+$@"<div class=""rockbadge"" data-placeholder-key=""{domElementKey}""></div>";
             }
         }
 
@@ -207,7 +200,7 @@ $@"$.ajax({{
                     var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
                     var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                    html.push('<div class=""badge"">');
+                    html.push('<div class=""rockbadge"">');
                     html.push('    <span class=""fa-stack"">');
                     html.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
                     html.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
@@ -250,11 +243,11 @@ $@"$.ajax({{
                     var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
                     var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                    html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
+                    html.push('<div class=""rockbadge rockbadge-icon rockbadge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
                     html.push('    <i class=""badge-icon ' + iconClass + '""></i>');
 
                     if (stepTypeData.CompletionCount > 1 && stepTypeData.ShowCountOnBadge) {{
-                        html.push('    <span class=""badge-count"">' + stepTypeData.CompletionCount + '</span>');
+                        html.push('    <span class=""metric-value"">' + stepTypeData.CompletionCount + '</span>');
                     }}
 
                     html.push('</div>\n');

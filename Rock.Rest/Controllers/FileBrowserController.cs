@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,13 +25,15 @@ using System.Web;
 using System.Web.Http;
 
 using ImageResizer;
+using Rock.Data;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class FileBrowserController : ApiController
+    [Rock.SystemGuid.RestControllerGuid( "A62C14D8-AF2E-400D-AF2E-546157913014")]
+    public class FileBrowserController : ApiController 
     {
         /// <summary>
         /// Gets the file thumbnail
@@ -45,6 +47,7 @@ namespace Rock.Rest.Controllers
         /// </example>
         [HttpGet]
         [System.Web.Http.Route( "api/FileBrowser/GetFileThumbnail" )]
+        [Rock.SystemGuid.RestActionGuid( "11495FA9-A0E6-4439-80C6-BF804CB0A584" )]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
             string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
@@ -61,7 +64,7 @@ namespace Rock.Rest.Controllers
             }
 
             string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalFilePath );
-            if (mimeType.StartsWith("image/"))
+            if ( mimeType.StartsWith( "image/" ) )
             {
                 return ResizeAndSendImage( width, height, fullPath );
             }
@@ -69,9 +72,9 @@ namespace Rock.Rest.Controllers
             {
                 // figure out the extension of the file
                 string fileExtension = Path.GetExtension( relativeFilePath ).TrimStart( '.' );
-                string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension);
+                string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension );
                 string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
-                if (!File.Exists(thumbnailFilePath))
+                if ( !File.Exists( thumbnailFilePath ) )
                 {
                     virtualThumbnailFilePath = "~/Assets/Icons/FileTypes/other.png";
                     thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
@@ -99,7 +102,8 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                try {
+                try
+                {
                     using ( Image image = Image.FromFile( fullPath ) )
                     {
                         string mimeType = string.Empty;
@@ -134,12 +138,12 @@ namespace Rock.Rest.Controllers
                         return result;
                     }
                 }
-                catch 
+                catch
                 {
-                    
+
                     // there was a problem with the image so send the default corrupt image warning back
                     string imagePath = HttpContext.Current.Request.MapPath( "~/Assets/Images/corrupt-image.jpg" );
-                    
+
                     // return a 404 if the file doesn't exist
                     if ( !File.Exists( imagePath ) )
                     {

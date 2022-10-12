@@ -117,6 +117,7 @@ namespace RockWeb.Blocks.Core
         Order = 11,
         Key = AttributeKey.AttributeColumns )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "5F40F4FD-338A-4711-87F7-980ED1FAE615" )]
     public partial class RelatedEntityConnect : RockBlock
     {
         public static class AttributeKey

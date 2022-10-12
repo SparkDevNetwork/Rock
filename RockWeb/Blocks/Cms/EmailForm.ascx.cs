@@ -163,6 +163,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.EnabledLavaCommands )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "48253494-F8A0-4DD8-B645-6CB481CEB7BD" )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

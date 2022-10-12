@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -109,6 +109,7 @@ namespace Rock.Workflow.Action
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
     #endregion Attributes
+    [Rock.SystemGuid.EntityTypeGuid( "BE13854E-BBD9-4334-85D6-0E3C1D01F575")]
     public class BusinessFromAttributes : ActionComponent
     {
         /// <summary>

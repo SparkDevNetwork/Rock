@@ -177,6 +177,9 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Allow Person Querystring", "Determines if any person other than the currently logged in person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
 
     [RockObsolete( "12.4" )]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTRIBUTION_STATEMENT_LAVA_LEGACY )]
+#pragma warning restore CS0618 // Type or member is obsolete
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Groups
 
     [TextField("Success Message", "The text to display when a valid group member key is provided", false, "You have been registered.")]
     [TextField("Error Message", "The text to display when a valid group member key is NOT provided", false, "Sorry, there was a problem confirming your registration.  Please try to register again.")]
+    [Rock.SystemGuid.BlockTypeGuid( "B71FE9F2-0F90-497F-90FA-5A6148E8E116" )]
     public partial class GroupSimpleRegisterConfirm : Rock.Web.UI.RockBlock
     {
          #region overridden control methods

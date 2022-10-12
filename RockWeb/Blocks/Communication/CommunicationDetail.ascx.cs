@@ -72,6 +72,7 @@ namespace RockWeb.Blocks.Communication
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL )]
     public partial class CommunicationDetail : RockBlock
     {
         #region Attribute Keys

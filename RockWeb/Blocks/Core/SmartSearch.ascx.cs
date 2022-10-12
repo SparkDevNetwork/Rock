@@ -27,6 +27,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Provides extensible options for searching in Rock." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74" )]
     public partial class SmartSearch : RockBlock
     {
     }

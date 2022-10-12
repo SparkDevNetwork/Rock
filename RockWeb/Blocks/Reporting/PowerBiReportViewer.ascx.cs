@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField("Show Right Pane", "Determines whether the right pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowRightPane" )]
     [BooleanField("Show Navigation Pane", "Determines whether the navigation pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowNavPane" )]
     [BooleanField("Show Fullsize Button", "Determines whether the fullsize button should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowFullsizeBtn" )]
+    [Rock.SystemGuid.BlockTypeGuid( "76A64656-7BAB-4ADC-82DD-9CD207F548F9" )]
     public partial class PowerBiReportViewer : Rock.Web.UI.RockBlockCustomSettings
     {
         #region Base Control Methods

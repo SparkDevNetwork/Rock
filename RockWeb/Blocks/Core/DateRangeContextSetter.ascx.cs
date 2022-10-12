@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Core
         Order = 2,
         Key = AttributeKey.DisplayQueryStrings )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "ABC4A04E-6FA8-4817-8113-A653251A16B3" )]
     public partial class DateRangeContextSetter : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

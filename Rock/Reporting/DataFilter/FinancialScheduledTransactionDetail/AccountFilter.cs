@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataFilter.FinancialScheduledTransactionDetail
     [Description("Scheduled Transaction Detail by Account")]
     [Export(typeof(DataFilterComponent))]
     [ExportMetadata("ComponentName", "Account Filter")]
+    [Rock.SystemGuid.EntityTypeGuid( "915B4D37-53F9-4D8A-B5C2-5ED7A0782939")]
     public class AccountFilter : BaseAccountFilter<Rock.Model.FinancialScheduledTransactionDetail>
     {
         /// <summary>

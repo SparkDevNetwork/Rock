@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Attribute Categories" )]
     [Category( "Core" )]
     [Description( "Allows attribute categories to be managed." )]
+    [Rock.SystemGuid.BlockTypeGuid( "1FC50941-A883-47A2-ABE9-13528BCC4D1B" )]
     public partial class AttributeCategories : RockBlock
     {
         #region Fields

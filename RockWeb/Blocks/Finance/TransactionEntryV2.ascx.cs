@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Transactions;
+using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -479,6 +479,7 @@ namespace RockWeb.Blocks.Finance
     #endregion Advanced Options
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "6316D801-40C0-4EED-A2AD-55C13870664D" )]
     public partial class TransactionEntryV2 : RockBlock
     {
         #region constants
@@ -1020,7 +1021,7 @@ mission. We are so grateful for your commitment.</p>
             bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, "_hostedPaymentInfoControl", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
                 this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
             }
@@ -2740,6 +2741,13 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         protected void ProcessTransaction()
         {
+            if ( !tbFirstName.IsValid )
+            {
+                nbProcessTransactionError.Text = tbFirstName.CustomValidator.ErrorMessage;
+                nbProcessTransactionError.Visible = true;
+                return;
+            }
+
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
             var rockContext = new RockContext();
 
@@ -3399,10 +3407,14 @@ mission. We are so grateful for your commitment.</p>
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
             if ( receiptEmail.HasValue )
             {
-                // Queue a transaction to send receipts
-                var transactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                // Queue a bus message to send receipts
+                var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                {
+                    SystemEmailGuid = receiptEmail.Value,
+                    TransactionId = transactionId
+                };
+
+                sendPaymentReceiptsTask.Send();
             }
         }
 

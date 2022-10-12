@@ -103,6 +103,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.SchedulingResponseEmail )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "B783DEC7-E2B7-4805-B2DD-B5EDF6495A2C" )]
     public partial class GroupScheduleConfirmation : Rock.Web.UI.RockBlock
     {
         protected class AttributeKey

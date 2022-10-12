@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,6 +70,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
     #endregion
 
     [ContextAware]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONTENT_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "7258A210-E936-4260-B573-9FA1193AD9E2")]
     public class Content : RockMobileBlockType
     {
         /// <summary>

@@ -33,12 +33,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Theme Styler" )]
     [Category( "CMS" )]
     [Description( "Allows you to change the LESS variables of a theme." )]
+    [Rock.SystemGuid.BlockTypeGuid( "92B100A0-43D7-4D73-B410-17DA8697606A" )]
     public partial class ThemeStyler : Rock.Web.UI.RockBlock
     {
         #region Fields

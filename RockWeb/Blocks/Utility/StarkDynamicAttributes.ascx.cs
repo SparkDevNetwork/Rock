@@ -24,9 +24,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// 
-    /// </summary>
     [DisplayName( "Stark Dynamic Attributes" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new detail block that supports dynamic attributes." )]
@@ -44,6 +41,7 @@ namespace RockWeb.Blocks.Utility
         Order = 0 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "7C34A0FA-ED0D-4B8B-B458-6EC970711726" )]
     public partial class StarkDynamicAttributes : Rock.Web.UI.RockBlock, Rock.Web.UI.IDynamicAttributesBlock
     {
         #region Constants

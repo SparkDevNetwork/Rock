@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Block for updating the settings used by the Checkr integration." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "562A5CA4-1697-40E3-A54A-C451291A3251" )]
     public partial class CheckrSettings : Rock.Web.UI.RockBlock
     {
         #region Control Methods

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberAssignment" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "22BF14ED-E882-4BB0-9328-D12545BF5F61")]
     public class GroupMemberAssignment : Model<GroupMemberAssignment>
     {
         #region Entity Properties

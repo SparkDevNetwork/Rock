@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = "Site",
         Key = AttributeKey.ContextScope )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0B9C6253-C72E-4CAA-B38A-BA359BC712E4" )]
     public partial class CampusContextSetter : RockBlock
     {
         public static class AttributeKey

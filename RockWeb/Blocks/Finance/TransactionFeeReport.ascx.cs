@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that reports transaction fees." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D75AF7AE-94B8-4604-B768-A124A2F55449" )]
     public partial class TransactionFeeReport : RockBlock
     {
         #region UserPreferenceKeys

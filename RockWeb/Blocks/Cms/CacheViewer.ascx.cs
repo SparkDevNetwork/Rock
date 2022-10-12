@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Cache Viewer" )]
     [Category( "CMS" )]
     [Description( "Block used to view a cached entity for debugging purposes." )]
+    [Rock.SystemGuid.BlockTypeGuid( "7D54B356-D0AF-4D10-96BE-26DE4F38CEBF" )]
     public partial class CacheManager : RockBlock
     {
         /// <summary>

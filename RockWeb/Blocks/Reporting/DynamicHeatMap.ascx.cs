@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Reporting
     [IntegerField( "Label Font Size", "Select the Font Size for the map labels", defaultValue: 24, order: 7 )]
     [BooleanField( "Show Pie Slicer", "Adds a button which will help slice a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
     [BooleanField( "Show Save Location", "Adds a button which will save the selected shape as a named location's geofence ", defaultValue: false, order: 9 )]
+    [Rock.SystemGuid.BlockTypeGuid( "FAFBB883-D0B4-498E-91EE-CAC5652E5095" )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>

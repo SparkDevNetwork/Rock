@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "SMS Pipeline Detail" )]
     [Category( "Communication" )]
     [Description( "Configures the pipeline that processes an incoming SMS message." )]
+    [Rock.SystemGuid.BlockTypeGuid( "44C32EB7-4DA3-4577-AC41-E3517442E269" )]
     public partial class SmsPipelineDetail : RockBlock
     {
         #region Page Parameter Keys

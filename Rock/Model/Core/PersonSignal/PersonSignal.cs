@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "PersonSignal" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_SIGNAL )]
     public partial class PersonSignal : Model<PersonSignal>
     {
         #region Entity Properties
@@ -84,7 +84,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> representing the person who has the signal applied to them.
@@ -113,27 +113,7 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
 
-        /// <summary>
-        /// Gets the parent security authority of this PersonSignal. Where security is inherited from.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                var signalType = SignalTypeCache.Get( this.SignalTypeId );
-                return signalType ?? base.ParentAuthority;
-            }
-        }
-
         #endregion
-
-        #region Public Methods
-
-        #endregion
-
     }
 
     #region Entity Configuration

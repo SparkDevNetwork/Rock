@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Core
         Order = 6,
         Key = AttributeKey.RespectCampusContext )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "62F749F7-67DF-4A84-B7DD-84CA8E10E205" )]
     public partial class GroupContextSetter : RockBlock
     {
         public static class AttributeKey

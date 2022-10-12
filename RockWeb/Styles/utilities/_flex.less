@@ -37,6 +37,8 @@
 }
 
 .display-flexbox(@infix) {
+  .col@{infix} { flex: 1 0 0; padding-right: (@grid-gutter-width / 2); padding-left: (@grid-gutter-width / 2); }
+
   .flex@{infix}-row            { flex-direction: row !important; }
   .flex@{infix}-column         { flex-direction: column !important; }
   .flex@{infix}-row-reverse    { flex-direction: row-reverse !important; }
@@ -57,6 +59,7 @@
   .justify-content@{infix}-center  { justify-content: center !important; }
   .justify-content@{infix}-between { justify-content: space-between !important; }
   .justify-content@{infix}-around  { justify-content: space-around !important; }
+  .justify-content@{infix}-evenly  { justify-content: space-evenly !important; }
 
   .align-items@{infix}-start    { align-items: flex-start !important; }
   .align-items@{infix}-end      { align-items: flex-end !important; }

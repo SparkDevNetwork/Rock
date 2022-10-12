@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Bus
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "A9BB6B68-44CD-4EC2-9B26-CD6C941877EB" )]
     public partial class BusStatus : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

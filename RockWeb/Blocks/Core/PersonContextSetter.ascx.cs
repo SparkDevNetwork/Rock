@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Core
         Order = 5,
         Key = AttributeKey.DisplayQueryStrings )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "EA33088D-7B18-46A7-ADFA-B9DA9512B4A4" )]
     public partial class PersonContextSetter : RockBlock
     {
         public static class AttributeKey

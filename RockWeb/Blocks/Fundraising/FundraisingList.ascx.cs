@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Fundraising
     [LinkedPage( "Details Page", required: false, order: 2 )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"{% include '~~/Assets/Lava/FundraisingList.lava' %}", order: 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E664BB02-D501-40B0-AAD6-D8FA0E63438B" )]
     public partial class FundraisingList : RockBlock
     {
         #region Base Control Methods

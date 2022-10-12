@@ -87,6 +87,7 @@ namespace RockWeb.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

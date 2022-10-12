@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Event
     [Description("Lists the content channel items associated to a particular calendar item occurrence.")]
 
     [LinkedPage("Detail Page")]
+    [Rock.SystemGuid.BlockTypeGuid( "8418C3B8-5E87-469F-BAE9-E15C32873FBD" )]
     public partial class CalendarContentChannelItemList : RockBlock, ISecondaryBlock
     {
 

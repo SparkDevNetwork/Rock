@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM > PhotoRequest" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "14293AEB-B0F5-434B-844A-66592AE3A416" )]
     public partial class PhotoOptOut : Rock.Web.UI.RockBlock
     {
         #region Fields

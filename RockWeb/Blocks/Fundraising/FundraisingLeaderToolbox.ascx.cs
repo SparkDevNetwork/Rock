@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Fundraising
 
     [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "B90F730D-6319-4749-A3C0-BBFDD69D9BC3" )]
     public partial class FundraisingLeaderToolbox : RockBlock
     {
         #region Base Control Methods

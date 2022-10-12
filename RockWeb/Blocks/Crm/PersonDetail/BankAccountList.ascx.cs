@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "CRM > Person Detail" )]
     [Description( "Lists bank accounts for a person" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C4191011-0391-43DF-9A9D-BE4987C679A4" )]
     public partial class BankAccountList : PersonBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Base Control Methods

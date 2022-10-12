@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Fundraising
 <a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName }}</a>", "Advanced", order: 3 )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "4AAE3DB5-C9F8-4985-B6DC-9037B2F91100" )]
     public partial class FundraisingDonationList : RockBlock
     {
         #region Base Method Overrides

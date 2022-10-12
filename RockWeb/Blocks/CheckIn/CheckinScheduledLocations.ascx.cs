@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Check-in Scheduled Locations" )]
     [Category( "Check-in" )]
     [Description( "Helps to enable/disable schedules associated with the configured group types at a kiosk" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C8C4E323-C227-4EAA-938F-4B962BC2DD7E" )]
     public partial class CheckinScheduledLocations : Rock.CheckIn.CheckInBlock
     {
         #region Control Methods

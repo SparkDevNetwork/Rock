@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -115,6 +115,7 @@ namespace Rock.Workflow.Action
 
     #endregion Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "C904F4AA-878B-45C4-A51E-E04D7C917C0D")]
     public class AddStep : ActionComponent
     {
         /// <summary>

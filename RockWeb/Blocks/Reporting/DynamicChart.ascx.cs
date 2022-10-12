@@ -88,6 +88,7 @@ Example:
     [CustomDropdownListField( "Chart Type", "", "Line,Bar,Pie", false, "Line", order: 9 )]
     [DecimalField( "Pie Inner Radius", "If this is a pie chart, specific the inner radius to have a donut hole. For example, specify: 0.75 to have the inner radius as 75% of the outer radius.", false, 0, order: 10 )]
     [BooleanField( "Pie Show Labels", "If this is a pie chart, specify if labels show be shown", true, "", order: 11 )]
+    [Rock.SystemGuid.BlockTypeGuid( "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" )]
     public partial class DynamicChart : Rock.Reporting.Dashboard.DashboardWidget
     {
         /// <summary>

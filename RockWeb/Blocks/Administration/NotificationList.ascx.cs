@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Notification List" )]
     [Category( "Core" )]
     [Description( "Displays Notifications." )]
+    [Rock.SystemGuid.BlockTypeGuid( "9C0FD17D-677D-4A37-A61F-54C370954E83" )]
     public partial class NotificationList : Rock.Web.UI.RockBlock
     {
         #region Properties

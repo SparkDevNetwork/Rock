@@ -30,9 +30,9 @@ using Rock.Net;
 namespace Rock.Rest
 {
     /*
-     * NOTE: We could have inherited from System.Web.Http.OData.ODataController, but that changes 
+     * NOTE: We could have inherited from System.Web.Http.OData.ODataController, but that changes
      * the response format from vanilla REST to OData format. That breaks existing Rock Rest clients.
-     * 
+     *
      */
 
     /// <summary>

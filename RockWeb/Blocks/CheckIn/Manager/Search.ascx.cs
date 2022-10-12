@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "B10EF525-6F2F-46B8-865C-B4249A297307" )]
     public partial class Search : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

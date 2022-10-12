@@ -99,6 +99,7 @@ namespace RockWeb.Blocks.Core
         Order = 4,
         Key = AttributeKey.MaxResults )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "36B56055-7AA2-4169-82DD-CCFBD2C7B4CC" )]
     public partial class FollowingByEntityLava : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

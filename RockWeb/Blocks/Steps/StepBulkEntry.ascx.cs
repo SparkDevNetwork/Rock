@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "6535FA22-9630-49A3-B8FF-A672CD91B8EE" )]
     public partial class StepBulkEntry : RockBlock
     {
         #region Keys
@@ -1323,4 +1324,3 @@ namespace RockWeb.Blocks.Steps
         #endregion Set Helpers
     }
 }
-

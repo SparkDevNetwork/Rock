@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName("External Application List")]
     [Category( "Administration" )]
     [Description( "Will list all of the defined type values with the type of External Application.  This provides a way for users to select any one of these files." )]
+    [Rock.SystemGuid.BlockTypeGuid( "850A0541-D31A-4559-94D1-9DAD5F52EFDF" )]
     public partial class ExternalApplicationList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

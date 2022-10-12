@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Font Awesome Settings" )]
     [Category( "CMS" )]
     [Description( "Block that can be used to configure Font Awesome" )]
+    [Rock.SystemGuid.BlockTypeGuid( "5150C021-3BA5-4CCC-B943-52AABD49D481" )]
     public partial class FontAwesomeSettings : RockBlock
     {
         #region Base Control Methods

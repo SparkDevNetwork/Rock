@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// RegistrationTemplatePlacements REST API
     /// </summary>
+    [RestControllerGuid( "F1DB1C53-4A12-4746-9FEE-DE04722B59C8" )]
     public partial class RegistrationTemplatePlacementsController : Rock.Rest.ApiController<Rock.Model.RegistrationTemplatePlacement>
     {
         /// <summary>

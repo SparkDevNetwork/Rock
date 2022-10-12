@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Model
     [Table( "Attendance" )]
     [DataContract]
     [Analytics( false, false )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTENDANCE )]
     public partial class Attendance : Model<Attendance>
     {
         #region Entity Properties

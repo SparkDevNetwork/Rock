@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registrant Wait List Move" )]
     [Category( "Event" )]
     [Description( "Moves the person from the wait list to be a full registrant." )]
+    [Rock.SystemGuid.BlockTypeGuid( "AAD07299-F30F-4DB2-8E04-5F3369CE46D2" )]
     public partial class RegistrantWaitListMove : Rock.Web.UI.RockBlock
     {
         #region Fields

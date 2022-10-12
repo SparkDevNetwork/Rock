@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Communication
         Order = 13 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
         #region Attribute Keys
@@ -253,6 +254,34 @@ namespace RockWeb.Blocks.Communication
             componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.ImageBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupMobileAttachment.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+
+            componentAssetManager.PickerButtonTemplate = @"
+{% assign iconPath = SelectedValue | FromJSON | Property:'IconPath' %}
+{% assign fileName = SelectedValue | FromJSON | Property:'Name' %}
+
+{% if iconPath != '' and fileName != '' %}
+    {% assign escFileName = fileName | UrlEncode %}
+    {% assign imageTypeUrl = iconPath | Replace: fileName, escFileName %}
+{% endif %}
+
+<div class='js-asset-thumbnail fileupload-thumbnail{% if imageTypeUrl contains '/Assets/Icons/FileTypes/' %} fileupload-thumbnail-icon{% endif %}' {% if fileName != '' %}style='background-image:url({{ imageTypeUrl }}) !important;' title='{{ fileName }}'{% endif %}>
+    {% if fileName != '' %}
+        <span class='js-asset-thumbnail-name file-link' style='background-color: transparent'>{{ fileName }}</span>
+    {% else %}
+        <span class='js-asset-thumbnail-name file-link file-link-default'></span>
+    {% endif %}
+</div>
+<div class='imageupload-dropzone'>
+    <span>
+        Select Asset
+    </span>
+</div>";
+
+            componentAssetManager.JsScriptToRegister = @"
+    Sys.Application.add_load(function (e) {
+        var data = '{{ SelectedValue }}';
+        handleAssetUpdate(e, data);
+    });";
 
             var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
             lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
@@ -493,7 +522,6 @@ function onTaskCompleted( resultData )
                 IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
             }
 
-
             int? personId = null;
             if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
             {
@@ -542,7 +570,6 @@ function onTaskCompleted( resultData )
             }
             else
             {
-
                 // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
                 if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
                 {
@@ -650,7 +677,7 @@ function onTaskCompleted( resultData )
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where(v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
             if ( selectedNumberGuids.Any() )
             {
                 smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
@@ -737,7 +764,6 @@ function onTaskCompleted( resultData )
                 result.Add( CommunicationType.SMS );
                 result.Add( CommunicationType.PushNotification );
             }
-
 
             return result;
         }
@@ -1122,6 +1148,7 @@ function onTaskCompleted( resultData )
                 .Include( a => a.PhoneNumbers )
                 .OrderBy( a => a.LastName )
                 .ThenBy( a => a.NickName );
+
             // Bind the list items to the grid.
             gRecipientList.SetLinqDataSource( qryPersons );
             gRecipientList.DataBind();
@@ -1750,7 +1777,7 @@ function onTaskCompleted( resultData )
             var communicationTypeIsAllowed = !allowedCommunicationTypes.Any() || allowedCommunicationTypes.Contains( communicationType );
 
             var selectedCommunicationType = SelectedCommunicationType;
-            var communicationTypeIsSelected = selectedCommunicationType == communicationType || ( selectedCommunicationType == CommunicationType.RecipientPreference && communicationType != CommunicationType.PushNotification); 
+            var communicationTypeIsSelected = selectedCommunicationType == communicationType || ( selectedCommunicationType == CommunicationType.RecipientPreference && communicationType != CommunicationType.PushNotification );
 
             return communicationTypeIsAllowed && communicationTypeIsSelected;
         }
@@ -1895,7 +1922,6 @@ function onTaskCompleted( resultData )
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
-
                         foreach ( var attachment in communication.Attachments )
                         {
                             var cloneAttachment = attachment.Clone( false );
@@ -2017,6 +2043,7 @@ function onTaskCompleted( resultData )
                                 {
                                     communicationService.Delete( testCommunication );
                                 }
+
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication
@@ -2434,12 +2461,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
                 else
                 {
@@ -2460,12 +2487,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
 
                 if ( Rock.Communication.Transport.Twilio.SupportedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
@@ -3084,7 +3111,10 @@ function onTaskCompleted( resultData )
                     var allowedCommunicationTypes = GetAllowedCommunicationTypes();
                     var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
                     var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
-                    var pushTransportEnabled = false; //_pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ); // Recipient preference should not use push
+
+                    // Recipient preference should not use push.
+                    // _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
+                    var pushTransportEnabled = false;
 
                     if ( emailTransportEnabled )
                     {
@@ -3358,6 +3388,15 @@ function onTaskCompleted( resultData )
         /// </summary>
         private CommunicationRecipient GetSampleCommunicationRecipient( Rock.Model.Communication communication, RockContext rockContext )
         {
+            // Update the recipients in the communication
+            UpdateCommunicationRecipients( communication, rockContext );
+
+            // If we have recipients in the communication then just return the first one.
+            if ( communication.Recipients.Any() )
+            {
+                return communication.Recipients.First();
+            }
+
             var recipientPersonId = 0;
 
             if ( IndividualRecipientPersonIds.Count == 0 )
@@ -3380,6 +3419,16 @@ function onTaskCompleted( resultData )
 
             recipient.Communication = communication;
             recipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( recipientPersonId );
+
+            // If there are additional merge fields, get the merge values connected to the sample recipient.
+            if ( communication.AdditionalMergeFields.Any() )
+            {
+                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext )
+                    .GetByCommunicationId( communication.Id )
+                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id )
+                    .FirstOrDefault()?
+                    .AdditionalMergeValues;
+            }
 
             return recipient;
         }
@@ -3662,7 +3711,7 @@ function onTaskCompleted( resultData )
 
                     currentCount++;
 
-                    ReportProgress( progressReporter, 20 + decimal.Divide( currentCount, totalCount ) * 70, 0, "Processing Recipients ({0} of {1})...", currentCount, totalCount );
+                    ReportProgress( progressReporter, 20 + ( decimal.Divide( currentCount, totalCount ) * 70 ), 0, "Processing Recipients ({0} of {1})...", currentCount, totalCount );
                 }
 
                 return communication;

@@ -86,6 +86,7 @@ namespace RockWeb.Blocks.Connection
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "23438CBC-105B-4ADB-8B9A-D5DDDCDD7643" )]
     public partial class ConnectionOpportunitySelect : Rock.Web.UI.RockBlock
     {
         #region Keys

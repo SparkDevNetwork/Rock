@@ -37,12 +37,10 @@ using Rock.Tasks;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Universal Search Control Panel" )]
     [Category( "Core" )]
     [Description( "Block to configure Rock's universal search features." )]
+    [Rock.SystemGuid.BlockTypeGuid( "59F03418-0638-48E0-877D-B2F15B52C540" )]
     public partial class UniversalSearchControlPanel : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -72,8 +70,6 @@ namespace RockWeb.Blocks.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
-            gEntityList.RowDataBound += gEntityList_RowDataBound;
             gEntityList.DataKeyNames = new string[] { "Id" };
 
             mdEditEntityType.SaveClick += MdEditEntityType_SaveClick;
@@ -120,16 +116,17 @@ namespace RockWeb.Blocks.Core
 
             List<string> entityList = entitySetting.Split( ',' ).ToList();
 
-            foreach(ListItem checkbox in cblSmartSearchEntities.Items )
+            foreach ( ListItem checkbox in cblSmartSearchEntities.Items )
             {
-                if ( entityList.Contains( checkbox.Value ) ) {
+                if ( entityList.Contains( checkbox.Value ) )
+                {
                     checkbox.Selected = true;
                 }
             }
 
             tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = ((int)SearchType.Wildcard).ToString();
+            var searchType = ( ( int ) SearchType.Wildcard ).ToString();
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
@@ -149,7 +146,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSmartSearchSave_Click( object sender, EventArgs e )
         {
-            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchEntities", string.Join(",", cblSmartSearchEntities.SelectedValues.Select( n => n.ToString() ).ToArray() ));
+            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchEntities", string.Join( ",", cblSmartSearchEntities.SelectedValues.Select( n => n.ToString() ).ToArray() ) );
             Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchFieldCriteria", tbSmartSearchFieldCrieria.Text );
             Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchSearchType", ddlSearchType.SelectedValue );
 
@@ -188,7 +185,7 @@ namespace RockWeb.Blocks.Core
         /// <exception cref="System.NotImplementedException"></exception>
         private void MdEditEntityType_SaveClick( object sender, EventArgs e )
         {
-            using(RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = new RockContext() )
             {
                 EntityTypeService entityTypeService = new EntityTypeService( rockContext );
                 var entityType = entityTypeService.Get( hfIdValue.ValueAsInt() );
@@ -220,37 +217,50 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the GEntityList control.
+        /// Handles the DataBound event of the gEntityList_BulkLoadDocuments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        private void gEntityList_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gEntityList_BulkLoadDocuments_DataBound( object sender, RowEventArgs e )
         {
-            var dataItem = e.Row.DataItem;
-            if ( dataItem != null )
+            var entityType = e.Row.DataItem as EntityType;
+            if (entityType == null)
             {
-                var isIndexingEnabled = dataItem.GetPropertyValue( "IsIndexingEnabled" ).ToString().AsBoolean();
+                return;
+            }
 
-                var entityAssembly = dataItem.GetPropertyValue( "AssemblyName" ).ToString();
-                Type modelType = Type.GetType( entityAssembly );
+            var entityAssembly = entityType.AssemblyName;
+            Type modelType = Type.GetType( entityAssembly );
 
-                if (modelType != null )
+            if ( modelType != null )
+            {
+                var modelInstance = Activator.CreateInstance( modelType ) as IRockIndexable;
+                var btnBulkLoad = sender as LinkButton;
+                if ( btnBulkLoad != null && modelInstance != null )
                 {
-                    var modelInstance = Activator.CreateInstance( modelType );
-                    var supportBulkIndexing = (bool)modelType.GetProperty( "AllowsInteractiveBulkIndexing" ).GetValue( modelInstance, null );
-
-                    if ( !supportBulkIndexing )
-                    {
-                        e.Row.Cells[3].Controls[0].Visible = false;
-                    }
+                    btnBulkLoad.Visible = modelInstance.AllowsInteractiveBulkIndexing;
                 }
+            }
+                
+        }
 
-                if ( !isIndexingEnabled )
-                {
-                    e.Row.Cells[2].Controls[0].Visible = false;
-                    e.Row.Cells[3].Controls[0].Visible = false;
-                    //e.Row.Cells[4].Controls[0].Visible = false;
-                }
+        /// <summary>
+        /// Handles the DataBound event of the gEntityList_RecreateIndex control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gEntityList_RecreateIndex_DataBound( object sender, RowEventArgs e)
+        {
+            var entityType = e.Row.DataItem as EntityType;
+            if ( entityType == null )
+            {
+                return;
+            }
+
+            var btnRecreateIndex = sender as LinkButton;
+            if (btnRecreateIndex != null)
+            {
+                btnRecreateIndex.Visible = entityType.IsIndexingEnabled;
             }
         }
 
@@ -290,7 +300,7 @@ namespace RockWeb.Blocks.Core
 
                 processEntityTypeBulkIndexMsg.Send();
 
-                maMessages.Show( string.Format("A request has been sent to index {0}.", entityType.FriendlyName.Pluralize()), ModalAlertType.Information );
+                maMessages.Show( string.Format( "A request has been sent to index {0}.", entityType.FriendlyName.Pluralize() ), ModalAlertType.Information );
             }
             else
             {
@@ -393,7 +403,7 @@ namespace RockWeb.Blocks.Core
                         // add friendly check to see if the URL provided is valid
                         Uri uriTest;
                         bool isValidUrl = Uri.TryCreate( component.IndexLocation, UriKind.Absolute, out uriTest )
-                            && (uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps);
+                            && ( uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps );
 
                         if ( !isValidUrl )
                         {
@@ -419,7 +429,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadEntities()
         {
-            using ( RockContext rockContext = new RockContext() ) {
+            using ( RockContext rockContext = new RockContext() )
+            {
                 var entities = new EntityTypeService( rockContext ).Queryable().AsNoTracking().ToList();
 
                 var indexableEntities = entities.Where( e => e.IsIndexingSupported == true ).ToList();

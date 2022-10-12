@@ -1,91 +1,105 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
-<Rock:NotificationBox ID="nbInvalidPerson" runat="server" NotificationBoxType="Warning" Title="Person Not Found" Text="The requested person profile does not exist." Visible="false" />
 <asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
-
         <script>
             $(function () {
-                $(".photo a").fluidbox();
-                $('span.js-email-status').tooltip({ html: true, container: 'body', delay: { show: 100, hide: 100 } });
+                $("#profile-image a").fluidbox({ rescale: true });
             });
         </script>
 
-        <div id="divBio" runat="server" class="">
-            <div class="action-wrapper">
+        <div id="profile-image" class="img-card-top profile-squish">
+            <div class="fluid-crop">
+                <a href="#" class="fluidbox fluidbox-closed">
+                    <asp:Literal ID="lImage" runat="server" />
+                </a>
+            </div>
+        </div>
 
-                <ul id="ulActions" runat="server" class="nav nav-actions action action-extended">
-                    <li class="dropdown">
-                        <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
-                            <span>Actions</span>
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-right">
+        <div class="bio-data">
+            <%-- Name and actions --%>
+            <div class="card-section position-relative">
+                <%-- Account Protection Level --%>
+                <asp:Literal ID="litAccountProtectionLevel" runat="server" />
+                <%-- Person Name --%>
+                <asp:Literal ID="lName" runat="server" />
+                <%-- Badges --%>
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap mt-3">
+                    <Rock:BadgeListControl ID="blStatus" runat="server" />
+                    <asp:LinkButton ID="lbFollowing" runat="server" CssClass="btn btn-default btn-xs btn-follow" OnClick="lbFollowing_Click"></asp:LinkButton>
+                </div>
+                <%-- Buttons --%>
+                <div class="profile-actions">
+                    <div id="divSmsButton" runat="server" class="action-container">
+                        <asp:Literal ID="lSmsButton" runat="server" />
+                    </div>
+                    <div id="divEmailButton" runat="server" class="action-container">
+                        <asp:Literal ID="lEmailButton" runat="server" />
+                    </div>
+                    <div class="action-container">
+                        <button type="button" class="dropdown-toggle btn btn-default btn-go btn-square stretched-link" data-toggle="dropdown" title="Actions" aria-label="Actions">
+                            <i class="fa fa-bolt"></i>
+                        </button>
+                        <ul class="dropdown-menu">
                             <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
                             <li><asp:HyperLink ID="hlVCard" runat="server"><i class='fa fa-address-card'></i>&nbsp;Download vCard</asp:HyperLink></li>
                             <asp:Literal ID="lActions" runat="server" />
                         </ul>
-                    </li>
-                </ul>
-
-                <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="action" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-            </div>
-
-            <div class="row">
-                <div class="col-sm-3 col-md-2 text-center sm-text-left">
-                    <div class="photo">
-                        <asp:Literal ID="lImage" runat="server" />  
-                        <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
+                        <span>Actions</span>
                     </div>
-                    <div class="social-icons margin-t-sm">
-                        <asp:Repeater ID="rptSocial" runat="server">
-                            <ItemTemplate>
-                                <a href='<%# Eval("url") %>' class='btn btn-<%# Eval("name").ToString().ToLower() %> btn-sm btn-square' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> target="_blank"><i class='<%# Eval("icon") %>'></i></a>
-                            </ItemTemplate>
-                        </asp:Repeater>
+                    <div id="divEditButton" runat="server" class="action-container">
+                        <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="btn btn-default btn-go btn-square stretched-link" OnClick="lbEditPerson_Click" aria-label="Edit Person"><i class="fa fa-pencil"></i></asp:LinkButton>
+                        <span>Edit</span>
                     </div>
-
-                
                 </div>
-                <div class="col-sm-9 col-md-10 text-center sm-text-left">
-
-                    <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
-                
-                    <Rock:BadgeListControl ID="blStatus" runat="server" />
-                    <Rock:HighlightLabel ID="hlAccountProtectionLevel" runat="server" Visible="false" LabelType="Warning" Text="Protection Profile: " />
-
-                    <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
-
-                    <div class="summary clearfix">
-                        <dl class="demographics">
-                            <asp:Literal ID="lAge" runat="server" />
-                            <asp:Literal ID="lGender" runat="server" />
-                            <asp:Literal ID="lMaritalStatus" runat="server" />
-                            <asp:Literal ID="lAnniversary" runat="server" />
-                            <asp:Literal ID="lGrade" runat="server" />
-                            <asp:Literal ID="lGraduation" runat="server" />
-                        </dl>
-
-                         <div class="personcontact">
-                            <ul class="list-unstyled phonenumbers">
-                                <asp:Repeater ID="rptPhones" runat="server">
-                                    <ItemTemplate>
-                                        <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int?)Eval("NumberTypeValueId") ?? 0, (bool)Eval("IsMessagingEnabled") ) %></li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-
-                            <div class="email">
-                                <asp:Literal ID="lEmail" runat="server" />
-                            </div>
+            </div>
+            <%-- Demographic info --%>
+            <div class="card-section">
+                <dl class="reversed-label">
+                    <asp:Literal ID="lGender" runat="server" />
+                    <asp:Literal ID="lAge" runat="server" />
+                    <asp:Literal ID="lMaritalStatus" runat="server" />
+                    <asp:Literal ID="lGrade" runat="server" />
+                    <asp:Literal ID="lGraduation" runat="server" />
+                </dl>
+            </div>
+            <%-- Phone Numbers. Email also in this section. --%>
+            <div ID="divContactSection" runat="server" class="card-section">
+                <asp:Repeater ID="rptPhones" runat="server" OnItemDataBound="rptPhones_ItemDataBound">
+                    <HeaderTemplate>
+                        <div class="expand-section">
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <asp:Literal ID="litPhoneNumber" runat="server"></asp:Literal>
+                    </ItemTemplate>
+                    <FooterTemplate>
                         </div>
+                    </FooterTemplate>
+                </asp:Repeater>
+                <asp:Literal ID="lEmail" runat="server" />
+            </div>
+            <%-- Social Media Accounts --%>
+            <asp:Repeater ID="rptSocial" runat="server">
+                <HeaderTemplate>
+                    <div class="card-section py-0">
+                        <div class="d-flex flex-wrap justify-content-center">
+                </HeaderTemplate>
+                <ItemTemplate>
+                    <a href='<%# Eval("url") %>' class='text-link p-2' target="_blank">
+                        <i class='<%# Eval("icon") %>'></i>
+                    </a>
+                </ItemTemplate>
+                <FooterTemplate>
                     </div>
-
+                </div>
+                </FooterTemplate>
+            </asp:Repeater>
+            <%-- Custom Content --%>
+            <div id="divCustomContent" runat="server" class="card-section">
+                <div class="col-sm-9 col-md-10 text-center sm-text-left">
                     <asp:PlaceHolder ID="phCustomContent" runat="server" />
-
                 </div>
             </div>
-
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "System Email Detail (Obsolete. Use SystemCommunicationDetail instead)" )]
     [Category( "Communication" )]
     [Description( "Allows the administration of a system email." )]
+    [Rock.SystemGuid.BlockTypeGuid( "82B00455-B8CF-4673-ACF5-641B961DF59F" )]
     public partial class SystemEmailDetail : RockBlock
     {
         #region Control Methods

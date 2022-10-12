@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Core
         Order = 3,
         Key = AttributeKey.SupportSecurity )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "21F5F466-59BC-40B2-8D73-7314D936C3CB" )]
     public partial class Components : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -414,6 +415,17 @@ namespace RockWeb.Blocks.Core
             LoadEditControls( serviceId, true );
 
             mdEditComponent.Title = ( _container.Dictionary[serviceId].Key + " Properties" ).FormatAsHtmlTitle();
+
+            if ( _container.Dictionary[serviceId].Value is Rock.Communication.Transport.SMTP )
+            {
+                nbWarnings.Text = "This transport should only be used for development and testing.";
+                nbWarnings.Visible = true;
+            }
+            else
+            {
+                nbWarnings.Text = "";
+                nbWarnings.Visible = false;
+            }
 
             ShowDialog( "EditComponent" );
         }

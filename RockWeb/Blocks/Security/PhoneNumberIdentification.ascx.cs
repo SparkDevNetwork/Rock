@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Phone Number Lookup" )]
     [Category( "Security" )]
-    [Description( "Login via phone number" )]
+    [Description( "Log in via phone number" )]
 
     [CustomDropdownListField( "Authentication Level",
         Description = "This determines what level of authentication that the lookup would do.",
@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.Security
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Order = 11,
         Key = AttributeKey.ValidationCodeAttempts )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PHONE_NUMBER_LOOKUP )]
     public partial class PhoneNumberIdentification : Rock.Web.UI.RockBlock
     {
         private int IdentityVerificationId

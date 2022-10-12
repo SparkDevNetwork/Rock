@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -32,12 +31,11 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -438,6 +436,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "74EE3481-3E5A-4971-A02E-D463ABB45591" )]
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
         #region Block Keys
@@ -2586,6 +2585,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
                 }
+
+                if ( !txtFirstName.IsValid )
+                {
+                    errorMessages.Add( txtFirstName.CustomValidator.ErrorMessage );
+                }
             }
 
             if ( givingAsBusiness && string.IsNullOrWhiteSpace( txtBusinessName.Text ) )
@@ -3483,10 +3487,14 @@ namespace RockWeb.Blocks.Finance
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
             if ( receiptEmail.HasValue )
             {
-                // Queue a transaction to send receipts
-                var transactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                // Queue a bus message to send receipts
+                var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                {
+                    SystemEmailGuid = receiptEmail.Value,
+                    TransactionId = transactionId
+                };
+
+                sendPaymentReceiptsTask.Send();
             }
         }
 

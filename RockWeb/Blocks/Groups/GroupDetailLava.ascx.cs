@@ -32,9 +32,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
@@ -185,6 +182,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "218B057F-B214-4317-8E84-7A95CF88067E" )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

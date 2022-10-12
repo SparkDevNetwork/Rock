@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Event Detail" )]
     [Category( "Follow" )]
     [Description( "Block for editing following event types." )]
+    [Rock.SystemGuid.BlockTypeGuid( "762BC126-1A2E-4483-A63B-3AB4939D19F1" )]
     public partial class EventDetail : RockBlock
     {
 

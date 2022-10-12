@@ -20,7 +20,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.ModelBinding.Binders;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -41,6 +41,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId:int}" )]
+        [Rock.SystemGuid.RestActionGuid( "386BCB43-5F2A-4034-9032-850440CBAB7F" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -82,6 +83,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "1071DB79-DB8D-4310-B11C-2637F1A6A630" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, Guid personGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
@@ -107,6 +109,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpDelete]
+        [Rock.SystemGuid.RestActionGuid( "AAB5800B-A429-40D2-A402-D3DE7E15776E" )]
         public virtual void Delete( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -149,6 +152,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "A3358897-942F-4332-B060-12718DC87CE6" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
@@ -171,6 +175,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "1C1F80FE-2567-463E-8BFE-E49ECB8450C7" )]
         public virtual HttpResponseMessage Follow( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -222,6 +227,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
+        [Rock.SystemGuid.RestActionGuid( "3D09FD68-06F9-4860-9110-60A015004071" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {

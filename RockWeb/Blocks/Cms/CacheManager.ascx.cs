@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Cache Manager" )]
     [Category( "CMS" )]
     [Description( "Block used to view cache statistics and clear the existing cache." )]
+    [Rock.SystemGuid.BlockTypeGuid( "48AD1B85-C51C-4C51-A902-E2DC4586B903" )]
     public partial class CacheManager : RockBlock
     {
         /// <summary>

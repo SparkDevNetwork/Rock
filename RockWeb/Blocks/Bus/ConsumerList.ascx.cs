@@ -30,6 +30,7 @@ namespace RockWeb.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Shows a list of all message bus consumers." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7EFD5D30-2FF0-4C75-86A2-984A8F45D8A5" )]
     public partial class ConsumerList : RockBlock, ISecondaryBlock
     {
         #region Keys

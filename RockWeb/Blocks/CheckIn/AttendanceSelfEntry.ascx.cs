@@ -276,6 +276,7 @@ ORDER BY [Text]",
     #endregion Messages Block Attribute Settings
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.ATTENDANCE_SELF_ENTRY )]
     public partial class AttendanceSelfEntry : RockBlock
     {
         #region Keys

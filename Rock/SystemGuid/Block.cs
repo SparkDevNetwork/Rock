@@ -140,5 +140,25 @@ namespace Rock.SystemGuid
         /// The financial account search block
         /// </summary>
         public const string FINANCIAL_ACCOUNT_SEARCH = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A";
+
+        /// <summary>
+        /// The connection requests bulk update block
+        /// </summary>
+        public const string CONNECTION_REQUESTS_BULK_UPDATE = "86249F40-DAA9-46AC-901B-7460E2659C10";
+
+        /// <summary>
+        /// The Step Flow block
+        /// </summary>
+        public const string STEP_FLOW = "A40684E9-10DA-4CF8-815B-EBDE53624419";
+
+        /// <summary>
+        /// The dataview search results block type
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "F1AADFDD-7F43-4B31-A0FD-318064F4C9CC";
+
+        /// <summary>
+        /// The report search results block type
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "2DA8AA89-0DAA-4A50-B65B-CA721932B8A9";
     }
 }

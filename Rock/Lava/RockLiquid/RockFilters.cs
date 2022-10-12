@@ -52,6 +52,7 @@ using UAParser;
 using Ical.Net;
 using Rock.Web.UI.Controls;
 using System.Web.UI;
+using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava
 {
@@ -782,21 +783,6 @@ namespace Rock.Lava
             return string.IsNullOrWhiteSpace( inputAsString )
                 ? inputAsString
                 : inputAsString.Replace( @string, string.Empty );
-        }
-
-        /// <summary>
-        /// Trims the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Trim( object input )
-        {
-            if ( input == null )
-            {
-                return string.Empty;
-            }
-
-            return input.ToString().Trim();
         }
 
         /// <summary>
@@ -1655,6 +1641,11 @@ namespace Rock.Lava
             if ( startDate != null && endDate != null )
             {
                 TimeSpan difference = endDate.Value - startDate.Value;
+
+                if ( difference.TotalSeconds >= 0 && difference.TotalSeconds < 1 )
+                {
+                    return "just now";
+                }
 
                 if ( direction.ToLower() == "max" )
                 {
@@ -3815,17 +3806,64 @@ namespace Rock.Lava
             return stepsQuery.ToList();
         }
 
-        #endregion Person Filters
-
-        #region Group Filters
-
         /// <summary>
-        /// Loads a Group record from the database from it's GUID.
+        /// Determines whether [is in security role] [the specified context].
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static Rock.Model.Group GroupByGuid( Context context, object input )
+        /// <param name="groupId">The role Id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsInSecurityRole( Context context, object input, int groupId )
+        {
+            var person = GetPerson( input );
+            var role = RoleCache.Get( groupId );
+
+            if ( person == null || role == null )
+            {
+                return false;
+            }
+
+            if ( !role.IsSecurityTypeGroup )
+            {
+                ExceptionLogService.LogException( $"RockFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
+                return false;
+            }
+
+            return role.IsPersonInRole( person.Guid );
+        }
+
+        #endregion Person Filters
+
+        #region Personalize Filters
+
+        /// <summary>
+        /// Gets the set of personalization items that are relevant to the specified person.
+        /// </summary>
+        /// <param name="context">The DotLiquid context.</param>
+        /// <param name="input">The filter input, a reference to a Person or a Person object.</param>
+        /// <param name="itemTypeList">A comma-delimited list of item types to return.</param>
+        /// <returns>The value of the user preference.</returns>
+        public static List<PersonalizationItemInfo> PersonalizationItems( Context context, object input, string itemTypeList = "" )
+        {
+            // This filter implementation is only required for DotLiquid.
+            // Create a compatible context and call the newer Lava Filter implementation.
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.PersonalizationItems( lavaContext, input, itemTypeList );
+        }
+
+        #endregion
+
+        #region Group Filters
+
+            /// <summary>
+            /// Loads a Group record from the database from it's GUID.
+            /// </summary>
+            /// <param name="context">The context.</param>
+            /// <param name="input">The input.</param>
+            /// <returns></returns>
+            public static Rock.Model.Group GroupByGuid( Context context, object input )
         {
             if ( input == null )
             {
@@ -4978,6 +5016,19 @@ namespace Rock.Lava
             }
 
             return parmReturn;
+        }
+
+        /// <summary>
+        /// Sets a parameter in the input URL and returns a modified URL in the specified format.
+        /// </summary>
+        /// <param name="inputUrl">The input URL to be modified.</param>
+        /// <param name="parameterName">The name of the URL parameter to modify.</param>
+        /// <param name="parameterValue">The new value parameter value.</param>
+        /// <param name="outputUrlFormat">The format of the output URL, specified as {"absolute"|"relative"}. If not specified, the default value is "absolute".</param>
+        /// <returns></returns>
+        public static string SetUrlParameter( object inputUrl, object parameterName, object parameterValue, object outputUrlFormat = null )
+        {
+            return LavaFilters.SetUrlParameter( inputUrl, parameterName, parameterValue, outputUrlFormat );
         }
 
         /// <summary>

@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Core
 
     // Context Aware will limit the Watcher Option to the Person or Group context (when a new watch is added)
     [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "361F15FC-4C08-4A26-B482-CC260E708F7C" )]
     public partial class NoteWatchDetail : RockBlock
     {
         public static class AttributeKey

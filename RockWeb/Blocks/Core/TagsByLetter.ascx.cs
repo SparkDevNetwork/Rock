@@ -33,9 +33,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Tags By Letter" )]
     [Category( "Core" )]
     [Description( "Lists tags grouped by the first letter of the name with counts for people to select." )]
@@ -57,6 +54,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.EntityType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "784C84CF-28B0-45B5-A3ED-D7D9B2A26A5B" )]
     public partial class TagsByLetter : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

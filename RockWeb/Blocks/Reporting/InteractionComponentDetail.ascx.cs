@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Reporting
     </div>
 ", "", 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "926261B2-CF4C-4B1F-A384-CD83696CFBC2" )]
     public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock
     {
 

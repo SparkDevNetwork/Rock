@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "A65CF2F8-93A4-4AC6-9018-D7C6996D9017" )]
     public partial class PersonDuplicateDetail : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

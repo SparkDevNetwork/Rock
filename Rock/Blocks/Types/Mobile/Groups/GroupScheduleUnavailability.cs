@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModel.Blocks.Groups.GroupScheduleUnavailability;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Groups.GroupScheduleUnavailability;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -58,6 +58,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY )]
     public class GroupScheduleUnavailability : RockMobileBlockType
     {
 
@@ -180,13 +182,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 .ToList();
 
             // A list of the group names and guids.
-            var groupsList = new List<ListItemViewModel>();
+            var groupsList = new List<ListItemBag>();
 
             // Every result from our query.
             foreach ( var group in groups )
             {
                 // Add it to the groups list with the necessary information.
-                var groupInformation = new ListItemViewModel
+                var groupInformation = new ListItemBag
                 {
                     Text = group.Name,
                     Value = group.Guid.ToStringSafe()
@@ -203,12 +205,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 .ToList();
 
             // A list of family member names and guids.
-            var familyMembersList = new List<ListItemViewModel>();
+            var familyMembersList = new List<ListItemBag>();
 
             foreach ( var familyMember in familyMembersQuery )
             {
                 // Add it to the family members list with the necessary information.
-                var familyMemberInformation = new ListItemViewModel
+                var familyMemberInformation = new ListItemBag
                 {
                     Text = familyMember.Person.FullName,
                     Value = familyMember.Guid.ToStringSafe()

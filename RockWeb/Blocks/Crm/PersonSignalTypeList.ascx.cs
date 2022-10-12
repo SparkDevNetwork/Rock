@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Crm
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "250FF1C3-B2AE-4AFD-BEFA-29C45BEB30D2" )]
     public partial class PersonSignalTypeList : RockBlock
     {
         #region Attribute Keys

@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Batch Filter", "", true, key: "ShowBatchFilter", order: 3 )]
     [IntegerField( "Max Number of Results", "", false, 1000, order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionTypeGuid", category: "CustomSetting" )]
+    [Rock.SystemGuid.BlockTypeGuid( "A58BCB1E-01D9-4F60-B925-D831A9537051" )]
     public partial class TransactionEntityMatching : RockBlockCustomSettings, ICustomGridColumns
     {
         private List<FinancialTransactionDetail> _financialTransactionDetailList;

@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given streak for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "EA9857FF-6703-4E4E-A6FF-65C23EBD2216" )]
     public partial class StreakDetail : RockBlock
     {
         /// <summary>

@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "85753750-7465-4241-97A6-E5F27EA38C8B" )]
     public partial class ScheduledTransactionView : RockBlock
     {
         #region Attribute Keys

@@ -3135,7 +3135,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     foreach ( DataRowView rowView in data.DefaultView )
                     {
                         DataRow row = rowView.Row;
-                        object dataKey = row[dataKeyColumn];
+
+                        object dataKey = GetDataKey( row, dataKeyColumn );
+
                         if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
                             // Distinct list of person ids
@@ -3191,6 +3193,14 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 // Allow calling block to add additional merge fields
                                 if ( isForCommunication )
                                 {
+                                    // If the person id field has been configured to come from a different column or even
+                                    // multiple columns rather than the primary id column then the dataKey will most likely be null
+                                    // in that case set the dataKey to the value configured as the person Id for this row.
+                                    if ( dataKey == null && CommunicationRecipientPersonIdFields.Count > 0 )
+                                    {
+                                        dataKey = personId;
+                                    }
+
                                     var eventArg = new GetRecipientMergeFieldsEventArgs( dataKey, personId, row );
                                     OnGetRecipientMergeFields( eventArg );
                                     {
@@ -3393,6 +3403,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
 
             return personData;
+        }
+
+        private object GetDataKey( DataRow row, string dataKeyColumn )
+        {
+            return row.Table.Columns.Contains( dataKeyColumn ) ? row[dataKeyColumn] : null;
         }
 
         private int? GetPersonEntitySet( EventArgs e )

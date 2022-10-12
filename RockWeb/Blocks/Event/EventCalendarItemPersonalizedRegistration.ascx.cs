@@ -34,9 +34,6 @@ using System.Linq.Dynamic;
 
 namespace RockWeb.Blocks.Event
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Event Item Personalized Registration" )]
     [Category( "Event" )]
     [Description( "Simplifies the registration process for a given person and event calendar item." )]
@@ -79,6 +76,7 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKeys.RegistrantListLavaTemplate,
         DefaultValue = defaultRegistrantListLavaTemplate,
         Order = 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "1A1FFACC-D74C-4061-B6A7-34150C462DB7" )]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         /// <summary>

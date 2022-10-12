@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Description( "Lists all the Checkr background check requests." )]
 
     [LinkedPage( "Workflow Detail Page", "The page to view details about the background check workflow" )]
+    [Rock.SystemGuid.BlockTypeGuid( "53A28B56-B7B4-472C-9305-1DC66693A6C6" )]
     public partial class CheckrRequestList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods

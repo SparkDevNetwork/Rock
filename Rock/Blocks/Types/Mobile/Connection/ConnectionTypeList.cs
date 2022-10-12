@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Rock.ClientService.Connection.ConnectionType;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionType.Options;
+using Rock.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -65,6 +66,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_TYPE_LIST_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_TYPE_LIST )]
     public class ConnectionTypeList : RockMobileBlockType
     {
         #region Block Attributes
@@ -159,10 +162,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // until we have a way to mark external types as lava safe.
                 var connectionTypeIds = types.Select( t => t.Id ).ToList();
                 var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds )
-                    .ToDictionary( k => k.Key, k => k.Value
-                        .GetType()
-                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
-                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
+                    .ToDictionary( k => k.Key, k => new RockDynamic( k.Value ) );
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();

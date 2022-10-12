@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "87A5A2E4-E6BA-4F3C-A6F2-ED046A04062E" )]
     public partial class AccountList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods

@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-import { getFieldType } from "../Fields/index";
-import { computed, defineComponent, PropType, provide, ref } from "vue";
-import { TextFieldType } from "../Fields/textField";
-import { PublicAttribute } from "../ViewModels";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { computed, defineComponent, PropType, provide } from "vue";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldType } from "@Obsidian/SystemGuids";
 
-const textField = new TextFieldType();
+const textField = getFieldType(FieldType.Text);
 
 export default defineComponent({
     name: "RockField",
@@ -29,7 +29,7 @@ export default defineComponent({
             required: false
         },
         attribute: {
-            type: Object as PropType<PublicAttribute>,
+            type: Object as PropType<PublicAttributeBag>,
             required: true
         },
         showEmptyValue: {
@@ -51,13 +51,13 @@ export default defineComponent({
     },
     setup(props, { emit }) {
         const field = computed(() => {
-            const fieldType = getFieldType(props.attribute.fieldTypeGuid);
+            const fieldType = getFieldType(props.attribute.fieldTypeGuid ?? "");
 
             return fieldType ?? textField;
         });
 
         /** True if the read-only value should be displayed. */
-        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.modelValue ?? "", props.attribute.configurationValues ?? {}) !== "");
+        const showValue = computed(() => props.showEmptyValue || field.value?.getTextValue(props.modelValue ?? "", props.attribute.configurationValues ?? {}) !== "");
 
         /** True if this field is required and must be filled in. */
         const isRequired = computed(() => props.attribute.isRequired);
@@ -84,12 +84,12 @@ export default defineComponent({
             //const _ignored = props.attributeValue.value;
 
             return props.isCondensed
-                ? field.value.getCondensedFormattedComponent()
-                : field.value.getFormattedComponent();
+                ? field.value?.getCondensedFormattedComponent()
+                : field.value?.getFormattedComponent();
         });
 
         /** The edit component to use to display the value. */
-        const editComponent = computed(() => field.value.getEditComponent());
+        const editComponent = computed(() => field.value?.getEditComponent());
 
         /** The value to display or edit. */
         const value = computed({

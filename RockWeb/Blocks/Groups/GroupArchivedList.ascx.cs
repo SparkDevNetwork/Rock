@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Archived List" )]
     [Category( "Utility" )]
     [Description( "Lists Groups that have been archived" )]
+    [Rock.SystemGuid.BlockTypeGuid( "AD5B3A8A-2111-4FC4-A026-51EEB4929CBA" )]
     public partial class GroupArchivedList : RockBlock, ICustomGridColumns
     {
         #region Fields

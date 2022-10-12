@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Personal Devices REST API
     /// </summary>
-    public partial class PresenceController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "0A6D9892-6A51-42C8-B3FC-1DB3D6B18354")]
+    public partial class PresenceController : ApiControllerBase 
     {
         /// <summary>
         /// Posts the specified presence list.
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Presence" )]
+        [Rock.SystemGuid.RestActionGuid( "F354A723-6EF0-4710-A415-E6FF8118B96F" )]
         public HttpResponseMessage Post( List<MACPresence> presenceList )
         {
             using ( var rockContext = new RockContext() )

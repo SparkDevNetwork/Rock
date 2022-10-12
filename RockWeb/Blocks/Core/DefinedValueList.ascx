@@ -22,6 +22,7 @@
                                     <Columns>
                                         <Rock:ReorderField/>
                                         <Rock:RockBoundField DataField="Value" HeaderText="Value"/>
+                                        <Rock:RockBoundField DataField="Category" HeaderText="Category"/>
                                         <Rock:RockBoundField DataField="Description" HeaderText="Description"/>
                                         <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                                     </Columns>
@@ -48,6 +49,8 @@
                     <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value"/>
                     <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value" ValidateRequestMode="Disabled"/>
                     <Rock:RockCheckBox ID="cbValueActive" runat="server" Label="Active" />
+                    <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.DefinedValue"
+                        Help="The category for the defined value. This will be used for the selection of the defined value." />
                     <div class="attributes">
                         <Rock:AttributeValuesContainer ID="avcDefinedValueAttributes" runat="server" />
                     </div>

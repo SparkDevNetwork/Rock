@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Schedule Builder" )]
     [Category( "Check-in" )]
     [Description( "Helps to build schedules used for check-in." )]
+    [Rock.SystemGuid.BlockTypeGuid( "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4" )]
     public partial class CheckinScheduleBuilder : RockBlock, ICustomGridOptions
     {
         private int? _groupTypeId = null;

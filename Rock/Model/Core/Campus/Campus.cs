@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,6 @@
 //
 using Rock.Data;
 using Rock.Web.Cache;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -33,6 +32,7 @@ namespace Rock.Model
     [Table( "Campus" )]
     [DataContract]
     [Analytics( false, true )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CAMPUS )]
     public partial class Campus : Model<Campus>, IOrdered, ICacheable
     {
         #region Entity Properties
@@ -205,30 +205,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias LeaderPersonAlias { get; set; }
-
-        /// <summary>
-        /// Gets the current date time basd on the <see cref="Campus.TimeZoneId" />.
-        /// </summary>
-        /// <value>
-        /// The current date time.
-        /// </value>
-        [NotMapped]
-        public virtual DateTime CurrentDateTime
-        {
-            get
-            {
-                if ( TimeZoneId.IsNotNullOrWhiteSpace() )
-                {
-                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
-                    if ( campusTimeZoneInfo != null )
-                    {
-                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
-                    }
-                }
-
-                return RockDateTime.Now;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the campus status.

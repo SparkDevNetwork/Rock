@@ -57,6 +57,12 @@ main {
   line-height: 18px;
 }
 
+.control-label-sm {
+  display: block;
+  font-size: @font-size-xs;
+  color: @text-muted;
+}
+
 .panel-body {
   // DOES NOT WORK WITH ROWS
   // > .row {
@@ -85,19 +91,12 @@ strong {
   min-height: 64px;
 }
 
-.flex-btn-gap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .static-control-label,
 .static-control .control-label,
 dl:not(.dl-horizontal) dt{
   font-size: @font-size-sm;
   font-weight: 400;
   color: @text-muted;
-  letter-spacing: .32px;
 }
 
 .panel-title {
@@ -245,21 +244,13 @@ textarea,
   font-weight: @font-weight-base;
 }
 
-.label.btn-label {
-  padding: @label-padding;
-  color: @btn-default-color;
-  background: @btn-default-bg;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  box-shadow: inset 0 0 0 1px @btn-default-border;
+.btn-label {
+  padding: 5px 5px 4px;
+  margin-top: -1px;
+  font-size: 12px;
+  line-height: 1;
 }
 
-.label-group {
-  .label:not(:last-child) {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-}
 
 .nav-tabs {
   border-bottom: 1px solid @nav-tabs-border-color;
@@ -360,16 +351,14 @@ textarea,
 .tooltip-arrow {
   width: 10px;
   height: 10px;
-  background: @gray-darker;
+  background: @tooltip-arrow-color;
   border: 1px solid @ui-4;
   transform: rotate(45deg);
 }
 
 .tooltip-inner {
   padding: (@padding-base-horizontal / 2);
-  color: @white;
   text-align: left;
-  background-color: @gray-darker;
   border: 1px solid @ui-4;
   .box-shadow(@shadow-overlay);
 }
@@ -403,6 +392,10 @@ textarea,
   box-shadow: none;
 }
 
+.dropdown-menu {
+  font-size: 14px;
+}
+
 .has-error {
   .form-control,
   .input-group-addon {
@@ -428,6 +421,7 @@ textarea,
 }
 
 .label {
+  display: inline-flex;
   padding: @label-padding;
   font-weight: 500; // make the font light
 }
@@ -589,8 +583,7 @@ textarea,
 // -------------------------
 
 
-// .panel-actions,
-.panel-body .actions:last-of-type { // unknown if .panel-body > is doing anything
+.panel-body .actions:last-of-type {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -602,6 +595,11 @@ textarea,
   > * {
     margin: 4px 8px 4px 0;
   }
+}
+
+// Temporary Fix for Obsidian
+.footer-actions .btn {
+  margin-right: 8px;
 }
 
 .panel-body .actions:last-of-type,
@@ -642,15 +640,6 @@ textarea,
         margin-left: -@panel-body-padding;
       }
     }
-  }
-}
-
-.modal {
-  .box-shadow(@shadow-modal);
-  border-radius: 0;
-
-  .modal-content {
-    .box-shadow(none);
   }
 }
 
@@ -776,6 +765,7 @@ textarea,
 }
 
 .panel-block,
+.panel-section,
 .panel-note {
   > .panel-heading {
     display: -ms-flexbox;
@@ -993,13 +983,15 @@ body.nav-open {
 
   .navbar-toggle {
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: @navbarside-width;
     height: @navbar-top-height;
-    padding: 0 28px;
+    padding: 0;
     margin: 0;
     font-size: 1.5em;
-    line-height: @navbar-top-height;
-    color: @white;
+    color: @navbar-top-color;
     cursor: pointer;
 
     .navbar-side-open & {
@@ -1026,13 +1018,11 @@ body.nav-open {
     height: @navbar-top-height;
     padding: 6px;
     color: @white;
-    background-color: @brand-primary;
-    background-color: var(--brand-primary, @brand-primary);
+    background-color: var(--brand-primary);
     background-size: 45px;
 
     .nav-open & {
-      background-color: @navbarside-background-color;
-      background-color: var(--navbarside-background-color, @navbarside-background-color);
+      background-color: var(--navbarside-background-color);
     }
 
     &.no-logo::after {
@@ -1060,10 +1050,12 @@ body.nav-open {
   }
 
   .smartsearch {
+    display: flex;
+    align-items: center;
     width: 100%;
-    height: 50px;
+    height: @navbar-element-height;
     padding: 0;
-    margin: 15px 0;
+    margin: @navbar-element-margin 0;
     font-size: .875em;
     border: 0;
 
@@ -1072,28 +1064,20 @@ body.nav-open {
     }
 
     i {
-      margin-top: 16px;
-      margin-left: 10px;
+      margin: 0 0 0 10px;
     }
 
     .twitter-typeahead {
-      margin-right: 80px;
+      flex-grow: 1;
+      margin-right: 0;
     }
 
     .smartsearch-type {
-      position: absolute;
-      right: 0;
-      z-index: 100;
+      order: 10;
       width: auto;
     }
 
-    input.searchinput {
-      padding: 15px 0 15px 34px;
-    }
-
     .dropdown {
-      margin-top: 10px;
-
       .dropdown-menu {
         font-size: 1em;
       }
@@ -1105,7 +1089,7 @@ body.nav-open {
 
     .tt-hint {
       padding: 14.5px 4px 4px 34px;
-      color: @navbartop-color;
+      color: @navbar-top-color;
       opacity: .5;
     }
 
@@ -1125,12 +1109,13 @@ body.nav-open {
       }
 
       > a {
+        display: flex;
+        align-items: center;
         padding: 0 18px;
-        line-height: @navbar-top-height;
-        color: @navbartop-color;
+        color: @navbar-top-color;
 
         @media (max-width: @screen-sm-max) {
-          padding: 0 12px;
+          padding: 0 8px;
           .fa-caret-down {
             display: none;
           }
@@ -1140,14 +1125,12 @@ body.nav-open {
           float: left;
           width: 36px;
           height: 36px;
-          margin-top: 22px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
           @media (min-width: @screen-sm-min) {
-            width: 43px;
-            height: 43px;
-            margin-top: 17px;
+            width: @navbar-element-height;
+            height: @navbar-element-height;
             margin-right: 12px;
           }
 
@@ -1178,12 +1161,10 @@ body.nav-open {
           top: @navbar-top-height;
           left: 0;
           z-index: 1000;
-          background-color: @brand-primary;
-          background-color: var(--brand-primary, @brand-primary);
+          background-color: var(--brand-primary);
 
           & > li > a {
-            color: @navbartop-color;
-            color: var(--navbartop-color);
+            color: var(--navbar-top-color);
           }
         }
       }
@@ -1194,13 +1175,9 @@ body.nav-open {
     border: 0;
 
     a {
-      width: 100%;
-      line-height: 34px;
-
       &:hover {
         color: @white;
-        background-color: @brand-primary;
-        background-color: var(--brand-primary, @brand-primary);
+        background-color: var(--brand-primary);
         opacity: 1;
       }
     }
@@ -1223,9 +1200,9 @@ body.nav-open {
   .header-content {
     display: flex;
     flex-direction: row-reverse;
+    align-items: center;
     width: 100%;
     margin-left: @navbarside-width;
-
   }
 }
 
@@ -1874,18 +1851,22 @@ body.navbar-side-open {
   }
 }
 
+
 .rock-bookmark {
-  display: inline-block;
-  padding: 10px 15px;
-  margin: 15px 2px 15px 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: @navbar-element-height;
+  height: @navbar-element-height;
+  margin: @navbar-element-margin 8px @navbar-element-margin 0;
   font-size: 20px;
-  color: #fff !important;
-  opacity: .75;
+  color: fade(@white, 75%);
+  background-color: rgba(255, 255, 255, .1);
+  border-radius: @border-radius-base;
 
   &:hover,
   &:active {
-    color: #fff;
-    opacity: .5;
+    color: fade(@white, 50%);
   }
 }
 
@@ -1921,6 +1902,7 @@ body.navbar-side-open {
 
 .container-in-block {
   max-width: 1020px;
+  padding: 24px 0;
   margin: 0 auto;
   @media (min-width: @screen-md-min) {
     padding: 48px 30px;
@@ -1935,12 +1917,12 @@ body.navbar-side-open {
     .navbar-link {
       display: inline-flex;
       align-items: center;
-      border-radius: @input-border-radius;
-      background: @body-background;
-      color: #737475;
-      padding: @input-padding-y @input-padding-x;
       width: 100%;
       max-width: 100%;
+      padding: @input-padding-y @input-padding-x;
+      color: #737475;
+      background: @body-background;
+      border-radius: @input-border-radius;
 
       b {
         margin-left: auto;
@@ -1949,8 +1931,8 @@ body.navbar-side-open {
 
     .open {
       > .navbar-link {
-        background: mix(@body-background, @white, 65%);
         color: @input-color;
+        background: mix(@body-background, @white, 65%);
       }
     }
   }
@@ -1974,6 +1956,7 @@ body.navbar-side-open {
 }
 
 /* #endregion */
+@import "_newprofile.less";
 @import "_print.less";
 @import "_css-overrides.less";
 

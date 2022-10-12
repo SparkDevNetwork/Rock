@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Layouts REST API
     /// </summary>
+    [RestControllerGuid( "2EB4043A-352B-408E-B600-931FDB72BAE1" )]
     public partial class LayoutsController : Rock.Rest.ApiController<Rock.Model.Layout>
     {
         /// <summary>

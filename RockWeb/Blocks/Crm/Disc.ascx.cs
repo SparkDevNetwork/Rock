@@ -78,6 +78,7 @@ namespace Rockweb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.DISC )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Attribute Default Values

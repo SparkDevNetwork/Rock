@@ -494,7 +494,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" ValidationGroup="GroupSyncSettings" />
+                        <Rock:RockCheckBox ID="cbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login, should one be created during the sync process?" ValidationGroup="GroupSyncSettings" />
                     </div>
                 </div>
             </Content>

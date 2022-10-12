@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
     [LinkedPage("Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 5)]
+    [Rock.SystemGuid.BlockTypeGuid( "3FC83F0E-8BAA-4CB3-BAD0-0CFBE0E621AA" )]
     public partial class ScheduledTransactionSummary : Rock.Web.UI.RockBlock
     {
         #region Fields

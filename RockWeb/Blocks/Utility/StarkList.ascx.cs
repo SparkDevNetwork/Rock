@@ -33,12 +33,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Stark List" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new list block." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E333D1CC-CB55-4E73-8568-41DAD296971C" )]
     public partial class StarkList : RockBlock, ICustomGridColumns
     {
         #region Fields

@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Bus
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "F9872CD9-EF32-4791-B0A9-1D104250AB18" )]
     public partial class QueueList : RockBlock
     {
         #region Keys

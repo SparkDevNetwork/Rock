@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Workflow.Action.CheckIn
         Category = "",
         Order = 0 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "176E0639-6482-4AED-957F-FDAA7AAA44FA")]
     public class FilterLocationsByLocationSelectionStrategy : CheckInActionComponent
     {
         private class AttributeKey

@@ -158,6 +158,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "FAA234E0-9B34-4539-9987-F15E3318B4FF" )]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

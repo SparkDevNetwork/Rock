@@ -35,52 +35,9 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M14.52,6.06H9.89L8.45,1.64a.47.47,0,0,0-.9,0L6.11,6.06H1.48a.47.47,0,0,0-.28.86L5,9.65,3.52,14.06a.48.48,0,0,0,.45.63.46.46,0,0,0,.28-.1L8,11.84l3.75,2.73a.39.39,0,0,0,.28.12.48.48,0,0,0,.45-.63L11.05,9.65,14.8,6.92A.47.47,0,0,0,14.52,6.06ZM10.31,8.63l-.73.54,1,3L8,10.31v-6l1,3h3.15Z""/></g></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.RATING )]
     public class RatingFieldType : FieldType
     {
-        #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            int rating = value.AsInteger();
-            var sb = new StringBuilder();
-            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
-            {
-                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
-            }
-
-            return sb.ToString();
-        }
-
-        /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var ratingValue = new RatingPublicValue
-            {
-                Value = privateValue.AsInteger(),
-                MaxValue = GetMaxRating( privateConfigurationValues )
-            };
-
-            return ratingValue.ToCamelCaseJson( false, true );
-        }
-
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
-
-            return ratingValue?.Value.ToString() ?? string.Empty;
-        }
-
-        #endregion
-
         #region Configuration
 
         /// <summary>
@@ -172,9 +129,61 @@ namespace Rock.Field.Types
             return 5;
         }
 
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldMax = oldPrivateConfigurationValues.GetValueOrNull( "max" ) ?? string.Empty;
+            var newMax = newPrivateConfigurationValues.GetValueOrNull( "max" ) ?? string.Empty;
+
+            if ( oldMax != newMax )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var rating = privateValue.AsInteger();
+            var maxRating = GetMaxRating( privateConfigurationValues );
+
+            return $"{rating} of {maxRating}";
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var rating = privateValue.AsInteger();
+            var sb = new StringBuilder();
+
+            for ( int i = 1; i <= GetMaxRating( privateConfigurationValues ); i++ )
+            {
+                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <summary>
         /// Formats the value as HTML.
@@ -239,6 +248,26 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var ratingValue = new RatingPublicValue
+            {
+                Value = privateValue.AsInteger(),
+                MaxValue = GetMaxRating( privateConfigurationValues )
+            };
+
+            return ratingValue.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
+
+            return ratingValue?.Value.ToString() ?? string.Empty;
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value

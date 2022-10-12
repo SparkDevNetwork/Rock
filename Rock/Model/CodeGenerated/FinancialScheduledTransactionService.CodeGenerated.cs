@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// FinancialScheduledTransaction View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( FinancialScheduledTransaction ) )]
-    public partial class FinancialScheduledTransactionViewModelHelper : ViewModelHelper<FinancialScheduledTransaction, Rock.ViewModel.FinancialScheduledTransactionViewModel>
+    public partial class FinancialScheduledTransactionViewModelHelper : ViewModelHelper<FinancialScheduledTransaction, FinancialScheduledTransactionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.FinancialScheduledTransactionViewModel CreateViewModel( FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = true )
+        public override FinancialScheduledTransactionBag CreateViewModel( FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.FinancialScheduledTransactionViewModel
+            var viewModel = new FinancialScheduledTransactionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
                 CardReminderDate = model.CardReminderDate,
                 EndDate = model.EndDate,
@@ -218,7 +218,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.FinancialScheduledTransactionViewModel ToViewModel( this FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = false )
+        public static FinancialScheduledTransactionBag ToViewModel( this FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new FinancialScheduledTransactionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

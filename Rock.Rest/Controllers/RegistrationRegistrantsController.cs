@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,7 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class RegistrationRegistrantsController
     {
@@ -38,7 +38,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/RegistrationRegistrants/GetGroupPlacementRegistrants" )]
         [HttpPost]
-        public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody]GetGroupPlacementRegistrantsParameters options )
+        [Rock.SystemGuid.RestActionGuid( "BB15362D-FF32-448F-804C-7B39543DD934" )]
+        public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody] GetGroupPlacementRegistrantsParameters options )
         {
             var rockContext = new RockContext();
             var registrantService = new RegistrationRegistrantService( rockContext );

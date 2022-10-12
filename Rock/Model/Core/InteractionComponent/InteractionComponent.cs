@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionComponent" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "ACE6145B-57D6-4694-972F-EC43AF776DE7")]
     public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {
         #region Entity Properties
@@ -139,9 +140,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual InteractionChannel InteractionChannel { get; set; }
-
-        [NotMapped]
-        private EntityState SaveState { get; set; }
 
         #endregion
     }

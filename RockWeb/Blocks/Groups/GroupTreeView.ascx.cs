@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -48,6 +49,7 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
     [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
     [LinkedPage( "Detail Page", order: 9 )]
+    [Rock.SystemGuid.BlockTypeGuid( "2D26A2C4-62DC-4680-8219-A52EB2BC0F65" )]
     public partial class GroupTreeView : RockBlock
     {
         #region Attribute Keys
@@ -174,7 +176,42 @@ namespace RockWeb.Blocks.Groups
                 tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             }
 
+
             lPanelTitle.Text = GetAttributeValue( AttributeKey.TreeviewTitle );
+
+            if ( string.IsNullOrWhiteSpace( _groupId ) )
+            {
+                // If no group was selected, try to find the first group and redirect
+                // back to current page with that group selected
+                var group = FindFirstGroup();
+                {
+                    if ( group != null )
+                    {
+                        _groupId = group.Id.ToString();
+                        string redirectUrl = string.Empty;
+
+                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                        if ( hfPageRouteTemplate.Value.IndexOf( "{groupId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                        {
+                            redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
+                        }
+                        else
+                        {
+                            if ( this.Request.QueryString.Count == 0 )
+                            {
+                                redirectUrl = this.Request.UrlProxySafe() + "?GroupId=" + _groupId.ToString();
+                            }
+                            else
+                            {
+                                redirectUrl = this.Request.UrlProxySafe() + "&GroupId=" + _groupId.ToString();
+                            }
+                        }
+
+                        this.Response.Redirect( redirectUrl, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -198,40 +235,6 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 SetAllowedGroupTypes();
-
-                if ( string.IsNullOrWhiteSpace( _groupId ) )
-                {
-                    // If no group was selected, try to find the first group and redirect
-                    // back to current page with that group selected
-                    var group = FindFirstGroup();
-                    {
-                        if ( group != null )
-                        {
-                            _groupId = group.Id.ToString();
-                            string redirectUrl = string.Empty;
-
-                            // redirect so that the group treeview has the first node selected right away and group detail shows the group
-                            if ( hfPageRouteTemplate.Value.IndexOf( "{groupId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                            {
-                                redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
-                            }
-                            else
-                            {
-                                if ( this.Request.QueryString.Count == 0 )
-                                {
-                                    redirectUrl = this.Request.UrlProxySafe() + "?GroupId=" + _groupId.ToString();
-                                }
-                                else
-                                {
-                                    redirectUrl = this.Request.UrlProxySafe() + "&GroupId=" + _groupId.ToString();
-                                }
-                            }
-
-                            this.Response.Redirect( redirectUrl, false );
-                            Context.ApplicationInstance.CompleteRequest();
-                        }
-                    }
-                }
             }
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -245,7 +248,9 @@ namespace RockWeb.Blocks.Groups
                 if ( selectedGroup == null )
                 {
                     int id = _groupId.AsInteger();
-                    selectedGroup = new GroupService( rockContext ).Queryable( "GroupType" )
+                    selectedGroup = new GroupService( rockContext )
+                        .Queryable( "GroupType" )
+                        .AsNoTracking()
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, selectedGroup );

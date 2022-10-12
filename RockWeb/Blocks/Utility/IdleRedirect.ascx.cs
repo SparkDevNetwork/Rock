@@ -29,6 +29,7 @@ namespace RockWeb.Blocks.Utility
 
     [TextField( "New Location", "The new location URL to send user to after idle time" )]
     [IntegerField( "Idle Seconds", "How many seconds of idle time to wait before redirecting user", false, 20 )]
+    [Rock.SystemGuid.BlockTypeGuid( "49FC4B38-741E-4B0B-B395-7C1929340D88" )]
     public partial class IdleRedirect : RockBlock, IIdleRedirectBlock
     {
         #region IIdleRedirectBlock

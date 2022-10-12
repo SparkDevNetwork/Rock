@@ -167,6 +167,7 @@ namespace RockWeb.Blocks.Finance
         </div>
     </div>
 {% endif %}", order: 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "C2D8FCA3-BC8F-44FF-85AA-440BF41CEF5D" )]
     public partial class BenevolenceRequestStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

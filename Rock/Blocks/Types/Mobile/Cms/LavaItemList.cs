@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LAVA_ITEM_LIST_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "42B9ADBA-AE3E-4AC6-BE4C-7D3714ADF48D")]
     public class LavaItemList : RockMobileBlockType
     {
         /// <summary>

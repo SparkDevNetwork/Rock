@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Prompts user for login credentials.
     /// </summary>
-    [DisplayName( "Login" )]
+    [DisplayName( "Log In" )]
     [Category( "Security" )]
     [Description( "Prompts user for login credentials." )]
 
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
+        DefaultValue = @"We couldn't find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
         Order = 9 )]
 
     [CodeEditorField(
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = "Login with social account",
+        DefaultValue = "Log in with social account",
         Order = 10 )]
 
     [RemoteAuthsField(
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Security
     [LinkedPage(
         "Redirect Page",
         Key = AttributeKey.RedirectPage,
-        Description = "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.",
+        Description = "Page to redirect user to upon successful log in. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.",
         IsRequired = false,
         Order = 15 )]
 
@@ -183,11 +183,12 @@ namespace RockWeb.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>",
+        DefaultValue = @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please log in below.</div>",
         Order = 16 )]
 
     #endregion "Block Attributes"
 
+    [Rock.SystemGuid.BlockTypeGuid( "7B83D513-1178-429E-93FF-E76430E038E4" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey
@@ -213,7 +214,7 @@ namespace RockWeb.Blocks.Security
 
         #region Constants
         private const string ConfirmCaptionDefaultValue = @"
-Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
+Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ";
 
         private const string LockedOutCaptionDefaultValue = @"
@@ -556,7 +557,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
                             }
                             else
                             {
-                                DisplayError( string.Format( "ERROR: {0} does not have a remote login URL", loginTypeName ) );
+                                DisplayError( string.Format( "ERROR: {0} does not have a remote log in URL", loginTypeName ) );
                             }
                         }
                     }

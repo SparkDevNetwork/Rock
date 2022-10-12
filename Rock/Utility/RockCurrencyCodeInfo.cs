@@ -172,5 +172,14 @@ namespace Rock.Utility
         {
             return new RockCurrencyCodeInfo().DecimalPlaces;
         }
+
+        /// <summary>
+        /// Gets the currency code.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetCurrencyCode()
+        {
+            return new RockCurrencyCodeInfo().CurrencyCode;
+        }
     }
 }

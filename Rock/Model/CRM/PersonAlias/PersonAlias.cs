@@ -35,6 +35,7 @@ namespace Rock.Model
     [Table( "PersonAlias" )]
     [NotAudited]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_ALIAS )]
     public partial class PersonAlias : Entity<PersonAlias>
     {
         #region Entity Properties
@@ -61,21 +62,45 @@ namespace Rock.Model
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets an alias person Id.  If <see cref="AliasPersonId"/> equals <see cref="PersonId"/>, this is the PrimaryAlias. Otherwise, the AliasPersonId is the previous person id that was merged into a new person record.
+        /// If <see cref="AliasPersonId"/> equals <see cref="PersonId"/>, this is the PrimaryAlias. Otherwise, the AliasPersonId is the previous person id that was merged into a new person record.
+        /// If this is NULL it is special case where the PersonAlias is or was anonymous.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
+        /// A <see cref="System.Int32"/> representing the current/previous Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
+        /// <remarks>
+        /// This is a Unique Constraint, but we make it a filtered unique constraint
+        /// where it only applies to non-null values.
+        /// </remarks>
         [Index( IsUnique = true )]
         public int? AliasPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the new <see cref="System.Guid"/> identifier of the <see cref="Rock.Model.Person"/>. This property is required.
+        /// If <see cref="AliasPersonId"/> equals <see cref="PersonId"/>, this is the Guid of the Person. Otherwise, the AliasPersonGuid is the previous person's guid that was merged into a new person record.
+        /// If this is NULL it is special case where the PersonAlias is or was anonymous.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Guid"/> representing the new/current Guid identifier of the <see cref="Rock.Model.Person"/>.
+        /// A <see cref="System.Int32"/> representing the current/previous Guid of the <see cref="Rock.Model.Person"/>.
         /// </value>
         public Guid? AliasPersonGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the aliased date time.
+        /// </summary>
+        /// <value>
+        /// The aliased date time.
+        /// </value>
+        [DataMember]
+        public DateTime? AliasedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last visit time.
+        /// </summary>
+        /// <value>
+        /// The last visit time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastVisitDateTime { get; set; }
 
         #endregion
 

@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Store
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "")]
     [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "")]
     [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C0332D98-7CD0-43C2-9810-60F7DF86FBB6" )]
     public partial class PurchasedPackages : Rock.Web.UI.RockBlock
     {
         #region Fields

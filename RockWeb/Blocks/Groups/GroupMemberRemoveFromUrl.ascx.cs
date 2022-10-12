@@ -32,9 +32,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Member RemoveFrom URL" )]
     [Category( "Groups" )]
     [Description( "Removes a person from a group based on inputs from the URL query string (GroupId, PersonGuid)." )]
@@ -47,6 +44,7 @@ namespace RockWeb.Blocks.Groups
 </div>", order: 2 )]
     [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
+    [Rock.SystemGuid.BlockTypeGuid( "0159CE20-7B41-4D53-985C-81877ED75767" )]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists personal link in the system." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E7546752-C3DC-4B96-88D9-A431F2D1C989" )]
     public partial class PersonalLinkList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region PageParameterKeys

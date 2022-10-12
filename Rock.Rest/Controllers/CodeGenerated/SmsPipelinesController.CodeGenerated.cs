@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// SmsPipelines REST API
     /// </summary>
+    [RestControllerGuid( "A99927BE-BCA4-44C6-8F42-B61E55807CF8" )]
     public partial class SmsPipelinesController : Rock.Rest.ApiController<Rock.Model.SmsPipeline>
     {
         /// <summary>

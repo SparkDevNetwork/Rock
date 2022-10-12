@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Communication.SmsActions
     [Description( "Processes a message with the SMS Conversations system." )]
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "SMS Conversations" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SMS_ACTION_CONVERSATION )]
     public class SmsActionConversations : SmsActionComponent
     {
         #region Properties

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
@@ -30,6 +31,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -40,7 +42,8 @@ namespace Rock.Rest.v2
     /// API controller for the /api/v2/BlockActions endpoints.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    public class BlockActionsController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "31D6B6FC-7740-483A-81D2-D62283F67C0A")]
+    public class BlockActionsController : ApiControllerBase 
     {
         #region API Methods
 
@@ -53,10 +56,11 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        [Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        public IHttpActionResult BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
+        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
+        public async Task<IHttpActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
-            return ProcessAction( this, pageGuid, blockGuid, actionName, null );
+            return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
         }
 
         /// <summary>
@@ -69,12 +73,13 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
-        [Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        public IHttpActionResult BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
+        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
+        public async Task<IHttpActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
             {
-                return ProcessAction( this, pageGuid, blockGuid, actionName, null );
+                return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
             }
 
             //
@@ -90,7 +95,7 @@ namespace Rock.Rest.v2
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
+                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
                 }
             }
         }
@@ -108,7 +113,7 @@ namespace Rock.Rest.v2
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        internal static IHttpActionResult ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
+        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
         {
             try
             {
@@ -226,11 +231,13 @@ namespace Rock.Rest.v2
 
                 requestContext.AddContextEntitiesForPage( pageCache );
 
-                return InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
+                return await InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
             }
             catch ( Exception ex )
             {
-                return new BadRequestErrorMessageResult( ex.Message, controller );
+                ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+
+                return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, new HttpError( ex.Message ), controller );
             }
         }
 
@@ -246,7 +253,7 @@ namespace Rock.Rest.v2
         /// <exception cref="ArgumentNullException">actionName
         /// or
         /// actionData</exception>
-        internal static IHttpActionResult InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
+        internal static async Task<IHttpActionResult> InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
         {
             // Parse the body content into our normal parameters.
             if ( bodyParameters != null )
@@ -357,6 +364,22 @@ namespace Rock.Rest.v2
             try
             {
                 result = action.Invoke( block, parameters.ToArray() );
+
+                // Check if the result type is a Task.
+                if ( result is Task resultTask )
+                {
+                    await resultTask;
+
+                    // Task<T> is not covariant, so we can't just cast to Task<object>.
+                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                    {
+                        result = ( ( dynamic ) resultTask ).Result;
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
             }
             catch ( TargetInvocationException ex )
             {
@@ -369,9 +392,7 @@ namespace Rock.Rest.v2
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
-            //
             // Handle the result type.
-            //
             if ( result is IHttpActionResult httpActionResult )
             {
                 return httpActionResult;

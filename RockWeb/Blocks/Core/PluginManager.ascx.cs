@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Allows installed plugins to be viewed or removed and new ones to be added from the Rock Quarry server." )]
     [RockObsolete( "1.13.3" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PLUGIN_MANAGER )]
     public partial class PluginManager : Rock.Web.UI.RockBlock
     {
 #pragma warning disable CS0618

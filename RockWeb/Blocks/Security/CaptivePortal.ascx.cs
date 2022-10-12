@@ -125,6 +125,7 @@ namespace RockWeb.Blocks.Security
         key: "LegalNote" )]
 
     #endregion Block Settings
+    [Rock.SystemGuid.BlockTypeGuid( "CCFCD227-C8F9-4952-8AC5-E427D519EE47" )]
     public partial class CaptivePortal : RockBlock
     {
         #region Block Setting Strings

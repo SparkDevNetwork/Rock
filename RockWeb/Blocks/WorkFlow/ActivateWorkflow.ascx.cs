@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Activates a workflow and then redirects user to workflow entry page. NOTE: This block has been deprecated and will be removed in a future update. The Workflow Entry block now supports the same functionality." )]
 
     [LinkedPage( "Workflow Entry Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "83CB0C72-4F0A-44A7-98D0-260CE33788E9" )]
     public partial class ActivateWorkflow : Rock.Web.UI.RockBlock
     {
 

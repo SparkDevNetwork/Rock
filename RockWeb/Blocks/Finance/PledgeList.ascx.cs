@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D" )]
     public partial class PledgeList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Properties

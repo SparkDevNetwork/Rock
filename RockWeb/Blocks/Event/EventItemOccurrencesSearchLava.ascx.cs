@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ShowDateRangeFilter )]
+    [Rock.SystemGuid.BlockTypeGuid( "01CA4723-8290-41C6-A2D2-88469FAA48E9" )]
     public partial class EventItemOccurrencesSearchLava : RockBlock
     {
         #region Attribute Keys

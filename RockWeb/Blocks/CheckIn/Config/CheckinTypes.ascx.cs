@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Config
     [Category( "Check-in > Configuration" )]
     [Description( "Displays the check-in types." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "50029382-75A6-4B73-9644-880845B3116A" )]
     public partial class CheckinTypes : Rock.Web.UI.RockBlock
     {
         private int _templatePurposeId = 0;

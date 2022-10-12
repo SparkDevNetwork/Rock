@@ -30,10 +30,36 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMOTE_AUTHS )]
     public class RemoteAuthsFieldType : FieldType
     {
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var names = new List<string>();
+            var selectedGuids = privateValue
+                .SplitDelimitedValues()
+                .AsGuidList();
+
+            foreach ( Guid guid in selectedGuids )
+            {
+                var entityType = EntityTypeCache.Get( guid );
+                if ( entityType != null )
+                {
+                    names.Add( entityType.FriendlyName );
+                }
+            }
+
+            return names.AsDelimited( ", " );
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -45,28 +71,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            var names = new List<string>();
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var selectedGuids = new List<Guid>();
-                value.SplitDelimitedValues().ToList().ForEach( v => selectedGuids.Add( Guid.Parse( v ) ) );
-
-                foreach( Guid guid in selectedGuids)
-                {
-                    var entityType = EntityTypeCache.Get( guid );
-                    if ( entityType != null )
-                    {
-                        names.Add( entityType.FriendlyName );
-                    }
-                }
-            }
-
-            formattedValue = names.AsDelimited( ", " );
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

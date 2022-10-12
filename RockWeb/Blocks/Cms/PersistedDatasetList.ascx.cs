@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
         DefaultDecimalValue = 1,
         Order = 2 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "50ADE904-BB5C-40F9-A97D-ED8FF530B5A6" )]
     public partial class PersistedDatasetList : RockBlock, ICustomGridColumns
     {
 

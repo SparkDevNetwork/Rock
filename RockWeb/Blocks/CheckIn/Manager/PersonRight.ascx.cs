@@ -92,6 +92,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         DefaultValue = Rock.SystemGuid.Page.CHECK_IN_MANAGER_PERSON_ATTENDANCE_CHANGE_HISTORY,
         IsRequired = true,
         Order = 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "486892AE-B5FD-447C-9E27-15A4BF3667CB" )]
     public partial class PersonRight : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

@@ -4,6 +4,7 @@
   1. Notes - block to display, add, edit, delete notes
   2. Schedule Builder - block for building schedules
   3. Workflow - styles for workflow blocks
+  4. Electronic Signatures
 
 */
 
@@ -163,33 +164,25 @@
 
 .tag-flair {
   position: relative;
-  display: inline-block;
-  margin-left: 4px;
-  font-size: @font-size-xs;
+  display: inline-flex;
+  align-items: center;
   line-height: 1;
   text-transform: capitalize;
   vertical-align: top;
 
   .tag-color {
-    position: absolute;
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 2px 5px 0 1px;
+    width: 1em;
+    height: 1em;
+    margin: 0 6px 0 1px;
     background-color: #999;
     border-radius: 50%;
   }
 
   .tag-label {
-    position: relative;
-    font-size: @font-size-xs;
-    line-height: 12px;
+    line-height: 1;
     color: @text-muted;
     white-space: nowrap;
-  }
-
-  .tag-color + .tag-label {
-    margin-left: 14px;
   }
 }
 
@@ -201,15 +194,17 @@
 
 .avatar {
   position: relative;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 32px;
   height: 32px;
   overflow: hidden;
   font-size: 24px;
   line-height: 1;
+  background: @gray-100;
   color: @text-muted;
   text-align: center;
-  vertical-align: middle;
   border-radius: 50%;
 
   img {
@@ -225,15 +220,7 @@
   &-lg {
     width: 48px;
     height: 48px;
-    font-size: 32px;
-
-    &.avatar-icon {
-      padding-top: 5px;
-
-      &::after {
-        display: none;
-      }
-    }
+    font-size: 20px;
   }
 
   &-sm {
@@ -262,36 +249,55 @@
 }
 
 .meta {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: start;
-  -ms-flex-align: start;
-  align-items: flex-start;
+  align-items: center;
+
+  .dropdown {
+    align-self: flex-start;
+    margin-left: auto;
+  }
+
+  .btn-overflow {
+    height: @font-size-base;
+    padding: 0;
+    line-height: @font-size-base;
+    color: @gray-light;
+    &:hover,
+    &:focus {
+      color: @gray;
+    }
+  }
 
   p {
     margin-bottom: 0;
     line-height: 1.3;
   }
 
+  .note-caption {
+    font-weight: 600;
+  }
+
+  .note-details {
+    display: flex;
+    align-items: center;
+    font-size: @font-size-sm;
+    line-height: 1.5;
+  }
+
   .timestamp {
     display: inline-block;
-    font-size: @font-size-xs;
-    line-height: 1.3;
     color: @text-muted;
-    vertical-align: top;
   }
 
   .meta-figure {
-    -ms-flex-negative: 0;
     flex-shrink: 0;
     margin-right: 12px;
   }
 
   .meta-body {
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
+    display: flex;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
 
     .flex {
@@ -311,17 +317,6 @@
       right: 0;
       left: auto;
     }
-
-    .btn-overflow {
-      height: @font-size-base;
-      padding: 0;
-      line-height: @font-size-base;
-      color: @gray-light;
-      &:hover,
-      &:focus {
-        color: @gray;
-      }
-    }
   }
 }
 
@@ -337,18 +332,19 @@
 
 .note {
   + .note {
-    border-top: 1px solid @panel-border;
+    border-top: 1px solid #dee2e6;
   }
 
   .flag {
-    padding: 6px 8px;
-    margin: -12px -12px 8px;
+    padding: 4px 8px 6px;
+    margin: -16px -24px 12px;
+    font-size: 12px;
     color: @brand-danger;
     background: @state-danger-bg;
-    border-left: 5px solid @brand-danger;
+    border-top: 2px solid @brand-danger;
     @media @sm {
-      padding: 6px 23px;
-      margin: -12px -16px 12px;
+      padding: 4px 23px 6px;
+      font-size: 14px;
     }
 
     &.warning {
@@ -359,17 +355,15 @@
   }
 
   article {
-    padding: 12px 12px 2px;
-    @media @sm {
-      padding: 12px 16px 20px;
-    }
-    &.is-alert {
-      box-shadow: inset 5px 0 0 0 @brand-danger;
-    }
+    padding: 16px 24px;
 
-    &.is-personal {
-      box-shadow: inset 5px 0 0 0 @brand-info;
-    }
+    // &.is-alert {
+    //   box-shadow: inset 5px 0 0 0 @brand-danger;
+    // }
+
+    // &.is-personal {
+    //   box-shadow: inset 5px 0 0 0 @brand-info;
+    // }
   }
 
   .note-comments {
@@ -385,10 +379,6 @@
   }
 
   .note-content {
-    @media @sm {
-      margin: 0 0 24px 60px;
-    }
-
     p {
       margin: 0;
     }
@@ -406,15 +396,9 @@
   }
 
   .note-footer {
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: row;
     flex-direction: row;
-    margin: 0 0 0 60px;
     font-size: @font-size-xs;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
 
     &-actions-list {
       -ms-flex-order: 0;
@@ -477,12 +461,13 @@
 
 .note-editor {
   .meta-body {
+    background: @input-bg;
     border: 1px solid @input-border;
+    border-radius: @input-border-radius;
   }
 
   .settings {
     padding: 3px 12px 6px;
-    background: @input-bg;
 
     .createDate {
       float: left;
@@ -563,10 +548,9 @@
 
   // Disable primary note field border and focus states
   .noteentry-control .form-control {
+    background: transparent;
     border: 0;
-    &:focus {
-      box-shadow: none;
-    }
+    box-shadow: none;
   }
 }
 
@@ -586,7 +570,7 @@
 
 // Fixes note-editor name conflict with Summernote and Timeline note
 .notes .note-editor {
-  margin: 8px 16px;
+  margin: 16px 24px;
 }
 
 .noteentry-control {
@@ -959,4 +943,62 @@
 .rockslide-leave-to {
   opacity: 0;
   transform: translateY(-100%);
+}
+
+// 4. Electronic Signatures
+
+.icon-property {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    color: @text-muted;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .property {
+    display: flex;
+    flex-direction: column;
+    margin-left: 8px;
+  }
+}
+
+.registrant-signature-document{
+  margin-top: 32px;
+}
+
+.signaturedocument-container {
+  width: 100%;
+  height: 450px;
+  margin-bottom: 20px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid @panel-border;
+  border-radius: @border-radius-base;
+}
+
+.signaturedocument-iframe {
+  width: 100%;
+  min-height: 450px;
+}
+
+.signature-entry-agreement {
+  margin-top: 6px;
+}
+
+.signature-entry-clear-col {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
 }

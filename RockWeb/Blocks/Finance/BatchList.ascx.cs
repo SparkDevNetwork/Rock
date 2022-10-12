@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Finance
         </div>
 " )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" )]
     public partial class BatchList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
         #region Constants

@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [DisplayName( "Group Schedule Communication" )]
     [Category( "Group Scheduling" )]
     [Description( "Allows an individual to create a communication based on group schedule criteria." )]
+    [Rock.SystemGuid.BlockTypeGuid( "9F813A6C-25A7-491F-9C01-6D6EE6A7CA04" )]
     public partial class GroupScheduleCommunication : RockBlock
     {
         #region User Preference Keys

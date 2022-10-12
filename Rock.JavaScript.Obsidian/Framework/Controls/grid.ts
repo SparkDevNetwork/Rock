@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import JavaScriptAnchor from "../Elements/javaScriptAnchor";
+import JavaScriptAnchor from "./javaScriptAnchor";
 
 export type FilterOptions = {
     take: number;

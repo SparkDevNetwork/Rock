@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Event
     [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
 
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemList.lava' %}", order: 6 )]
+    [Rock.SystemGuid.BlockTypeGuid( "6DF11547-8757-4305-BC9A-122B9D929342" )]
     public partial class EventItemListLava : RockBlock
     {
         #region Properties

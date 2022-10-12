@@ -21,9 +21,12 @@
 // </copyright>
 //
 
+/** Class PageRoute. */
 export const enum PageRoute {
-    /** The CheckinManager route guid
-The /checkinmanager route guid */
+    /**
+     * The CheckinManager route guid
+     * The /checkinmanager route guid
+     */
     CheckInManager = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48",
     /** The /checkinmanager/attendance-detail route guid */
     CheckInManagerAttendanceDetail = "FB89DA07-CB29-4786-85FF-8814F43511B2",
@@ -47,5 +50,6 @@ The /checkinmanager route guid */
     FinancialAccountSearch = "76A96F05-5B89-407B-A72E-5CB4FA64A11A",
     /** The system communication preview route 'Admin/Communications/System/Preview' */
     SystemCommunicationPreview = "AAC42941-8B2C-4F20-923D-E74146D2E103",
+    /** The Step Program Flow route 'steps/program/{ProgramId}/flow' */
+    StepFlow = "4F75872B-EBE0-43FA-A8F3-ED716B45A1A6",
 }
-

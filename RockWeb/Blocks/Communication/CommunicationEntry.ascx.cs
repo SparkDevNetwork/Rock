@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Communication
         Order = 2 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY )]
     public partial class CommunicationEntry : RockBlock
     {
         #region Attribute Keys
@@ -194,6 +195,7 @@ namespace RockWeb.Blocks.Communication
             public const string Person = "Person";
             public const string PersonId = "PersonId";
             public const string TemplateGuid = "TemplateGuid";
+            public const string MediumId = "MediumId";
         }
 
         #region Fields
@@ -359,7 +361,10 @@ namespace RockWeb.Blocks.Communication
             btnSave.Visible = _fullMode;
 
             _editingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
-
+            if( PageParameter( PageParameterKey.MediumId ).IsNotNullOrWhiteSpace() )
+            {
+                MediumEntityTypeId = PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull();
+            }
         }
 
         /// <summary>
@@ -934,7 +939,7 @@ namespace RockWeb.Blocks.Communication
                         a.MediumEntityTypeId
                     } ).ToList();
 
-                mediumEntityTypeId = recipientList.Where( a => a.MediumEntityTypeId.HasValue ).Select( a => a.MediumEntityTypeId ).FirstOrDefault();
+                mediumEntityTypeId = PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull() ?? recipientList.Where( a => a.MediumEntityTypeId.HasValue ).Select( a => a.MediumEntityTypeId ).FirstOrDefault();
                 Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
             }
             else

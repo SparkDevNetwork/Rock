@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace Rock.Bus.Transport
        DefaultBooleanValue = false,
         Key = AttributeKey.DeadLetterOnMessageExpiration )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "91130C54-D189-4B0B-B8CB-F92B6681A327")]
     public class AzureServiceBus : TransportComponent
     {
         #region Attribute Keys

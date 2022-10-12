@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Account" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0361FFC9-F32F-4C97-98BD-9DFE5F4A777E" )]
     public partial class MediaAccountDetail : RockBlock
     {
         #region PageParameterKeys

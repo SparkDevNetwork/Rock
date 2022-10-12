@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// BlockTypes REST API
     /// </summary>
+    [RestControllerGuid( "BE4333F3-DE11-4A55-A3D3-C25FDCE827A1" )]
     public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType>
     {
         /// <summary>

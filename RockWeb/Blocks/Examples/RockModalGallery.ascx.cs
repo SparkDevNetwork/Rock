@@ -29,6 +29,7 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Allows you to see and try various Rock Modal controls." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "CDDE32B6-CDC2-4869-AA39-35DB97D3A59F" )]
     public partial class RockModalGallery : RockBlock
     {
         /// <summary>

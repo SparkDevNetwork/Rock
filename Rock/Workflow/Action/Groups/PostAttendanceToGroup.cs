@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,6 +94,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.AddToGroup )]
 
     #endregion Attributes
+    [Rock.SystemGuid.EntityTypeGuid( "7D939E2E-EBD5-491A-AA9C-FBCC91AAD5D3")]
     public class PostAttendanceToGroup : ActionComponent
     {
         #region Attribute Keys

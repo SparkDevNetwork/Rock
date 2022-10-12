@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Text.Encodings.Web;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -33,6 +35,7 @@ namespace Rock.Badge.Component
 
     [SiteField( "Site", "Site to filter for.", true, "3", "", 1 )]
     [LinkedPage( "Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "A8619A37-5DB6-4CD1-AC5A-B2FD9AC80F67")]
     public class LastVisitOnSite : BadgeComponent
     {
         /// <summary>
@@ -45,30 +48,22 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-overlay rockbadge-lastvisitonsite rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -97,12 +92,12 @@ namespace Rock.Badge.Component
             var pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
             // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
-            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
+            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
 
             return $@"
                 $.ajax({{
                     type: 'GET',
-                    url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{person.Id}/{siteId}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
                             var badgeHtml = '';
@@ -114,9 +109,9 @@ namespace Rock.Badge.Component
                             var siteName = '{JavaScriptEncoder.Default.Encode( siteName )}';
 
                             if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
-        
-                                labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';                                    
-        
+
+                                labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';
+
                                 if (daysSinceVisit == 0) {{
                                     daysSinceVisit = 'Today';
                                     cssClass = 'today';
@@ -131,16 +126,15 @@ namespace Rock.Badge.Component
                                     cssClass = 'not-recent';
                                 }} else {{
                                     cssClass = 'old';
-                                }}                                   
-                                            
-                                if (linkUrl != '') {{
-                                    badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div></a>';
-                                }} else {{
-                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
                                 }}
 
-                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').html(badgeContent);
-                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+                                if (linkUrl != '') {{
+                                    badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></a>';
+                                }} else {{
+                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></div>';
+                                }}
+
+                                $('.rockbadge-lastvisitonsite.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);
                             }}
                         }}
                     }},

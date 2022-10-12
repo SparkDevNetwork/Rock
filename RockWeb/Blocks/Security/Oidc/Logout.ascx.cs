@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Logout the user from their auth client." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_LOGOUT )]
     public partial class Logout : RockBlock
     {
         #region Base Control Methods

@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +34,8 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class FinancialStatementTemplateFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( "9E0CD807-D69F-4888-A9BE-BCD11DD083FE")]
+    public class FinancialStatementTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
 
@@ -47,9 +49,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            Guid? financialStatementTemplateGuid = value.AsGuidOrNull();
+            Guid? financialStatementTemplateGuid = privateValue.AsGuidOrNull();
             if ( financialStatementTemplateGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -58,7 +68,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -187,6 +197,47 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialStatementTemplateId = new FinancialStatementTemplateService( rockContext ).GetId( guid.Value );
+
+                if ( !financialStatementTemplateId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<FinancialStatementTemplate>().Value, financialStatementTemplateId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Financial Statement Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialStatementTemplate>().Value, nameof( FinancialStatementTemplate.Name ) )
+            };
+        }
+
         #endregion
     }
 }

@@ -64,15 +64,15 @@ namespace RockWeb.Blocks.GroupScheduling
         IsRequired = true,
         DefaultValue =
     @"<div class=""alert alert-info"">
-    {%- if IsSchedulesAvailable -%}
-        {%- if CurrentPerson.Id == Person.Id -%}
+    {% if IsSchedulesAvailable %}
+        {% if CurrentPerson.Id == Person.Id %}
             Sign up to attend a group and location on the given date.
-        {%- else -%}
+        {% else %}
             Sign up {{ Person.FullName }} to attend a group and location on a given date.
-        {%- endif -%}
+        {% endif %}
      {%- else -%}
         No sign-ups available.
-     {%- endif -%}
+     {% endif %}
 </div>",
         Order = 1
          )]
@@ -192,6 +192,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
     public partial class GroupScheduleToolboxV2 : RockBlock
     {
         #region Constants
@@ -2157,7 +2158,7 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum GroupScheduleType
         {

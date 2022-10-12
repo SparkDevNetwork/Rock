@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.WorkFlow
     [CategoryField( "Categories", "Optional Categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "" )]
     [LinkedPage( "Entry Page", "Page used to enter form information for a workflow." )]
     [LinkedPage( "Detail Page", "Page used to view status of a workflow." )]
+    [Rock.SystemGuid.BlockTypeGuid( "689B434F-DD2D-464A-8DA3-21F8768BB5BF" )]
     public partial class MyWorkflows : Rock.Web.UI.RockBlock
     {
         #region Fields

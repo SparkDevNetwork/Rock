@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Administration
         Order = 1
         )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C1B934D1-2139-471E-B2B8-B22FF4499B2F" )]
     public partial class ScheduleList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         private static class AttributeKey

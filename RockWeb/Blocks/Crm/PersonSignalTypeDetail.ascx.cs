@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows the details of a particular person signal type." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E9AB79D9-429F-410D-B4A8-327829FC7C63" )]
     public partial class PersonSignalTypeDetail : RockBlock
     {
         #region Properties

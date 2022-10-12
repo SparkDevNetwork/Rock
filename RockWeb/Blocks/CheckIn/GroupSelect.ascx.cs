@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Text",
         Order = 9 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "933418C1-448E-4825-8D3D-BDE23E968483" )]
     public partial class GroupSelect : CheckInBlockMultiPerson
     {
         /* 2021-05/07 ETD

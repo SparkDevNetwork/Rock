@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Security;
@@ -33,6 +34,15 @@ namespace Rock.Model
         {
             get => StepStatus != null && StepStatus.IsCompleteStatus;
         }
+
+        /// <summary>
+        /// Gets or sets the caption.
+        /// </summary>
+        /// <value>
+        /// The caption.
+        /// </value>
+        [NotMapped]
+        public virtual string Caption { get; set; }
 
         #region Overrides
 

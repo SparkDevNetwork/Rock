@@ -20,7 +20,8 @@ declare
   @currencyTypeCheck int = (select top 1 Id from DefinedValue where Guid = '8B086A19-405A-451F-8D44-174E92D6B402'),
   @currencyTypeCreditCard int = (select top 1 Id from DefinedValue where Guid = '928A2E04-C77B-4282-888F-EC549CEE026A'),
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
-  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01') --FINANCIAL_SOURCE_TYPE 
+  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
+  @financialTestGatewayId int = (select top 1 Id from  FinancialGateway where [Guid] = '6432d2d2-32ff-443d-b5b3-fb6c8414c3ad') -- Test Gateway
 
 declare
   @sourceTypeValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID()), 
@@ -229,6 +230,7 @@ begin
         INSERT INTO [dbo].[FinancialTransaction]
                     ([AuthorizedPersonAliasId]
                     ,[BatchId]
+                    ,[FinancialGatewayId]
                     ,[TransactionDateTime]
                     ,[TransactionDateKey]
                     ,[SundayDate]
@@ -246,6 +248,7 @@ begin
                 VALUES
                     (@authorizedPersonAliasId
                     ,@batchId
+                    ,@financialTestGatewayId
                     ,@transactionDateTime
                     ,CONVERT(INT, (CONVERT(CHAR(8), @transactionDateTime, 112)))
                     ,dbo.ufnUtility_GetSundayDate(@transactionDateTime)

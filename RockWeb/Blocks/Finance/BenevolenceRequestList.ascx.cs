@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.FilterBenevolenceTypesAttributeKey )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "3131C55A-8753-435F-85F3-DF777EFBD1C8" )]
     public partial class BenevolenceRequestList : RockBlock, ICustomGridColumns
     {
         #region SQL Constants

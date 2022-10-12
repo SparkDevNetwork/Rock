@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -35,6 +35,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/attributes/flush/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "6DC23228-36F6-43B4-8D0E-33FC0CC49798" )]
         public void Flush( int id )
         {
             Rock.Web.Cache.AttributeCache.Remove( id );
@@ -47,6 +48,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/attributes/flush" )]
+        [Rock.SystemGuid.RestActionGuid( "039968E8-EE2D-4F06-8E36-773816114C98" )]
         public void Flush()
         {
             GlobalAttributesCache.Remove();
@@ -61,7 +63,7 @@ namespace Rock.Rest.Controllers
         public override HttpResponseMessage Post( [FromBody] Model.Attribute value )
         {
             // if any Categories are included in the Post, we'll need to fetch them from the database so that that EF inserts them into AttributeCategory correct
-            if ( value.Categories != null && value.Categories.Any())
+            if ( value.Categories != null && value.Categories.Any() )
             {
                 var fetchedCategories = new CategoryService( Service.Context as Rock.Data.RockContext ).GetByIds( value.Categories.Select( a => a.Id ).ToList() ).ToList();
                 value.Categories.Clear();

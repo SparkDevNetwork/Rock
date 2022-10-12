@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class MetricValuesController
     {
@@ -44,6 +44,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [EnableQuery]
         [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
+        [Rock.SystemGuid.RestActionGuid( "A92E98C4-B44B-4119-A2C5-B4AD3451959A" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
             // include MetricValuePartitions and each MetricValuePartition's MetricPartition so that MetricValuePartitionEntityIds doesn't have to lazy load
@@ -68,6 +69,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MetricValues/GetSummary" )]
+        [Rock.SystemGuid.RestActionGuid( "E178DF6A-A2A1-440B-BCD8-91331E7FCAD5" )]
         public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
             List<int> metricIds = metricIdList.SplitDelimitedValues().AsIntegerList();
@@ -114,7 +116,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class MetricSummary
         {
@@ -167,6 +169,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
         [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "00BAFAF2-D393-4423-A8E0-38F1EDC179D7" )]
         public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
         {
             var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>

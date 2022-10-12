@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Connection
         Order = 3 )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "B2E0E4E3-30B1-45BD-B808-C55BCD540894" )]
     public partial class WebConnectionOpportunityListLava : RockBlock
     {
         #region Default Lava

@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.CheckIn
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "605389F5-5BC5-438F-8757-110328B0CED3" )]
     public partial class AbilityLevelSelect : CheckInBlockMultiPerson
     {
         /* 2021-05/07 ETD

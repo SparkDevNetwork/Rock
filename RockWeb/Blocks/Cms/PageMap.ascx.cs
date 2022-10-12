@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "2700A1B8-BD1A-40F1-A660-476DA86D0432" )]
     public partial class PageMap : RockBlock
     {
         #region Attribute Keys

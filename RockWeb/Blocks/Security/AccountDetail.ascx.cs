@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Security
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "B37DC24D-9DE4-4E94-B8E1-9BCB03A835F1" )]
     public partial class AccountDetail : RockBlock
     {
         private static class AttributeKey

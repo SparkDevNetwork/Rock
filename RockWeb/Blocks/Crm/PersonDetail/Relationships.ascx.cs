@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "77E409D4-11CD-4009-B4CD-4B75DF2CC9FD" )]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
         #region Attribute Keys
@@ -390,8 +391,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( group != null )
                         {
                             lGroupName.Text = group.Name.Pluralize();
-                            lGroupTypeIcon.Text = string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass );
-                            lGroupTypeIcon.Visible = group.GroupType.IconCssClass.IsNotNullOrWhiteSpace();
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

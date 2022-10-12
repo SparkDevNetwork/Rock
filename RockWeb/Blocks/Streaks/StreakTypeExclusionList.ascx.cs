@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Streaks
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "4266D56C-EAB9-4D37-BD74-EBAD9233F8F2" )]
     public partial class StreakTypeExclusionList : RockBlock, ISecondaryBlock
     {
         #region Keys

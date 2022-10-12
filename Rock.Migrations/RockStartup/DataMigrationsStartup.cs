@@ -34,7 +34,9 @@ namespace Rock.Migrations.RockStartup
         public int StartupOrder => 0;
 
         /// <summary>
-        /// Method that will be run at Rock startup
+        /// Method that will be run at Rock startup to run post update service jobs.
+        /// These jobs are run asynchronously so Post update jobs must not be order dependent
+        /// and must be able to run at the same time as other jobs.
         /// </summary>
         public void OnStartup()
         {
@@ -63,21 +65,6 @@ namespace Rock.Migrations.RockStartup
 
             List<Guid> runOnceJobGuids = new List<Guid>
             {
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_74.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_80.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_84.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90_DISC.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_HISTORY_SUMMARY_DATA.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90_SCHEDULEDTRANSACTIONNOTESTOHISTORY.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_100_ATTRIBUTEVALUE_VALUEASNUMERIC.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_100_SUNDAYDATE.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_103_SPIRITUAL_GIFTS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_DATE_KEYS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
@@ -97,7 +84,10 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid()
+				SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

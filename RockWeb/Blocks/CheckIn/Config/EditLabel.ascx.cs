@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         DefaultValue = LABELARY_URL,
         Order = 0,
         Key = AttributeKey.LabelaryUrl)]
+    [Rock.SystemGuid.BlockTypeGuid( "5ACB281A-CE85-426F-92A6-771F3B8AEF8A" )]
     public partial class EditLabel : RockBlock
     {
         #region Attribute Keys

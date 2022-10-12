@@ -29,12 +29,10 @@ using Rock.SystemKey;
 
 namespace RockWeb.Blocks.Crm
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Person Preferences" )]
     [Category( "CRM" )]
     [Description( "Allows the person to set their personal preferences." )]
+    [Rock.SystemGuid.BlockTypeGuid( "D2049782-C286-4EE1-94E8-039111E16794" )]
     public partial class PersonPreferences : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "HtmlEditor AssetManager" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockAssetManager HtmlEditor Plugin" )]
+    [Rock.SystemGuid.BlockTypeGuid( "72FB6069-7C55-4B5C-B386-A1668C481BEF" )]
     public partial class HtmlEditorAssetManager : RockBlock
     {
         #region Properties

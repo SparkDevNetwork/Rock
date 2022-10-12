@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Connection
         )]
     #endregion Block Attribute Settings
 
+    [Rock.SystemGuid.BlockTypeGuid( "6BA9D764-E30F-48D1-AB20-8991371B6316" )]
     public partial class CampaignList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

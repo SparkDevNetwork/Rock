@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.PageViewCount )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "3E7033EE-31A3-4484-AFA9-240C856A500C" )]
     public partial class ActiveUsers : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

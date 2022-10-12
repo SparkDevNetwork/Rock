@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Connection
          )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "887F66AF-944F-4959-87F0-087E3999BAC3" )]
     public partial class WebConnectionTypeListLava : RockBlock
     {
         #region Default Lava
@@ -112,6 +113,8 @@ namespace RockWeb.Blocks.Connection
                             </div>
                         </div>
                     </div>
+                    <span class=""badge badge-pill badge-info small"">{{ count }}</span>
+                </div>
                 </div>
                </a>
         {% endif %}

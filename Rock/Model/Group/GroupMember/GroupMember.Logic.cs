@@ -387,9 +387,9 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true;
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.GroupMemberStatus ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true;
                     }
                 }
 
@@ -426,12 +426,12 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null && entry.State != EntityState.Detached )
                     {
-                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"];
-                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"];
+                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues[nameof( this.GroupMemberStatus )];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues[nameof (this.GroupMemberStatus )];
 
-                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
-                        || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                        || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.PersonId ) )?.IsModified == true
+                        || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                        || ( rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true && !rockContext.Entry( this ).Property( nameof( this.IsArchived ) ).ToStringSafe().AsBoolean() )
                         || ( originalStatus != GroupMemberStatus.Active && newStatus == GroupMemberStatus.Active );
                     }
                 }
@@ -485,11 +485,24 @@ namespace Rock.Model
             // recalculate and store in the database if the groupmember isn't new or changed
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
+
             if ( !group.GetGroupRequirements( rockContext ).Any() )
             {
-                // group doesn't have requirements so no need to calculate
+                // group doesn't have requirements, so clear any existing group member requirements and save if necessary.
+                if ( GroupMemberRequirements.Any() )
+                {
+                    GroupMemberRequirements.Clear();
+
+                    if ( saveChanges )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 return;
             }
+
+            ClearInapplicableGroupRequirements( rockContext );
 
             var updatedRequirements = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId );
 
@@ -502,6 +515,26 @@ namespace Rock.Model
             {
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Removes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// if the group member has changed roles.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        private void ClearInapplicableGroupRequirements( RockContext rockContext )
+        {
+            var groupRequirementIds = this.GroupMemberRequirements.Select( a => a.GroupRequirementId ).ToList();
+            var inapplicableGroupRequirementIds = new GroupRequirementService( rockContext )
+                .Queryable()
+                .Where( r => groupRequirementIds.Contains( r.Id ) && r.GroupRoleId.HasValue && r.GroupRoleId != this.GroupRoleId )
+                .Select( a => a.Id )
+                .ToList();
+
+            var groupMemberRequirementsToBeDeleted = this.GroupMemberRequirements.Where( a => inapplicableGroupRequirementIds.Contains( a.GroupRequirementId ) ).ToList();
+
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+            groupMemberRequirementsService.DeleteRange( groupMemberRequirementsToBeDeleted );
         }
 
         /// <summary>
@@ -525,33 +558,28 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var group = this.Group;
-            if ( group == null && this.GroupId > 0 )
-            {
-                group = new GroupService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.GroupId );
-            }
+            var groupTypeId = GroupTypeId;
 
-            if ( group != null )
+            // If this instance hasn't been saved yet, it might not have this
+            // auto generated value set yet.
+            if ( groupTypeId == 0 )
             {
-                var groupType = group.GroupType;
-                if ( groupType == null && group.GroupTypeId > 0 )
+                if ( Group == null )
                 {
-                    // Can't use GroupTypeCache here since it loads attributes and would
-                    // result in a recursive stack overflow situation.
-                    groupType = new GroupTypeService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .FirstOrDefault( t => t.Id == group.GroupTypeId );
+                    groupTypeId = new GroupService( rockContext ).Queryable()
+                        .Where( g => g.Id == GroupId )
+                        .Select( g => g.GroupTypeId )
+                        .FirstOrDefault();
                 }
-
-                if ( groupType != null )
+                else
                 {
-                    return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+                    groupTypeId = Group.GroupTypeId;
                 }
             }
 
-            return null;
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId );
+
+            return groupTypeCache?.GetInheritedAttributesForQualifier( TypeId, "GroupTypeId" );
         }
 
         #endregion

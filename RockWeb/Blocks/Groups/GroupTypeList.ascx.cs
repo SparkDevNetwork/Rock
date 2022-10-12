@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all group types with filtering by purpose and system group types." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "80306BB1-FE4B-436F-AC7A-691CF0BC0F5E" )]
     public partial class GroupTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

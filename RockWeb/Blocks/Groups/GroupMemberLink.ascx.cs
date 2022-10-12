@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Groups
 <p>You have been added to the group.</p>" )]
     [LinkedPage( "Success Page", "The page to redirect to if the person was registered successfully. (If set, this overrides the Success Message setting.)", false )]
     [TextField("Error Message", "The text to display when a valid person key is NOT provided", false, "There was a problem with your registration.  Please try to register again.")]
+    [Rock.SystemGuid.BlockTypeGuid( "9AAA967C-D0B0-4E42-89DE-2AE6AAFC17EF" )]
     public partial class GroupMemberLink : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

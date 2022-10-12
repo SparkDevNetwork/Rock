@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Security
     [LinkedPage(
         "Login Page",
         Key = AttributeKey.LoginPage,
-        Description = "Page to navigate to when user elects to login (if blank will use 'Login' page route)",
+        Description = "Page to navigate to when a user elects to log in (if blank will use 'Login' page route)",
         IsRequired = false,
         Category = "Pages",
         Order = 9 )]
@@ -252,6 +252,7 @@ namespace RockWeb.Blocks.Security
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "99362B60-71A5-44C6-BCFE-DDA9B00CC7F3" )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey

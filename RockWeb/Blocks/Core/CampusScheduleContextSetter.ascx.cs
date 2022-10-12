@@ -117,6 +117,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DefaultToCurrentUser,
         Order = 11 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "A0405364-C722-495B-879C-C57B5BC5E213" )]
     public partial class CampusScheduleContextSetter : RockBlock
     {
         public static class AttributeKey

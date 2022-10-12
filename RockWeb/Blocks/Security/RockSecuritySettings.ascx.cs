@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Rock Security Settings" )]
     [Category( "Security" )]
     [Description( "Block for displaying and editing Rock's security settings." )]
+    [Rock.SystemGuid.BlockTypeGuid( "186490CD-4132-43BD-9BDF-DD04C6CD2432" )]
     public partial class RockSecuritySettings : RockBlock
     {
         private SecuritySettingsService _securitySettingsService = new SecuritySettingsService();

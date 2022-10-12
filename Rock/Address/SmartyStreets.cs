@@ -40,6 +40,7 @@ namespace Rock.Address
     [TextField( "Auth Token", "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 3 )]
     [TextField( "Acceptable DPV Codes", "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).", false, "Y,S,D", "", 4 )]
     [TextField( "Acceptable Precisions", "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).", false, "Zip7,Zip8,Zip9", "", 5 )]
+    [Rock.SystemGuid.EntityTypeGuid( "4278E7EF-221B-45E6-B9C6-5D11884389EF")]
     public class SmartyStreets : VerificationComponent
     {
         /// <summary>
@@ -66,7 +67,7 @@ namespace Rock.Address
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
             request.AddHeader( "Accept", "application/json" );
-            request.AddBody( payload );
+            request.AddJsonBody( payload );
             var response = client.Execute( request );
 
             if ( response.StatusCode == HttpStatusCode.OK )
@@ -137,7 +138,7 @@ namespace Rock.Address
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
                 request.AddHeader( "Accept", "application/json" );
-                request.AddBody( payload );
+                request.AddJsonBody( payload );
                 var response = client.Execute( request );
 
                 if ( response.StatusCode == HttpStatusCode.OK )

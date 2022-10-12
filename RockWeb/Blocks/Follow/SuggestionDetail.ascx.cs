@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Suggestion Detail" )]
     [Category( "Follow" )]
     [Description( "Block for editing the following suggestion types." )]
+    [Rock.SystemGuid.BlockTypeGuid( "052B84EA-0C34-4A07-AC4C-1FBCEC87C223" )]
     public partial class SuggestionDetail : RockBlock
     {
         #region Control Methods

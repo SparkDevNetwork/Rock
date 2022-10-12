@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent } from "vue";
-import { useStore } from "../Store/index";
+import { useStore } from "@Obsidian/PageState";
 
 const store = useStore();
 

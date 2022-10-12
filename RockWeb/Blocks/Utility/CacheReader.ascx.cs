@@ -28,9 +28,6 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Cache Reader" )]
     [Category( "Utility" )]
     [Description( "Shows information about what's being cached in Rock." )]
@@ -52,6 +49,7 @@ namespace RockWeb.Blocks.Utility
         Order = 2 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "B2859CA9-F796-4D83-A83B-62AA44FC6BC5" )]
     public partial class CacheReader : Rock.Web.UI.RockBlock
     {
 

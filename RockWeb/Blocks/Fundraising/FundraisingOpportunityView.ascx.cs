@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Fundraising
     [BooleanField( "Set Page Title to Opportunity Title", "", true, order: 9 )]
     [LinkedPage( "Registration Page", "The page to use for registrations.", required: false, order: 10 )]
     [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 11 )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA5F83B9-7F6A-4CF6-AF23-0D89DA4D4241" )]
     public partial class FundraisingOpportunityView : RockBlock
     {
         #region Base Control Methods

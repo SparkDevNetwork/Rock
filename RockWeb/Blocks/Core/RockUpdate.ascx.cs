@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Rock Update" )]
     [Category( "Core" )]
     [Description( "Handles checking for and performing upgrades to the Rock system." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B3F7A325-24DB-4A80-ADFD-1E8E1C85217D" )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         #region Fields

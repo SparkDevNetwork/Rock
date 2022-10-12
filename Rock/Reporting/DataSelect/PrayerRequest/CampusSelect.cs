@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
     [Description("Select the Campus of the Prayer Request")]
     [Export(typeof(DataSelectComponent))]
     [ExportMetadata("ComponentName", "Select Prayer Request's Campus")]
+    [Rock.SystemGuid.EntityTypeGuid( "FDFDE68A-2D19-48D0-8CFB-B340030685C4")]
     public class CampusSelect : DataSelectComponent
     {
         #region Properties

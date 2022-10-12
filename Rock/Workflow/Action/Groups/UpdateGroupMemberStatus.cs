@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
     [EnumField("New Group Member Status", "The new status to set the user to in the group.", typeof( GroupMemberStatus ), true, "Active", order: 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "F09E2C90-5FB1-4236-B146-848B983CC3A8")]
     public class UpdateGroupMemberStatus : ActionComponent
     {
         /// <summary>

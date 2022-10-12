@@ -33,9 +33,6 @@ using Rock.Lava;
 
 namespace RockWeb.Blocks.Event
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Event" )]
     [Description( "Block that takes a audience and displays calendar item occurrences for it using Lava." )]
@@ -50,6 +47,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 6 )]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 7 )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E4703964-7717-4C93-BD40-7DFF85EAC5FD" )]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
         #region Fields

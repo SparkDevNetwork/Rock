@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Displays details about each model classes in Rock.Model." )]
     [KeyValueListField( "Category Icons", "The Icon Class to use for each category.", false, "", "Category", "Icon Css Class" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA2AAD13-209B-4885-8739-B7BE99F6510D" )]
     public partial class ModelMap : RockBlock
     {
         #region Fields

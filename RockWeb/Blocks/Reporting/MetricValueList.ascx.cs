@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Displays a list of metric values." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "E40A1526-04D0-42A0-B275-D1AE161E2E57" )]
     public partial class MetricValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region fields

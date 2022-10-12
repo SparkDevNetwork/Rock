@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Core
         Category = "CustomSetting",
         Key = AttributeKey.ExcludeCategories )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BC54887-21C2-4688-BD1D-C1C8B9C86F7C" )]
     public partial class CategoryDetail : RockBlockCustomSettings
     {
         public static class AttributeKey

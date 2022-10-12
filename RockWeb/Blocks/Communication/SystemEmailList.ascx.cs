@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Communication
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
+    [Rock.SystemGuid.BlockTypeGuid( "2645A264-D5E5-43E8-8FE2-D351F3D5435B" )]
     public partial class SystemEmailList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

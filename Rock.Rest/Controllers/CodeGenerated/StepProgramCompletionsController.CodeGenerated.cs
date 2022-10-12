@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// StepProgramCompletions REST API
     /// </summary>
+    [RestControllerGuid( "843F8204-CB35-4A01-A825-0421FE097644" )]
     public partial class StepProgramCompletionsController : Rock.Rest.ApiController<Rock.Model.StepProgramCompletion>
     {
         /// <summary>

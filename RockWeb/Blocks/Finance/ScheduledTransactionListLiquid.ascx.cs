@@ -97,6 +97,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 10 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "081FF29F-0A9F-4EC3-95AD-708FA0E6132D" )]
     public partial class ScheduledTransactionListLiquid : RockBlock
     {
         /// <summary>

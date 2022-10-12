@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Verify the security of an entity and how it applies to a specified user." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "65F18F6C-AD97-42A7-958D-20359E804965" )]
     public partial class VerifySecurity : RockBlock
     {
         #region Base Method Overrides

@@ -117,10 +117,10 @@ namespace Rock.Utility.Settings.DataAutomation
         public int NotRegisteredInAnyEventDays { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is no site login enabled.
+        /// Gets or sets a value indicating whether this instance is no site log in enabled.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is no site login enabled; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is no site log in enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsNoSiteLoginEnabled { get; set; }
 

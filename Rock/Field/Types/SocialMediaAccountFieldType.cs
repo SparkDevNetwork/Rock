@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SOCIAL_MEDIA_ACCOUNT )]
     public class SocialMediaAccountFieldType : FieldType
     {
         #region Configuration
@@ -205,30 +207,36 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( string.IsNullOrWhiteSpace( value ) )
+            return GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return string.Empty;
             }
             else
             {
-                if ( configurationValues != null )
+                if ( privateConfigurationValues != null )
                 {
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                     string template = string.Empty;
 
-                    if ( configurationValues.ContainsKey( TEXT_TEMPLATE ) )
+                    if ( privateConfigurationValues.ContainsKey( TEXT_TEMPLATE ) )
                     {
-                        template = configurationValues[TEXT_TEMPLATE].Value;
+                        template = privateConfigurationValues[TEXT_TEMPLATE];
                     }
                     if ( string.IsNullOrWhiteSpace( template ) )
                     {
                         // If an output template is not specified, use a default.
                         template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
                     }
-                    if ( configurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
+                    if ( privateConfigurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                     {
 
-                        string iconCssClass = configurationValues[ICONCSSCLASS_KEY].Value;
+                        string iconCssClass = privateConfigurationValues[ICONCSSCLASS_KEY];
                         if ( !iconCssClass.Contains( "fa-fw" ) )
                         {
                             iconCssClass = iconCssClass + " fa-fw";
@@ -236,27 +244,39 @@ namespace Rock.Field.Types
                         mergeFields.Add( ICONCSSCLASS_KEY, iconCssClass );
                     }
 
-                    if ( configurationValues.ContainsKey( COLOR_KEY ) && !string.IsNullOrEmpty( configurationValues[COLOR_KEY].Value ) )
+                    if ( privateConfigurationValues.ContainsKey( COLOR_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[COLOR_KEY] ) )
                     {
-                        mergeFields.Add( COLOR_KEY, configurationValues[COLOR_KEY].Value );
+                        mergeFields.Add( COLOR_KEY, privateConfigurationValues[COLOR_KEY] );
                     }
 
-                    if ( configurationValues.ContainsKey( BASEURL ) && !string.IsNullOrEmpty( configurationValues[BASEURL].Value ) )
+                    if ( privateConfigurationValues.ContainsKey( BASEURL ) && !string.IsNullOrEmpty( privateConfigurationValues[BASEURL] ) )
                     {
-                        mergeFields.Add( BASEURL, configurationValues[BASEURL].Value );
+                        mergeFields.Add( BASEURL, privateConfigurationValues[BASEURL] );
                     }
 
-                    if ( configurationValues.ContainsKey( NAME_KEY ) && !string.IsNullOrEmpty( configurationValues[NAME_KEY].Value ) )
+                    if ( privateConfigurationValues.ContainsKey( NAME_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[NAME_KEY] ) )
                     {
-                        mergeFields.Add( NAME_KEY, configurationValues[NAME_KEY].Value );
+                        mergeFields.Add( NAME_KEY, privateConfigurationValues[NAME_KEY] );
                     }
 
-                    mergeFields.Add( "value", value );
+                    mergeFields.Add( "value", privateValue );
 
                     return template.ResolveMergeFields( mergeFields );
                 }
-                return value;
+
+                return privateValue;
             }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Lava could cause a different result with each render
+            return false;
         }
 
         #endregion

@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "BD548744-DC6D-4870-9FED-BB9EA24E709B" )]
     public partial class PersonFollowingList : RockBlock, ICustomGridColumns
     {
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 //
 using System;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Pbx;
 using Rock.Rest.Filters;
@@ -27,7 +27,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Controller of misc utility functions that are used by Rock controls
     /// </summary>
-    public class PbxController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "C17ADB11-3233-4CE9-B867-8322BD20F41B")]
+    public class PbxController : ApiControllerBase 
     {
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Pbx/Originate" )]
         [HttpGet]
         [Authenticate, Secured]
+        [Rock.SystemGuid.RestActionGuid( "179FB0CE-E2B1-41ED-9275-4B31F73460A3" )]
         public OriginateResponse Originate( string sourcePhone, string destinationPhone, string callerId = null )
         {
             var response = new OriginateResponse();
@@ -80,6 +82,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Pbx/Originate" )]
         [HttpGet]
         [Authenticate, Secured]
+        [Rock.SystemGuid.RestActionGuid( "266ADF21-63D8-411E-9BA4-1CEE3B533853" )]
         public OriginateResponse Originate( Guid sourcePersonGuid, string destinationPhone, string callerId = null )
         {
             var response = new OriginateResponse();
@@ -138,7 +141,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        private PbxComponent GetPbxComponent(Person currentPerson )
+        private PbxComponent GetPbxComponent( Person currentPerson )
         {
             // check that a pbx component is active
             var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();

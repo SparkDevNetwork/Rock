@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
     [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields from the person profile", false, key: "LoadPerson" )]
+    [Rock.SystemGuid.BlockTypeGuid( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF" )]
     public partial class GroupSimpleRegister : RockBlock
     {
         #region overridden control methods
@@ -95,91 +96,94 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                var rockContext = new RockContext();
-                var person = GetPerson( rockContext );
-                if ( person != null )
+                if ( Page.IsValid )
                 {
-                    Guid? groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
-
-                    if ( groupGuid.HasValue )
+                    var rockContext = new RockContext();
+                    var person = GetPerson( rockContext );
+                    if ( person != null )
                     {
-                        var groupService = new GroupService( rockContext );
-                        var groupMemberService = new GroupMemberService( rockContext );
+                        Guid? groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
 
-                        var group = groupService.Get( groupGuid.Value );
-                        if ( group != null && group.GroupType.DefaultGroupRoleId.HasValue )
+                        if ( groupGuid.HasValue )
                         {
-                            string linkedPage = GetAttributeValue( "ConfirmationPage" );
-                            if ( !string.IsNullOrWhiteSpace( linkedPage ) )
+                            var groupService = new GroupService( rockContext );
+                            var groupMemberService = new GroupMemberService( rockContext );
+
+                            var group = groupService.Get( groupGuid.Value );
+                            if ( group != null && group.GroupType.DefaultGroupRoleId.HasValue )
                             {
-                                var member = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
-
-                                // If person has not registered or confirmed their registration
-                                if ( member == null || member.GroupMemberStatus != GroupMemberStatus.Active )
+                                string linkedPage = GetAttributeValue( "ConfirmationPage" );
+                                if ( !string.IsNullOrWhiteSpace( linkedPage ) )
                                 {
-                                    Guid confirmationEmailTemplateGuid = Guid.Empty;
-                                    if ( !Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out confirmationEmailTemplateGuid ) )
+                                    var member = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+
+                                    // If person has not registered or confirmed their registration
+                                    if ( member == null || member.GroupMemberStatus != GroupMemberStatus.Active )
                                     {
-                                        confirmationEmailTemplateGuid = Guid.Empty;
+                                        Guid confirmationEmailTemplateGuid = Guid.Empty;
+                                        if ( !Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out confirmationEmailTemplateGuid ) )
+                                        {
+                                            confirmationEmailTemplateGuid = Guid.Empty;
+                                        }
+
+                                        if ( member == null )
+                                        {
+                                            member = new GroupMember();
+                                            member.GroupId = group.Id;
+                                            member.PersonId = person.Id;
+                                            member.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+
+                                            // If a confirmation email is configured, set status to Pending otherwise set it to active
+                                            member.GroupMemberStatus = confirmationEmailTemplateGuid != Guid.Empty ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
+
+                                            groupMemberService.Add( member );
+                                            rockContext.SaveChanges();
+
+                                            member = groupMemberService.Get( member.Id );
+                                        }
+
+                                        // Send the confirmation
+                                        if ( confirmationEmailTemplateGuid != Guid.Empty )
+                                        {
+                                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                                            mergeFields.Add( "Member", member );
+
+                                            var pageParams = new Dictionary<string, string>();
+                                            pageParams.Add( "GM", member.UrlEncodedKey );
+                                            var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
+                                            mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
+
+                                            var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                                            emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                                            emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                                            emailMessage.Send();
+                                        }
+
+                                        ShowSuccess( GetAttributeValue( "SuccessMessage" ) );
                                     }
-
-                                    if ( member == null )
+                                    else
                                     {
-                                        member = new GroupMember();
-                                        member.GroupId = group.Id;
-                                        member.PersonId = person.Id;
-                                        member.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
-
-                                        // If a confirmation email is configured, set status to Pending otherwise set it to active
-                                        member.GroupMemberStatus = confirmationEmailTemplateGuid != Guid.Empty ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
-
-                                        groupMemberService.Add( member );
-                                        rockContext.SaveChanges();
-
-                                        member = groupMemberService.Get( member.Id );
-                                    }
-
-                                    // Send the confirmation
-                                    if ( confirmationEmailTemplateGuid != Guid.Empty )
-                                    {
-                                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                                        mergeFields.Add( "Member", member );
-
                                         var pageParams = new Dictionary<string, string>();
                                         pageParams.Add( "GM", member.UrlEncodedKey );
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
-                                        mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
-
-                                        var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid );
-                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                        emailMessage.AppRoot = ResolveRockUrl( "~/" );
-                                        emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                                        emailMessage.Send();
+                                        Response.Redirect( pageReference.BuildUrl(), false );
                                     }
-
-                                    ShowSuccess( GetAttributeValue( "SuccessMessage" ) );
                                 }
                                 else
                                 {
-                                    var pageParams = new Dictionary<string, string>();
-                                    pageParams.Add( "GM", member.UrlEncodedKey );
-                                    var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
-                                    Response.Redirect( pageReference.BuildUrl(), false );
+                                    ShowError( "Configuration Error", "Invalid Confirmation Page setting" );
                                 }
                             }
                             else
                             {
-                                ShowError( "Configuration Error", "Invalid Confirmation Page setting" );
+                                ShowError( "Configuration Error", "The configured group does not exist, or its group type does not have a default role configured." );
                             }
                         }
                         else
                         {
-                            ShowError( "Configuration Error", "The configured group does not exist, or its group type does not have a default role configured." );
+                            ShowError( "Configuration Error", "Invalid Group setting" );
                         }
-                    }
-                    else
-                    {
-                        ShowError( "Configuration Error", "Invalid Group setting" );
                     }
                 }
             }

@@ -41,13 +41,14 @@ namespace RockWeb.Blocks.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", "", false, Order = 0 )]
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
+    [IntegerField( "Expires After (days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
     [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
     [BooleanField( "Show 'Approved' column", "If enabled, the Approved column will be shown with a Yes/No toggle button.", true, "", 3, "ShowApprovedColumn" )]
     [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
     [BooleanField( "Show Public Only", "If enabled, it will limit the list only to the prayer requests that are public.", false, order: 5 )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "4D6B686A-79DF-4EFC-A8BA-9841C248BF74" )]
     public partial class PrayerRequestList : RockBlock, ICustomGridColumns
     {
         #region Fields

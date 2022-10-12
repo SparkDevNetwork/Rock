@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
         Order = 7 )]
+    [Rock.SystemGuid.BlockTypeGuid( "486E470A-DBD8-48D6-9A97-5B1B490A401E" )]
     public partial class GivingConfiguration : Rock.Web.UI.PersonBlock, ISecondaryBlock
     {
         #region Attribute Keys

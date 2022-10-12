@@ -99,6 +99,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "764D3E67-2D01-437A-9F45-9F8C97878434" )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

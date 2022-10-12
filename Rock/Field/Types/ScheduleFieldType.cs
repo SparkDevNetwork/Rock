@@ -32,9 +32,23 @@ namespace Rock.Field.Types
     /// Stored as Schedule.Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class ScheduleFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SCHEDULE )]
+    public class ScheduleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+            var scheduleGuid = value.AsGuidOrNull();
+
+            if ( scheduleGuid.HasValue )
+            {
+                return NamedScheduleCache.Get( scheduleGuid.Value )?.Name;
+            }
+            return formattedValue;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -46,15 +60,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-            var scheduleGuid = value.AsGuidOrNull();
-
-            if ( scheduleGuid.HasValue )
-            {
-                return NamedScheduleCache.Get( scheduleGuid.Value )?.Name;
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -206,6 +214,47 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupId = new ScheduleService( rockContext ).GetId( guid.Value );
+
+                if ( !groupId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<Schedule>().Value, groupId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Schedule and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Schedule>().Value, nameof( Schedule.Name ) )
+            };
         }
 
         #endregion

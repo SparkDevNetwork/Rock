@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = true,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3CB1F9F0-11B2-4A46-B9D1-464811E5015C" )]
     public partial class BusinessDetail : ContextEntityBlock
     {
         private static class AttributeKey

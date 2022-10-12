@@ -17,18 +17,18 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the type of signature
+    /// Represents the type of signature. Either <see cref="Drawn"/> or <see cref="Typed"/>
     /// </summary>
     public enum SignatureType
     {
         /// <summary>
-        /// Drawn
-        /// </summary>
-        Drawn = 0,
-
-        /// <summary>
         /// Typed
         /// </summary>
-        Typed = 1
+        Typed = 0,
+
+        /// <summary>
+        /// Drawn
+        /// </summary>
+        Drawn = 1,
     }
 }

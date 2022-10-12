@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given Exclusion for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "21E9D4D3-9111-4E2F-A605-C4556BD62430" )]
     public partial class StreakTypeExclusionDetail : RockBlock
     {
         #region Keys

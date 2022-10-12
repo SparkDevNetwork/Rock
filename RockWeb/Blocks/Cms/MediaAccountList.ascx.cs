@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7537AB61-F80B-43B1-998B-1D2B03303B36" )]
     public partial class MediaAccountList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

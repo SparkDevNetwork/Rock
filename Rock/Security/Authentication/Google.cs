@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "Client ID", "The Google Client ID" )]
     [TextField( "Client Secret", "The Google Client Secret" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "9E678E8B-D9C4-4772-BED8-390C5E85DA76")]
     public class Google : AuthenticationComponent
     {
         /// <summary>
@@ -81,7 +82,7 @@ namespace Rock.Security.ExternalAuthentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">Forming the URL to obtain user consent</param>
         /// <returns></returns>
@@ -377,7 +378,7 @@ namespace Rock.Security.ExternalAuthentication
             using ( var rockContext = new RockContext() )
             {
 
-                // Query for an existing user 
+                // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
 

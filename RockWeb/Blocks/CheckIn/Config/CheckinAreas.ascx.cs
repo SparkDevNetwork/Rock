@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Config
     [DisplayName( "Check-in Areas" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Configure Check-in areas and groups." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B7CD296F-3AAB-4BA3-902C-44DB96C79798" )]
     public partial class CheckinAreas : RockBlock, ISecondaryBlock
     {
 

@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
     [Description( "Block for administrating a tag." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B3E4584A-D3C3-4F68-9B7C-D1641B9B08CF" )]
     public partial class TagDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -440,7 +441,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( ownerPersonAliasId.HasValue )
             {
-                cpBackground.Value = "#BCBCBD";
+                cpBackground.Value = "#F4F5F7";
             }
             else
             {

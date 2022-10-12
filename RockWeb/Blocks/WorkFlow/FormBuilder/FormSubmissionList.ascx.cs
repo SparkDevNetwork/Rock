@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
     #endregion Rock Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "A23592BB-25F7-4A81-90CD-46700724110A" )]
     public partial class FormSubmissionList : RockBlock
     {
         #region Attribute Keys

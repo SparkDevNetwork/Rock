@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Sample Linq Report" )]
     [Category( "Reporting" )]
     [Description( "Sample Block that executes a Linq statement and displays the result (if any)." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E98E0584-0D87-4DC6-9085-DC93F17AFB7F" )]
     public partial class SampleLinqReport : RockBlock
     {
         #region Control Methods

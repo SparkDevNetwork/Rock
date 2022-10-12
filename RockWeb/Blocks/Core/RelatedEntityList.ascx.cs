@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -125,6 +125,7 @@ namespace RockWeb.Blocks.Core
         Order = 8,
         Key = AttributeKey.HeaderIconCssClass )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "28516B18-7423-4A97-9223-B97537BD0F79" )]
     public partial class RelatedEntityList : RockBlock
     {
         public static class AttributeKey

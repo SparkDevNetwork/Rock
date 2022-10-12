@@ -259,6 +259,7 @@ namespace RockWeb.Blocks.Event
 
     #endregion Block Attribute Settings
 
+    [Rock.SystemGuid.BlockTypeGuid( "B1C7E983-5000-4CBE-84DD-6B7D428635AC" )]
     public partial class EventRegistrationWizard : RockBlock
     {
         private static class AttributeKey
@@ -668,7 +669,7 @@ namespace RockWeb.Blocks.Event
                     eventItem.Summary = tbEventSummary.Text;
                     eventItem.Description = htmlEventDescription.Text;
                     eventItem.IsActive = GetAttributeValue( AttributeKey.SetRegistrationInstanceActive ).AsBoolean();
-                    if ( eventItem.PhotoId != null )
+                    if ( imgupPhoto.BinaryFileId != null )
                     {
                         eventItem.PhotoId = imgupPhoto.BinaryFileId;
                     }

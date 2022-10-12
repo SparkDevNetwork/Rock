@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of." )]
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 1, "Value" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C789E457-0783-44B3-9D8F-2EBAB5F11110")]
     public class SetAttributeValue : ActionComponent
     {
         /// <summary>
@@ -53,12 +54,7 @@ namespace Rock.Workflow.Action
             var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string value = value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
-                if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id ||
-                    attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.SSN.AsGuid(), rockContext ).Id )
-                {
-                    value = Security.Encryption.EncryptString( value );
-                }
+                string value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
 
                 SetWorkflowAttributeValue( action, attribute.Guid, value );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );

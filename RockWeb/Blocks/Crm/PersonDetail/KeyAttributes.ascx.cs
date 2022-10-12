@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person Key Attributes" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Person key attributes (Person Detail Page)." )]
+    [Rock.SystemGuid.BlockTypeGuid( "23CE11A0-6C5C-4189-8E8C-6F3C9C9E4178" )]
     public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
         #region Fields
@@ -401,6 +402,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         AttributeList.Add( attribute.Id );
                     }
                 }
+            }
+
+            if ( AttributeList.Count > 0 )
+            {
+                lbEdit.Visible = true;
+                lbOrder.Visible = true;
+            }
+            else
+            {
+                lbEdit.Visible = false;
+                lbOrder.Visible = false;
             }
 
             CreateControls( true );

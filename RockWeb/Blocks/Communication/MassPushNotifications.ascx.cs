@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Communication
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MASS_PUSH_NOTIFICATIONS )]
     public partial class MassPushNotifications : RockBlock
     {
         #region User Preference Keys

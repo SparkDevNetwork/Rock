@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.WorkflowButtonText )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "B97B2E51-5C9C-459B-999F-C7797DAD8B69" )]
     public partial class BinaryFileDetail : RockBlock
     {
         public static class AttributeKey

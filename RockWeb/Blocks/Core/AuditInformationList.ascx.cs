@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "An audit log of all the entities and their properties that have been added, updated, or deleted." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D3B7C96B-DF1F-40AF-B09F-AB468E0E726D" )]
     public partial class AuditInformationList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

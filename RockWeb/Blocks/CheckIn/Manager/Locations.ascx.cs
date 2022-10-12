@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [BooleanField( "Search By Code", "A flag indicating if security codes should also be evaluated in the search box results.", order: 5 )]
+    [Rock.SystemGuid.BlockTypeGuid( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC" )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         #region Fields

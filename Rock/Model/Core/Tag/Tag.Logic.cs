@@ -15,11 +15,9 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Drawing;
 using Rock.Lava;
-using Rock.Security;
 
 namespace Rock.Model
 {
@@ -52,29 +50,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                }
-
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
-
-        /// <summary>
-        /// Returns a hexidecimal value for the BackgroundColor value.
+        /// Returns a hexadecimal value for the BackgroundColor value.
         /// </summary>
         /// <returns>System.String.</returns>
         [NotMapped]

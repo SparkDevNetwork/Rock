@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Instance - Discount List" )]
     [Category( "Event" )]
     [Description( "Displays the discounts related to an event registration instance." )]
+    [Rock.SystemGuid.BlockTypeGuid( "6C8954BF-E221-4B2F-AC3B-612DC16BA27D" )]
     public partial class RegistrationInstanceDiscountList : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Page Parameter Keys

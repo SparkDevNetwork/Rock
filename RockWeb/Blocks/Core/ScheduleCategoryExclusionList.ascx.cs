@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         Order = 0,
         Key = AttributeKey.Category )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "ACF84335-34A1-4DD6-B242-20119B8D0967" )]
     public partial class ScheduleCategoryExclusionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey

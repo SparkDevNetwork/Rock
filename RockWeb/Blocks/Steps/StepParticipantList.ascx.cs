@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
     public partial class StepParticipantList : ContextEntityBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Attribute Keys
@@ -413,6 +414,20 @@ namespace RockWeb.Blocks.Steps
             {
                 // No change
             }
+            else if ( e.Key == FilterKey.Campus )
+            {
+                var campus = CampusCache.Get( e.Value.ToIntSafe() );
+                var campusContext = ContextEntity<Campus>();
+
+                if ( campus != null && campusContext == null )
+                {
+                    e.Value = campus.Name;
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
             else
             {
                 // Find a matching Attribute.
@@ -689,7 +704,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void GetAvailableAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             this.AvailableAttributes = new List<AttributeCache>();
 
             if ( _stepType != null )
@@ -901,7 +916,7 @@ namespace RockWeb.Blocks.Steps
                     ss =>
                         "<span class='label label-default' style='background-color: " +
                         ss.StatusColorOrDefault +
-                        ";'>" +
+                        ";color:#fff;'>" +
                         ss.Name +
                         "</span>" );
 

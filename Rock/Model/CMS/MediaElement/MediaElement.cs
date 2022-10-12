@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaElement" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F4506B5D-F22C-4D3F-8205-FE48A9B7584B")]
     public partial class MediaElement : Model<MediaElement>
     {
         #region Entity Properties
@@ -168,26 +169,6 @@ namespace Rock.Model
         /// </value>
         [Rock.Lava.LavaVisibleAttribute]
         public virtual MediaFolder MediaFolder { get; set; }
-
-        /// <summary>
-        /// Gets or sets the media element file data. This contains all the
-        /// information about the different file URLs available for the user
-        /// to stream or download.
-        /// </summary>
-        /// <value>
-        /// The media element file data.
-        /// </value>
-        [NotMapped]
-        public virtual List<MediaElementFileData> FileData { get; set; } = new List<MediaElementFileData>();
-
-        /// <summary>
-        /// Gets or sets the thumbnail data.
-        /// </summary>
-        /// <value>
-        /// The thumbnail data.
-        /// </value>
-        [NotMapped]
-        public virtual List<MediaElementThumbnailData> ThumbnailData { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
 

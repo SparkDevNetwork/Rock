@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Block to display active Registration Instances." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CFE8CAFA-587B-4EF2-A457-18047AC6BA39" )]
     public partial class RegistrationInstanceActiveList : RockBlock, ICustomGridColumns
     {
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,7 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
-    public partial class GroupMembersController 
+    public partial class GroupMembersController
     {
         /// <summary>
         /// Overrides base Get controller method to include deceased GroupMembers
@@ -60,20 +60,21 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [Rock.SystemGuid.RestActionGuid( "018496A4-F8C3-473E-BEBB-2236497AFB1C" )]
         public System.Net.Http.HttpResponseMessage CreateKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );
             var rockContext = this.Service.Context as RockContext;
-            var personService = new PersonService(rockContext);
-            var person = personService.Get(personId);
-            var relatedPerson = personService.Get(relatedPersonId);
+            var personService = new PersonService( rockContext );
+            var person = personService.Get( personId );
+            var relatedPerson = personService.Get( relatedPersonId );
 
             CheckCanEdit( person );
             CheckCanEdit( relatedPerson );
 
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
-            var groupMemberService = new GroupMemberService(rockContext);
+            var groupMemberService = new GroupMemberService( rockContext );
             groupMemberService.CreateKnownRelationship( personId, relatedPersonId, relationshipRoleId );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -88,15 +89,16 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [Rock.SystemGuid.RestActionGuid( "51CB49B5-4338-4826-8DFC-2F902E30A01C" )]
         public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
         {
-           SetProxyCreation( true );
-           var rockContext = this.Service.Context as RockContext;
-        
-           var groupMemberService = new GroupMemberService( rockContext );
-           var groupMembers = groupMemberService.GetKnownRelationship( personId, relationshipRoleId );
+            SetProxyCreation( true );
+            var rockContext = this.Service.Context as RockContext;
 
-           return groupMembers;
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMembers = groupMemberService.GetKnownRelationship( personId, relationshipRoleId );
+
+            return groupMembers;
         }
 
         /// <summary>
@@ -108,6 +110,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpDelete]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [Rock.SystemGuid.RestActionGuid( "F5FC602F-AE95-4853-9BCA-16BE0FBBCAFC" )]
         public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );

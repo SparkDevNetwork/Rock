@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ManageLinksPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "4D42DF90-97A3-470B-A7D4-A6FD00673761" )]
     public partial class PersonalLinks : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

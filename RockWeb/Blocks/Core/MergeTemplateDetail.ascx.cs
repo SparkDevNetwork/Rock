@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = "Global",
         Key = AttributeKey.MergeTemplatesOwnership )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "820DE5F9-8391-4A2A-AA87-24156882BD5F" )]
     public partial class MergeTemplateDetail : RockBlock
     {
         public static class AttributeKey

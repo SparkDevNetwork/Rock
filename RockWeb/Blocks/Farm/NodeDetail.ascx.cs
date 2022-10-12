@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Farm
         DefaultIntegerValue = 24,
         Order = 2 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "95F38562-6CEF-4798-8A4F-05EBCDFB07E0" )]
     public partial class NodeDetail : RockBlock
     {
         #region Keys

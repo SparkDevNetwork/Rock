@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Cms
         Order = 0 )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "FD99E0AA-E1CB-4049-A6F6-9C5F2A34F694" )]
     public partial class ThemeList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

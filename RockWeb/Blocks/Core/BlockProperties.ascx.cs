@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Block Properties" )]
     [Category( "Core" )]
     [Description( "Allows you to administrate a block's properties." )]
+    [Rock.SystemGuid.BlockTypeGuid( "5EC45388-83D4-4E99-BF25-3FA00327F08B" )]
     public partial class BlockProperties : RockBlock
     {
         #region Fields
@@ -532,7 +533,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    scriptBuilder.AppendLine( string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId ) );
+                    scriptBuilder.AppendLine( $"window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{block.Id}:{block.Guid}');" );
                 }
 
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );

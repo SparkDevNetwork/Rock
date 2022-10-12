@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Communication
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "3F294916-A02D-48D5-8FE4-E8D7B98F61F7" )]
     public partial class PersonalizedCommunicationHistory : RockBlock
     {
         #region Attribute Keys

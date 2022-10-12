@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -28,7 +31,6 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -77,8 +79,18 @@ namespace RockWeb.Blocks.Reporting
         Description = "The page to edit data views",
         IsRequired = true,
         Order = 4 )]
+
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for any SQL based operations to complete. Leave blank to use the default for this metric (300). Note, some metrics do not use SQL so this timeout will only apply to metrics that are SQL based.",
+        IsRequired = false,
+        DefaultIntegerValue = 60 * 5,
+        Category = "General",
+        Order = 5 )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "D77341B9-BA38-4693-884E-E5C1D908CEC4" )]
     public partial class MetricDetail : RockBlock
     {
         #region Attribute Keys
@@ -93,6 +105,7 @@ namespace RockWeb.Blocks.Reporting
             public const string CombineChartSeries = "CombineChartSeries";
             public const string ChartStyle = "ChartStyle";
             public const string DataViewPage = "DataViewPage";
+            public const string CommandTimeout = "CommandTimeout";
         }
 
         #endregion
@@ -216,7 +229,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
+                // Canceling on Edit.  Return to Details.
                 var metricService = new MetricService( new RockContext() );
                 var metric = metricService.Get( hfMetricId.Value.AsInteger() );
 
@@ -365,6 +378,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IconCssClass = tbIconCssClass.Text;
             metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
             metric.YAxisLabel = tbYAxisLabel.Text;
+            metric.UnitType = rblUnitType.SelectedValueAsEnum<Rock.Model.UnitType>();
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
@@ -459,7 +473,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     };
                 }
 
-                // if the schedule was a unique schedule (configured in the Metric UI, set the schedule's ical content to the schedule builder UI's value
+                // if the schedule was a unique schedule (configured in the Metric UI, set the schedule's iCal content to the schedule builder UI's value
                 if ( scheduleSelectionType == ScheduleSelectionType.Unique )
                 {
                     schedule.iCalendarContent = sbSchedule.iCalendarContent;
@@ -568,20 +582,20 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    // Canceling on Add, and we know the parentCategoryId, so we are probably in TreeView mode, so navigate to the current page.
                     var qryParams = new Dictionary<string, string>();
                     qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
-                    // Cancelling on Add.  Return to Grid
+                    // Canceling on Add.  Return to Grid.
                     NavigateToParentPage();
                 }
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
+                // Canceling on Edit.  Return to Details.
                 MetricService metricService = new MetricService( new RockContext() );
                 Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
                 ShowReadonlyDetails( metric );
@@ -703,6 +717,28 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             args.IsValid = IsTitleUnique();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnManualRun_Click( object sender, EventArgs e )
+        {
+            mdManualRunConfirm.Show();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void mdManualRunConfirm_SaveClick( object sender, EventArgs e )
+        {
+            mdManualRunConfirm.Hide();
+            mdManualRunInfo.Show( string.Format( "The manual metric for '{0}' has been started.", lReadOnlyTitle.Text ), ModalAlertType.Information );
+            ManualMetricRun( hfMetricId.Value.AsInteger() );
+        }
+
         #endregion
 
         #region Methods
@@ -783,10 +819,15 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 btnSecurity.Visible = true;
                 btnSecurity.Title = metric.Title;
                 btnSecurity.EntityId = metric.Id;
+
+                // Manual run button is only available to Source Value Types that are NOT "Manual".
+                bool sourceTypeIsManual = metric.SourceValueTypeId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+                btnManualRun.Enabled = !sourceTypeIsManual;
             }
             else
             {
                 btnSecurity.Visible = false;
+                btnManualRun.Enabled = false;
             }
 
             if ( readOnly )
@@ -839,6 +880,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
+            rblUnitType.SetValue( metric.UnitType.ConvertToInt() );
             cbIsCumulative.Checked = metric.IsCumulative;
             cbEnableAnalytics.Checked = metric.EnableAnalytics;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
@@ -1244,11 +1286,25 @@ The Lava can include Lava merge fields:";
             pnlActivityChart.Visible = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             // Add client script to construct the chart.
+            string formatString;
+            if ( metric.UnitType == Rock.Model.UnitType.Currency )
+            {
+                formatString = "currency";
+            }
+            else if( metric.UnitType == Rock.Model.UnitType.Percentage )
+            {
+                formatString = "percentage";
+            }
+            else
+            {
+                formatString = "numeric";
+            }
             var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
             {
                 SizeToFitContainerWidth = true,
                 MaintainAspectRatio = false,
-                LineTension = 0m
+                LineTension = 0m,
+                YValueFormatString = formatString
             } );
 
             string script = string.Format(
@@ -1301,7 +1357,7 @@ The Lava can include Lava merge fields:";
                {
                    MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
                    DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
-                       Value = x.Value.Sum()
+                   Value = x.Value.Sum()
                } );
 
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
@@ -1502,14 +1558,16 @@ The Lava can include Lava merge fields:";
             {
                 ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
+
+            rblUnitType.BindToEnum<Rock.Model.UnitType>();
         }
 
         /// <summary>
-        /// If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox
+        /// If the metric uses a DataView, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox
         /// </summary>
         private void ShowHideAutoPartitionPrimaryCampus()
         {
-            // If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox and populate it's value, otherwise this prop is not available and should be set to false.
+            // If the metric uses a DataView, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox and populate it's value, otherwise this prop is not available and should be set to false.
             cbAutoPartionPrimaryCampus.Visible = dvpDataView.Visible == true
                 && dvpDataView.SelectedValueAsId() != null
                 && MetricPartitionsState.Count == 1
@@ -1547,6 +1605,36 @@ The Lava can include Lava merge fields:";
 
                 return true;
             }
+        }
+
+        private void ManualMetricRun( int metricId )
+        {
+            MetricService metricService = new MetricService( new RockContext() );
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
+
+            var metricTask = new Task( () =>
+            {
+                metricService.CalculateMetric( metricId, commandTimeout, true );
+            } );
+
+            metricTask.Start();
+        }
+
+        private struct ResultValue
+        {
+            public List<ResultValuePartition> Partitions { get; set; }
+
+            public decimal Value { get; set; }
+
+            public DateTime MetricValueDateTime { get; set; }
+        }
+
+        private struct ResultValuePartition
+        {
+            // Zero-based partition position
+            public int PartitionPosition { get; set; }
+
+            public int? EntityId { get; set; }
         }
 
         #endregion

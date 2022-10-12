@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "App ID", "The Facebook App ID" )]
     [TextField( "App Secret", "The Facebook App Secret" )]
     [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "2486AB81-EB35-4788-AECD-F16C5D7362F0")]
     public class Facebook : AuthenticationComponent
     {
         /// <summary>
@@ -85,7 +86,7 @@ namespace Rock.Security.ExternalAuthentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "BackgroundCheck" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "6D3A2293-BA7E-44D9-B5B3-5B85DA0EECAC")]
     public partial class BackgroundCheck : Model<BackgroundCheck>
     {
         #region Entity Properties

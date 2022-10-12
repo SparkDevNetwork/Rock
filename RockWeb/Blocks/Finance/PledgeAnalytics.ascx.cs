@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Finance
         DefaultIntegerValue = 180,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "72B4BBC0-1E8A-46B7-B956-A399624F513C" )]
     public partial class PledgeAnalytics : Rock.Web.UI.RockBlock
     {
         private static class AttributeKeys

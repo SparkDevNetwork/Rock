@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class PagesController
     {
@@ -39,10 +39,11 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Pages/GetChildren/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "8E291629-C998-49EA-AB9A-59E810688171" )]
         public IQueryable<TreeViewItem> GetChildren( int id,
             string hidePageIds = null,
             int? siteType = null,
-            int rootPageId = 0)
+            int rootPageId = 0 )
         {
             IQueryable<Page> qry;
             if ( id == 0 )
@@ -66,8 +67,8 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( p => ( int ) p.Layout.Site.SiteType == siteType.Value );
             }
 
-            List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger()).ToList();
-            List<Page> pageList = qry.Where( a => !hidePageIdList.Contains(a.Id) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
+            List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger() ).ToList();
+            List<Page> pageList = qry.Where( a => !hidePageIdList.Contains( a.Id ) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
             List<TreeViewItem> pageItemList = new List<TreeViewItem>();
             foreach ( var page in pageList )
             {
@@ -105,7 +106,7 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="hidePageIds">The hide page ids.</param>
         /// <returns></returns>
-        [RockObsolete("1.11")]
+        [RockObsolete( "1.11" )]
         [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null )
         {

@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Person Viewed Detail" )]
     [Category( "Security" )]
     [Description( "Block for displaying details about who viewed your profile or whose profile you viewed. Details include when the profile was viewed and the source of the view." )]
+    [Rock.SystemGuid.BlockTypeGuid( "132D18F3-D169-4260-94E0-84F42A40B356" )]
     public partial class PersonViewedDetail : RockBlock
     {
         #region Control Methods

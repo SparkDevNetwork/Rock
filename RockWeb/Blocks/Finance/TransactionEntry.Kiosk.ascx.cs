@@ -34,9 +34,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Transaction Entry - Kiosk" )]
     [Category( "Finance" )]
     [Description( "Block used to process giving from a kiosk." )]
@@ -58,6 +55,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "D10900A8-C2C1-4414-A443-3781A5CF371C" )]
     public partial class TransactionEntryKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Communication
         Key = AttributeKey.DetailPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "694EB2F6-018D-4E99-A956-202B1FAF7FB9" )]
     public partial class CommunicationQueue : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

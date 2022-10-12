@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "B4EB68FE-1A73-40FD-8236-78C9A015BDDE" )]
     public partial class EditGroup : PersonBlock
     {
         #region Attribute Keys

@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Nameless Person List" )]
     [Category( "CRM" )]
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
+    [Rock.SystemGuid.BlockTypeGuid( "41AE0574-BE1E-4656-B45D-2CB734D1BE30" )]
     public partial class NamelessPersonList : RockBlock, ICustomGridColumns
     {
         #region PageParameterKeys

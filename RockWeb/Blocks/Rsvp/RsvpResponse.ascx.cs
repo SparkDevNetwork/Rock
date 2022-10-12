@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.RSVP
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.RSVP_RESPONSE )]
     public partial class RSVPResponse : RockBlock
     {
         private static class AttributeKey

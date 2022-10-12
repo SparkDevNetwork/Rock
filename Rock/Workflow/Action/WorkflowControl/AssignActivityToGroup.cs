@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activity Assign to Group" )]
 
     [GroupTypeGroupField( "Group", "Select group type, then group, to set the group to assign this activity to.", "Group")] 
+    [Rock.SystemGuid.EntityTypeGuid( "DB2D8C44-6E57-4B45-8973-5DE327D61554")]
     public class AssignActivityToGroup : ActionComponent
     {
         /// <summary>

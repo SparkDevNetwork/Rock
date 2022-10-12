@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Security.Authentication
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
     [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE )]
     public class Database : AuthenticationComponent
     {
         private readonly static byte[] _encryptionKey;
@@ -152,7 +153,7 @@ namespace Rock.Security.Authentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>

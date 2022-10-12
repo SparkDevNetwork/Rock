@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "D70A59DC-16BE-43BE-9880-59598FA7A94C" )]
     public partial class AttributeValues : PersonBlock
     {
         #region Attribute Keys
@@ -433,12 +434,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var h4 = new HtmlGenericControl( "h4" );
                                 h4.InnerText = category.Name;
                                 fsAttributes.Controls.AddAt( index, h4 );
-                                var hr = new HtmlGenericControl( "hr/" );
-                                fsAttributes.Controls.AddAt( index + 1, hr );
                             }
                         }
                     }
-                    
                 }
                 else
                 {

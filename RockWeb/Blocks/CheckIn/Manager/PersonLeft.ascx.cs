@@ -96,6 +96,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 6
         )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D54909DB-8A5D-4665-97ED-E2C8577E3C64" )]
     public partial class PersonLeft : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Cms
         Order = 0 )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "E92E3C51-EB14-414D-BC68-9061FEB92A22" )]
     public partial class PageRouteList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

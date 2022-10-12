@@ -76,6 +76,7 @@ namespace Rockweb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.ASSESSMENT_LIST )]
     public partial class AssessmentList : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.Workflow )]
 
     [ContextAware(typeof(Rock.Model.Person))]
+    [Rock.SystemGuid.BlockTypeGuid( "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6" )]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Keys
@@ -259,6 +260,16 @@ namespace RockWeb.Blocks.Prayer
         public bool EnableCommentsFlag { get; private set; }
         public bool EnablePublicDisplayFlag { get; private set; }
         public bool DefaultToPublic { get; private set; }
+
+        #endregion
+
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string GroupGuid = "GroupGuid";
+            public const string Request = "Request";
+        }
 
         #endregion
 
@@ -376,13 +387,13 @@ namespace RockWeb.Blocks.Prayer
                     cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
 
-                dtbRequest.Text = PageParameter( "Request" );
+                dtbRequest.Text = PageParameter( PageParameterKey.Request );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
 
 
                 var prayerRequest = new PrayerRequest { Id = 0 };
                 prayerRequest.LoadAttributes();
-                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsPublic || !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
                 avcEditAttributes.AddEditControls( prayerRequest );
                 avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
             }
@@ -411,6 +422,7 @@ namespace RockWeb.Blocks.Prayer
             bool isAutoApproved = GetAttributeValue( AttributeKey.EnableAutoApprove ).AsBoolean();
             bool defaultAllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsSetting ).AsBoolean();
             bool isPersonMatchingEnabled = GetAttributeValue( AttributeKey.EnablePersonMatching ).AsBoolean();
+            Guid? groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
             bool isCreatePersonIfNoMatchFoundEnabled = GetAttributeValue( AttributeKey.CreatePersonIfNoMatchFound ).AsBoolean();
             var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
             var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
@@ -419,6 +431,17 @@ namespace RockWeb.Blocks.Prayer
 
             var rockContext = new RockContext();
             prayerRequest.EnteredDateTime = RockDateTime.Now;
+
+            if ( groupGuid != null )
+            {
+                Group group = new GroupService( rockContext ).Get( groupGuid.Value );
+
+                if ( group != null )
+                {
+                    prayerRequest.GroupId = group.Id;
+                    prayerRequest.Group = group;
+                }
+            }
 
             if ( isAutoApproved )
             {

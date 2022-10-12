@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Lists all the instances of the given registration template." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "632F63A9-5629-4731-BE6A-AB534EDD9BC9" )]
     public partial class RegistrationInstanceList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables

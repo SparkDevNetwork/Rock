@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block used to view and create new alert types for the giving automation system." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "A91ACA78-68FD-41FC-B652-17A37789EA32" )]
     public partial class GivingAutomationConfiguration : Rock.Web.UI.RockBlock
     {
         #region Constants

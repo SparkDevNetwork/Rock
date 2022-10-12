@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -31,6 +33,7 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Top Person Signal" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "1BC1335A-A37E-4C02-83C1-AD2883FD954E")]
     public class TopPersonSignal : BadgeComponent
     {
         /// <summary>
@@ -43,34 +46,28 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
 
-            var signalCount = Person.Signals.Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now ).Count();
-            if ( !string.IsNullOrWhiteSpace( Person.TopSignalColor ) && signalCount > 0 )
+            var signalCount = person.Signals.Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now ).Count();
+            if ( !string.IsNullOrWhiteSpace( person.TopSignalColor ) && signalCount > 0 )
             {
                 writer.Write( string.Format( @"
-<div class='badge badge-signal badge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}'>
-    <div class='badge-content' style='color: {1};'>
-        <i class='fa fa-flag badge-icon'></i>
-        <span class='signal'>{2}</span>
-    </div>
+<div class='rockbadge rockbadge-overlay rockbadge-overlay-invert rockbadge-signal rockbadge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}' style='color: {1};'>
+        <i class='badge-icon fa fa-flag'></i>
+        <span class='metric-value'>{2}</span>
 </div>",
                     badge.Id,
-                    Person.TopSignalColor,
+                    person.TopSignalColor,
                     signalCount,
-                    Person.NickName,
-                    "signal".PluralizeIf( Person.Signals.Count != 1 ),
-                    string.Join( ", ", Person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
+                    person.NickName,
+                    "signal".PluralizeIf( person.Signals.Count != 1 ),
+                    string.Join( ", ", person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
             }
         }
     }

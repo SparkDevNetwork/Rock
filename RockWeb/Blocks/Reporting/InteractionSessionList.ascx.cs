@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Reporting
 {% endif %}" )]
     [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
     [ContextAware( typeof( Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "EA90EF4F-C783-48CD-B575-AD785DE896E9" )]
     public partial class InteractionSessionList : Rock.Web.UI.RockBlock
     {
         #region Fields

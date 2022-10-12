@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ShowDeleteColumn,
         Order = 5 )]
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "441D5A71-C250-4FF5-90C3-DEEAD3AC028D" )]
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

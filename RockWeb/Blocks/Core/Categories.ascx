@@ -23,7 +23,7 @@
                             <Rock:RockBoundField DataField="EntityQualifierField" HeaderText="Entity Qualifier Field" SortExpression="EntityQualifierField" />
                             <Rock:RockBoundField DataField="EntityQualifierValue" HeaderText="Entity Qualifier Value" SortExpression="EntityQualifierValue" />
                             <Rock:EditField OnClick="gCategories_Edit"/>
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gCategories_Delete" />
                         </Columns>
                     </Rock:Grid>

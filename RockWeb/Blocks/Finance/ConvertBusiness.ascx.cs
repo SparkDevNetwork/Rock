@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Allows you to convert a Person record into a Business and vice-versa." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The default connection status to use when converting a business to a person.", false, order: 0 )]
+    [Rock.SystemGuid.BlockTypeGuid( "155BC217-1B29-4EFA-A7EA-29C075AE96B3" )]
     public partial class ConvertBusiness : RockBlock
     {
         #region Base Method Overrides

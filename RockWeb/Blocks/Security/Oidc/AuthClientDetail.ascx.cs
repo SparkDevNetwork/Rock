@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Client Detail" )]
     [Category( "Security > OIDC" )]
     [Description( "Displays the details of the given OpenID Connect Client." )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_CLIENT_DETAIL )]
     public partial class AuthClientDetail : Rock.Web.UI.RockBlock
     {
         private const string CLIENT_SECRET_PLACE_HOLDER = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";

@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "08C35F15-9AF7-468F-9D50-CDFD3D21220C" )]
     public partial class DefinedTypeDetail : RockBlock
     {
         public static class AttributeKey
@@ -206,10 +207,11 @@ namespace RockWeb.Blocks.Core
             definedType.CategoryId = cpCategory.SelectedValueAsInt();
             definedType.Description = tbTypeDescription.Text;
             definedType.HelpText = tbHelpText.Text;
+            definedType.CategorizedValuesEnabled = cbEnableCategorizedValues.Checked;
 
             if ( !definedType.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -300,15 +302,33 @@ namespace RockWeb.Blocks.Core
                 rcHelpText.Visible = false;
             }
 
+            cbEnableCategorizedValues.Checked = definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
+
             definedType.LoadAttributes();
+
+            var descriptionList = new DescriptionList();
 
             if ( !_isStandAlone && definedType.Category != null )
             {
-                lblMainDetails.Text = new DescriptionList()
-                    .Add( "Category", definedType.Category.Name )
-                    .Html;
+                descriptionList.Add( "Category", definedType.Category.Name );
+            }
+            if ( definedType.CategorizedValuesEnabled.GetValueOrDefault( false ) )
+            {
+                var reportDetailQueryParams = new Dictionary<string, string>()
+                    {
+                        { "EntityTypeId", EntityTypeCache.GetId<DefinedValue>().ToString() },
+                        { "EntityQualifierColumn", "DefinedTypeId" },
+                        { "EntityQualifierValue", definedType.Id.ToString() }
+                    };
+
+                var pageReference = new PageReference( PageCache.GetId( Rock.SystemGuid.Page.HISTORY_CATEGORIES.AsGuid() ).GetValueOrDefault() );
+                pageReference.Parameters = reportDetailQueryParams;
+
+                var reportDetailPageUrl = pageReference.BuildUrl();
+                descriptionList.Add( "Categorized Values", $"<a href='{reportDetailPageUrl}'>Edit Value Categories</a>" );
             }
 
+            lblMainDetails.Text = descriptionList.Html;
         }
 
         /// <summary>
@@ -332,6 +352,7 @@ namespace RockWeb.Blocks.Core
             cpCategory.SetValue( definedType.CategoryId );
             tbTypeDescription.Text = definedType.Description;
             tbHelpText.Text = definedType.HelpText;
+            cbEnableCategorizedValues.Checked = definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
         }
 
         /// <summary>

@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given exception." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "B9E704E8-2097-491D-A216-8011012AA84E" )]
     public partial class ExceptionDetail : RockBlock
     {
         #region Page Parameter Keys
@@ -283,7 +284,7 @@ namespace RockWeb.Blocks.Core
             var dl = new DescriptionList();
 
             dl.Add( "Exception Date", baseException.CreatedDateTime.HasValue ? string.Format( "{0:g}", baseException.CreatedDateTime.Value ) : string.Empty );
-            dl.Add( "Description", baseException.Description );
+            dl.Add( "Description", baseException.Description.EncodeHtml().Truncate( 255, true ) );
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : string.Empty );
 
             if ( baseException.Page != null || !string.IsNullOrWhiteSpace( baseException.PageUrl ) )

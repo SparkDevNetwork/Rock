@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PrayerRequest View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PrayerRequest ) )]
-    public partial class PrayerRequestViewModelHelper : ViewModelHelper<PrayerRequest, Rock.ViewModel.PrayerRequestViewModel>
+    public partial class PrayerRequestViewModelHelper : ViewModelHelper<PrayerRequest, PrayerRequestBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PrayerRequestViewModel CreateViewModel( PrayerRequest model, Person currentPerson = null, bool loadAttributes = true )
+        public override PrayerRequestBag CreateViewModel( PrayerRequest model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PrayerRequestViewModel
+            var viewModel = new PrayerRequestBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowComments = model.AllowComments,
                 Answer = model.Answer,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
@@ -210,7 +210,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PrayerRequestViewModel ToViewModel( this PrayerRequest model, Person currentPerson = null, bool loadAttributes = false )
+        public static PrayerRequestBag ToViewModel( this PrayerRequest model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PrayerRequestViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

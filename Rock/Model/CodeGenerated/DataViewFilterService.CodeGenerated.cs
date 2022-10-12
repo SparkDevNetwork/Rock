@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// DataViewFilter View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( DataViewFilter ) )]
-    public partial class DataViewFilterViewModelHelper : ViewModelHelper<DataViewFilter, Rock.ViewModel.DataViewFilterViewModel>
+    public partial class DataViewFilterViewModelHelper : ViewModelHelper<DataViewFilter, DataViewFilterBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.DataViewFilterViewModel CreateViewModel( DataViewFilter model, Person currentPerson = null, bool loadAttributes = true )
+        public override DataViewFilterBag CreateViewModel( DataViewFilter model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.DataViewFilterViewModel
+            var viewModel = new DataViewFilterBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 DataViewId = model.DataViewId,
                 EntityTypeId = model.EntityTypeId,
                 ExpressionType = ( int ) model.ExpressionType,
@@ -186,7 +186,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.DataViewFilterViewModel ToViewModel( this DataViewFilter model, Person currentPerson = null, bool loadAttributes = false )
+        public static DataViewFilterBag ToViewModel( this DataViewFilter model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new DataViewFilterViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

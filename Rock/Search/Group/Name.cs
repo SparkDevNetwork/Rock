@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Search.Group
     [Description("Group Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Group Name")]
+    [Rock.SystemGuid.EntityTypeGuid( "94825231-DC38-4DC0-A1D3-64B4AD6A87F0")]
     public class Name : SearchComponent
     {
         /// <summary>

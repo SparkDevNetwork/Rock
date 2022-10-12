@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.AddPage,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "28D6F57B-59D9-4DA6-A8DC-6DBD3E157554" )]
     public partial class MediaElementList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys
@@ -306,7 +307,11 @@ namespace RockWeb.Blocks.Cms
 
             // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
             var qry = mediaElementService.Queryable().AsNoTracking().Where( a => a.MediaFolderId == _mediaFolder.Id );
-
+            var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
+            var watchCountQry = new InteractionService( rockContext )
+                .Queryable()
+                .Where( a => a.Operation == "Watch" );
+            var interactionComponentQry = new InteractionComponentService( rockContext ).Queryable().Where( c => c.InteractionChannelId == interactionChannelId );
             // name filter
             string nameFilter = gfFilter.GetUserPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
@@ -314,18 +319,27 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );
             }
 
+            var selectQry = qry
+               .Select( a => new FolderList
+               {
+                   Id = a.Id,
+                   Name = a.Name,
+                   DurationSeconds =  a.DurationSeconds,
+                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count()
+               } );
+
             var sortProperty = gElementList.SortProperty;
             if ( gElementList.AllowSorting && sortProperty != null )
             {
-                qry = qry.Sort( sortProperty );
+                selectQry = selectQry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( a => a.Name );
+                selectQry = selectQry.OrderBy( a => a.Name );
             }
 
             gElementList.EntityTypeId = EntityTypeCache.GetId<MediaElement>();
-            gElementList.DataSource = qry.ToList();
+            gElementList.DataSource = selectQry.ToList();
             gElementList.DataBind();
         }
 
@@ -366,5 +380,44 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion Methods
+    }
+
+    /// <summary>
+    /// Connector View Model
+    /// </summary>
+    public class FolderList
+    {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration in seconds.
+        /// </summary>
+        /// <value>
+        /// The duration in seconds.
+        /// </value>
+        public int? DurationSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the watch count.
+        /// </summary>
+        /// <value>
+        /// The watch count.
+        /// </value>
+        public int WatchCount { get; set; }
+
     }
 }

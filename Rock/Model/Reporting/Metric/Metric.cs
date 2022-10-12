@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Metric" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1C5489C6-82F9-4967-8425-52545CE8AF90")]
     public partial class Metric : Model<Metric>
     {
         #region Entity Properties
@@ -204,6 +205,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool AutoPartitionOnPrimaryCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the unit.
+        /// </summary>
+        /// <value>
+        /// The type of the unit.
+        /// </value>
+        [DataMember]
+        public UnitType UnitType { get; set; }
 
         #endregion
 

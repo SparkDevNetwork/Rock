@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -64,7 +65,7 @@ namespace Rock.Model
     /// FinancialBatch View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( FinancialBatch ) )]
-    public partial class FinancialBatchViewModelHelper : ViewModelHelper<FinancialBatch, Rock.ViewModel.FinancialBatchViewModel>
+    public partial class FinancialBatchViewModelHelper : ViewModelHelper<FinancialBatch, FinancialBatchBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -73,17 +74,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.FinancialBatchViewModel CreateViewModel( FinancialBatch model, Person currentPerson = null, bool loadAttributes = true )
+        public override FinancialBatchBag CreateViewModel( FinancialBatch model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.FinancialBatchViewModel
+            var viewModel = new FinancialBatchBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AccountingSystemCode = model.AccountingSystemCode,
                 BatchEndDateTime = model.BatchEndDateTime,
                 BatchStartDateTime = model.BatchStartDateTime,
@@ -190,7 +190,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.FinancialBatchViewModel ToViewModel( this FinancialBatch model, Person currentPerson = null, bool loadAttributes = false )
+        public static FinancialBatchBag ToViewModel( this FinancialBatch model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new FinancialBatchViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

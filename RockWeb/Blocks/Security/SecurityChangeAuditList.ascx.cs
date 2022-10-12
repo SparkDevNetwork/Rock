@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Security Change Audit List" )]
     [Category( "Security" )]
     [Description( "Block for Security Change Audit List." )]
+    [Rock.SystemGuid.BlockTypeGuid( "9F577C39-19FB-4C33-804B-35023284B856" )]
     public partial class SecurityChangeAuditList : RockBlock
     {
         #region UserPreferenceKeys

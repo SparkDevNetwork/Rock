@@ -738,14 +738,14 @@ td.grid-actions {
   display: inline-block;
   width: 100%;
   padding: 7px 14px;
-  color: @navbartop-color;
+  color: @navbar-top-color;
   background: transparent;
-  border: 1px solid @navbartop-color;
+  border: 1px solid @navbar-top-color;
   border-radius: @btn-border-radius-base;
 
   &:hover,
   &:focus {
-    color: @navbartop-color;
+    color: @navbar-top-color;
     background: fade(@white, 10%);
   }
 }
@@ -1298,7 +1298,8 @@ td.grid-actions {
   .picker-label {
     display: flex;
     align-items: center;
-    width: auto;
+    width: auto !important;
+    max-width: 325px;
     max-width: none;
     padding-left: 4px;
     margin-left: -4px;
@@ -1324,13 +1325,15 @@ td.grid-actions {
     }
   }
 
-  .picker-select-none {
-    display: none !important;
-  }
-
   .selected-names {
     font-size: 24px;
     font-weight: 700;
+  }
+}
+
+.picker-noclear {
+  .picker-select-none {
+    display: none !important;
   }
 }
 

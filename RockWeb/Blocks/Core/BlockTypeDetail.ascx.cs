@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Block Type Detail" )]
     [Category( "Core" )]
     [Description( "Shows the details of a selected block type." )]
+    [Rock.SystemGuid.BlockTypeGuid( "A3E648CC-0F19-455F-AF1D-B70A8205802D" )]
     public partial class BlockTypeDetail : RockBlock
     {
         #region Control Methods

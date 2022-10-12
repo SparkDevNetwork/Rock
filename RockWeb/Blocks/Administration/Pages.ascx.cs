@@ -24,6 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -36,6 +37,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Pages" )]
     [Category( "Administration" )]
     [Description( "Lists pages in Rock." )]
+    [Rock.SystemGuid.BlockTypeGuid( "AEFC2DBE-37B6-4CAB-882C-B214F587BF2E" )]
     public partial class Pages : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -261,9 +263,13 @@ namespace RockWeb.Blocks.Administration
 
                 if ( cbDeleteInteractions.Checked )
                 {
-                    var interactionComponentService = new InteractionComponentService( rockContext );
-                    var componentQuery = interactionComponentService.QueryByPage( page );
-                    interactionComponentService.DeleteRange( componentQuery );
+                    var deleteInteractionsMsg = new DeleteInteractions.Message
+                    {
+                        PageId = page.Id,
+                        SiteId = page.SiteId
+                    };
+
+                    deleteInteractionsMsg.Send();
                 }
 
                 rockContext.SaveChanges();

@@ -139,7 +139,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( false );
+        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [enable presence].
@@ -589,6 +589,20 @@ namespace Rock.CheckIn
 
                     // just in case an attribute is specified as Optional AND Required, don't include it if it is also a Required attribute
                     return optionalAttributes.Where( a => !this.RequiredAttributesForFamilies.Any( r => r.Id == a.Id ) ).ToList();
+                }
+            }
+
+            /// <summary>
+            /// Gets the display birthdate on adults.
+            /// </summary>
+            /// <value>
+            /// The display birthdate on adults.
+            /// </value>
+            public string DisplayBirthdateOnAdults
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS );
                 }
             }
 

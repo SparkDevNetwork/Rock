@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PersonalLinkSection View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PersonalLinkSection ) )]
-    public partial class PersonalLinkSectionViewModelHelper : ViewModelHelper<PersonalLinkSection, Rock.ViewModel.PersonalLinkSectionViewModel>
+    public partial class PersonalLinkSectionViewModelHelper : ViewModelHelper<PersonalLinkSection, PersonalLinkSectionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PersonalLinkSectionViewModel CreateViewModel( PersonalLinkSection model, Person currentPerson = null, bool loadAttributes = true )
+        public override PersonalLinkSectionBag CreateViewModel( PersonalLinkSection model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PersonalLinkSectionViewModel
+            var viewModel = new PersonalLinkSectionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 IconCssClass = model.IconCssClass,
                 IsShared = model.IsShared,
                 Name = model.Name,
@@ -176,7 +176,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PersonalLinkSectionViewModel ToViewModel( this PersonalLinkSection model, Person currentPerson = null, bool loadAttributes = false )
+        public static PersonalLinkSectionBag ToViewModel( this PersonalLinkSection model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PersonalLinkSectionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

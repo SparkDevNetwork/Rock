@@ -256,6 +256,7 @@ namespace RockWeb.Blocks.Groups
         Category = AttributeCategory.CustomSetting )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "9F8F2D68-DEEA-4686-810F-AB32923F855E" )]
     public partial class GroupFinder : RockBlockCustomSettings
     {
         private static class AttributeKey

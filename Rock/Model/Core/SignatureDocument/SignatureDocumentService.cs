@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Rock.Model
 {
@@ -46,5 +49,68 @@ namespace Rock.Model
             return this.Queryable().Where( d => d.DocumentKey == documentKey ).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Calculates the signature verification hash from the data contained
+        /// in the document.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public static string CalculateSignatureVerificationHash( SignatureDocument document )
+        {
+            /* 02/11/2022 MDP
+
+            The SignatureVerificationHash can be used to verify that nothing about the signed document or signature has
+            changed since it was originally signed.
+
+            To do that we'll have use xxHash on the signature related data that we store in SignatureDocument (see fields that we use below).
+            This hash will be stored in the SignedDocument record and also in the Signed Document PDF.
+
+            NOTE: CalculateSignatureVerificationHash must be deterministic. So don't change the implementation without approval.
+
+            */
+
+            string signedDateTimeData;
+            if ( document.SignedDateTime.HasValue )
+            {
+                // to make sure DateTime has same precision when coming back out of the database, make it DateTimeKind.Unspecified and rounded to closest millisecond.
+                var signedDateTime = document.SignedDateTime.Value;
+                var consistentDateTime = new DateTime( signedDateTime.Year, signedDateTime.Month, signedDateTime.Day, signedDateTime.Hour, signedDateTime.Minute, signedDateTime.Second, signedDateTime.Millisecond, DateTimeKind.Unspecified );
+
+                signedDateTimeData = consistentDateTime.ToISO8601DateString();
+            }
+            else
+            {
+                signedDateTimeData = string.Empty;
+            }
+
+            // to make to we get a deterministic hash, concat the data (vs using JSON, etc)
+            var concatString = $@"{document.SignedDocumentText}|
+{document.SignedClientIp}|
+{document.SignedClientUserAgent}|
+{signedDateTimeData}|
+{document.SignedByPersonAliasId}|
+{document.SignatureData}|
+{document.SignedName}";
+
+            // Hash in a way that'll will
+            string hashed;
+            using ( var crypt = new SHA1Managed() )
+            {
+                var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( concatString ) );
+                var hashBase64 = Convert.ToBase64String( hash );
+
+                // Replace base64's special chars /+= https://en.wikipedia.org/wiki/Base64 with "x".
+                // This is an intentional modification to the base64 data to make it look
+                // more friendly. We understand it is a non-reversable change - meaning we can't
+                // decode the base64 data back to the hashed binary data.
+                hashed = hashBase64.Replace( '/', 'x' ).Replace( '+', 'x' ).Replace( '=', 'x' );
+            }
+
+            const string revisionPrefix = "A";
+
+            // prepend with a revision just in case we have a future change to the implementation
+            var verificationHash = $"{revisionPrefix}{hashed}";
+
+            return verificationHash;
+        }
     }
 }

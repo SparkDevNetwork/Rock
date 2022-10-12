@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultBooleanValue = false,
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "1BFB72CC-A224-4A0B-B291-21733597738A" )]
     public partial class GroupScheduleStatusBoard : RockBlock
     {
         #region Keys

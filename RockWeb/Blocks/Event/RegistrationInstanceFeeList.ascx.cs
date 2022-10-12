@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the fees related to an event registration instance." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "41CD9629-9327-40D4-846A-1BB8135D130C" )]
     public partial class RegistrationInstanceFeeList : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Page Parameter Keys

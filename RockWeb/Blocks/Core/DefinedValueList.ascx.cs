@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -258,6 +259,7 @@ namespace RockWeb.Blocks.Core
             definedValue.Value = tbValueName.Text;
             definedValue.Description = tbValueDescription.Text;
             definedValue.IsActive = cbValueActive.Checked;
+            definedValue.CategoryId = cpCategory.SelectedValueAsInt();
             avcDefinedValueAttributes.GetEditValues( definedValue );
 
             if ( !Page.IsValid )
@@ -386,6 +388,13 @@ namespace RockWeb.Blocks.Core
         {
             if ( _definedType != null )
             {
+                var categoryColumn = gDefinedValues.ColumnsOfType<RockBoundField>().FirstOrDefault( x => x.DataField == "Category" );
+
+                if ( categoryColumn != null )
+                {
+                    categoryColumn.Visible = _definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
+                }
+
                 var queryable = new DefinedValueService( new RockContext() ).Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
                 var result = queryable.ToList();
 
@@ -428,11 +437,23 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-
             hfDefinedValueId.SetValue( definedValue.Id );
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;
             cbValueActive.Checked = definedValue.IsActive;
+
+            // If the Defined Type has categorized values, show the category picker and 
+            // filter for only categories of that type.
+            var hasCategorizedValues = definedType?.CategorizedValuesEnabled ?? false;
+
+            cpCategory.Visible = hasCategorizedValues;
+            if ( hasCategorizedValues )
+            {
+                cpCategory.EntityTypeQualifierColumn = "DefinedTypeId";
+                cpCategory.EntityTypeQualifierValue = definedType.Id.ToString();
+            }
+
+            cpCategory.SetValue( definedValue.CategoryId );
 
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
             avcDefinedValueAttributes.AddEditControls( definedValue );

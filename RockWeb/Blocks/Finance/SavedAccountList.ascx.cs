@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Saved Account List" )]
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
+    [Rock.SystemGuid.BlockTypeGuid( "CE9F1E41-33E6-4FED-AA08-BD9DCA061498" )]
     public partial class SavedAccountList : RockBlock, ICustomGridColumns
     {
 

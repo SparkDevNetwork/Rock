@@ -17,12 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
@@ -46,22 +48,19 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = true,
         Order = 0 )]
 
-    //[CampusField(
-    //    "Default Campus",
-    //    Key = AttributeKey.DefaultCampus,
-    //    Description = "An optional campus to use by default when adding a new family.",
-    //    IsRequired = false,
-    //    Order = 1 )]
+    [CampusField(
+        name: "Default Campus",
+        description: "An optional campus to use by default when adding a new family.",
+        required: false,
+        includeInactive: true,
+        key: AttributeKey.DefaultCampus,
+        order: 1 )]
 
-    [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
-
-    [CustomDropdownListField(
-        "Planned Visit Date",
-        Key = AttributeKey.PlannedVisitDate,
-        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not. The Lava merge field for this in workflows is 'PlannedVisitDate'.",
-        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
-        IsRequired = false,
-        DefaultValue = "Optional",
+    [BooleanField(
+        "Require Campus",
+        Key = AttributeKey.RequireCampus,
+        Description = "Require that a campus be selected",
+        DefaultBooleanValue = true,
         Order = 2 )]
 
     [AttributeField(
@@ -70,7 +69,16 @@ namespace RockWeb.Blocks.Crm
         Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
         EntityTypeGuid = Rock.SystemGuid.EntityType.CAMPUS,
         IsRequired = false,
-        Order = 3 )]
+        Order = 2 )]
+
+    [CustomDropdownListField(
+        "Planned Visit Date",
+        Key = AttributeKey.PlannedVisitDate,
+        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not. The Lava merge field for this in workflows is 'PlannedVisitDate'.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Optional",
+        Order = 4 )]
 
     [IntegerField(
         "Scheduled Days Ahead",
@@ -78,7 +86,7 @@ namespace RockWeb.Blocks.Crm
         Description = "When using campus specific scheduling this setting determines how many days ahead a person can select. The default is 28 days.",
         IsRequired = false,
         DefaultIntegerValue = 28,
-        Order = 4
+        Order = 5
         )]
 
     [AttributeField(
@@ -90,21 +98,21 @@ namespace RockWeb.Blocks.Crm
         EntityTypeQualifierValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField(
         "Allow Updates",
         Key = AttributeKey.AllowUpdates,
         Description = "If the person visiting this block is logged in, should the block be used to update their family? If not, a new family will always be created unless 'Auto Match' is enabled and the information entered matches an existing person.",
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField(
         "Auto Match",
         Key = AttributeKey.AutoMatch,
         Description = "Should this block attempt to match people to to current records in the database.",
         DefaultBooleanValue = true,
-        Order = 7 )]
+        Order = 8 )]
 
     [DefinedValueField(
         "Connection Status",
@@ -114,7 +122,7 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
-        Order = 8 )]
+        Order = 9 )]
 
     [DefinedValueField(
         "Record Status",
@@ -124,7 +132,7 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
-        Order = 9 )]
+        Order = 10 )]
 
     [WorkflowTypeField(
         "Workflow Types",
@@ -132,7 +140,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.WorkflowTypes,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 10 )]
+        Order = 11 )]
 
     [WorkflowTypeField(
         "Parent Workflow",
@@ -140,7 +148,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.ParentWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 11 )]
+        Order = 12 )]
 
     [WorkflowTypeField(
         "Child Workflow",
@@ -148,7 +156,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.ChildWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 12 )]
+        Order = 13 )]
 
     [CodeEditorField(
         "Redirect URL",
@@ -158,13 +166,6 @@ namespace RockWeb.Blocks.Crm
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        Order = 13 )]
-
-    [BooleanField(
-        "Require Campus",
-        Key = AttributeKey.RequireCampus,
-        Description = "Require that a campus be selected",
-        DefaultBooleanValue = true,
         Order = 14 )]
 
     [CustomDropdownListField(
@@ -176,27 +177,13 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = "4",
         Order = 15 )]
 
-    [BooleanField(
-        "Show Campus Type",
-        Key = AttributeKey.ShowCampusType,
-        Description = "Display the campus type.",
-        DefaultBooleanValue = true,
-        Order = 16 )]
-
-    [BooleanField(
-        "Show Campus Status",
-        Key = AttributeKey.ShowCampusStatus,
-        Description = "Display the campus status.",
-        DefaultBooleanValue = true,
-        Order = 17 )]
-
     [TextField(
         "Planned Visit Information Panel Title",
         Key = AttributeKey.PlannedVisitInformationPanelTitle,
         Description = "The title for the Planned Visit Information panel",
         DefaultValue = "Visit Information",
         IsRequired = false,
-        Order = 18
+        Order = 16
         )]
 
     #region Adult Category
@@ -291,6 +278,43 @@ namespace RockWeb.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 8 )]
 
+    [CustomDropdownListField(
+        "Profile Photos",
+        Key = AttributeKey.AdultProfilePhoto,
+        Description = "How should Profile Photo be displayed for adults?",
+        ListSource = ListSource.HIDE_SHOW_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.AdultFields,
+        Order = 9 )]
+
+    [CustomDropdownListField(
+        "First Adult Create Account",
+        Key = AttributeKey.FirstAdultCreateAccount,
+        Description = "Allows the first adult to create an account for themselves.",
+        ListSource = ListSource.HIDE_SHOW_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.AdultFields,
+        Order = 10 )]
+
+    [TextField(
+        "Create Account Title",
+        Key = AttributeKey.CreateAccountTitle,
+        Description = "Configures the description for the create account card.",
+        IsRequired = false,
+        DefaultValue = "Create Account",
+        Category = CategoryKey.AdultFields,
+        Order = 11 )]
+
+    [TextField(
+        "Create Account Description",
+        Key = AttributeKey.CreateAccountDescription,
+        Description = "Allows the first adult to create an account for themselves.",
+        IsRequired = false,
+        DefaultValue = "Create an account to personalize your experience and access additional capabilities on our site.",
+        Category = CategoryKey.AdultFields,
+        Order = 12 )]
     #endregion
 
     #region Child Category
@@ -373,6 +397,16 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 7 )]
+
+    [CustomDropdownListField(
+        "Profile Photos",
+        Key = AttributeKey.ChildProfilePhoto,
+        Description = "How should Profile Photo be displayed for children?",
+        ListSource = ListSource.HIDE_SHOW_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.ChildFields,
+        Order = 8 )]
     #endregion
 
     #region Child Relationship Category
@@ -410,14 +444,13 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "463A454A-6370-4B4A-BCA1-415F2D9B0CB7" )]
     public partial class FamilyPreRegistration : RockBlock
     {
         #region Attribute Keys, Categories and Values
         private static class AttributeKey
         {
             public const string ShowCampus = "ShowCampus";
-            public const string ShowCampusType = "ShowCampusType";
-            public const string ShowCampusStatus = "ShowCampusStatus";
             public const string DefaultCampus = "DefaultCampus";
             public const string PlannedVisitDate = "PlannedVisitDate";
             public const string CampusScheduleAttribute = "CampusScheduleAttribute";
@@ -443,6 +476,10 @@ namespace RockWeb.Blocks.Crm
             public const string AdultAttributeCategories = "AdultAttributeCategories";
             public const string AdultDisplayCommunicationPreference = "AdultDisplayCommunicationPreference";
             public const string AdultAddress = "AdultAddress";
+            public const string AdultProfilePhoto = "AdultProfilePhoto";
+            public const string FirstAdultCreateAccount = "FirstAdultCreateAccount";
+            public const string CreateAccountTitle = "CreateAccountTitle";
+            public const string CreateAccountDescription = "CreateAccountDescription";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -452,6 +489,7 @@ namespace RockWeb.Blocks.Crm
             public const string ChildEmail = "ChildEmail";
             public const string ChildAttributeCategories = "ChildAttributeCategories";
             public const string ChildDisplayCommunicationPreference = "ChildDisplayCommunicationPreference";
+            public const string ChildProfilePhoto = "ChildProfilePhoto";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -479,6 +517,7 @@ namespace RockWeb.Blocks.Crm
         {
             public const string COLUMNS = "2,4";
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+            public const string HIDE_SHOW_REQUIRED = "Hide,Show,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
             public const string SQL_RELATIONSHIP_TYPES = @"
                 SELECT 
@@ -605,6 +644,74 @@ namespace RockWeb.Blocks.Crm
                 _relationshipTypes.Add( 0, "Child" );
             }
 
+            var regexString = GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+            var usernameValidCaption = GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" );
+
+            var script = string.Format(
+@" Sys.Application.add_load(function () {{
+var availabilityMessageRow = $('#availabilityMessageRow');
+var usernameUnavailable = $('#availabilityMessage');
+var usernameTextbox = $('#{0}');
+var usernameRegExp = /{1}/;
+var usernameValidCaption = '{2}';
+var usernameFieldLabel = '{3}';
+var isRequired = $('#{4}').val() == 'True';
+        
+availabilityMessageRow.hide();
+
+usernameTextbox.blur(function () {{
+    if ($(this).val() && $.trim($(this).val()) != '') {{
+
+        if (!usernameRegExp.test($(this).val())) {{
+            usernameUnavailable.html(usernameFieldLabel + ' is not valid. ' + usernameValidCaption);
+            usernameUnavailable.addClass('alert-warning');
+            usernameUnavailable.removeClass('alert-success');
+        }} else {{
+            $.ajax({{
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                url: Rock.settings.get('baseUrl') + 'api/userlogins/available?username=' + encodeURIComponent($(this).val()),
+                success: function (getData, status, xhr) {{
+
+                    if (getData) {{
+                        usernameUnavailable.html('The selected ' + usernameFieldLabel.toLowerCase() + ' is available.');
+                        usernameUnavailable.addClass('alert-success');
+                        usernameUnavailable.removeClass('alert-warning');
+                    }} else {{
+                        availabilityMessageRow.show();
+                        usernameUnavailable.html('The ' + usernameFieldLabel.toLowerCase() + ' you selected is already in use.');
+                        usernameUnavailable.addClass('alert-warning');
+                        usernameUnavailable.removeClass('alert-success');
+                    }}
+                }},
+                error: function (xhr, status, error) {{
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                }}
+            }});
+        }}
+    }} else if(isRequired) {{
+        usernameUnavailable.html(usernameFieldLabel + ' is required.');
+        usernameUnavailable.addClass('alert-warning');
+        usernameUnavailable.removeClass('alert-success');
+    }} else {{
+        usernameUnavailable.html('');
+        usernameUnavailable.removeClass('alert-warning');
+        usernameUnavailable.removeClass('alert-success');
+    }}
+
+    availabilityMessageRow.show();
+    }});
+}});
+",
+                tbUserName.ClientID,     // 0
+                regexString,             // 1
+                usernameValidCaption,    // 2
+                tbUserName.Label, // 3
+                hfCreateFirstAdultAccountIsRequired.ClientID ); // 4
+
+            ScriptManager.RegisterStartupScript( this, GetType(), "CreateFirstAdultAccount_" + this.ClientID, script, true );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -730,6 +837,13 @@ namespace RockWeb.Blocks.Crm
                 $('#{13}').closest('.form-group').removeClass('required');
             }}
 
+            required = $('#{14}').val() == 'True';
+            if (required) {{
+                $('#{15}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{15}').closest('.form-group').removeClass('required');
+            }}
+
 
         }} else {{
             $('#{3}').closest('.form-group').removeClass('required');
@@ -738,6 +852,7 @@ namespace RockWeb.Blocks.Crm
             $('#{9}').closest('.form-group').removeClass('required');
             $('#{11}').closest('.form-group').removeClass('required');
             $('#{13}').closest('.form-group').removeClass('required');
+            $('#{15}').closest('.form-group').removeClass('required');
         }}
     }}
 ",
@@ -760,12 +875,13 @@ namespace RockWeb.Blocks.Crm
                 pnMobilePhone2.ClientID,
 
                 hfEmailRequired.ClientID,
-                tbEmail2.ClientID
+                tbEmail2.ClientID,
 
+                hfProfileRequired.ClientID,
+                imgProfile2.ClientID
             );
 
             ScriptManager.RegisterStartupScript( tbFirstName2, tbFirstName2.GetType(), "adult2-validation", script, true );
-
         }
 
         #endregion
@@ -833,7 +949,6 @@ namespace RockWeb.Blocks.Crm
                 var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid() );
                 var knownRelationshipOwnerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
 
-
                 // ...and some block settings
                 var familyRelationships = GetAttributeValue( AttributeKey.FamilyRelationships ).SplitDelimitedValues().AsIntegerList();
                 var canCheckinRelationships = GetAttributeValue( AttributeKey.CanCheckinRelationships ).SplitDelimitedValues().AsIntegerList();
@@ -841,6 +956,7 @@ namespace RockWeb.Blocks.Crm
                 var showChildEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) != "Hide";
                 var showChildCommunicationPreference = GetAttributeValue( AttributeKey.ChildDisplayCommunicationPreference ) != "Hide";
                 var showAdultAddress = GetAttributeValue( AttributeKey.AdultAddress ) != "Hide";
+                var createFirstAdultAccount = GetAttributeValue( AttributeKey.FirstAdultCreateAccount ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -864,8 +980,8 @@ namespace RockWeb.Blocks.Crm
 
                 // Save the adults
                 var adults = new List<Person>();
-                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, bpBirthDate1, dvpMaritalStatus1, tbEmail1, rblCommunicationPreference1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, bpBirthDate2, dvpMaritalStatus2, tbEmail2, rblCommunicationPreference2, pnMobilePhone2, phAttributes2 );
+                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, bpBirthDate1, dvpMaritalStatus1, tbEmail1, rblCommunicationPreference1, pnMobilePhone1, phAttributes1, imgProfile1 );
+                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, bpBirthDate2, dvpMaritalStatus2, tbEmail2, rblCommunicationPreference2, pnMobilePhone2, phAttributes2, imgProfile2 );
 
                 bool isNewFamily = false;
 
@@ -886,6 +1002,12 @@ namespace RockWeb.Blocks.Crm
                             _rockContext.SaveChanges();
                         }
                     }
+                }
+
+                // Create UserLogin for first adult
+                if ( createFirstAdultAccount && tbUserName.Text.IsNotNullOrWhiteSpace() && tbPassword.Text.IsNotNullOrWhiteSpace() )
+                {
+                    CreateUser( adults[0] );
                 }
 
                 // If we do have an existing family, set it's campus if the campus selection was visible
@@ -1060,6 +1182,11 @@ namespace RockWeb.Blocks.Crm
                     if ( showChildCommunicationPreference )
                     {
                         person.CommunicationPreference = child.CommunicationPreference;
+                    }
+
+                    if ( child.ProfilePhotoId.HasValue )
+                    {
+                        person.PhotoId = child.ProfilePhotoId;
                     }
 
                     _rockContext.SaveChanges();
@@ -1318,9 +1445,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-                    pnlCampus.Visible = true;
-
-                    SetCampusInfo();
+                    pnlCampus.Visible = cpCampus.Visible;
                 }
                 else
                 {
@@ -1385,6 +1510,21 @@ namespace RockWeb.Blocks.Crm
             isRequired = SetControl( AttributeKey.AdultAddress, acAddress, null );
             acAddress.Required = isRequired;
 
+            // Adult Profile Photo
+            isRequired = SetControl( AttributeKey.AdultProfilePhoto, pnlProfileImage1, pnlProfileImage2 );
+            imgProfile1.Required = isRequired;
+            hfProfileRequired.Value = isRequired.ToStringSafe();
+
+            // Create Account
+            isRequired = GetAttributeValue( AttributeKey.FirstAdultCreateAccount ) == "Required";
+            pnlCreateAccount.Visible = GetAttributeValue( AttributeKey.FirstAdultCreateAccount ) != "Hide";
+            tbUserName.Required = isRequired;
+            tbPassword.Required = isRequired;
+            tbConfirmPassword.Required = isRequired;
+            rlCreateAccountTitle.Text = GetAttributeValue( AttributeKey.CreateAccountTitle );
+            rlCreateAccountDescription.Text = GetAttributeValue( AttributeKey.CreateAccountDescription );
+            hfCreateFirstAdultAccountIsRequired.Value = isRequired.ToStringSafe();
+
             // Check for Current Family
             SetCurrentFamilyValues();
 
@@ -1441,7 +1581,6 @@ namespace RockWeb.Blocks.Crm
                     // Since the campus is not available for the campusScheduleAttribute just display the date panel
                     pnlPlannedDate.Visible = true;
                     pnlPlannedSchedule.Visible = false;
-                    litCampusTypeIcon.Text = "";
                     return;
                 }
             }
@@ -1449,94 +1588,6 @@ namespace RockWeb.Blocks.Crm
             // Display the schedule panel if there are multiple campuses and the campus picker is shown or if there is a single campus
             pnlPlannedDate.Visible = false;
             pnlPlannedSchedule.Visible = true;
-        }
-
-        /// <summary>
-        /// Sets the campus information.
-        /// </summary>
-        private void SetCampusInfo()
-        {
-            if ( !cpCampus.Visible )
-            {
-                pnlCampus.Visible = false;
-                return;
-            }
-
-            var showCampusStatus = GetAttributeValue( AttributeKey.ShowCampusStatus ).AsBoolean();
-            var showCampusType = GetAttributeValue( AttributeKey.ShowCampusType ).AsBoolean();
-
-            if ( !showCampusStatus && !showCampusType ) 
-            {
-                pnlCampusInfo.Visible = false;
-            }
-            else
-            {
-                pnlCampusInfo.Visible = true;
-
-                divCampusStatus.Visible = showCampusStatus;
-                divCampusType.Visible = showCampusType;
-            }
-
-            if ( cpCampus.SelectedCampusId.HasValue && cpCampus.SelectedCampusId.Value > 0 )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var campusService = new CampusService( rockContext );
-
-                    var thisCampus = campusService.Get( cpCampus.SelectedCampusId.Value );
-                    if ( thisCampus != null )
-                    {
-                        var campusStatusValue = thisCampus.CampusStatusValue?.Value;
-                        var campusTypeValue = thisCampus.CampusTypeValue?.Value;
-
-                        lblCampusStatus.Text = campusStatusValue;
-                        lblCampusType.Text = campusTypeValue;
-
-                        if ( campusStatusValue.IsNotNullOrWhiteSpace() )
-                        {
-                            switch ( campusStatusValue.ToUpper() )
-                            {
-                                case "CLOSED":
-                                    lblCampusStatus.CssClass = "label label-default";
-                                    break;
-                                case "OPEN":
-                                    lblCampusStatus.CssClass = "label label-success";
-                                    break;
-                                case "PENDING":
-                                    lblCampusStatus.CssClass = "label label-warning";
-                                    break;
-                                default:
-                                    lblCampusStatus.CssClass = "label label-info";
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            lblCampusStatus.CssClass = "label label-info";
-                        }
-
-                        if ( campusTypeValue.IsNotNullOrWhiteSpace() )
-                        {
-                            switch ( campusTypeValue.ToUpper() )
-                            {
-                                case "ONLINE":
-                                    litCampusTypeIcon.Text = "<i class='fa fa-globe fa-fw'></i>";
-                                    break;
-                                case "PHYSICAL":
-                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
-                                    break;
-                                default:
-                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            litCampusTypeIcon.Text = "";
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -1549,11 +1600,6 @@ namespace RockWeb.Blocks.Crm
 
             if ( !pnlPlannedSchedule.Visible || (cpCampus.Visible && cpCampus.SelectedValue.IsNullOrWhiteSpace() ) )
             {
-                if ( cpCampus.SelectedValue.IsNullOrWhiteSpace() )
-                {
-                    litCampusTypeIcon.Text = "";
-                }
-
                 return;
             }
 
@@ -1579,8 +1625,6 @@ namespace RockWeb.Blocks.Crm
                         nbError.Title = "Must Show Campus";
                         nbError.Text = "In order to show campus schedules the campus has to be shown so it can be selected. Change the this block's 'Show Campus' attribute to 'Yes'. A user without edit permission to this block will just see \"Planned Visit Date\".";
                         nbError.Visible = true;
-                        litCampusTypeIcon.Text = "";
-
                         return;
                     }
 
@@ -1603,7 +1647,6 @@ namespace RockWeb.Blocks.Crm
                     nbError.Title = "Missing Campus Schedule attribute.";
                     nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. A user without edit permission to this block will just see \"Planned Visit Date\".";
                     nbError.Visible = true;
-                    litCampusTypeIcon.Text = "";
 
                     return;
                 }
@@ -1914,19 +1957,40 @@ namespace RockWeb.Blocks.Crm
                 adult2.LoadAttributes();
             }
 
+            var columnStyle = GetColumnStyle( 3 );
             foreach ( var attribute in attributeList )
             {
+
                 string value1 = adult1 != null ? adult1.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div1 = new HtmlGenericControl( "Div" );
+
                 phAttributes1.Controls.Add( div1 );
-                div1.AddCssClass( "col-sm-3" );
                 var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_1", attribute.Id ) );
+                // Clear any preexisting col classes and apply the current one
+                RemoveClasses( div1, "col-sm-3", "col-sm-6" );
+                div1.AddCssClass( columnStyle );
 
                 string value2 = adult2 != null ? adult2.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div2 = new HtmlGenericControl( "Div" );
+
                 phAttributes2.Controls.Add( div2 );
-                div2.AddCssClass( "col-sm-3" );
                 var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_2", attribute.Id ) );
+                // Clear any preexisting col classes and apply the current one
+                RemoveClasses( div2, "col-sm-3", "col-sm-6" );
+                div2.AddCssClass( columnStyle );
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified Css classes from the control
+        /// </summary>
+        /// <param name="control"></param>
+        /// <param name="classes"></param>
+        private void RemoveClasses(HtmlGenericControl control, params string[] classes)
+        {
+            foreach ( var @class in classes )
+            {
+                control.RemoveCssClass( @class );
             }
         }
 
@@ -2016,6 +2080,8 @@ namespace RockWeb.Blocks.Crm
             var requireEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) == "Required";
             var showCommunicationPreference = GetAttributeValue( AttributeKey.ChildDisplayCommunicationPreference ) != "Hide";
             var columns = GetAttributeValue( AttributeKey.Columns ).AsInteger();
+            var showProfilePhoto = GetAttributeValue( AttributeKey.ChildProfilePhoto ) != "Hide";
+            var requireProfilePhoto = GetAttributeValue( AttributeKey.ChildProfilePhoto ) == "Required";
 
             var attributeList = GetCategoryAttributeList( AttributeKey.ChildAttributeCategories );
 
@@ -2049,6 +2115,8 @@ namespace RockWeb.Blocks.Crm
                     childRow.RelationshipTypeList = _relationshipTypes;
                     childRow.AttributeList = attributeList;
                     childRow.Columns = columns;
+                    childRow.ShowProfilePhoto = showProfilePhoto;
+                    childRow.RequireProfilePhoto = requireProfilePhoto;
 
                     childRow.ValidationGroup = BlockValidationGroup;
 
@@ -2065,10 +2133,10 @@ namespace RockWeb.Blocks.Crm
                         childRow.MobilePhoneCountryCode = child.MobileCountryCode;
                         childRow.EmailAddress = child.EmailAddress;
                         childRow.CommunicationPreference = child.CommunicationPreference;
+                        childRow.ProfilePhotoId = child.ProfilePhotoId;
 
                         childRow.SetAttributeValues( child );
                     }
-
                 }
             }
         }
@@ -2084,7 +2152,8 @@ namespace RockWeb.Blocks.Crm
             EmailBox tbEmail,
             RockRadioButtonList rblCommunicationPreference,
             PhoneNumberBox pnMobilePhone,
-            DynamicPlaceholder phAttributes )
+            DynamicPlaceholder phAttributes,
+            ImageEditor imgProfile )
         {
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -2100,6 +2169,7 @@ namespace RockWeb.Blocks.Crm
             var showMobilePhone = GetAttributeValue( AttributeKey.AdultMobilePhone ) != "Hide";
             var showCommunicationPreference = GetAttributeValue( AttributeKey.AdultDisplayCommunicationPreference ) != "Hide";
             bool autoMatch = GetAttributeValue( AttributeKey.AutoMatch ).AsBoolean();
+            var showProfilePhoto = GetAttributeValue( AttributeKey.AdultProfilePhoto ) != "Hide";
 
             var personService = new PersonService( _rockContext );
 
@@ -2125,7 +2195,6 @@ namespace RockWeb.Blocks.Crm
                     var birthDate = dpBirthDate.SelectedDate;
 
                     var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnMobilePhone.Text.Trim(), gender, birthDate, suffixValueId );
-
 
                     adult = personService.FindPerson( personQuery, true );
                     if ( adult != null )
@@ -2204,6 +2273,14 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
+                if ( showProfilePhoto )
+                {
+                    if ( imgProfile.BinaryFileId != null )
+                    {
+                        adult.PhotoId = imgProfile.BinaryFileId;
+                    }
+                }
+
                 // Save the person
                 _rockContext.SaveChanges();
 
@@ -2279,6 +2356,7 @@ namespace RockWeb.Blocks.Crm
                 child.CommunicationPreference = childRow.CommunicationPreference;
 
                 child.RelationshipType = childRow.RelationshipType;
+                child.ProfilePhotoId = childRow.ProfilePhotoId;
 
                 var attributeKeys = GetCategoryAttributeList( AttributeKey.ChildAttributeCategories ).Select( a => a.Key ).ToList();
                 child.AttributeValues = person.AttributeValues
@@ -2389,6 +2467,7 @@ namespace RockWeb.Blocks.Crm
             ValidateRequiredField( AttributeKey.AdultEmail, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
             //ValidateRequiredField( AttributeKey.AdultMOBILE_KEY, "A valid Mobile Phone is required for each adult.", pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
             bool isPhoneValid = ValidateRequiredField( AttributeKey.AdultMobilePhone, string.Empty, pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
+            ValidateRequiredField( AttributeKey.AdultProfilePhoto, "Profile photo is required for each adult", imgProfile1.BinaryFileId != null, imgProfile2.BinaryFileId != null, errorMessages );
 
             var smsCommunicationType = CommunicationType.SMS.ConvertToInt().ToString();
             var communicationPreference1IsValid = rblCommunicationPreference1.SelectedValue != smsCommunicationType
@@ -2406,6 +2485,31 @@ namespace RockWeb.Blocks.Crm
                 communicationPreference1IsValid,
                 communicationPreference2IsValid,
                 errorMessages );
+
+            if ( GetAttributeValue( AttributeKey.FirstAdultCreateAccount ) != "Hide" && tbUserName.Text.IsNotNullOrWhiteSpace() && tbPassword.Text.IsNotNullOrWhiteSpace() )
+            {
+                var regexString = GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+                var match = System.Text.RegularExpressions.Regex.Match( tbUserName.Text, regexString );
+                if ( !match.Success )
+                {
+                    errorMessages.Add( "username is not valid. " + GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) );
+                }
+
+                if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
+                {
+                    var userLoginService = new UserLoginService( new RockContext() );
+                    var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+
+                    if ( userLogin != null )
+                    {
+                        errorMessages.Add( "The username you selected is already in use." );
+                    }
+                }
+                else
+                {
+                    errorMessages.Add( UserLoginService.FriendlyPasswordRules() );
+                }
+            }
 
             foreach ( var childRow in prChildren.ChildRows )
             {
@@ -2663,12 +2767,44 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Creates the user.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="confirmed">if set to <c>true</c> [confirmed].</param>
+        /// <returns></returns>
+        private Rock.Model.UserLogin CreateUser( Person person )
+        {
+            var rockContext = new RockContext();
+            var user = UserLoginService.Create(
+                rockContext,
+                person,
+                Rock.Model.AuthenticationServiceType.Internal,
+                EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                tbUserName.Text,
+                tbPassword.Text,
+                false );
+
+            string url = ResolveRockUrl( "~/ConfirmAccount" );
+
+            var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+            mergeObjects.Add( "Person", person );
+            mergeObjects.Add( "User", user );
+
+            var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT.AsGuid() );
+            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
+            emailMessage.AppRoot = ResolveRockUrl( "~/" );
+            emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+            emailMessage.Send();
+
+            return user;
+        }
+
         #endregion
 
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetCampusInfo();
-
             SetScheduleDateControl();
         }
         protected void ddlScheduleDate_SelectedIndexChanged( object sender, EventArgs e )
@@ -2684,5 +2820,3 @@ namespace RockWeb.Blocks.Crm
         }
     }
 }
-
-

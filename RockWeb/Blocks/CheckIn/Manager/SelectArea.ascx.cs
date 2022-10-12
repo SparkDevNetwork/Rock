@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Description = "Select the Check Areas to display, or select none to show all.",
         Key = AttributeKey.CheckinConfigurationTypes,
         Order = 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "17E8F764-562A-4E94-980D-FF1B15640670" )]
     public partial class SelectArea : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

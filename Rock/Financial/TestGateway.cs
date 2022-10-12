@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,6 +94,7 @@ namespace Rock.Financial
         DefaultValue = null,
         Order = 7 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
     {
         #region Attribute Keys

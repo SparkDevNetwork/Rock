@@ -411,6 +411,11 @@ namespace Rock.Mobile
             package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
             package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
 
+            //
+            // Setup the deep link settings.
+            //
+            package.DeepLinkSettings.DeepLinkRoutes = additionalSettings.DeepLinkRoutes;
+
             if ( site.FavIconBinaryFileId.HasValue )
             {
                 package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";

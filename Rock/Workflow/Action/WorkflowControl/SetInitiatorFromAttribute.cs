@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Person Attribute", "The person attribute to set to the initiator to.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "6F623097-2BAB-4BFB-B4E3-E18785C71DA7")]
     public class SetInitiatorFromAttribute : ActionComponent
     {
         /// <summary>

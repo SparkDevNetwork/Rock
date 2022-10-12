@@ -85,6 +85,7 @@ namespace Rockweb.Blocks.Crm
         Order = 4 )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOTIVATORS )]
     public partial class Motivators : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

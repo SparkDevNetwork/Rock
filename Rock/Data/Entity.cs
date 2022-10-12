@@ -59,7 +59,7 @@ namespace Rock.Data
         /// number so that individuals cannot attempt to guess the next sequential
         /// identifier numbers.
         /// </summary>
-        /// <value>The hashed identifier key.</value>
+        /// <value>The hashed identifier key or an empty string if it could not be determined.</value>
         [DataMember]
         [NotMapped]
         public string IdKey
@@ -68,7 +68,7 @@ namespace Rock.Data
             {
                 try
                 {
-                    return IdHasher.Instance.GetHash( Id );
+                    return Id != 0 ? IdHasher.Instance.GetHash( Id ) : string.Empty;
                 }
                 catch
                 {
@@ -99,7 +99,10 @@ namespace Rock.Data
         public Guid Guid
         {
             get { return _guid; }
-            set { _guid = value; }
+            set
+            {
+                _guid = value;
+            }
         }
         private Guid _guid = Guid.NewGuid();
 

@@ -125,6 +125,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.CommentFieldLabel)]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONNECTION_OPPORTUNITY_SIGNUP )]
     public partial class ConnectionOpportunitySignup : RockBlock
     {
         #region Attribute Keys

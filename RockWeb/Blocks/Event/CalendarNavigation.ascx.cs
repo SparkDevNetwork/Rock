@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Navigation" )]
     [Category( "Event" )]
     [Description( "Displays icons to help with calendar administration navigation." )]
+    [Rock.SystemGuid.BlockTypeGuid( "84CC5DAC-238E-48B5-8499-8E97FB289EA9" )]
     public partial class CalendarNavigation : RockBlock
     {
 

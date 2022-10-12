@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.FinancialStatementTemplate,
         DefaultValue = Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT,
         Order = 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E0A699C3-61AA-4522-9067-1FE56FA80972" )]
     public partial class ContributionStatementGenerator : RockBlock
     {
         #region Attribute Keys

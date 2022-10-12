@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.IO;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
@@ -66,43 +67,34 @@ namespace Rock.Badge
             return string.Empty;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Entity != null )
+            if ( entity != null )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "badge" );
+                var tooltipText = GetToolTipText( entity );
 
-                var tooltipText = GetToolTipText( Entity );
-
-                if (tooltipText.IsNullOrWhiteSpace())
+                if ( tooltipText.IsNullOrWhiteSpace() )
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    tooltipText = GetToolTipText( Person );
+                    tooltipText = GetToolTipText( entity as Person );
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Title, tooltipText );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( $"<div class=\"badge\" title=\"{tooltipText.EncodeXml( true )}\">" );
 
-                var iconPath = GetIconPath( Entity );
+                var iconPath = GetIconPath( entity );
 
                 if ( iconPath.IsNullOrWhiteSpace() )
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    iconPath = GetIconPath( Person );
+                    iconPath = GetIconPath( entity as Person );
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Src, iconPath );
-                writer.RenderBeginTag( HtmlTextWriterTag.Img );
-                writer.RenderEndTag();
+                writer.Write( $"<img src=\"{iconPath.EncodeXml( true )}\">" );
 
-                writer.RenderEndTag();
+                writer.Write( "</div>" );
             }
         }
     }

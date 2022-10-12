@@ -7,14 +7,8 @@
 </script>
 
 <style>
-.chart-banner
-{
-    width: 100%;
-}
-.chart-banner canvas
-{
-    height: 350px;
-}
+.chart-banner { width: 100%; }
+.chart-banner canvas { height: 350px; }
 </style>
 
 <asp:UpdatePanel ID="upStepProgram" runat="server">
@@ -86,6 +80,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:HyperLink ID="hlStepFlow" runat="server" CssClass="btn btn-sm btn-default btn-step-flow" CausesValidation="false"><i class="fas fa-project-diagram"></i> Step Flow</asp:HyperLink>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>
@@ -181,7 +176,7 @@
                         <Rock:DataTextBox ID="tbStepStatusName" SourceTypeName="Rock.Model.StepStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="StepStatus" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" ValidationGroup="StepStatus" />
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" ValidationGroup="StepStatus" />
                         <Rock:RockCheckBox ID="cbIsCompleted"
                             runat="server"
                             Label="Is Complete"

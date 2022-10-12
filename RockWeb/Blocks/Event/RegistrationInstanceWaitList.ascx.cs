@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Event
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "671244E1-747E-436D-B866-13469723B424" )]
     public partial class RegistrationInstanceWaitList : RegistrationInstanceBlock
     {
         #region Attribute Keys
@@ -179,7 +180,7 @@ namespace RockWeb.Blocks.Event
 
             // add button to the wait list action grid
             Button btnProcessWaitlist = new Button();
-            btnProcessWaitlist.CssClass = "pull-left margin-l-none btn btn-sm btn-default";
+            btnProcessWaitlist.CssClass = "btn btn-sm btn-default btn-grid-custom-action pull-left";
             btnProcessWaitlist.Text = "Move From Wait List";
             btnProcessWaitlist.Click += btnProcessWaitlist_Click;
             gWaitList.Actions.AddCustomActionControl( btnProcessWaitlist );
@@ -1381,6 +1382,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion       
+        #endregion
     }
 }

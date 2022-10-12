@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.PermanentRedirect )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "B97FB779-5D3E-4663-B3B5-3C2C227AE14A" )]
     public partial class Redirect : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

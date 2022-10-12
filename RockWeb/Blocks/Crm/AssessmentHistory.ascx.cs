@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Assessment History" )]
     [Category( "CRM" )]
     [Description( "Displays Assessment History on the Person Profile's History tab. Allows a person to see and delete (if needed) pending assessment requests." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E7EB1E42-FEA7-4735-83FE-A618BD2616BF" )]
     public partial class AssessmentHistory : RockBlock, ICustomGridColumns
     {
         #region Keys

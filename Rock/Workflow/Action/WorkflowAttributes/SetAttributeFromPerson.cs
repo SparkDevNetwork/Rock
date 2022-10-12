@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Attribute", "The person attribute to set the value of.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [PersonField( "Person", "The person to set attribute value to. Leave blank to set person to nobody.", false, "", "", 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "17962C23-2E94-4E06-8461-0FB8B94E2FEA")]
     public class SetAttributeFromPerson : ActionComponent
     {
         /// <summary>

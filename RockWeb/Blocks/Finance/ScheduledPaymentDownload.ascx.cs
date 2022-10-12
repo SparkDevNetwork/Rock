@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
     [SystemCommunicationField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 3 )]
     [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "71FF09C3-3E50-4E97-9329-3CD57AACCA53" )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 

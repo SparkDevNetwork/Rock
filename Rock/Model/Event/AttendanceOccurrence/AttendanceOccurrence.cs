@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [Table( "AttendanceOccurrence" )]
     [DataContract]
     [Analytics( false, false )]
+    [Rock.SystemGuid.EntityTypeGuid( "0F6FD7F1-7AF5-4135-843F-E34948D4EA28")]
     public partial class AttendanceOccurrence : Model<AttendanceOccurrence>
     {
         #region Entity Properties

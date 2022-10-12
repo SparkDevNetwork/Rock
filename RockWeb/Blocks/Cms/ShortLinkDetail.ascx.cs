@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Crm
         Order = 0)]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "794C564C-6395-4303-812F-3BFBD1057443" )]
     public partial class ShortLinkDetail : RockBlock
     {
         #region Attribute Keys

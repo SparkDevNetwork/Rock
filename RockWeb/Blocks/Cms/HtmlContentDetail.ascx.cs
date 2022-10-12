@@ -145,6 +145,7 @@ namespace RockWeb.Blocks.Cms
 
     [ContextAware]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.HTML_CONTENT )]
     public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
 

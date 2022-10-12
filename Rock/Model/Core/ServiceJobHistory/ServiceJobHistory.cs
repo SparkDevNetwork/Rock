@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ServiceJobHistory" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D6A7C6E0-004F-4F38-9DCA-16E645F5EDF4")]
     public partial class ServiceJobHistory : Model<ServiceJobHistory>
     {
         #region Entity Properties
@@ -103,43 +104,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ServiceJob ServiceJob { get; set; }
-
-        /// <summary>
-        /// Gets the status message as HTML.
-        /// </summary>
-        /// <value>
-        /// The status message as HTML.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        public string StatusMessageAsHtml
-        {
-            get
-            {
-                return StatusMessage.ConvertCrLfToHtmlBr();
-            }
-        }
-
-        /// <summary>
-        /// Gets the job duration in seconds.
-        /// </summary>
-        /// <value>
-        /// The job duration in seconds.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        public int? DurationSeconds
-        {
-            get
-            {
-                if ( StartDateTime == null || StopDateTime == null )
-                {
-                    return null;
-                }
-
-                return (int)( (TimeSpan)( StopDateTime - StartDateTime ) ).TotalSeconds;
-            }
-        }
 
         #endregion
 

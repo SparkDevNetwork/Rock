@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "CE06640D-C1BA-4ACE-AF03-8D733FD3247C" )]
     public partial class UserLoginList : RockBlock, ICustomGridColumns
     {
         #region Fields

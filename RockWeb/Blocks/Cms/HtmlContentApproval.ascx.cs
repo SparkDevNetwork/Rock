@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Cms
         "The roles and/or users that have access to approve HTML content." )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "79E4D7D2-3F18-43A9-9A62-E02F09C6051C" )]
     public partial class HtmlContentApproval : Rock.Web.UI.RockBlock
     {
         #region Fields

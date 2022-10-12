@@ -31,13 +31,11 @@ using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Store
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Package Detail" )]
     [Category( "Store" )]
     [Description( "Manages the details of a package." )]
     [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "69A7D88E-5CD8-4993-A88A-4DA15BAD3CB3" )]
     public partial class PackageDetail : Rock.Web.UI.RockBlock
     {
         #region Fields

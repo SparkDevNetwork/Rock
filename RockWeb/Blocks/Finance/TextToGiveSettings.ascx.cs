@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9069F894-FDA5-4546-93EB-CEC448B142AA" )]
     public partial class TextToGiveSettings : RockBlock
     {
         #region Keys

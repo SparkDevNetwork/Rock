@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.CheckIn
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "18911F1B-294E-48D6-9E6B-0F72BF6C9491" )]
     public partial class Success : CheckInBlock
     {
         /* 2021-05/07 ETD

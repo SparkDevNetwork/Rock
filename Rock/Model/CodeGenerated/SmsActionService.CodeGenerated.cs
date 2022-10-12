@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// SmsAction View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( SmsAction ) )]
-    public partial class SmsActionViewModelHelper : ViewModelHelper<SmsAction, Rock.ViewModel.SmsActionViewModel>
+    public partial class SmsActionViewModelHelper : ViewModelHelper<SmsAction, SmsActionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.SmsActionViewModel CreateViewModel( SmsAction model, Person currentPerson = null, bool loadAttributes = true )
+        public override SmsActionBag CreateViewModel( SmsAction model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.SmsActionViewModel
+            var viewModel = new SmsActionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContinueAfterProcessing = model.ContinueAfterProcessing,
                 ExpireDate = model.ExpireDate,
                 IsActive = model.IsActive,
@@ -182,7 +182,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.SmsActionViewModel ToViewModel( this SmsAction model, Person currentPerson = null, bool loadAttributes = false )
+        public static SmsActionBag ToViewModel( this SmsAction model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new SmsActionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

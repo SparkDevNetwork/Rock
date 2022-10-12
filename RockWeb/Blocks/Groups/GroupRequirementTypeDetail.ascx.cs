@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Requirement Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group requirement type for editing." )]
+    [Rock.SystemGuid.BlockTypeGuid( "68FC983E-05F0-4067-83AC-97DD226F5071" )]
     public partial class GroupRequirementTypeDetail : RockBlock
     {
         #region Base Control Methods

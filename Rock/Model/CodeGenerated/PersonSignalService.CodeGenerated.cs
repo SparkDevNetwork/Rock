@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PersonSignal View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PersonSignal ) )]
-    public partial class PersonSignalViewModelHelper : ViewModelHelper<PersonSignal, Rock.ViewModel.PersonSignalViewModel>
+    public partial class PersonSignalViewModelHelper : ViewModelHelper<PersonSignal, PersonSignalBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PersonSignalViewModel CreateViewModel( PersonSignal model, Person currentPerson = null, bool loadAttributes = true )
+        public override PersonSignalBag CreateViewModel( PersonSignal model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PersonSignalViewModel
+            var viewModel = new PersonSignalBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ExpirationDate = model.ExpirationDate,
                 Note = model.Note,
                 OwnerPersonAliasId = model.OwnerPersonAliasId,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PersonSignalViewModel ToViewModel( this PersonSignal model, Person currentPerson = null, bool loadAttributes = false )
+        public static PersonSignalBag ToViewModel( this PersonSignal model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PersonSignalViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

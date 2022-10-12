@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Event
         Order = 1 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "22B67EDB-6D13-4D29-B722-DF45367AA3CB" )]
     public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
     {
         #region Attribute Keys

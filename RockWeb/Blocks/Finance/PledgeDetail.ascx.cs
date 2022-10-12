@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a list of groups that pledge can be associated to for selected user", false, "", "", 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E08504ED-B84C-4115-A058-03AAB8E8A307" )]
     public partial class PledgeDetail : RockBlock
     {
         #region Keys

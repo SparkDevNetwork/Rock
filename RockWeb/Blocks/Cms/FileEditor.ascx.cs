@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.RelativeFilePath )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "0F1DADBC-6B12-4BAA-A828-FD1AA86AA387" )]
     public partial class FileEditor : RockBlock
     {
         #region Page Parameter Keys

@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Prayer
     [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
     [BooleanField( "Show Expired", "Includes expired prayer requests.", false, order: 6)]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
+    [Rock.SystemGuid.BlockTypeGuid( "AF0B20C3-B969-4246-81CD-76CC443CFDEB" )]
     public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

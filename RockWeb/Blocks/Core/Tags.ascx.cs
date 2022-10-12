@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.EntityQualifierValue )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "351004FF-C2D6-4169-978F-5888BEFF982F" )]
     public partial class Tags : RockBlock
     {
         public static class AttributeKey

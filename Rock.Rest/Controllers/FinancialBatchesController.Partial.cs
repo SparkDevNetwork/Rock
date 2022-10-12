@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,13 +17,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class FinancialBatchesController
     {
@@ -34,6 +35,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialBatches/GetControlTotals" )]
+        [Rock.SystemGuid.RestActionGuid( "76DA430F-1470-4BDC-8466-28BDD47894BE" )]
         public IEnumerable<ControlTotalResult> GetControlTotals( System.Web.Http.OData.Query.ODataQueryOptions<FinancialBatch> queryOptions = null )
         {
             var financialBatchQuery = new FinancialBatchService( this.Service.Context as Rock.Data.RockContext ).Queryable();

@@ -34,9 +34,6 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Universal Search" )]
     [Category( "CMS" )]
     [Description( "A block to search for all indexable entity types in Rock." )]
@@ -113,6 +110,7 @@ namespace RockWeb.Blocks.Cms
         EditorMode = CodeEditorMode.Lava,
         Category = "CustomSetting",
         Key = AttributeKey.PostHtml )]
+    [Rock.SystemGuid.BlockTypeGuid( "FDF1BBFF-7A7B-4F4E-BF34-831203B0FEAC" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region AttributeKeys
@@ -376,7 +374,19 @@ namespace RockWeb.Blocks.Cms
             {
                 long totalResultsAvailable = 0;
 
-                var results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
+                List<Rock.UniversalSearch.IndexModels.IndexModelBase> results;
+
+                try
+                {
+
+                    results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
+                }
+                catch ( Exception ex )
+                {
+                    nbWarnings.Text = "An Error Occurred";
+                    nbWarnings.Details = ex.Message;
+                    return;
+                }
 
                 if ( GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean() )
                 {

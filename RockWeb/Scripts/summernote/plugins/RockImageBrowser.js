@@ -23,9 +23,10 @@
 
             $modalPopupIFrame.load(function () {
 
-                $modalPopupIFrame.contents().off('click');
+                $modalPopupIFrame.contents().off('click').on('click', '.js-select-file-button', function (e) {
+                    // In some cases, such as the email editor, this can run too soon. Pause 1ms here to ensure correct funcitonality.
+                    setTimeout(function () { }, 1);
 
-                $modalPopupIFrame.contents().on('click', '.js-select-file-button', function (e) {
                     Rock.controls.modal.close();
                     var fileResult = $(e.target).closest('body').find('.js-filebrowser-result input[type=hidden]').val();
                     if (fileResult) {

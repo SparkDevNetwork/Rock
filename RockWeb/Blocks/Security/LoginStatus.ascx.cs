@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "04712F3D-9667-4901-A49D-4507573EF7AD" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         private const string LOG_OUT = "Log Out";

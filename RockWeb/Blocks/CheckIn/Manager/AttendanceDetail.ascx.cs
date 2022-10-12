@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         IsRequired = false,
         Order = 6
         )]
+    [Rock.SystemGuid.BlockTypeGuid( "CA59CE67-9313-4B9F-8593-380044E5AE6A" )]
     public partial class AttendanceDetail : RockBlock
     {
         #region Attribute Keys

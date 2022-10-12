@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Presents the details of a interaction using Lava" )]
 
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: DEFAULT_LAVA_TEMPLATE )]
+    [Rock.SystemGuid.BlockTypeGuid( "B6AD2D98-0DF3-4DFB-AE2B-A8CF6E21E5C0" )]
     public partial class InteractionDetail : Rock.Web.UI.RockBlock
     {
         #region Block Setting Strings

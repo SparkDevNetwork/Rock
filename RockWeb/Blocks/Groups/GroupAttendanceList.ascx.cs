@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 4,
         Key = AttributeKey.DisplayAttendanceType )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_LIST )]
     public partial class GroupAttendanceList : RockBlock, ICustomGridColumns
     {
         /// <summary>

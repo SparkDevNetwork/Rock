@@ -449,6 +449,11 @@ namespace Rock.SystemGuid
         public const string LANGUAGES = "6060ba8b-4085-4a29-bf19-a4862b95556a";
 
         /// <summary>
+        /// The apple device models
+        /// </summary>
+        public const string APPLE_DEVICE_MODELS = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

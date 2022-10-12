@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Notifications REST API
     /// </summary>
+    [RestControllerGuid( "4DF1450D-84DE-44D4-A5E9-FED34482B1A5" )]
     public partial class NotificationsController : Rock.Rest.ApiController<Rock.Model.Notification>
     {
         /// <summary>

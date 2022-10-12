@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Administration
         Order = 0 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "86FB6B0E-E426-4581-96C0-A7654D6A5C7D" )]
     public partial class ShortLink : RockBlock
     {
         private int _minTokenLength = 7;

@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the calendars that user is authorized to view." )]
     [LinkedPage( "Detail Page", "Page used to view details of an event calendar.", order: 0 )]
     [LinkedPage( "Calendar Attributes Page", "Page used to configure attributes for event calendars.", order: 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "041B5C23-5F1F-4B02-A767-FB7F4B1A5345" )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

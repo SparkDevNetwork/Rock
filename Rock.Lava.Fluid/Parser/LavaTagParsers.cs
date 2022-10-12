@@ -96,7 +96,7 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
-        /// A parser that captures the literal content a Lava Block.
+        /// A parser that captures the literal content of a Lava Block.
         /// This parser is invoked after the opening tag has been parsed, and is intended to capture all content until the closing tag,
         /// including nested blocks.
         /// </summary>

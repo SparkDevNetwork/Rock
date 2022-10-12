@@ -28,7 +28,7 @@
                     <Rock:NotificationBox ID="nbDuplicateDevice" runat="server" NotificationBoxType="Warning" Title="Sorry" Visible="false" />
 
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-1">
@@ -50,6 +50,15 @@
                         <div class="col-md-12">
                             <Rock:CodeEditor ID="ceLavaTemplate" runat="server" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="RequestLavaTemplate" EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" Label="Request Lava Template"
                                 Help="Used to show personalized resources or instructions based on the information on the request. The request will be provided in the <strong>'BenevolenceRequest'</strong> merge field." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:NumberBox ID="numberBoxMaxDocuments" runat="server" Label="Maximum Number of Documents" Help="The maximum number of documents that can be added to a request." Required="true"></Rock:NumberBox>
+                        </div>
+                        <div class="col-md-6">
+
                         </div>
                     </div>
 

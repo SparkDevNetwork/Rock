@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the parent <seealso cref="Rock.Web.UI.ContextEntityBlock"/>. If <see cref="Entity"/> is not set, this will help determine which Entity the badge will use 
+        /// Gets the parent <seealso cref="Rock.Web.UI.ContextEntityBlock"/>. If <see cref="Entity"/> is not set, this will help determine which Entity the badge will use
         /// </summary>
         /// <value>
         /// The parent person block.
@@ -134,15 +134,24 @@ namespace Rock.Web.UI.Controls
 
             try
             {
+                badgeComponent.Render( BadgeCache, entity, writer );
+
+#pragma warning disable CS0618 // Type or member is obsolete
                 badgeComponent.ParentContextEntityBlock = ContextEntityBlock;
                 badgeComponent.Entity = entity;
                 badgeComponent.Render( BadgeCache, writer );
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 badgeComponent.Render( personBadgeCache, writer );
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                var script = badgeComponent.GetWrappedJavaScript( BadgeCache );
+                var script = badgeComponent.GetWrappedJavaScript( BadgeCache, entity );
+
+                if ( script.IsNullOrWhiteSpace() )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    script = badgeComponent.GetWrappedJavaScript( BadgeCache );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
 
                 if ( !script.IsNullOrWhiteSpace() )
                 {
@@ -154,13 +163,13 @@ namespace Rock.Web.UI.Controls
                 var errorMessage = $"An error occurred rendering badge: {BadgeCache?.Name }, badge-id: {BadgeCache?.Id}";
                 ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
                 var badgeNameClass = BadgeCache?.Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
-                writer.Write( $"<div class='badge badge-{badgeNameClass} badge-id-{BadgeCache?.Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
+                writer.Write( $"<div class='rockbadge rockbadge-{badgeNameClass} rockbadge-id-{BadgeCache?.Id} rockbadge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
                 writer.Write( $"  <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>" );
                 writer.Write( "</div>" );
             }
             finally
             {
-                const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
+                const string script = "$('.rockbadge[data-toggle=\"tooltip\"]').tooltip({html: true, sanitize: false }); $('.rockbadge[data-toggle=\"popover\"]').popover();";
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
             }
         }

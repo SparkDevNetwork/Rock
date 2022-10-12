@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Connection
         Order = 2,
         Key = AttributeKey.ShowEdit )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "216E2EE6-4E2D-4D0F-AA36-AB808F565C48" )]
     public partial class ConnectionOpportunityDetail : RockBlock
     {
         #region Attribute Keys

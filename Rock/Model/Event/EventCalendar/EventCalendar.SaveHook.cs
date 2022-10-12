@@ -44,7 +44,7 @@ namespace Rock.Model
                     var changeEntry = rockContext.ChangeTracker.Entries<EventCalendar>().Where( a => a.Entity == Entity ).FirstOrDefault();
                     if ( changeEntry != null )
                     {
-                        var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
+                        var originalIndexState = ( bool ) changeEntry.OriginalValues[nameof( Entity.IsIndexEnabled )];
 
                         if ( originalIndexState == true && Entity.IsIndexEnabled == false )
                         {

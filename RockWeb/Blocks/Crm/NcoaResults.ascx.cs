@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 20,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3997FE75-E069-4879-B8BA-C8B19C367CD3" )]
     public partial class NcoaResults : RockBlock
     {
         #region Attribute Keys

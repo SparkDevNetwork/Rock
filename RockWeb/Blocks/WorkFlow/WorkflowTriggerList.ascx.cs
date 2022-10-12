@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Lists all the workflow triggers." )]
 
     [LinkedPage("Detail Page")]
+    [Rock.SystemGuid.BlockTypeGuid( "72F48121-2CE2-4696-840C-CF404EAF7EEE" )]
     public partial class WorkflowTriggerList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

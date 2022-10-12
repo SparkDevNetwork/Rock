@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
     
+    [Rock.SystemGuid.EntityTypeGuid( "019645AD-3BBF-47A0-AEA5-4F0636BDA715")]
     public class AddNoteToGroupMember : ActionComponent
     {
         /// <summary>

@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Farm
         DefaultIntegerValue = 4,
         Order = 2 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "4280625A-C69A-4B47-A4D3-89B61F43C967" )]
     public partial class WebFarmSettings : RockBlock
     {
         #region Keys

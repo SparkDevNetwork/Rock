@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     ///
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CODE_EDITOR )]
     public class CodeEditorFieldType : FieldType
     {
         #region Configuration
@@ -178,6 +179,22 @@ namespace Rock.Field.Types
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.EncodeHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.Truncate( 100 ).EncodeHtml();
+        }
 
         /// <summary>
         /// Formats the value as HTML.

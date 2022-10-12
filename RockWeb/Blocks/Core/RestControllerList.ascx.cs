@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Administration
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BF616C1-CE1D-4EF0-B56F-B9810B811192" )]
     public partial class RestControllerList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

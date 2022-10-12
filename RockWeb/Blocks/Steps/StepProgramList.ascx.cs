@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "429A817E-1379-4BCC-AEFE-01D9C75273E5" )]
     public partial class StepProgramList : RockBlock
     {
         #region Attribute Keys

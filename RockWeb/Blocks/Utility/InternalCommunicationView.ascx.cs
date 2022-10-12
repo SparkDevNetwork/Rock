@@ -36,9 +36,6 @@ using Rock.Lava;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Internal Communication View" )]
     [Category( "Utility" )]
     [Description( "Block for showing the contents of internal content channels." )]
@@ -52,6 +49,7 @@ namespace RockWeb.Blocks.Utility
     [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7 )]
     [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D526F4A5-19B9-410F-A663-400D93C61D3C" )]
     public partial class InternalCommunicationView : Rock.Web.UI.RockBlock
     {
         #region Fields

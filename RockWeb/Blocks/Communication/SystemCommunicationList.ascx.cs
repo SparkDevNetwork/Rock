@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Communication
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.SYSTEM_COMMUNICATION_LIST )]
     public partial class SystemCommunicationList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys
@@ -283,7 +284,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             lSupports.Text = html.ToString();
-     
+
             var page = PageCache.Get( Rock.SystemGuid.Page.SYSTEM_COMMUNICATION_PREVIEW.AsGuid() );
 
             if ( page != null )
@@ -292,7 +293,7 @@ namespace RockWeb.Blocks.Communication
                 if ( route != null )
                 {
                     var url = ResolveRockUrl( $"~/{route.Route}/?SystemCommunicationId={systemCommunication.Id}" );
-                    lEmailPreview.Text = $"<a href='{url}' title='Preview' class='text-black'><i class='fa fa-search'></i></a>";
+                    lEmailPreview.Text = $"<a href='{url}' title='Preview' class='btn btn-default btn-sm'><i class='fa fa-search'></i></a>";
                 }
                 }
             }

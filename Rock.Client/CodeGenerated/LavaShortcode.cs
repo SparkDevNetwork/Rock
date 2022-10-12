@@ -136,6 +136,9 @@ namespace Rock.Client
     /// </summary>
     public partial class LavaShortcode : LavaShortcodeEntity
     {
+        /// <summary />
+        public ICollection<Category> Categories { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
