@@ -888,7 +888,7 @@ namespace Rock.Model
             groupMemberQuery = groupMemberQuery
                 .Where( a => a.GroupId == options.GroupId && a.GroupRoleId == options.GroupRoleId && a.GroupMemberStatus != GroupMemberStatus.Inactive );
 
-            Block registrationInstanceGroupPlacementBlock = new BlockService( rockContext ).Get( options.BlockId );
+            var registrationInstanceGroupPlacementBlock = BlockCache.Get( options.BlockId );
             if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
             {
                 var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
