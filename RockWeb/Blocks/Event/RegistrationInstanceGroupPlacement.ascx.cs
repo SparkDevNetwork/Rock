@@ -727,21 +727,24 @@ namespace RockWeb.Blocks.Event
             Dictionary<int, string> attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.GroupAttributeFilter_GroupTypeId, groupType.Id ) ).FromJsonOrNull<Dictionary<int, string>>();
             var parameterExpression = groupService.ParameterExpression;
             Expression groupWhereExpression = null;
-            foreach ( var attributeFilter in attributeFilters )
+            if (attributeFilters != null)
             {
-                var attribute = AttributeCache.Get( attributeFilter.Key );
-                var attributeFilterValues = attributeFilter.Value.FromJsonOrNull<List<string>>();
-                var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
-                if ( entityField != null && attributeFilterValues != null )
+                foreach (var attributeFilter in attributeFilters)
                 {
-                    var attributeWhereExpression = ExpressionHelper.GetAttributeExpression( groupService, parameterExpression, entityField, attributeFilterValues );
-                    if ( groupWhereExpression == null )
+                    var attribute = AttributeCache.Get(attributeFilter.Key);
+                    var attributeFilterValues = attributeFilter.Value.FromJsonOrNull<List<string>>();
+                    var entityField = EntityHelper.GetEntityFieldForAttribute(attribute);
+                    if (entityField != null && attributeFilterValues != null)
                     {
-                        groupWhereExpression = attributeWhereExpression;
-                    }
-                    else
-                    {
-                        groupWhereExpression = Expression.AndAlso( groupWhereExpression, attributeWhereExpression );
+                        var attributeWhereExpression = ExpressionHelper.GetAttributeExpression(groupService, parameterExpression, entityField, attributeFilterValues);
+                        if (groupWhereExpression == null)
+                        {
+                            groupWhereExpression = attributeWhereExpression;
+                        }
+                        else
+                        {
+                            groupWhereExpression = Expression.AndAlso(groupWhereExpression, attributeWhereExpression);
+                        }
                     }
                 }
             }
@@ -1110,10 +1113,6 @@ namespace RockWeb.Blocks.Event
             }
 
             var groupRoleIdCount = _placementGroupIdGroupRoleIdCount[placementGroup.Id];
-            foreach ( var item in groupRoleIdCount )
-            {
-
-            }
             rptPlacementGroupRole.DataSource = _groupTypeRoles.ToDictionary( a => a, a => groupRoleIdCount.ContainsKey( a.Id ) ? groupRoleIdCount[a.Id] : 0 );
             rptPlacementGroupRole.DataBind();
         }
@@ -1125,8 +1124,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPlacementGroupRole_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var groupTypeRole = ( KeyValuePair<GroupTypeRoleCache, int>) e.Item.DataItem;
+            if (e.Item.DataItem == null)
+            {
+                return;
+            }
 
+            var groupTypeRole = (KeyValuePair<GroupTypeRoleCache, int>)e.Item.DataItem;
             var hfGroupTypeRoleId = e.Item.FindControl( "hfGroupTypeRoleId" ) as HiddenFieldWithClass;
             hfGroupTypeRoleId.Value = groupTypeRole.Key.Id.ToString();
 
