@@ -245,6 +245,29 @@
     }
   }
 
+  .placement-groups &{
+
+    &[data-person-gender="1"] {
+      color: #4299e1;
+      background-color: #ebf8ff;
+      border-color: #4299e1;
+
+      &:hover {
+        background-color: darken(#ebf8ff, 5%);
+      }
+    }
+
+    &[data-person-gender="2"] {
+      color: #ed64a6;
+      background-color: #fff5f7;
+      border-color: #ed64a6;
+
+      &:hover {
+        background-color: darken(#fff5f7, 5%);
+      }
+    }
+  }
+
   &:hover {
     background: rgba(85,150,230,.1);
   }
@@ -352,31 +375,6 @@
   }
 }
 
-.placement-groups & {
-  display: flex;
-  flex-direction: column;
-  min-width: 100%;
-  margin-right: 0;
-
-  &[data-person-gender="1"] {
-    color: #4299e1;
-    background-color: #ebf8ff;
-    border-color: #4299e1;
-
-    &:hover {
-      background-color: darken(#ebf8ff, 5%);
-    }
-  }
-
-  &[data-person-gender="2"] {
-    color: #ed64a6;
-    background-color: #fff5f7;
-    border-color: #ed64a6;
-
-    &:hover {
-      background-color: darken(#fff5f7, 5%);
-    }
-  }
   // move person-id-anchor up by 250px so that
   // it navigates past the page header
   .person-id-anchor {
