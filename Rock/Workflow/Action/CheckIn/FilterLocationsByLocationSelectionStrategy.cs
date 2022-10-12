@@ -83,9 +83,12 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var person in family.People )
             {
+                System.Diagnostics.Debug.WriteLine( $"Execute() Person: {person}" );
                 foreach ( var checkinGroupType in person.GroupTypes )
                 {
+                    System.Diagnostics.Debug.WriteLine( $"Execute() GroupType: {checkinGroupType}" );
                     var attributeLocationSelectionStrategy = ( CheckinConfigurationHelper.LocationSelectionStrategy? ) checkinGroupType.GroupType.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY ).AsIntegerOrNull() ?? null;
+                    System.Diagnostics.Debug.WriteLine( $"Execute() Location Selection Strat: {attributeLocationSelectionStrategy}" );
 
                     if ( attributeLocationSelectionStrategy == null || attributeLocationSelectionStrategy == CheckinConfigurationHelper.LocationSelectionStrategy.Ask )
                     {
@@ -107,6 +110,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var checkinGroup in checkinGroups )
             {
+                System.Diagnostics.Debug.WriteLine( $"FilterLocationList() CheckinGroup: {checkinGroup}" );
                 // Get a list of locations that have not reached their threshold.
                 var locationListQuery = checkinGroup.Locations
                     .Where( l => l.Location.SoftRoomThreshold == null || KioskLocationAttendance.Get( l.Location.Id ).CurrentCount < l.Location.SoftRoomThreshold.Value );
@@ -122,6 +126,7 @@ namespace Rock.Workflow.Action.CheckIn
                     locationList = locationListQuery.OrderBy( l => l.Order ).ToList();
                 }
 
+                locationList.ForEach( i => System.Diagnostics.Debug.WriteLine( $"FilterLocationList() Location: {i.Location.Name}" ) );
                 if ( selectedSchedules.Count() == 1 )
                 {
                     // If we only have one schedule then we can just remove the other locations and not care about the schedules.
@@ -163,14 +168,22 @@ namespace Rock.Workflow.Action.CheckIn
             var schedulesSelectedForALocation = new List<int>();
             foreach( var location in locationList )
             {
+                System.Diagnostics.Debug.WriteLine( $"FilterLocationSchedules() CheckinLocation: {location}" );
                 var schedulesToKeepForLocation = new List<CheckInSchedule>();
 
                 foreach( var schedule in location.Schedules )
                 {
+                    System.Diagnostics.Debug.WriteLine( $"FilterLocationSchedules() schedule: {schedule}" );
                     // Check if the schedule exists in the list of selected schedules and has not already been selected for any other location
+                    var selectedScheduleContainsThisSchedule = selectedSchedules.Select( ss => ss.Schedule.Id ).Contains( schedule.Schedule.Id );
+                    var scheduleSelectedForALocation = schedulesSelectedForALocation.Contains( schedule.Schedule.Id );
+                    System.Diagnostics.Debug.WriteLine( $"FilterLocationSchedules() selectedScheduleContainsThisSchedule: {selectedScheduleContainsThisSchedule}" );
+                    System.Diagnostics.Debug.WriteLine( $"FilterLocationSchedules() scheduleSelectedForALocation: {scheduleSelectedForALocation}" );
+
                     if ( selectedSchedules.Select( ss => ss.Schedule.Id ).Contains( schedule.Schedule.Id )
                         && !selectedSchedules.Select( ss => ss.Schedule.Id ).Where( s => schedulesSelectedForALocation.Contains( schedule.Schedule.Id ) ).Any() )
                     {
+                        System.Diagnostics.Debug.WriteLine( $"FilterLocationSchedules() schedule added to lists {schedule.Schedule.Name}" );
                         schedulesToKeepForLocation.Add( schedule );
                         schedulesSelectedForALocation.Add( schedule.Schedule.Id );
                     }
