@@ -352,46 +352,70 @@
   }
 }
 
-// move person-id-anchor up by 250px so that
-// it navigates past the page header
-.person-id-anchor {
-  position: relative;
-  top: -250px;
-  display: block;
-  visibility: hidden;
-}
+.placement-groups & {
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+  margin-right: 0;
 
-.panel-inline {
-  margin-bottom: 0 !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  -webkit-bot-shadow: none !important;
+  &[data-person-gender="1"] {
+    color: #4299e1;
+    background-color: #ebf8ff;
+    border-color: #4299e1;
 
-  .panel-heading {
-    padding: 8px 16px;
-    background-color: fade(@panel-heading-bg, 80%);
-    border-top: 1px solid @panel-default-border;
+    &:hover {
+      background-color: darken(#ebf8ff, 5%);
+    }
   }
 
-  .panel-title {
-    font-size: @font-size-sm;
-    font-weight: @font-weight-semibold;
+  &[data-person-gender="2"] {
+    color: #ed64a6;
+    background-color: #fff5f7;
+    border-color: #ed64a6;
+
+    &:hover {
+      background-color: darken(#fff5f7, 5%);
+    }
+  }
+  // move person-id-anchor up by 250px so that
+  // it navigates past the page header
+  .person-id-anchor {
+    position: relative;
+    top: -250px;
+    display: block;
+    visibility: hidden;
   }
 
-}
+  .panel-inline {
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-bot-shadow: none !important;
 
-.panel-drawer + .group-role-members .panel-heading,
-.group-role-members:first-child .panel-heading {
-  border-top: 0;
-}
+    .panel-heading {
+      padding: 8px 16px;
+      background-color: fade(@panel-heading-bg, 80%);
+      border-top: 1px solid @panel-default-border;
+    }
 
-
-.btn-overflow {
-  color: @text-muted;
-
-  .panel-heading & {
-    width: 20px !important;
-    text-align: right;
+    .panel-title {
+      font-size: @font-size-sm;
+      font-weight: @font-weight-semibold;
+    }
   }
-}
+
+  .panel-drawer + .group-role-members .panel-heading,
+  .group-role-members:first-child .panel-heading {
+    border-top: 0;
+  }
+
+
+  .btn-overflow {
+    color: @text-muted;
+
+    .panel-heading & {
+      width: 20px !important;
+      text-align: right;
+    }
+  }
