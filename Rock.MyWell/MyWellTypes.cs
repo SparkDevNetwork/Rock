@@ -2149,15 +2149,16 @@ namespace Rock.MyWell
         public QueryDateTimeRange DateTimeRangeUTC { get; set; }
 
         /// <summary>
-        /// Maximum records to return (0-100, optional)
-        /// Gets or sets the limit (MyWell default is 10, but we can set it to 0 to get all of them )
+        /// Maximum records to return (0-2500, optional. If left null, default is 10)
+        /// Gets or sets the limit. We can't specify "All", so we'll have to fetch until
+        /// we get them all.
         /// https://sandbox.gotnpgateway.com/docs/api/#search-transactions
         /// </summary>
         /// <value>
         /// The limit.
         /// </value>
         [JsonProperty( "limit", NullValueHandling = NullValueHandling.Ignore )]
-        public int? Limit { get; set; } = 0;
+        public int? Limit { get; set; } = null;
 
         /// <summary>
         /// Number of records to offset the return by (optional)
