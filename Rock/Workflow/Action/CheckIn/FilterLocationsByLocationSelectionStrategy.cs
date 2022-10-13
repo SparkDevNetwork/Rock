@@ -86,7 +86,6 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var checkinGroupType in person.GroupTypes )
                 {
                     var attributeLocationSelectionStrategy = ( CheckinConfigurationHelper.LocationSelectionStrategy? ) checkinGroupType.GroupType.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY ).AsIntegerOrNull() ?? null;
-
                     if ( attributeLocationSelectionStrategy == null || attributeLocationSelectionStrategy == CheckinConfigurationHelper.LocationSelectionStrategy.Ask )
                     {
                         // Either this is not set for some reason or the location should not be automatically selected, so don't filter the locations.
@@ -158,31 +157,36 @@ namespace Rock.Workflow.Action.CheckIn
                 return;
             }
 
-            // There is no location that has all of the selected schedules for this person so we need to choose each schedule location in the sorted list order.
-            // The choosing will be done by removing the schedules from the locations that are not needed.
-            var schedulesSelectedForALocation = new List<int>();
-            foreach( var location in locationList )
-            {
-                var schedulesToKeepForLocation = new List<CheckInSchedule>();
+            var locationsSelectedForSchedule = new List<( int locationId, int scheduleId )>();
 
-                foreach( var schedule in location.Schedules )
+            // There is no location that has all of the selected schedules for this person so we need to choose each schedule location in the sorted list order.
+            // The list of locations is already ordered in preference. So loop through the locations for each schedule until to find the preferred one.
+            // The choosing will be done by removing the schedules from the locations that are not needed for that schedule.
+            foreach ( var selectedSchedule in selectedSchedules )
+            {
+                foreach ( var location in locationList )
                 {
-                    // Check if the schedule exists in the list of selected schedules and has not already been selected for any other location
-                    if ( selectedSchedules.Select( ss => ss.Schedule.Id ).Contains( schedule.Schedule.Id )
-                        && !selectedSchedules.Select( ss => ss.Schedule.Id ).Where( s => schedulesSelectedForALocation.Contains( schedule.Schedule.Id ) ).Any() )
+                    var locationContainsSchedule = location.Schedules.Select( s => s.Schedule.Id ).Contains( selectedSchedule.Schedule.Id );
+                    var scheduleHasALocationSelected = locationsSelectedForSchedule.Where( x => x.scheduleId == selectedSchedule.Schedule.Id ).Any();
+
+                    if ( locationContainsSchedule && !scheduleHasALocationSelected )
                     {
-                        schedulesToKeepForLocation.Add( schedule );
-                        schedulesSelectedForALocation.Add( schedule.Schedule.Id );
+                        locationsSelectedForSchedule.Add( (locationId: location.Location.Id, scheduleId: selectedSchedule.Schedule.Id) );
                     }
                 }
+            }
 
+            // Remove or exclude location/schedules not in locationsSelectedForSchedule
+            foreach( var location in locationList )
+            {
+                var schedulesToKeepForLocation = locationsSelectedForSchedule.Where( x => x.locationId == location.Location.Id ).Select( x => x.scheduleId ).ToList();
                 if ( remove )
                 {
-                    location.Schedules.RemoveAll( ss => !schedulesToKeepForLocation.Contains( ss ) );
+                    location.Schedules.RemoveAll( ss => !schedulesToKeepForLocation.Contains( ss.Schedule.Id ) );
                 }
                 else
                 {
-                    location.Schedules.Where( ss => !schedulesToKeepForLocation.Contains( ss ) ).ToList().ForEach( ss => ss.ExcludedByFilter = true );
+                    location.Schedules.Where( ss => !schedulesToKeepForLocation.Contains( ss.Schedule.Id ) ).ToList().ForEach( ss => ss.ExcludedByFilter = true );
                 }
             }
         }
