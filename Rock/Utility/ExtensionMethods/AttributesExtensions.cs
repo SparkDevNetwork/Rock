@@ -75,6 +75,27 @@ namespace Rock
         }
 
         /// <summary>
+        /// Loads the filtered attributes.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="attributeFilter">The attribute filter.</param>
+        internal static void LoadFilteredAttributes( this IEnumerable<IHasAttributes> entities, Func<AttributeCache, bool> attributeFilter )
+        {
+            Attribute.Helper.LoadFilteredAttributes( entities, null, attributeFilter );
+        }
+
+        /// <summary>
+        /// Loads the filtered attributes.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attributeFilter">The attribute filter.</param>
+        internal static void LoadFilteredAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        {
+            Attribute.Helper.LoadFilteredAttributes( entities, rockContext, attributeFilter );
+        }
+
+        /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="entity">The entity.</param>
