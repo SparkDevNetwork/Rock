@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -42,7 +43,7 @@ namespace Rock.Jobs
     [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
     [IntegerField( "Parallel Communications", "The number of communications that can be sent at the same time.", false, 3, "", 2 )]
     [DisallowConcurrentExecution]
-    public class SendCommunications : IJob
+    public class SendCommunications : RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
@@ -51,16 +52,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int expirationDays = dataMap.GetInt( "ExpirationPeriod" );
-            int delayMinutes = dataMap.GetInt( "DelayPeriod" );
-            int maxParallelization = dataMap.GetInt( "ParallelCommunications" );
+            int expirationDays = this.GetAttributeValue( "ExpirationPeriod" ).AsInteger();
+            int delayMinutes = this.GetAttributeValue( "DelayPeriod" ).AsInteger();
+            int maxParallelization = this.GetAttributeValue( "ParallelCommunications" ).AsInteger();
 
             List<Model.Communication> sendCommunications = null;
             var stopWatch = Stopwatch.StartNew();
@@ -78,7 +75,7 @@ namespace Rock.Jobs
 
             if ( sendCommunications == null )
             {
-                context.Result = "No communications to send";
+                this.Result = "No communications to send";
             }
 
             var exceptionMsgs = new List<string>();
@@ -140,11 +137,11 @@ namespace Rock.Jobs
 
             if ( communicationsSent > 0 )
             {
-                context.Result = string.Format( "Sent {0} {1}", communicationsSent, "communication".PluralizeIf( communicationsSent > 1 ) );
+                this.Result = string.Format( "Sent {0} {1}", communicationsSent, "communication".PluralizeIf( communicationsSent > 1 ) );
             }
             else
             {
-                context.Result = "No communications to send";
+                this.Result = "No communications to send";
             }
 
             if ( exceptionMsgs.Any() )

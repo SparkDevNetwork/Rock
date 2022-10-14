@@ -32,7 +32,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Populates Step Program Completion records using existing Step data
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Rock Update Helper v12.5 - Update Step Program Completion" )]
     [Description( "Populates Step Program Completion records using existing Step data" )]
 
@@ -45,7 +44,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV125DataMigrationsUpdateStepProgramCompletion : IJob
+    public class PostV125DataMigrationsUpdateStepProgramCompletion : RockJob
     {
         #region Keys
 
@@ -75,18 +74,11 @@ namespace Rock.Jobs
 
         private const string _entitySetGuid = "495BF2AF-931B-495E-B88B-AE1C5E451C32";
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaults.CommandTimeout;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaults.CommandTimeout;
             var isProcessingComplete = false;
             var batchSize = 2;
             var totalBatchSize = 0;
@@ -174,12 +166,12 @@ namespace Rock.Jobs
                     var recordsPerMillisecond = recordsProcessed / processTime;
                     var recordsRemaining = totalBatchSize - recordsProcessed;
                     var minutesRemaining = recordsRemaining / recordsPerMillisecond / 1000 / 60;
-                    context.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalBatchSize} records. Approximately {minutesRemaining:N0} minutes remaining." );
+                    this.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalBatchSize} records. Approximately {minutesRemaining:N0} minutes remaining." );
                     currentBatch++;
                 }
             }
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( this.ServiceJobId );
         }
     }
 }

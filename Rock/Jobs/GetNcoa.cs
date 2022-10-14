@@ -36,7 +36,7 @@ namespace Rock.Jobs
     [Description( "Job that gets National Change of Address (NCOA) data." )]
 
     [DisallowConcurrentExecution]
-    public class GetNcoa : IJob
+    public class GetNcoa : RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -54,13 +54,12 @@ namespace Rock.Jobs
         ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
+        /// the <see cref="RockJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
             Exception exception = null;
             // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
             SparkDataConfig sparkDataConfig = Ncoa.GetSettings();
 
             if ( !sparkDataConfig.NcoaSettings.IsEnabled || !sparkDataConfig.NcoaSettings.IsValid() )
@@ -112,7 +111,7 @@ namespace Rock.Jobs
             {
                 if ( exception != null )
                 {
-                    context.Result = $"NCOA Job failed: {exception.Message}";
+                    this.Result = $"NCOA Job failed: {exception.Message}";
 
                     if ( exception is NoRetryException || exception is NoRetryAggregateException )
                     {
@@ -169,7 +168,7 @@ namespace Rock.Jobs
                         msg = $"Job complete. NCOA status: {sparkDataConfig.NcoaSettings.CurrentReportStatus}";
                     }
 
-                    context.Result = msg;
+                    this.Result = msg;
                     sparkDataConfig.Messages.Add( $"{msg}: {RockDateTime.Now.ToString()}" );
                     Ncoa.SaveSettings( sparkDataConfig );
                 }

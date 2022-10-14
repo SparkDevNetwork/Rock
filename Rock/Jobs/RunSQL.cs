@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds).", false, 180, "General", 1, "CommandTimeout")]
     [DisallowConcurrentExecution]
-    public class RunSQL : IJob
+    public class RunSQL : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -53,15 +53,14 @@ namespace Rock.Jobs
         /// 
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
+        /// the <see cref="RockJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
+            
             // run a SQL query to do something
-            string query = dataMap.GetString( "SQLQuery" );
-            int? commandTimeout = dataMap.GetString( "CommandTimeout").AsIntegerOrNull();
+            string query = GetAttributeValue( "SQLQuery" );
+            int? commandTimeout = GetAttributeValue( "CommandTimeout").AsIntegerOrNull();
             try
             {
                 int rows = DbService.ExecuteCommand( query, System.Data.CommandType.Text, null, commandTimeout );

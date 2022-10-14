@@ -66,7 +66,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    public class GivingAutomation : IJob
+    public class GivingAutomation : RockJob
     {
         #region Keys
 
@@ -117,23 +117,23 @@ namespace Rock.Jobs
 
         #region Execute
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext jobContext )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
             if ( !settings.GivingAutomationJobSettings.IsEnabled )
             {
-                jobContext.UpdateLastStatusMessage( $"Giving Automation is not enabled." );
+                this.UpdateLastStatusMessage( $"Giving Automation is not enabled." );
                 return;
             }
 
             // Create a context object that will help transport state and helper information so as to not rely on the
             // job class itself being a single use instance
-            var context = new GivingAutomationContext( jobContext );
+            var context = new GivingAutomationContext
+            {
+                SqlCommandTimeoutSeconds = GetAttributeValue( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout,
+                MaxDaysSinceLastGift = GetAttributeValue( GivingAutomation.AttributeKey.MaxDaysSinceLastGift ).AsIntegerOrNull() ?? AttributeDefaultValue.MaxDaysSinceLastGift
+            };
 
             // First determine the ranges for each of the 4 giving bins by looking at all contribution transactions in the last 12 months.
             // These ranges will be updated in the Giving Automation system settings.
@@ -165,7 +165,7 @@ namespace Rock.Jobs
             long progressCount = 0;
             long totalCount = context.GivingIdsToClassify.Count();
 
-            jobContext.UpdateLastStatusMessage( $"Processing classifications and alerts for {totalCount} Giving Units..." );
+            this.UpdateLastStatusMessage( $"Processing classifications and alerts for {totalCount} Giving Units..." );
 
             DateTime lastGivingClassificationProgressUpdate = DateTime.MinValue;
             var parallelOptions = new ParallelOptions
@@ -207,7 +207,7 @@ namespace Rock.Jobs
 
                         try
                         {
-                            jobContext.UpdateLastStatusMessage( $"Processing Giving Classifications and Alerts: {progressCount}/{totalCount}" );
+                            this.UpdateLastStatusMessage( $"Processing Giving Classifications and Alerts: {progressCount}/{totalCount}" );
                         }
                         catch ( Exception ex )
                         {
@@ -233,7 +233,7 @@ namespace Rock.Jobs
                 WriteToDebugOutput( $"Finished {elapsedTimesMs.Count} giving ids in average of {elapsedTimesMs.Average()}ms per giving unit and total {ms}ms" );
             }
 
-            jobContext.UpdateLastStatusMessage( "Processing Late Alerts..." );
+            this.UpdateLastStatusMessage( "Processing Late Alerts..." );
 
             // Create alerts for "late" gifts
             ProcessLateAlertTypes( context );
@@ -246,7 +246,7 @@ namespace Rock.Jobs
 
             givingJourneyHelper.OnProgress += ( object sender, GivingJourneyHelper.ProgressEventArgs e ) =>
             {
-                jobContext.UpdateLastStatusMessage( e.ProgressMessage );
+                this.UpdateLastStatusMessage( e.ProgressMessage );
             };
 
             var daysToUpdateGivingJourneys = GivingAutomationSettings.LoadGivingAutomationSettings().GivingJourneySettings.DaysToUpdateGivingJourneys;
@@ -259,11 +259,11 @@ namespace Rock.Jobs
                 givingJourneyHelper.UpdateGivingJourneyStages();
                 if ( givingJourneyHelper.UpdatedJourneyStageCount == 1 )
                 {
-                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount } journey stage.";
+                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount} journey stage.";
                 }
                 else
                 {
-                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount } journey stages.";
+                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount} journey stages.";
                 }
             }
             else
@@ -284,7 +284,7 @@ There were {context.GivingIdsFailed} {"failure".PluralizeIf( context.GivingIdsFa
             }
 
             // Format the result message
-            jobContext.Result = $@"
+            this.Result = $@"
 {classificationStatusMessage}
 Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1 )}.
 {journeyStageStatusMessage}".Trim();
@@ -301,7 +301,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 }
 
                 var errorMessage = sb.ToString();
-                jobContext.Result += errorMessage;
+                this.Result += errorMessage;
             }
         }
 
@@ -608,8 +608,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <returns></returns>
         private static DateTime GetEarliestLastGiftDateTime( GivingAutomationContext context )
         {
-            var days = context.GetAttributeValue( AttributeKey.MaxDaysSinceLastGift ).AsIntegerOrNull() ??
-                AttributeDefaultValue.MaxDaysSinceLastGift;
+            var days = context.MaxDaysSinceLastGift;
             return context.Now.AddDays( 0 - days );
         }
 
@@ -2114,7 +2113,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 }
             }
 
-            
+
             HandlePostAlertsAddedLogic( addedlateAlerts );
         }
 
@@ -2523,17 +2522,24 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// Initializes a new instance of the <see cref="GivingAutomationContext"/> class.
             /// </summary>
             /// <param name="jobExecutionContext">The job execution context.</param>
+            [Obsolete]
             public GivingAutomationContext( IJobExecutionContext jobExecutionContext )
+                : this()
             {
-                JobExecutionContext = jobExecutionContext;
-                JobDataMap = jobExecutionContext.JobDetail.JobDataMap;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="GivingAutomationContext" /> class.
+            /// </summary>
+            public GivingAutomationContext()
+            {
                 DataViewPersonQueries = new Dictionary<int, IQueryable<Person>>();
-                SqlCommandTimeoutSeconds = JobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+                SqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
+                MaxDaysSinceLastGift = AttributeDefaultValue.MaxDaysSinceLastGift;
                 DataViewPersonQueriesRockContext = new RockContext();
                 DataViewPersonQueriesRockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
                 LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
             }
-
 
             /* 11-17-2021 MDP
 
@@ -2573,7 +2579,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// Gets the SQL command timeout seconds.
             /// </summary>
             /// <value>The SQL command timeout seconds.</value>
-            public int SqlCommandTimeoutSeconds { get; private set; }
+            public int SqlCommandTimeoutSeconds { get; set; }
+
+            /// <summary>
+            /// Gets the maximum days since last gift.
+            /// </summary>
+            /// <value>The maximum days since last gift.</value>
+            public int MaxDaysSinceLastGift { get; set; }
 
             #endregion Fields
 
@@ -2586,22 +2598,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// The errors
             /// </summary>
             public readonly HashSet<string> Errors = new HashSet<string>();
-
-            /// <summary>
-            /// Gets the job execution context.
-            /// </summary>
-            /// <value>
-            /// The job execution context.
-            /// </value>
-            public IJobExecutionContext JobExecutionContext { get; }
-
-            /// <summary>
-            /// Gets the job data map.
-            /// </summary>
-            /// <value>
-            /// The job data map.
-            /// </value>
-            public JobDataMap JobDataMap { get; }
 
             /// <summary>
             /// Gets or sets the giving ids to classify.
@@ -2671,16 +2667,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// </summary>
             /// <value>The late alerts by giving identifier.</value>
             internal Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>> LateAlertsByGivingId { get; set; }
-
-            /// <summary>
-            /// Gets the attribute value.
-            /// </summary>
-            /// <param name="key">The key.</param>
-            /// <returns></returns>
-            public string GetAttributeValue( string key )
-            {
-                return JobDataMap.GetString( key );
-            }
         }
 
         #endregion

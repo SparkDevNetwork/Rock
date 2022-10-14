@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -31,9 +33,10 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="message">The message.</param>
+        [Obsolete]
         public static void UpdateLastStatusMessage( this Quartz.IJobExecutionContext context, string message )
         {
-            // save the message to context.Result so that RockJobListener will set the save the same message when the Job completes
+            // save the message to this.Result so that RockJobListener will set the save the same message when the Job completes
             context.Result = message;
 
             int jobId = context.GetJobId();
@@ -54,7 +57,18 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
+        [Obsolete]
         public static int GetJobId( this Quartz.IJobExecutionContext context )
+        {
+            return context.JobDetail.Description.AsInteger();
+        }
+
+        /// <summary>
+        /// Gets the job identifier from quartz.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>System.Int32.</returns>
+        public static int GetJobIdFromQuartz( this Quartz.IJobExecutionContext context )
         {
             return context.JobDetail.Description.AsInteger();
         }
@@ -65,6 +79,7 @@ namespace Rock
         /// <param name="context">The context.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>ServiceJob.</returns>
+        [Obsolete]
         public static ServiceJob GetJob( this Quartz.IJobExecutionContext context, RockContext rockContext )
         {
             var jobId = context.GetJobId();
@@ -76,6 +91,7 @@ namespace Rock
         /// </summary>
         /// <param name="jobDataMap">The job data map.</param>
         /// <param name="job">The job.</param>
+        [Obsolete]
         internal static void LoadFromJobAttributeValues( this Quartz.JobDataMap jobDataMap, ServiceJob job )
         {
             if ( job.Attributes == null )

@@ -136,7 +136,7 @@ namespace Rock.Jobs
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
     [DisallowConcurrentExecution]
-    public class RockCleanup : IJob
+    public class RockCleanup : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -168,29 +168,18 @@ namespace Rock.Jobs
         }
 
         private List<RockCleanupJobResult> rockCleanupJobResultList = new List<RockCleanupJobResult>();
-        private IJobExecutionContext jobContext;
 
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
         private string jobName;
 
-        /// <summary>
-        /// Job that executes routine Rock cleanup tasks
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            jobContext = context;
-
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
-
-            jobName = string.Format( "{0} ({1})", context.JobDetail.Key.Group, this.GetType().Name );
-            batchAmount = dataMap.GetString( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
-            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
+            jobName = string.Format( "{0} ({1})", this.ServiceJobName, this.GetType().Name );
+            batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
+            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
             /* IMPORTANT!! MDP 2020-05-05
 
@@ -206,9 +195,9 @@ namespace Rock.Jobs
 
             */
 
-            RunCleanupTask( "exception log", () => this.CleanupExceptionLog( dataMap ) );
+            RunCleanupTask( "exception log", () => this.CleanupExceptionLog() );
 
-            RunCleanupTask( "expired entity set", () => CleanupExpiredEntitySets( dataMap ) );
+            RunCleanupTask( "expired entity set", () => CleanupExpiredEntitySets() );
 
             RunCleanupTask( "median page load time", () => UpdateMedianPageLoadTimes() );
 
@@ -216,16 +205,16 @@ namespace Rock.Jobs
 
             RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions() );
 
-            RunCleanupTask( "audit log", () => PurgeAuditLog( dataMap ) );
+            RunCleanupTask( "audit log", () => PurgeAuditLog() );
 
-            RunCleanupTask( "cached file", () => CleanCachedFileDirectory( context, dataMap ) );
+            RunCleanupTask( "cached file", () => CleanCachedFileDirectory() );
 
             RunCleanupTask( "temporary binary file", () => CleanupTemporaryBinaryFiles() );
 
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
-            RunCleanupTask( "person", () => PersonCleanup( dataMap ) );
+            RunCleanupTask( "person", () => PersonCleanup() );
 
-            RunCleanupTask( "family salutation", () => GroupSalutationCleanup( dataMap ) );
+            RunCleanupTask( "family salutation", () => GroupSalutationCleanup() );
 
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
@@ -233,20 +222,20 @@ namespace Rock.Jobs
 
             RunCleanupTask( "temporary registration", () => CleanUpTemporaryRegistrations() );
 
-            RunCleanupTask( "workflow log", () => CleanUpWorkflowLogs( dataMap ) );
+            RunCleanupTask( "workflow log", () => CleanUpWorkflowLogs() );
 
-            RunCleanupTask( "ensure workflows status", () => EnsureWorkflowsStatus( dataMap ) );
+            RunCleanupTask( "ensure workflows status", () => EnsureWorkflowsStatus() );
 
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
-            RunCleanupTask( "workflow", () => CleanUpWorkflows( dataMap ) );
+            RunCleanupTask( "workflow", () => CleanUpWorkflows() );
 
-            RunCleanupTask( "unused attribute value", () => CleanupOrphanedAttributes( dataMap ) );
+            RunCleanupTask( "unused attribute value", () => CleanupOrphanedAttributes() );
 
-            RunCleanupTask( "transient communication", () => CleanupTransientCommunications( dataMap ) );
+            RunCleanupTask( "transient communication", () => CleanupTransientCommunications() );
 
-            RunCleanupTask( "financial transaction", () => CleanupFinancialTransactionNullCurrency( dataMap ) );
+            RunCleanupTask( "financial transaction", () => CleanupFinancialTransactionNullCurrency() );
 
-            RunCleanupTask( "person token", () => CleanupPersonTokens( dataMap ) );
+            RunCleanupTask( "person token", () => CleanupPersonTokens() );
 
             // Reduce the job history to max size
             RunCleanupTask( "job history", () => CleanupJobHistory() );
@@ -254,13 +243,13 @@ namespace Rock.Jobs
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
 
-            RunCleanupTask( "attendance label data", () => AttendanceDataCleanup( dataMap ) );
+            RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
 
             // Search for locations with no country and assign USA or Canada if it match any of the country's states
-            RunCleanupTask( "location", () => LocationCleanup( dataMap ) );
+            RunCleanupTask( "location", () => LocationCleanup() );
 
             // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
-            RunCleanupTask( "attribute value", () => CleanupAttributeValues( dataMap ) );
+            RunCleanupTask( "attribute value", () => CleanupAttributeValues() );
 
             RunCleanupTask( "merge streak data", () => MergeStreaks() );
 
@@ -274,7 +263,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "merge nameless to person", () => MatchNamelessPersonToRegularPerson() );
 
-            var fixAttendanceRecordsEnabled = dataMap.GetString( AttributeKey.FixAttendanceRecordsNeverMarkedPresent ).AsBoolean();
+            var fixAttendanceRecordsEnabled = GetAttributeValue( AttributeKey.FixAttendanceRecordsNeverMarkedPresent ).AsBoolean();
             if ( fixAttendanceRecordsEnabled )
             {
                 RunCleanupTask( "did attend attendance fix", () => FixDidAttendInAttendance() );
@@ -286,11 +275,11 @@ namespace Rock.Jobs
 
             RunCleanupTask( "expired sms action", () => RemoveExpiredSmsActions() );
 
-            RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts( dataMap ) );
+            RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts() );
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord( dataMap ) );
+            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             /*
              * 21-APR-2022 DMV
@@ -298,7 +287,7 @@ namespace Rock.Jobs
              * Removed the call to this function as this was not the intended behavior.
              *
              */
-            //// RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
+            //// RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays() );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -319,7 +308,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some jobs have errors. See exception log for details." );
             }
 
-            context.Result = jobSummaryBuilder.ToString();
+            this.Result = jobSummaryBuilder.ToString();
 
             var rockCleanupExceptions = rockCleanupJobResultList.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
 
@@ -437,7 +426,7 @@ namespace Rock.Jobs
             var stopwatch = new Stopwatch();
             try
             {
-                jobContext.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}..." );
+                this.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}..." );
                 stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
                 stopwatch.Stop();
@@ -518,9 +507,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Updates <see cref="Group.GroupSalutation" />
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int GroupSalutationCleanup( JobDataMap dataMap )
+        private int GroupSalutationCleanup()
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
@@ -567,8 +556,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Does cleanup of Person Aliases and Metaphones
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int PersonCleanup( JobDataMap dataMap )
+        
+        private int PersonCleanup()
         {
             int resultCount = 0;
 
@@ -600,7 +589,7 @@ namespace Rock.Jobs
                 PersonService personService = new PersonService( personRockContext );
 
                 // Add any missing metaphones
-                int namesToProcess = dataMap.GetString( AttributeKey.MaxMetaphoneNames ).AsIntegerOrNull() ?? 500;
+                int namesToProcess = GetAttributeValue( AttributeKey.MaxMetaphoneNames ).AsIntegerOrNull() ?? 500;
                 if ( namesToProcess > 0 )
                 {
                     var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
@@ -971,7 +960,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Mark workflows complete for Workflow Types that have a MaxWorkflowAgeDays where the workflows are older than that number of days.
         /// </summary>
-        private int EnsureWorkflowsStatus( JobDataMap dataMap )
+        private int EnsureWorkflowsStatus()
         {
             int rowsUpdated = 0;
             var workflowContext = new RockContext();
@@ -997,7 +986,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up completed workflows.
         /// </summary>
-        private int CleanUpWorkflows( JobDataMap dataMap )
+        private int CleanUpWorkflows()
         {
             int totalRowsDeleted = 0;
             var workflowContext = new RockContext();
@@ -1042,7 +1031,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up workflow logs by removing logs in batches for workflows with a log retention period that has passed.
         /// </summary>
-        private int CleanUpWorkflowLogs( JobDataMap dataMap )
+        private int CleanUpWorkflowLogs()
         {
             // Limit the number of workflow logs to delete for this run (20M records could take around 20 minutes).
             int maxRowDeleteLimit = 20000000;
@@ -1071,12 +1060,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans the cached file directory.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanCachedFileDirectory( IJobExecutionContext context, JobDataMap dataMap )
+        private int CleanCachedFileDirectory()
         {
-            string cacheDirectoryPath = dataMap.GetString( AttributeKey.BaseCacheDirectory );
-            int? cacheExpirationDays = dataMap.GetString( AttributeKey.DaysKeepCachedFiles ).AsIntegerOrNull();
+            string cacheDirectoryPath = GetAttributeValue( AttributeKey.BaseCacheDirectory );
+            int? cacheExpirationDays = GetAttributeValue( AttributeKey.DaysKeepCachedFiles ).AsIntegerOrNull();
 
             int resultCount = 0;
             if ( cacheExpirationDays.HasValue )
@@ -1084,7 +1071,7 @@ namespace Rock.Jobs
                 DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays.Value * -1, 0, 0, 0 ) );
 
                 // if job is being run by the IIS scheduler and path is not null
-                if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" && !string.IsNullOrEmpty( cacheDirectoryPath ) )
+                if ( this.Scheduler.SchedulerName == "RockSchedulerIIS" && !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
                     // get the physical path of the cache directory
                     cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
@@ -1104,12 +1091,12 @@ namespace Rock.Jobs
         /// <summary>
         /// Purges the audit log.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int PurgeAuditLog( JobDataMap dataMap )
+        
+        private int PurgeAuditLog()
         {
             // purge audit log
             int totalRowsDeleted = 0;
-            int? auditExpireDays = dataMap.GetString( AttributeKey.AuditLogExpirationDays ).AsIntegerOrNull();
+            int? auditExpireDays = GetAttributeValue( AttributeKey.AuditLogExpirationDays ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
                 var auditLogRockContext = new Rock.Data.RockContext();
@@ -1125,11 +1112,11 @@ namespace Rock.Jobs
         /// <summary>
         /// Uses the DaysKeepExceptions setting to remove old exception logs
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupExceptionLog( JobDataMap dataMap )
+        
+        private int CleanupExceptionLog()
         {
             int totalRowsDeleted = 0;
-            int? exceptionExpireDays = dataMap.GetString( AttributeKey.DaysKeepExceptions ).AsIntegerOrNull();
+            int? exceptionExpireDays = GetAttributeValue( AttributeKey.DaysKeepExceptions ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
@@ -1148,8 +1135,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up expired entity sets.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupExpiredEntitySets( JobDataMap dataMap )
+        
+        private int CleanupExpiredEntitySets()
         {
             var entitySetRockContext = new RockContext();
             entitySetRockContext.Database.CommandTimeout = commandTimeout;
@@ -1372,9 +1359,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleanups the orphaned attributes.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int CleanupOrphanedAttributes( JobDataMap dataMap )
+        private int CleanupOrphanedAttributes()
         {
             int recordsDeleted = 0;
 
@@ -1446,8 +1433,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleanups the transient communications.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupTransientCommunications( JobDataMap dataMap )
+        
+        private int CleanupTransientCommunications()
         {
             int totalRowsDeleted = 0;
 
@@ -1467,9 +1454,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleanups the financial transaction null currency.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int CleanupFinancialTransactionNullCurrency( JobDataMap dataMap )
+        private int CleanupFinancialTransactionNullCurrency()
         {
             int totalRowsUpdated = 0;
             var rockContext = new Rock.Data.RockContext();
@@ -1490,9 +1477,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleanups the person tokens.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int CleanupPersonTokens( JobDataMap dataMap )
+        private int CleanupPersonTokens()
         {
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
@@ -1640,9 +1627,9 @@ namespace Rock.Jobs
         /// Delete old attendance data (as of today, this is just label data) and
         /// return the number of records deleted.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns>The number of records deleted</returns>
-        private int AttendanceDataCleanup( JobDataMap dataMap )
+        private int AttendanceDataCleanup()
         {
             int totalRowsDeleted = 0;
 
@@ -1669,8 +1656,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Does cleanup of Attribute Values
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupAttributeValues( JobDataMap dataMap )
+        
+        private int CleanupAttributeValues()
         {
             AttributeValueCleanup( commandTimeout );
 
@@ -1711,8 +1698,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         /// <summary>
         /// Does cleanup of Locations
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int LocationCleanup( JobDataMap dataMap )
+        
+        private int LocationCleanup()
         {
             int resultCount = 0;
             using ( var rockContext = new Rock.Data.RockContext() )
@@ -2227,11 +2214,11 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         /// <summary>
         /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays" /> is set)
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int RemoveExpiredSavedAccounts( JobDataMap dataMap )
+        private int RemoveExpiredSavedAccounts()
         {
-            int? removedExpiredSavedAccountDays = dataMap.GetString( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
+            int? removedExpiredSavedAccountDays = GetAttributeValue( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
 
             if ( !removedExpiredSavedAccountDays.HasValue )
             {
@@ -2340,9 +2327,9 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         /// <summary>
         /// Removes the benevolence requests without requested person past number of days.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns>System.Int32.</returns>
-        private int RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( JobDataMap dataMap )
+        private int RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays()
         {
             /*
              * 21-APR-2022 DMV
@@ -2370,13 +2357,13 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         /// <summary>
         /// Remove the Stale Anonymous Visitor Record.
         /// </summary>
-        /// <param name="dataMap">The data map.</param>
+        
         /// <returns></returns>
-        private int RemoveStaleAnonymousVisitorRecord( JobDataMap dataMap )
+        private int RemoveStaleAnonymousVisitorRecord()
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
-            var staleAnonymousVisitorRecordRetentionPeriodInDays = dataMap.GetString( AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays ).AsIntegerOrNull() ?? 365;
+            var staleAnonymousVisitorRecordRetentionPeriodInDays = GetAttributeValue( AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays ).AsIntegerOrNull() ?? 365;
             var anonymousVisitorId = new PersonService( rockContext ).GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
             var personAliasService = new PersonAliasService( rockContext );
             var staleAnonymousVisitorDate = RockDateTime.Now.Add( new TimeSpan( staleAnonymousVisitorRecordRetentionPeriodInDays * -1, 0, 0, 0 ) );

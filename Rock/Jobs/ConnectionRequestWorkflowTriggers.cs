@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "This job triggers connection request workflows." )]
 
     [DisallowConcurrentExecution]
-    public class ConnectionRequestWorkflowTriggers : IJob
+    public class ConnectionRequestWorkflowTriggers : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Connection Request Workflow Triggers";
         private HttpContext _httpContext = null;
@@ -71,14 +71,8 @@ namespace Rock.Jobs
 
         #region Methods
 
-        /// <summary>
-        /// Job that will run quick SQL queries on a schedule.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             _httpContext = HttpContext.Current;
 
@@ -93,24 +87,21 @@ namespace Rock.Jobs
                    .ToList();
             }
 
-            var futureFollowupWorkflowResult = TriggerFutureFollowupWorkFlow( context, futureFollowupDateWorkflows );
+            var futureFollowupWorkflowResult = TriggerFutureFollowupWorkFlow( futureFollowupDateWorkflows );
 
-            context.UpdateLastStatusMessage( $@"Future follow-up workflow triggered: {futureFollowupWorkflowResult}" );
+            this.UpdateLastStatusMessage( $@"Future follow-up workflow triggered: {futureFollowupWorkflowResult}" );
         }
 
         /// <summary>
         /// Trigger Future Follow-up Workflow
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="futureFollowupDateWorkflows">The future follow-up date workflows.</param>
-        /// <returns></returns>
-        private string TriggerFutureFollowupWorkFlow( IJobExecutionContext context, List<ConnectionWorkflow> futureFollowupDateWorkflows )
+        /// <returns>System.String.</returns>
+        private string TriggerFutureFollowupWorkFlow( List<ConnectionWorkflow> futureFollowupDateWorkflows )
         {
             try
             {
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-                context.UpdateLastStatusMessage( $"Processing future follow-up workflows." );
+                this.UpdateLastStatusMessage( $"Processing future follow-up workflows." );
 
                 int recordsUpdated = 0;
                 int triggerWorkflow = 0;

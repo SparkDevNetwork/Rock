@@ -41,7 +41,7 @@ namespace Rock.Jobs
 
     [IntegerField("Cut-off Date", "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.", true, 30, key:"CutoffDate")]
     [DisallowConcurrentExecution]
-    public class SendRegistrationPaymentReminders : IJob
+    public class SendRegistrationPaymentReminders : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -54,17 +54,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will run quick SQL queries on a schedule.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
+            
             // get registrations where
             //    + template is active
             //    + instance is active
@@ -83,7 +76,7 @@ namespace Rock.Jobs
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
-                var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
+                var cutoffDays = GetAttributeValue( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
                 // Do not filter registrations by template or instance cost, it will miss $0 registrations that have optional fees.
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
@@ -136,7 +129,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                context.Result =  string.Format("Sent {0} from {1}", "reminder".ToQuantity( sendCount ), "registration instances".ToQuantity(registrationInstanceCount) );
+                this.Result =  string.Format("Sent {0} from {1}", "reminder".ToQuantity( sendCount ), "registration instances".ToQuantity(registrationInstanceCount) );
                 if ( errors.Any() )
                 {
                     StringBuilder sb = new StringBuilder();
@@ -144,7 +137,7 @@ namespace Rock.Jobs
                     sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                     errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errorMessage = sb.ToString();
-                    context.Result += errorMessage;
+                    this.Result += errorMessage;
                     var exception = new Exception( errorMessage );
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );

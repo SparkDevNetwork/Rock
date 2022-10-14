@@ -67,7 +67,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class SendPrayerComments : IJob
+    public class SendPrayerComments : RockJob
     {
         #region Attribute Keys
 
@@ -195,23 +195,20 @@ namespace Rock.Jobs
         /// <summary>
         /// Retrieve the job settings from the context provided by the Quartz scheduler.
         /// </summary>
-        /// <param name="context"></param>
-        private void GetSettingsFromJobContext( IJobExecutionContext context )
+        private void GetSettings()
         {
             Log.LogVerbose( $"Reading configuration from job execution context..." );
 
-            var dataMap = context.JobDetail.JobDataMap;
+            this.SystemEmailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemEmail ).ToString().AsGuid();
 
-            this.SystemEmailTemplateGuid = dataMap.Get( AttributeKey.SystemEmail ).ToString().AsGuid();
+            this.CategoryGuidList = this.GetAttributeValue( AttributeKey.PrayerCategories ).ToString().SplitDelimitedValues().AsGuidList();
 
-            this.CategoryGuidList = dataMap.Get( AttributeKey.PrayerCategories ).ToString().SplitDelimitedValues().AsGuidList();
+            this.IncludeChildCategories = this.GetAttributeValue( AttributeKey.IncludeChildCategories ).ToString().AsBoolean();
 
-            this.IncludeChildCategories = dataMap.Get( AttributeKey.IncludeChildCategories ).ToString().AsBoolean();
-
-            this.CreateCommunicationRecord = dataMap.Get( AttributeKey.SaveCommunications ).ToString().AsBoolean();
+            this.CreateCommunicationRecord = this.GetAttributeValue( AttributeKey.SaveCommunications ).ToString().AsBoolean();
 
             // Job settings are stored uniquely for each instance of this Job, identified by the ServiceJob.Id.
-            this.SystemSettingsId = context.JobDetail.Description;
+            this.SystemSettingsId = this.GetJobId().ToString();
 
             this.StartDate = this.GetNextStartDate();
             this.EndDate = RockDateTime.Now;
@@ -298,27 +295,12 @@ namespace Rock.Jobs
             }
         }
 
-        /// <summary>
-        /// Execute the job using the current settings.
-        /// </summary>
-        public void Execute()
-        {
-            Execute( null );
-        }
-
-        /// <summary>
-        /// Execute the job using the context supplied by the job scheduling framework.
-        /// This is the entry point used when the job is executed by the Quartz Job Scheduler.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             Log.LogProgress( $"Job Started: SendPrayerComments" );
 
-            if ( context != null )
-            {
-                GetSettingsFromJobContext( context );
-            }
+            GetSettings();
 
             LoadPrayerRequests();
 
@@ -358,10 +340,7 @@ namespace Rock.Jobs
 
             var message = sb.ToString();
 
-            if ( context != null )
-            {
-                context.Result = message;
-            }
+            this.Result = message;
 
             // If any errors occurred, throw an exception.
             if ( errors.Any() )
@@ -483,14 +462,14 @@ namespace Rock.Jobs
 
                 emailMessage.SetRecipients( recipients );
 
-                _Log.LogVerbose( $"Preparing notification for \"{ prayerRequest.Name }\" [{ prayerRequest.Email }]... " );
+                _Log.LogVerbose( $"Preparing notification for \"{prayerRequest.Name}\" [{prayerRequest.Email}]... " );
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
                 _Notifications.Add( emailMessage );
             }
 
-            _Log.LogProgress( $"{ processedCount } notifications processed, { errorCount } failed." );
+            _Log.LogProgress( $"{processedCount} notifications processed, {errorCount} failed." );
         }
 
         /// <summary>
@@ -513,7 +492,7 @@ namespace Rock.Jobs
             {
                 var recipient = emailMessage.GetRecipients().FirstOrDefault();
 
-                _Log.LogVerbose( $"Sending notification \"{ emailMessage.Subject }\" [{ recipient.Name }]... " );
+                _Log.LogVerbose( $"Sending notification \"{emailMessage.Subject}\" [{recipient.Name}]... " );
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
@@ -532,7 +511,7 @@ namespace Rock.Jobs
                 }
             }
 
-            _Log.LogProgress( $"{ processedCount } notifications processed, { errorCount } failed." );
+            _Log.LogProgress( $"{processedCount} notifications processed, {errorCount} failed." );
         }
 
         /// <summary>
@@ -592,17 +571,17 @@ namespace Rock.Jobs
         private void GetPrayerRequests( RockContext rockContext )
         {
             Log.LogVerbose( $"Job Configuration:" );
-            Log.LogVerbose( $"SystemEmailTemplateGuid = { this.SystemEmailTemplateGuid }" );
+            Log.LogVerbose( $"SystemEmailTemplateGuid = {this.SystemEmailTemplateGuid}" );
 
             if ( this.CategoryGuidList != null
                  && this.CategoryGuidList.Any() )
             {
-                Log.LogVerbose( $"CategoryGuidList = [{ this.CategoryGuidList.AsDelimited( "," ) }]" );
-                Log.LogVerbose( $"IncludeChildCategories = { this.IncludeChildCategories }" );
+                Log.LogVerbose( $"CategoryGuidList = [{this.CategoryGuidList.AsDelimited( "," )}]" );
+                Log.LogVerbose( $"IncludeChildCategories = {this.IncludeChildCategories}" );
             }
 
-            Log.LogVerbose( $"CreateCommunicationRecord = { this.CreateCommunicationRecord }" );
-            Log.LogVerbose( $"Report Period = { this.StartDate } to { this.EndDate }" );
+            Log.LogVerbose( $"CreateCommunicationRecord = {this.CreateCommunicationRecord}" );
+            Log.LogVerbose( $"Report Period = {this.StartDate} to {this.EndDate}" );
 
             var prayerRequestService = new PrayerRequestService( rockContext );
 

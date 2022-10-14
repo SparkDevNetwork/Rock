@@ -29,12 +29,11 @@ namespace Rock.Jobs
     /// <summary>
     /// This job will update the persisted data in any Persisted Datasets that need to be refreshed.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Update Persisted Datasets" )]
     [Description( "This job will update the persisted data in any Persisted Datasets that need to be refreshed." )]
 
     [DisallowConcurrentExecution]
-    public class UpdatePersistedDatasets : IJob
+    public class UpdatePersistedDatasets : RockJob
     {
 
         /// <summary>
@@ -48,14 +47,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            StringBuilder results = new StringBuilder();
+                        StringBuilder results = new StringBuilder();
             int updatedDatasetCount = 0;
             int updatedDatasetTotalCount;
             var errors = new List<string>();
@@ -83,7 +78,7 @@ namespace Rock.Jobs
                     var name = persistedDataset.Name;
                     try
                     {
-                        context.UpdateLastStatusMessage( $"Updating {persistedDataset.Name}" );
+                        this.UpdateLastStatusMessage( $"Updating {persistedDataset.Name}" );
                         persistedDataset.UpdateResultData();
                         rockContext.SaveChanges();
                         updatedDatasetCount++;
@@ -115,7 +110,7 @@ namespace Rock.Jobs
                 results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
             }
 
-            context.Result = results.ToString();
+            this.Result = results.ToString();
 
             if ( exceptions.Any() )
             {

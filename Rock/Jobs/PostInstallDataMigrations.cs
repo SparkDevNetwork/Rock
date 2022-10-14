@@ -40,28 +40,22 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Attribute Values, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 3600 )]
-    public class PostInstallDataMigrations : IJob
+    public class PostInstallDataMigrations : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
-
-        /// <summary>
-        /// Executes the specified context with extreme prejudice.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             InsertAnalyitcsSourceDateData( commandTimeout );
             InsertIdentityVerificationCodeData( commandTimeout );
 
-            DeleteJob( context.GetJobId() );
+            DeleteJob( this.ServiceJobId );
         }
 
         private static void DeleteJob( int jobId )

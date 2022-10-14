@@ -44,7 +44,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class DataViewToWorkflow : IJob
+    public class DataViewToWorkflow : RockJob
     {
         #region Attribute Keys
 
@@ -66,17 +66,12 @@ namespace Rock.Jobs
 
         #endregion
 
-        /// <summary>
-        /// Perform the job using the parameters supplied in the execution context.
-        /// </summary>
-        /// <param name="context"></param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             // Get the configuration settings for this job instance.
-            var dataMap = context.JobDetail.JobDataMap;
-
-            var workflowTypeGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
-            var dataViewGuid = dataMap.GetString( AttributeKey.DataView ).AsGuidOrNull();
+            var workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
+            var dataViewGuid = GetAttributeValue( AttributeKey.DataView ).AsGuidOrNull();
 
             if ( dataViewGuid == null )
             {
@@ -134,7 +129,7 @@ namespace Rock.Jobs
                 workflowsLaunched++;
             }
 
-            context.Result = string.Format( "{0} workflows launched", workflowsLaunched );
+            this.Result = string.Format( "{0} workflows launched", workflowsLaunched );
         }
 
         /// <summary>

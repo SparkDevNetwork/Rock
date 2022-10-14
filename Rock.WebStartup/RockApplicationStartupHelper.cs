@@ -29,14 +29,9 @@ using System.Web;
 
 using DotLiquid;
 
-using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Matchers;
-
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Jobs;
 using Rock.Lava;
 using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
@@ -66,11 +61,6 @@ namespace Rock.WebStartup
         /// The start date time.
         /// </value>
         public static DateTime StartDateTime { get; private set; }
-
-        /// <summary>
-        /// Global Quartz scheduler for jobs 
-        /// </summary>
-        public static IScheduler QuartzScheduler { get; private set; } = null;
 
         private static Stopwatch _debugTimingStopwatch = Stopwatch.StartNew();
 
@@ -226,7 +216,7 @@ namespace Rock.WebStartup
             if ( runJobsInContext )
             {
                 LogStartupMessage( "Initializing Job Scheduler" );
-                InitializeJobScheduler();
+                ServiceJobService.InitializeJobScheduler();
                 ShowDebugTimingMessage( "Job Scheduler Initialized" );
             }
 
@@ -1029,87 +1019,7 @@ namespace Rock.WebStartup
         /// <summary>
         /// Initialize the job scheduler.
         /// </summary>
-        private static void InitializeJobScheduler()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                // create scheduler
-                ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-                QuartzScheduler = schedulerFactory.GetScheduler();
-
-                // get list of active jobs
-                ServiceJobService jobService = new ServiceJobService( rockContext );
-                var activeJobList = jobService.GetActiveJobs().OrderBy( a => a.Name ).ToList();
-                foreach ( ServiceJob job in activeJobList )
-                {
-                    const string ErrorLoadingStatus = "Error Loading Job";
-
-                    try
-                    {
-                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                        if ( jobDetail == null )
-                        {
-                            continue;
-                        }
-
-                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
-
-                        // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
-                        if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
-                        {
-                            QuartzScheduler.ScheduleJob( jobDetail, jobTrigger );
-                        }
-
-                        //// if the last status was an error, but we now loaded successful, clear the error
-                        // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
-                        if ( job.LastStatus == ErrorLoadingStatus || job.LastStatus == "Running" )
-                        {
-                            job.LastStatusMessage = string.Empty;
-                            job.LastStatus = string.Empty;
-                            rockContext.SaveChanges();
-                        }
-                    }
-                    catch ( Exception exception )
-                    {
-                        // create a friendly error message
-                        string message = $"Error loading the job: {job.Name}.\n\n{exception.Message}";
-
-                        // log the error
-                        var startupException = new RockStartupException( message, exception );
-
-                        LogError( startupException, null );
-
-                        job.LastStatusMessage = message;
-                        job.LastStatus = ErrorLoadingStatus;
-                        job.LastStatus = ErrorLoadingStatus;
-                        rockContext.SaveChanges();
-
-                        var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                        var jobHistory = new ServiceJobHistory()
-                        {
-                            ServiceJobId = job.Id,
-                            StartDateTime = RockDateTime.Now,
-                            StopDateTime = RockDateTime.Now,
-                            Status = job.LastStatus,
-                            StatusMessage = job.LastStatusMessage
-                        };
-
-                        jobHistoryService.Add( jobHistory );
-                        rockContext.SaveChanges();
-                    }
-                }
-
-                // set up the listener to report back from jobs as they complete
-                QuartzScheduler.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
-
-                // set up a trigger listener that can prevent a job from running if another scheduler is
-                // already running it (i.e., someone running it manually).
-                QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
-
-                // start the scheduler
-                // Note, wait to start until Rock is fully started.
-            }
-        }
+        
 
         /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)

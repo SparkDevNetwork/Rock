@@ -32,7 +32,6 @@ namespace Rock.Jobs
     /// This job runs through all items in a channel, and using the configured Lava attribute 'Template Key' (for each item),
     /// the job will update another attribute specified by the 'Target Key' (on that item) with the results.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Content Channel Item Self Update" )]
     [Description( "This job runs through all items in a channel, and using the configured Lava attribute 'Template Key' (for each item), the job will update another attribute specified by the 'Target Key' (on that item) with the results.  The 'ContentChannelItem' will be available to the Lava as a merge field." )]
 
@@ -55,7 +54,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
-    public class ContentChannelItemSelfUpdate : IJob
+    public class ContentChannelItemSelfUpdate : RockJob
     {
         private static class AttributeKey
         {
@@ -70,19 +69,15 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
-            var contentChannelGuid = jobDataMap.GetString( AttributeKey.ContentChannel ).AsGuidOrNull();
+            var contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
 
             if ( !contentChannelGuid.HasValue )
             {
-                context.Result = $"The Service Job {jobDataMap.GetString( "Name" )} did not specify a valid Content Channel";
-                ExceptionLogService.LogException( context.Result.ToString() );
+                this.Result = $"The Service Job {GetAttributeValue( "Name" )} did not specify a valid Content Channel";
+                ExceptionLogService.LogException( this.Result );
                 return;
             }
 
@@ -92,7 +87,7 @@ namespace Rock.Jobs
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
 
-            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, jobDataMap.GetString( AttributeKey.AttributeLinks ), null, false );
+            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
             var itemMergeFields = new Dictionary<string, object>( Lava.LavaHelper.GetCommonMergeFields( null ) );
             var jobResultStringBuilder = new StringBuilder();
             var totalItems = contentChannelItems.Count();
@@ -154,7 +149,7 @@ namespace Rock.Jobs
                 jobResultStringBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> {error}" );
             }
 
-            context.Result = jobResultStringBuilder.ToString();
+            this.Result = jobResultStringBuilder.ToString();
 
             rockContext.SaveChanges();
 
