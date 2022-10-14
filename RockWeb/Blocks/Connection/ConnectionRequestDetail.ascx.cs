@@ -3145,7 +3145,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            mdWorkflowLaunched.Show( $"A '{ workflowType.Name }' workflow was processed.",
+                            mdWorkflowLaunched.Show( $"A '{ workflowType.Name }' workflow was started.",
                                 ModalAlertType.Information );
                         }
                     }

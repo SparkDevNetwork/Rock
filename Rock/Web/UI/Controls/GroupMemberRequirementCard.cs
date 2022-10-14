@@ -696,7 +696,7 @@ namespace Rock.Web.UI.Controls
                         }
                         else
                         {
-                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was processed.", ModalAlertType.Information );
+                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was started.", ModalAlertType.Information );
                         }
                     }
                 }
@@ -780,7 +780,7 @@ namespace Rock.Web.UI.Controls
                         }
                         else
                         {
-                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was processed.", ModalAlertType.Information );
+                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was started.", ModalAlertType.Information );
                         }
                     }
                 }
