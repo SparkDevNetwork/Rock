@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V12.4
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.4 - Decrypt expiration month / year and name on card fields." )]
     [Description( "This job will decrypt the expiration month / year and the name on card fields." )]
 

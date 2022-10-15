@@ -26,8 +26,6 @@ using System.Text;
 
 using Humanizer;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -135,7 +133,6 @@ namespace Rock.Jobs
         Order = 9,
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
-    [DisallowConcurrentExecution]
     public class RockCleanup : RockJob
     {
         /// <summary>

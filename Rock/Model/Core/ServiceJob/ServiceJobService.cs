@@ -27,9 +27,6 @@ using Quartz.Impl.Matchers;
 
 using Rock.Data;
 using Rock.Jobs;
-using CronExpressionDescriptor;
-using System.Threading;
-using Quartz.Core;
 
 namespace Rock.Model
 {
@@ -293,7 +290,8 @@ namespace Rock.Model
             {
                 try
                 {
-                    return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
+                    return null;
+                    // return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
                 }
                 catch
                 {

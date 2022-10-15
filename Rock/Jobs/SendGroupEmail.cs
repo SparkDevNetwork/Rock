@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -48,7 +46,6 @@ namespace Rock.Jobs
     [BooleanField( "Send To Descendant Groups",
         Description = "Determines if the email will be sent to descendant groups.",
         Key = AttributeKey.SendToDescendantGroups )]
-    [DisallowConcurrentExecution]
     public class SendGroupEmail : RockJob
     {
         private class AttributeKey

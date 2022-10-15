@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
@@ -66,7 +64,6 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Interactions, this could take several hours or more.",
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
-    [DisallowConcurrentExecution]
     public class PopulateInteractionSessionData : RockJob
     {
         #region Keys

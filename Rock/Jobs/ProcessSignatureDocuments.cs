@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -38,7 +36,6 @@ namespace Rock.Jobs
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
     [IntegerField( "Check For Signature Days", "Number of days after document was last sent to check for signature", false, 30, "", 2 )]
-    [DisallowConcurrentExecution]
     public class ProcessSignatureDocuments : RockJob
     {
         /// <summary> 

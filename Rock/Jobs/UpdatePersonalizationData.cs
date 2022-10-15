@@ -18,8 +18,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -41,7 +39,6 @@ namespace Rock.Jobs
         DefaultIntegerValue = 60 * 3,
         Order = 1 )]
 
-    [DisallowConcurrentExecution]
     public class UpdatePersonalizationData : RockJob
     {
         /// <summary>

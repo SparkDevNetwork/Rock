@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Enums;
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Process Elevated Security" )]
     [Description( "Updates the person account protection profiles." )]
 
-    [DisallowConcurrentExecution]
     public class ProcessElevatedSecurity : RockJob
     {
         #region Constructor

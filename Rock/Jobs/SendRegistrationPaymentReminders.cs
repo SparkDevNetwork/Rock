@@ -23,8 +23,6 @@ using System.Web;
 
 using Humanizer;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -40,7 +38,6 @@ namespace Rock.Jobs
     [Description( "This job sends payment reminders to registration contacts with an active balance. For the reminder to be sent the registration template must have a 'Payment Reminder Time Span' configured. Also emails will not be sent to registrations where the instance close date is past the job's 'Cut-off Date' setting." )]
 
     [IntegerField("Cut-off Date", "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.", true, 30, key:"CutoffDate")]
-    [DisallowConcurrentExecution]
     public class SendRegistrationPaymentReminders : RockJob
     {
         /// <summary> 

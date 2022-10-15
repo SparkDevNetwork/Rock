@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
-using Quartz;
-using Rock.Data;
+using System.Web;using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Connection Request Workflow Triggers" )]
     [Description( "This job triggers connection request workflows." )]
 
-    [DisallowConcurrentExecution]
     public class ConnectionRequestWorkflowTriggers : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Connection Request Workflow Triggers";

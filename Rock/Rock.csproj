@@ -875,7 +875,6 @@
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
-    <Compile Include="Jobs\RockJobContext.cs" />
     <Compile Include="Jobs\TestObsoleteQuartzPluginJob.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />

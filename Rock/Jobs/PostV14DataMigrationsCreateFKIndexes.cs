@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +24,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v14 to update current sessions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.0 - Add FK indexes" )]
     [Description( "This job will add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId." )]
 

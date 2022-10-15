@@ -21,8 +21,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -43,7 +41,6 @@ namespace Rock.Jobs
     [BooleanField("Set Visit Dates", "If enabled will update the first and second visit person attributes.", true, order: 3)]
 
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
-    [DisallowConcurrentExecution]
     public class CalculateFamilyAnalytics : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
@@ -61,9 +58,6 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will run quick SQL queries on a schedule.
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="RockJob" />.
         /// </summary>
         public override void Execute()
         {

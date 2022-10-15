@@ -20,9 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Quartz;
-using Rock.Attribute;
+using System.Threading.Tasks;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,7 +33,6 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v12.5 - Update Step Program Completion" )]
     [Description( "Populates Step Program Completion records using existing Step data" )]
 
-    [DisallowConcurrentExecution]
     [IntegerField(
         "Command Timeout",
         Description = "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher",

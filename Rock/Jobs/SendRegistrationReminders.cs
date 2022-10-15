@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -39,7 +37,6 @@ namespace Rock.Jobs
     [Description( "Send any registration reminders that are due to be sent." )]
 
     [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
-    [DisallowConcurrentExecution]
     public class SendRegistrationReminders : RockJob
     {
         /// <summary>

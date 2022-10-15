@@ -16,8 +16,6 @@
 //
 using System.ComponentModel;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,7 +25,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V11.0
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.2 - Adds PersonalDeviceId to Interaction Index." )]
     [Description( "This job will update the index. After all the operations are done, this job will delete itself." )]
 

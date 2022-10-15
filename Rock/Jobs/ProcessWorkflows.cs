@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Process Workflows" )]
     [Description( "Runs continuously to process in workflows activities/actions in progress." )]
 
-    [DisallowConcurrentExecution]
     public class ProcessWorkflows : RockJob
     {
         /// <summary> 

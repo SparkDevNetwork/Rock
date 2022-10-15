@@ -23,8 +23,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -66,7 +64,6 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
     public class SendGroupAttendanceDigest : RockJob
     {
         #region Attribute Keys

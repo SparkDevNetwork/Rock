@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -34,7 +32,6 @@ namespace Rock.Jobs
     [DisplayName( "Download Payments" )]
     [Category( "Finance" )]
     [Description( "Job to download any scheduled payments that were processed by the payment gateway." )]
-    [DisallowConcurrentExecution]
 
     #region Job Attributes
     [IntegerField(

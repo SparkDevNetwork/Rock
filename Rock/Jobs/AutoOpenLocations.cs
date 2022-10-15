@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -49,7 +47,6 @@ namespace Rock.Jobs
         IsRequired = false,
         Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). Only locations modified within the timeframe would be considered. If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
-    [DisallowConcurrentExecution]
     public class AutoOpenLocations : RockJob
     {
         /// <summary>
@@ -74,9 +71,6 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="RockJob" />.
         /// </summary>
         public override void Execute()
         {

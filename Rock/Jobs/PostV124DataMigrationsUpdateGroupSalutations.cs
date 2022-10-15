@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Quartz;
-using Rock.Attribute;
+using System.Threading.Tasks;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -31,7 +29,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V12.4
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.4 - Update Group Salutation fields on Rock.Model.Group." )]
     [Description( "Updates Group Salutation fields on Rock.Model.Group." )]
 

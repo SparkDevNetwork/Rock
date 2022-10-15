@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -70,7 +68,6 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
     public class GroupAttendanceReporting : RockJob
     {
         /// <summary>

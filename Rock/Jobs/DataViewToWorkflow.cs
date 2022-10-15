@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +33,6 @@ namespace Rock.Jobs
     [DisplayName( "DataView to Workflow" )]
     [Category( "Workflows" )]
     [Description( "Starts a workflow for each entity in the specified Data View." )]
-    [DisallowConcurrentExecution]
 
     #region Job Attributes
 

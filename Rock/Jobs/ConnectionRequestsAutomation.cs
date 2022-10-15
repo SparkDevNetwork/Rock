@@ -24,8 +24,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -47,7 +45,6 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
     public class ConnectionRequestsAutomation : RockJob
     {
         /// <summary>

@@ -17,10 +17,9 @@
 using System;
 using System.Linq;
 using System.Text;
+using Quartz;
 
 using DotLiquid;
-
-using Quartz;
 
 using Rock.Communication;
 using Rock.Data;

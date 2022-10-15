@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Data;
@@ -46,7 +44,6 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
     public class IndexContentCollections : RockJob
     {
         /// <summary>

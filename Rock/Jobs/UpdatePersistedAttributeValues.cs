@@ -22,8 +22,6 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -55,7 +53,6 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
     public class UpdatePersistedAttributeValues : RockJob
     {
         #region Keys

@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-using Quartz;
-using Rock.Attribute;
+using System.ComponentModel;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,7 +23,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V13.6 to fix eRA Start Date data broken in v13.4
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.6 - Fix Incorrect eRA Start Dates." )]
     [Description( "This job fixes eRA Start Dates (broken in v13.4) for people who are currently eRA." )]
 

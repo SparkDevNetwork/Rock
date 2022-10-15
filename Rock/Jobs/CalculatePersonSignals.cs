@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Person Signals" )]
     [Description( "Re-calculates all person signals to ensure that the top-most signal is still the current one." )]
 
-    [DisallowConcurrentExecution]
     public class CalculatePersonSignals : RockJob
     {
         /// <summary>

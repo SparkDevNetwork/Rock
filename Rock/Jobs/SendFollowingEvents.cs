@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -42,7 +40,6 @@ namespace Rock.Jobs
 
     [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
-    [DisallowConcurrentExecution]
     public class SendFollowingEvents : RockJob
     {
         /// <summary> 

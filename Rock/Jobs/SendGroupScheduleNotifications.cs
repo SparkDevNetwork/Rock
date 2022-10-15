@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -30,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet.
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Send Group Schedule Confirmations and Reminders" )]
     [Description( "Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet. Only Email and SMS are supported. PUSH is not supported." )]
 

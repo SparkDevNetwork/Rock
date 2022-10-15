@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +30,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v14 to update missing media element interactions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.0 - Add missing Media Element interactions." )]
     [Description( "This job will update the interation length of media element interactions. After all the operations are done, this job will delete itself." )]
 

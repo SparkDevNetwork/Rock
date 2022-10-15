@@ -18,8 +18,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,7 +26,6 @@ namespace Rock.Jobs
 {
     /// <summary>
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.7 - Rebuilds Group Salutation fields on Rock.Model.Group for all family groups." )]
     [Description( "Updates Group Salutation fields on Rock.Model.Group." )]
     public class PostV127DataMigrationsRebuildGroupSalutations : RockJob

@@ -22,9 +22,7 @@ using System.Threading.Tasks;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Web;
-using Humanizer;
-using Quartz;
-using Rock.Attribute;
+using Humanizer;using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -66,7 +64,6 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
     public class SendAssessmentReminders : RockJob
     {
         /// <summary>

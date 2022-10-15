@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -38,7 +36,6 @@ namespace Rock.Jobs
     [DisplayName( "Send Prayer Request Comments Notifications" )]
     [Category( "Prayer" )]
     [Description( "Sends an email notification to all prayer request authors with a list of comments from those who have prayed for their requests." )]
-    [DisallowConcurrentExecution]
 
     #region Job Attributes
 

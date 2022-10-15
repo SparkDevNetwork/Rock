@@ -25,8 +25,6 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
@@ -42,7 +40,6 @@ namespace Rock.Jobs
     [DisplayName( "Process BI Analytics" )]
     [Description( "Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to the BI related analytic tables." )]
 
-    [DisallowConcurrentExecution]
     [BooleanField(
         "Process Person BI Analytics",
         Key = AttributeKey.ProcessPersonBIAnalytics,

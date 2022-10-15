@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-using Quartz;
-using Rock.Attribute;
+using System.ComponentModel;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,7 +23,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V13.0
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.0 - Add index for Interaction InteractionComponentId." )]
     [Description( "This job will add an index for the Interaction InteractionComponentId column." )]
 

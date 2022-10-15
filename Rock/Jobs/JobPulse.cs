@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
-using Quartz;
 using Quartz.Impl.Matchers;
+using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -41,7 +40,6 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
     public class JobPulse : RockJob
     {
 

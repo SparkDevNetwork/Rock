@@ -16,8 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Index Rock Site" )]
     [Description( "This job indexes the specified site." )]
 
-    [DisallowConcurrentExecution]
 
     [SiteField( "Site", "The site that will be indexed", true, order: 0 )]
     [TextField( "Login Id", "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.", false, "", "", 1, "LoginId" )]

@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
@@ -71,7 +69,6 @@ namespace Rock.Jobs
         Order = 4
         )]
 
-    [DisallowConcurrentExecution]
     public class SendCreditCardExpirationNotices : RockJob
     {
         /// <summary>

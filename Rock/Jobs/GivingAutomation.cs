@@ -25,8 +25,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Data;
@@ -49,7 +47,6 @@ namespace Rock.Jobs
     /// </summary>
     [DisplayName( "Giving Automation" )]
     [Description( "Job that updates giving classifications and journey stages, and send any giving alerts." )]
-    [DisallowConcurrentExecution]
 
     [IntegerField( "Max Days Since Last Gift for Alerts",
         Description = "The maximum number of days since a giving group last gave where alerts can be made. If the last gift was earlier than this maximum, then alerts are not relevant.",
@@ -2518,16 +2515,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// </summary>
         public sealed class GivingAutomationContext
         {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="GivingAutomationContext"/> class.
-            /// </summary>
-            /// <param name="jobExecutionContext">The job execution context.</param>
-            [Obsolete]
-            public GivingAutomationContext( IJobExecutionContext jobExecutionContext )
-                : this()
-            {
-            }
-
             /// <summary>
             /// Initializes a new instance of the <see cref="GivingAutomationContext" /> class.
             /// </summary>

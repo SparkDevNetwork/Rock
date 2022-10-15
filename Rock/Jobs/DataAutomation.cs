@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -43,7 +41,6 @@ namespace Rock.Jobs
         Description = "Maximum amount of time, in seconds, to wait for each step to complete.",
         IsRequired = false,
         DefaultIntegerValue = 180 )]
-    [DisallowConcurrentExecution]
     public class DataAutomation : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";

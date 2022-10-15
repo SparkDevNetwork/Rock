@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +24,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v14 to update current sessions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.0 - Update current sessions." )]
     [Description( "This job will update the current sessions to have the duration of the session as well as the interaction count." )]
 

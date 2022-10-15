@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Quartz;
-using Rock;
+using System.Linq;using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -28,7 +26,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to create connection request based on campaign connection configuration and auto assign the request if configured. 
     /// </summary>
-    [DisallowConcurrentExecution]
     public class CampaignManager : RockJob
     {
         #region Constructor

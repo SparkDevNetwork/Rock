@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -35,7 +33,6 @@ namespace Rock.Jobs
     [DisplayName( "Get National Change of Address (NCOA)" )]
     [Description( "Job that gets National Change of Address (NCOA) data." )]
 
-    [DisallowConcurrentExecution]
     public class GetNcoa : RockJob
     {
         /// <summary>
@@ -51,10 +48,6 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        ///
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="RockJob" />.
         /// </summary>
         public override void Execute()
         {

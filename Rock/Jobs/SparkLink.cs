@@ -17,8 +17,6 @@
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +30,6 @@ namespace Rock.Jobs
     [DisplayName( "Spark Link" )]
     [Description( "This job fetches Rock notifications from the Spark Development Network." )]
 
-    [DisallowConcurrentExecution]
     [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
     public class SparkLink : RockJob
     {

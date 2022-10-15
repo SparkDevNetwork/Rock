@@ -23,8 +23,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -42,7 +40,6 @@ namespace Rock.Jobs
     [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
     [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
-    [DisallowConcurrentExecution]
     public class SendDataViewEmail : RockJob
     {
         /// <summary>

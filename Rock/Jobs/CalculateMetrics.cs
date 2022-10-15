@@ -22,7 +22,6 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,7 +44,6 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
     public class CalculateMetrics : RockJob
     {
         /// <summary>

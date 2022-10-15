@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [Description( "This job launches the specified workflow." )]
 
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
-    [DisallowConcurrentExecution]
     public class LaunchWorkflow : RockJob
     {
         /// <summary> 
@@ -49,10 +46,6 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will launch a workflow.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="RockJob" />.
         /// </summary>
         public override void Execute()
         {

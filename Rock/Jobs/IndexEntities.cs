@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,7 +35,6 @@ namespace Rock.Jobs
 
     [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
     [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
-    [DisallowConcurrentExecution]
     public class IndexEntities : RockJob
     {
         /// <summary> 

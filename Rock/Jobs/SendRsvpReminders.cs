@@ -23,8 +23,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -48,7 +46,6 @@ namespace Rock.Jobs
         Order = 0 )]
     #endregion
 
-    [DisallowConcurrentExecution]
     public class SendRsvpReminders : RockJob
     {
         /// <summary>

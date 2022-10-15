@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 
 using Quartz;
-
 using Rock.Attribute;
 
 namespace Rock.Jobs

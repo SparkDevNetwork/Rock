@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Web;
-using Quartz;
-using Rock.Data;
+using System.Web;using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 
@@ -33,7 +31,6 @@ namespace Rock.Jobs
     [DisplayName( "Charge Future Transactions" )]
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
-    [DisallowConcurrentExecution]
     public class ChargeFutureTransactions : RockJob
     {
         /// <summary> 

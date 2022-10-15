@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,7 +33,6 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Group Requirements" )]
     [Description( "Calculate Group Requirements for group members that are in groups that have group requirements." )]
 
-    [DisallowConcurrentExecution]
     public class CalculateGroupRequirements : RockJob
     {
         /// <summary> 

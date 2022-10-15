@@ -22,8 +22,6 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -36,7 +34,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that collects hosting metrics.
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Collect Hosting Metrics" )]
     [Description( @"This job will collect a few hosting metrics regarding the usage of resources such as the database connection pool. Note that this Job can be activated/deactivated by navigating to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and toggling the ""Enable Database Performance Counters"" setting." )]
 
@@ -265,9 +262,8 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Saves the <see cref="MetricValue" />s and updates the <see cref="IJobExecutionContext" />'s Result property.
+        /// Saves the <see cref="MetricValue" />s
         /// </summary>
-        /// <exception cref="Rock.Jobs.DatabaseMaintenance.DatabaseMaintenanceTaskResult.Exception">Unable to find the ""Hosting Metrics"" Category ID.</exception>
         private void SaveMetricValues()
         {
             var rockContext = new RockContext();

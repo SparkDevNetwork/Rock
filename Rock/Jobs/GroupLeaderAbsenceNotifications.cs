@@ -20,9 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using Quartz;
-using Rock.Attribute;
+using System.Web;using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -61,7 +59,6 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
     public class GroupLeaderAbsenceNotifications : RockJob
     {
         /// <summary>

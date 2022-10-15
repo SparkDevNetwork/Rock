@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
@@ -45,7 +43,6 @@ namespace Rock.Jobs
         Category = "General",
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
     public class SyncMedia : RockJob
     {
         /// <summary>

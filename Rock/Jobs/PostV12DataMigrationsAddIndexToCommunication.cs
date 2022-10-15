@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Quartz;
-using Rock.Attribute;
+using System.Threading.Tasks;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -30,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V12.0
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.0 - Add covering index for communications' get queued method." )]
     [Description( "This job will add a covering index for communications' get queued method." )]
 
