@@ -12,7 +12,7 @@
                         + options.uploadUrl + '?'
                         + 'isBinaryFile=' + options.isBinaryFile;
 
-            if (options.isBinaryFile == 'T') {
+            if (options.isBinaryFile === 'T') {
                 wsUrl += '&fileId=' + options.fileId
                     + '&fileTypeGuid=' + options.fileTypeGuid;
             }
@@ -21,8 +21,16 @@
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
             }
 
-            if (options.isTemporary == 'F') {
+            if (options.isTemporary === 'F') {
               wsUrl += '&IsTemporary=False';
+            }
+
+            if (options.parentEntityTypeId !== 'null') {
+                wsUrl += '&ParentEntityTypeId=' + options.parentEntityTypeId;
+            }
+
+            if (options.parentEntityId !== 'null') {
+                wsUrl += '&ParentEntityId=' + options.parentEntityId;
             }
 
             // uses https://github.com/blueimp/jQuery-File-Upload
@@ -67,7 +75,7 @@
                 done: function (e, data) {
                     var $el = $('#' + options.aFileName);
 
-                    if ((options.isBinaryFile || 'T') == 'F') {
+                    if ((options.isBinaryFile || 'T') === 'F') {
                         $('#' + options.hfFileId).val(data.response().result.FileName);
                     }
                     else {

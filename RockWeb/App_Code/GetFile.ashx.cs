@@ -16,6 +16,7 @@
 //
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using Rock;
@@ -69,22 +70,43 @@ namespace RockWeb
 
             if ( context != null )
             {
-
                 context.Response.Clear();
 
                 var rockContext = new RockContext();
 
-                bool requiresViewSecurity = false;
+                var requiresViewSecurity = false;
                 BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
                 if ( binaryFile != null )
                 {
+                    binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
+                    UserLogin currentUser;
+                    Person currentPerson;
+
+                    if ( binaryFile.ParentEntityTypeId.HasValue && binaryFile.ParentEntityId.HasValue )
+                    {
+                        currentUser = UserLoginService.GetCurrentUser();
+                        currentPerson = currentUser?.Person;
+
+                        // Check auth here and return 403 if necessary
+                        var entityType = EntityTypeCache.Get( binaryFile.ParentEntityTypeId.Value )?.GetEntityType();
+                        if ( entityType != null )
+                        {
+                            ISecured parentEntity = Rock.Reflection.GetIEntityForEntityType( entityType, binaryFile.ParentEntityId.Value ) as ISecured;
+
+                            if ( parentEntity != null && !parentEntity.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                            {
+                                SendError( context, 403, "Not authorized to view file." );
+                                return;
+                            }
+                        }
+                    }
+
                     //// if the binaryFile's BinaryFileType requires security, check security
                     //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
                     if ( requiresViewSecurity )
                     {
-                        binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                        var currentUser = UserLoginService.GetCurrentUser();
-                        Person currentPerson = currentUser != null ? currentUser.Person : null;
+                        currentUser = UserLoginService.GetCurrentUser();
+                        currentPerson = currentUser?.Person;
 
                         if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
