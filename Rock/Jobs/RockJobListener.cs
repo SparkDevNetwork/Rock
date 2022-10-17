@@ -25,6 +25,8 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Rock.Jobs
 {
@@ -61,9 +63,10 @@ namespace Rock.Jobs
         /// </para>
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Task.</returns>
         /// <seealso cref="M:Quartz.IJobListener.JobExecutionVetoed(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
-        public void JobToBeExecuted( IJobExecutionContext context )
+        public Task JobToBeExecuted( IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             StringBuilder message = new StringBuilder();
 
@@ -85,20 +88,23 @@ namespace Rock.Jobs
 #pragma warning disable CS0612 // Type or member is obsolete
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
 #pragma warning restore CS0612 // Type or member is obsolete
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a <see cref="IJobDetail" />
-        /// was about to be executed (an associated <see cref="ITrigger" />
-        /// has occurred), but a <see cref="ITriggerListener" /> vetoed its
+        /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.IJobDetail" />
+        /// was about to be executed (an associated <see cref="T:Quartz.ITrigger" />
+        /// has occurred), but a <see cref="T:Quartz.ITriggerListener" /> vetoed it's
         /// execution.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Task.</returns>
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
-        public void JobExecutionVetoed( IJobExecutionContext context )
+        public Task JobExecutionVetoed( IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
-            return;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -130,8 +136,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="jobException">The job exception.</param>
+        /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Task.</returns>
-        public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
+        public Task JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException, CancellationToken cancellationToken = default )
         {
             // get job id
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -148,7 +155,7 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
-                return;
+                return Task.CompletedTask;
             }
 
             // if notification status is all set flag to send message
@@ -227,6 +234,8 @@ namespace Rock.Jobs
             {
                 SendNotificationMessage( jobException, job );
             }
+
+            return Task.CompletedTask;
         }
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
@@ -246,7 +255,6 @@ namespace Rock.Jobs
                         mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
                     }
                 }
-
             }
             catch
             {
@@ -287,7 +295,5 @@ namespace Rock.Jobs
 
             return exceptionToLog;
         }
-
-
     }
 }

@@ -80,6 +80,8 @@ namespace Rock.Tests.Integration.Jobs
         /// <exception cref="NotImplementedException"></exception>
         public bool RequestsRecovery => throw new NotImplementedException();
 
+        public bool ConcurrentExecutionDisallowed => throw new NotImplementedException();
+
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
@@ -98,6 +100,11 @@ namespace Rock.Tests.Integration.Jobs
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public JobBuilder GetJobBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        IJobDetail IJobDetail.Clone()
         {
             throw new NotImplementedException();
         }

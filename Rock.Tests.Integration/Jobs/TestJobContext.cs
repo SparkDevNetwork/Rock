@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+
 using Quartz;
 
 namespace Rock.Tests.Integration.Jobs
@@ -128,6 +130,12 @@ namespace Rock.Tests.Integration.Jobs
         /// The job run time.
         /// </value>
         public TimeSpan JobRunTime => throw new NotImplementedException();
+
+        public TriggerKey RecoveringTriggerKey => throw new NotImplementedException();
+
+        public CancellationToken CancellationToken => throw new NotImplementedException();
+
+        DateTimeOffset IJobExecutionContext.FireTimeUtc => throw new NotImplementedException();
 
         /// <summary>
         /// Gets the specified key.

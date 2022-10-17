@@ -248,7 +248,7 @@ namespace Rock.Tests.Integration.Jobs
             Assert.That.AreEqual( expectedExceptionsCount, actualExceptionsCount );
         }
 
-        public void RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
+        public async void RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
         {
             var job = GetAddTestJob( jobNotificationStatus );
 
@@ -263,7 +263,7 @@ namespace Rock.Tests.Integration.Jobs
                     var runNowSchedulerName = ( "RunNow:" + job.Guid.ToString( "N" ) ).Truncate( 40 );
                     scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
                     var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
-                    var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+                    var sched = await new StdSchedulerFactory( scheduleConfig ).GetScheduler();
                     if ( sched.IsStarted )
                     {
                         // the job is currently running as a RunNow job
@@ -273,13 +273,15 @@ namespace Rock.Tests.Integration.Jobs
                     // Check if another scheduler is running this job
                     try
                     {
-                        var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers
+                        var allSchedulers = await new Quartz.Impl.StdSchedulerFactory().GetAllSchedulers();
+                        var otherSchedulers = allSchedulers
                             .Where( s => s.SchedulerName != runNowSchedulerName );
 
                         foreach ( var scheduler in otherSchedulers )
                         {
-                            if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == job.Id.ToString() &&
-                                j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+                            var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
+                            if ( currentlyExecutingJobs.Where( j => j.JobDetail.Description == job.Id.ToString() &&
+                                j.JobDetail.ConcurrentExecutionDisallowed ).Any() )
                             {
                                 // A job with that Id is already running and ConcurrentExectionDisallowed is true
                                 System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{job.Id}' (name: {job.Name})" );
@@ -306,19 +308,19 @@ namespace Rock.Tests.Integration.Jobs
                         .Build();
 
                     // schedule the job
-                    sched.ScheduleJob( jobDetail, jobTrigger );
+                    await sched.ScheduleJob( jobDetail, jobTrigger );
 
                     // set up the listener to report back from the job when it completes
                     sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
 
                     // start the scheduler
-                    sched.Start();
+                    await sched.Start();
 
                     // Wait 10secs to give job chance to start
                     System.Threading.Tasks.Task.Delay( new TimeSpan( 0, 0, 10 ) ).Wait();
 
                     // stop the scheduler when done with job
-                    sched.Shutdown( true );
+                    await sched.Shutdown( true );
                 }
             }
         }

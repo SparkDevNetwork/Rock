@@ -44,13 +44,14 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>Returns true if job execution should be vetoed, false otherwise.</returns>
-        public bool VetoJobExecution( ITrigger trigger, IJobExecutionContext context )
+        public async Task<bool> VetoJobExecution( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
 
-            var allSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers;
+            var allSchedulers = await new Quartz.Impl.StdSchedulerFactory().GetAllSchedulers();
 
             // Check if other schedulers are running this job...
             // TODO NOTE: Someday we would want to see if this also can work across
@@ -60,9 +61,9 @@ namespace Rock.Jobs
 
             foreach ( var scheduler in otherSchedulers )
             {
-                var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
+                var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
                 if ( currentlyExecutingJobs.Where( j => j.JobDetail.Description == context.JobDetail.Description &&
-                    j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+                    j.JobDetail.ConcurrentExecutionDisallowed ).Any() )
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
                     return true;
@@ -90,11 +91,12 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>Task.</returns>
-        public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
+        public Task TriggerFired( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             // do nothing
-            return;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -102,11 +104,12 @@ namespace Rock.Jobs
         /// has misfired.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
         /// <returns>Task.</returns>
-        public void TriggerMisfired( ITrigger trigger )
+        public Task TriggerMisfired( ITrigger trigger, CancellationToken cancellationToken = default )
         {
             // do nothing
-            return;
+            return Task.CompletedTask;
         }
 
         /// <summary>

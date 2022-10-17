@@ -90,29 +90,29 @@ namespace Rock.Model
                 scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
                 var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
                 //var sched = await new StdSchedulerFactory( scheduleConfig ).GetScheduler();
-                var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+                var sched = await new StdSchedulerFactory( scheduleConfig ).GetScheduler();
 
                 if ( sched.IsStarted )
                 {
                     // the job is currently running as a RunNow job
-              //      errorMessage = "Job already running as a RunNow job";
+                    //      errorMessage = "Job already running as a RunNow job";
                     return false;
                 }
 
                 // Check if another scheduler is running this job
                 try
                 {
-                    var allSchedulers = new StdSchedulerFactory().AllSchedulers;
+                    var allSchedulers = await new StdSchedulerFactory().GetAllSchedulers();
                     var otherSchedulers = allSchedulers
                         .Where( s => s.SchedulerName != runNowSchedulerName );
 
                     foreach ( var scheduler in otherSchedulers )
                     {
-                        var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
+                        var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
                         var isAlreadyRunning = currentlyExecutingJobs
                             .Where( j =>
                                 j.JobDetail.Description == jobId.ToString() &&
-                                j.JobDetail.ConcurrentExectionDisallowed )
+                                j.JobDetail.ConcurrentExecutionDisallowed )
                             .Any();
 
                         if ( isAlreadyRunning )
@@ -131,6 +131,11 @@ namespace Rock.Model
 
                 // create the quartz job and trigger
                 var jobDetail = new ServiceJobService( rockContext ).BuildQuartzJob( job );
+                if ( jobDetail == null )
+                {
+                    return false;
+                }
+
                 var jobDataMap = jobDetail.JobDataMap;
 
                 if ( jobDataMap != null )
@@ -147,20 +152,20 @@ namespace Rock.Model
                     .Build();
 
                 // schedule the job
-                sched.ScheduleJob( jobDetail, jobTrigger );
+                await sched.ScheduleJob( jobDetail, jobTrigger );
 
                 // set up the listener to report back from the job when it completes
                 sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
 
                 // start the scheduler
-                sched.Start();
+                await sched.Start();
 
-                // Wait 10secs to give scheduler to start the job.
+                // Wait 10secs to give scheduler to a chance to start the job.
                 // If we don't do this, the scheduler might Shutdown thinking there are no running jobs
                 Task.Delay( 10 * 1000 ).Wait();
 
                 // stop the scheduler when done with job
-                sched.Shutdown( true );
+                await sched.Shutdown( true );
 
                 return await Task.FromResult( true );
             }
@@ -223,7 +228,7 @@ namespace Rock.Model
             UpdateAttributesIfNeeded( type );
 
             JobDataMap map = new JobDataMap();
-           // map.LoadFromJobAttributeValues( job );
+            // map.LoadFromJobAttributeValues( job );
 
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
@@ -349,14 +354,14 @@ namespace Rock.Model
         /// <value>The quartz scheduler.</value>
         public static IScheduler QuartzScheduler { get; private set; } = null;
 
-        internal static void InitializeJobScheduler()
+        internal static async void InitializeJobScheduler()
         {
             using ( var rockContext = new RockContext() )
             {
                 // create scheduler
                 ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
                 //QuartzScheduler = Task.Run( async () => await schedulerFactory.GetScheduler() ).Result;
-                QuartzScheduler = schedulerFactory.GetScheduler();
+                QuartzScheduler = await schedulerFactory.GetScheduler();
 
                 // get list of active jobs
                 ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -378,7 +383,7 @@ namespace Rock.Model
                         // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
                         if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
                         {
-                            QuartzScheduler.ScheduleJob( jobDetail, jobTrigger );
+                            await QuartzScheduler.ScheduleJob( jobDetail, jobTrigger );
                         }
 
                         //// if the last status was an error, but we now loaded successful, clear the error

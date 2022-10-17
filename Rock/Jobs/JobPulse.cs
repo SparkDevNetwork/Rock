@@ -24,6 +24,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
+using System.Diagnostics;
 
 namespace Rock.Jobs
 {
@@ -77,14 +78,17 @@ namespace Rock.Jobs
                 globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), true );
             }
 
+            Debug.WriteLine( "JobPulse Begin" );
             UpdateScheduledJobs();
+            Debug.WriteLine( "JobPulse End" );
         }
 
         /// <summary>
         /// Updates the scheduled jobs.
         /// </summary>
-        private void UpdateScheduledJobs()
+        private async void UpdateScheduledJobs()
         {
+            Debug.WriteLine( "UpdateScheduledJobs Start" );
             var scheduler = this.Scheduler;
             int jobsDeleted = 0;
             int jobsScheduleUpdated = 0;
@@ -92,13 +96,13 @@ namespace Rock.Jobs
             var rockContext = new Rock.Data.RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
-            var scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
+            var scheduledQuartzJobs = await scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
 
             // delete any jobs that are no longer exist (are are not set to active) in the database
             var quartsJobsToDelete = scheduledQuartzJobs.Where( a => !activeJobList.Any( j => j.Guid.Equals( a.Name.AsGuid() ) ) );
             foreach ( JobKey jobKey in quartsJobsToDelete )
             {
-                scheduler.DeleteJob( jobKey );
+                await scheduler.DeleteJob( jobKey );
                 jobsDeleted++;
             }
 
@@ -120,7 +124,7 @@ namespace Rock.Jobs
                     // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
                     if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
                     {
-                        scheduler.ScheduleJob( jobDetail, jobTrigger );
+                        await scheduler.ScheduleJob( jobDetail, jobTrigger );
                         jobsScheduleUpdated++;
                     }
 
@@ -144,12 +148,12 @@ namespace Rock.Jobs
             }
 
             // reload the jobs in case any where added/removed
-            scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
+            scheduledQuartzJobs = await scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
 
             // update schedule if the schedule has changed
             foreach ( var jobKey in scheduledQuartzJobs )
             {
-                var triggersOfJob = scheduler.GetTriggersOfJob( jobKey );
+                var triggersOfJob = await scheduler.GetTriggersOfJob( jobKey );
                 var jobCronTrigger = triggersOfJob.OfType<ICronTrigger>().FirstOrDefault();
                 var activeJob = activeJobList.FirstOrDefault( a => a.Guid.Equals( jobKey.Name.AsGuid() ) );
                 if ( jobCronTrigger == null || activeJob == null )
@@ -167,7 +171,7 @@ namespace Rock.Jobs
                 else
                 {
                     // update the job detail if it has changed
-                    IJobDetail scheduledJobDetail = scheduler.GetJobDetail( jobKey );
+                    IJobDetail scheduledJobDetail = await scheduler.GetJobDetail( jobKey );
                     var activeJobType = activeJob.GetCompiledType();
 
                     if ( scheduledJobDetail != null && activeJobType != null )
@@ -186,8 +190,8 @@ namespace Rock.Jobs
                     {
                         IJobDetail jobDetail = jobService.BuildQuartzJob( activeJob );
                         ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
-                        bool deletedSuccessfully = scheduler.DeleteJob( jobKey );
-                        scheduler.ScheduleJob( jobDetail, newJobTrigger );
+                        bool deletedSuccessfully = await scheduler.DeleteJob( jobKey );
+                        await scheduler.ScheduleJob( jobDetail, newJobTrigger );
                         jobsScheduleUpdated++;
 
                         if ( activeJob.LastStatus == errorReschedulingStatus )
@@ -220,6 +224,8 @@ namespace Rock.Jobs
             {
                 this.Result += ( string.IsNullOrEmpty( this.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
             }
+
+            Debug.WriteLine( "UpdateScheduledJobs End" );
         }
     }
 }

@@ -8,7 +8,7 @@ namespace TestJobPlugin
     {
         public override void Execute()
         {
-            Debug.WriteLine( "It worked" );
+            Debug.WriteLine( "TestCompiledPluginJob It worked. It was compiled as a RockJob with old Quartz 2" );
         }
     }
 }

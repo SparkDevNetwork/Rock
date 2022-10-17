@@ -120,6 +120,8 @@ namespace Rock.Jobs
             Execute();
         }
 
+        #region Implement Quartz 2 (.NET Framework)
+
         /// <summary>
         /// Executes the specified context.
         /// </summary>
@@ -129,14 +131,16 @@ namespace Rock.Jobs
             ExecuteInternal( context );
         }
 
-        /*
+        #endregion Implement Quartz 2 (.NET Framework)
+
+        #region Implement Quartz 3 (.NET Core)
 
         Task IJob.Execute( IJobExecutionContext context )
         {
-            ExecuteInternal(context);
+            ExecuteInternal(context );
             return Task.CompletedTask;
         }
 
-        */
+        #endregion 
     }
 }
