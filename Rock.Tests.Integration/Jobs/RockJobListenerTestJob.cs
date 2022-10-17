@@ -29,21 +29,15 @@ namespace Rock.Tests.Integration.Jobs
         public const string ExecutionMessage = "ExecutionMessage";
     }
 
-    public class RockJobListenerTestJob : IJob
+    public class RockJobListenerTestJob : RockJob
     {
         #region Attribute Keys
 
-        /// <summary>
-        /// Keys to use for Block Attributes
-        /// </summary>
-        
-
         #endregion Attribute Keys
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            TestResultType? executionResult = ( TestResultType? ) dataMap.GetString( TestJobAttributeKey.ExecutionResult ).AsIntegerOrNull();
-            var exceptionMessage = dataMap.GetString( TestJobAttributeKey.ExecutionMessage );
+            TestResultType? executionResult = ( TestResultType? ) this.GetAttributeValue( TestJobAttributeKey.ExecutionResult ).AsIntegerOrNull();
+            var exceptionMessage = this.GetAttributeValue( TestJobAttributeKey.ExecutionMessage );
 
             switch ( executionResult )
             {
@@ -67,7 +61,7 @@ namespace Rock.Tests.Integration.Jobs
                     throw new RockJobWarningException( exceptionMessage, new AggregateException( WarningSingleException ) );
 
                 default:
-                    context.Result = exceptionMessage;
+                    this.Result = exceptionMessage;
                     break;
             }
 

@@ -22,8 +22,6 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -55,8 +53,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
-    public class UpdatePersistedAttributeValues : IJob
+    public class UpdatePersistedAttributeValues : RockJob
     {
         #region Keys
 
@@ -91,24 +88,20 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            var rebuildPercentage = dataMap.GetString( AttributeKey.RebuildPercentage ).AsInteger();
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsInteger();
+            var rebuildPercentage = GetAttributeValue( AttributeKey.RebuildPercentage ).AsInteger();
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsInteger();
             var updatedCount = 0;
 
             CreateIndex( commandTimeout );
 
-            updatedCount += ForceRebuildAttributesAndValues( rebuildPercentage, commandTimeout, context, out var forcedRebuildErrorMessages );
+            updatedCount += ForceRebuildAttributesAndValues( rebuildPercentage, commandTimeout, out var forcedRebuildErrorMessages );
 
-            updatedCount += UpdateVolatileAttributesAndValues( commandTimeout, context, out var volatileErrorMessages );
+            updatedCount += UpdateVolatileAttributesAndValues( commandTimeout, out var volatileErrorMessages );
 
-            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout, context );
+            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout );
 
             var errorMessages = new List<string>();
             errorMessages.AddRange( forcedRebuildErrorMessages );
@@ -121,7 +114,7 @@ namespace Rock.Jobs
                 message += $"\nEncounted errors:\n{string.Join( "\n", forcedRebuildErrorMessages )}";
             }
 
-            context.Result = message;
+            this.Result = message;
         }
 
         /// <summary>
@@ -143,10 +136,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="rebuildPercentage">The percentage (0-100) of the attributes to rebuild.</param>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int ForceRebuildAttributesAndValues( int rebuildPercentage, int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int ForceRebuildAttributesAndValues( int rebuildPercentage, int commandTimeout, out List<string> errorMessages )
         {
             int? lastAttributeId = null;
             var updatedCount = 0;
@@ -161,7 +153,7 @@ namespace Rock.Jobs
 
                 try
                 {
-                    context.UpdateLastStatusMessage( $"Rebuilding attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
+                    this.UpdateLastStatusMessage( $"Rebuilding attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
                     updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
                     lastAttributeId = attributeId;
                 }
@@ -378,10 +370,9 @@ namespace Rock.Jobs
         /// by outside influence to get their values back in sync.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int UpdateVolatileAttributesAndValues( int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int UpdateVolatileAttributesAndValues( int commandTimeout, out List<string> errorMessages )
         {
             var updatedCount = 0;
 
@@ -398,7 +389,7 @@ namespace Rock.Jobs
 
                 try
                 {
-                    context.UpdateLastStatusMessage( $"Rebuilding volatile attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
+                    this.UpdateLastStatusMessage( $"Rebuilding volatile attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
                     updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
                 }
                 catch ( Exception ex )
@@ -415,14 +406,13 @@ namespace Rock.Jobs
         /// Updates all attributes and values that are currently marked dirty.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int UpdateDirtyAttributesAndValues( int commandTimeout, IJobExecutionContext context )
+        private int UpdateDirtyAttributesAndValues( int commandTimeout )
         {
             var updatedCount = 0;
             var attributeIds = GetDirtyAttributeIds( commandTimeout );
 
-            context.UpdateLastStatusMessage( "Updating dirty attributes." );
+            this.UpdateLastStatusMessage( "Updating dirty attributes." );
 
             using ( var rockContext = new RockContext() )
             {
@@ -444,19 +434,18 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
             }
 
-            updatedCount += UpdateDirtyAttributeValues( commandTimeout, context );
+            updatedCount += UpdateDirtyAttributeValues( commandTimeout );
 
             return updatedCount;
         }
 
         /// <summary>
         /// Updates all the dirty attribute values that are currently marked dirty.
-        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int, IJobExecutionContext)"/>.
+        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int)"/>.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
         /// <returns>The number of attribute values that were updated.</returns>
-        private int UpdateDirtyAttributeValues( int commandTimeout, IJobExecutionContext context )
+        private int UpdateDirtyAttributeValues( int commandTimeout )
         {
             var updatedCount = 0;
             var attributeIndex = 0;
@@ -470,7 +459,7 @@ namespace Rock.Jobs
                 var attributeCache = AttributeCache.Get( attributeId );
                 var field = attributeCache.FieldType.Field;
 
-                context.UpdateLastStatusMessage( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
+                this.UpdateLastStatusMessage( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
 
                 // Make sure this isn't a bad field type.
                 if ( field == null )

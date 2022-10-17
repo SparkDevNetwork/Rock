@@ -18,8 +18,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Update Personalization Data" )]
     [Description( "Job that updates Personalization Data." )]
 
@@ -42,8 +39,7 @@ namespace Rock.Jobs
         DefaultIntegerValue = 60 * 3,
         Order = 1 )]
 
-    [DisallowConcurrentExecution]
-    public class UpdatePersonalizationData : IJob
+    public class UpdatePersonalizationData : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -64,27 +60,24 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the UpdatePersonalizationData Job
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var includeSegmentsWithNonPersistedDataViews = false;
             var segmentList = PersonalizationSegmentCache.GetActiveSegments( includeSegmentsWithNonPersistedDataViews );
 
             if ( !segmentList.Any() )
             {
-                context.UpdateLastStatusMessage( "No Personalization Segments configured." );
+                this.UpdateLastStatusMessage( "No Personalization Segments configured." );
                 return;
             }
 
             var resultsBuilder = new StringBuilder();
-            int commandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            int commandTimeoutSeconds = this.GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
             foreach ( var segment in segmentList.OrderBy( s => s.Name ) )
             {
-                context.UpdateLastStatusMessage( $"{segment.Name}: Updating..." );
+                this.UpdateLastStatusMessage( $"{segment.Name}: Updating..." );
                 using ( var rockContext = new RockContext() )
                 {
                     rockContext.Database.CommandTimeout = commandTimeoutSeconds;
@@ -108,7 +101,7 @@ namespace Rock.Jobs
                 resultsBuilder.AppendLine( $"Cleaned up {cleanedUpCount}" );
             }
 
-            context.UpdateLastStatusMessage( resultsBuilder.ToString() );
+            this.UpdateLastStatusMessage( resultsBuilder.ToString() );
         }
     }
 }

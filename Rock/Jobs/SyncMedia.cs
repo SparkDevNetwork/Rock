@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
@@ -45,8 +43,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
-    public class SyncMedia : IJob
+    public class SyncMedia : RockJob
     {
         /// <summary>
         /// Attribute Keys for the <see cref="SyncMedia"/> job.
@@ -63,15 +60,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
+                        var limitFullSync = GetAttributeValue( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.
             var task = Task.Run( () => ProcessAllAccounts( limitFullSync ) );
@@ -79,7 +71,7 @@ namespace Rock.Jobs
             // Wait for our main task to complete.
             var result = task.GetAwaiter().GetResult();
 
-            context.Result = result.Message;
+            this.Result = result.Message;
 
             if ( result.Errors.Any() )
             {

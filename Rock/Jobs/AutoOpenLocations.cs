@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -49,8 +47,7 @@ namespace Rock.Jobs
         IsRequired = false,
         Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). Only locations modified within the timeframe would be considered. If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
-    [DisallowConcurrentExecution]
-    public class AutoOpenLocations : IJob
+    public class AutoOpenLocations : RockJob
     {
         /// <summary>
         /// Keys for DataMap Field Attributes.
@@ -74,16 +71,9 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        ///
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );
 
@@ -94,7 +84,7 @@ namespace Rock.Jobs
             // limit to only Named Locations (don't show home addresses, etc)
             inactiveLocationsQry = inactiveLocationsQry.Where( a => a.Name != null && a.Name != string.Empty );
 
-            var reopenPeriod = dataMap.GetString( AttributeKey.ReopenPeriod ).AsIntegerOrNull();
+            var reopenPeriod = GetAttributeValue( AttributeKey.ReopenPeriod ).AsIntegerOrNull();
 
             if ( reopenPeriod.HasValue )
             {
@@ -105,7 +95,7 @@ namespace Rock.Jobs
 
             var inactiveLocations = inactiveLocationsQry.AsEnumerable();
 
-            var parentLocationGuid = dataMap.GetString( AttributeKey.ParentLocation ).AsGuidOrNull();
+            var parentLocationGuid = GetAttributeValue( AttributeKey.ParentLocation ).AsGuidOrNull();
             if ( parentLocationGuid.HasValue )
             {
                 var parentLocation = locationService.Get( parentLocationGuid.Value );
@@ -145,7 +135,7 @@ namespace Rock.Jobs
             // Format the result message
             results.AppendLine( $"Opened {updatedLocationCount} {"location".PluralizeIf( updatedLocationCount != 1 )}" );
 
-            context.Result = results.ToString();
+            this.Result = results.ToString();
 
             if ( errors.Any() )
             {
@@ -154,7 +144,7 @@ namespace Rock.Jobs
                 sb.Append( "Errors: " );
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
-                context.Result += errorMessage;
+                this.Result += errorMessage;
                 // We're not going to throw an aggregate exception unless there were no successes.
                 // Otherwise the status message does not show any of the success messages in
                 // the last status message.

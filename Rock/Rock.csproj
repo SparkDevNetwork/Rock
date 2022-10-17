@@ -440,6 +440,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
@@ -873,6 +874,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
+    <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
@@ -2490,9 +2492,7 @@
     <Compile Include="Jobs\GroupSync.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
-    <Compile Include="Jobs\LaunchWorkflow.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Jobs\LaunchWorkflow.cs" />
     <Compile Include="Jobs\LocationServicesVerify.cs" />
     <Compile Include="Jobs\ProcessSignatureDocuments.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />

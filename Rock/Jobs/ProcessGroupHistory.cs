@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -29,12 +27,10 @@ namespace Rock.Jobs
     /// <summary>
     /// Processes Group History
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Process Group History" )]
     [Description( "Creates Historical snapshots of Groups and Group Members for any group types that have history enabled." )]
 
-    [DisallowConcurrentExecution]
-    public class ProcessGroupHistory : IJob
+    public class ProcessGroupHistory : RockJob
     {
 
         #region Constructor
@@ -63,37 +59,32 @@ namespace Rock.Jobs
 
         #region Methods
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             _jobStatusMessages = new List<string>();
 
-            UpdateGroupHistorical( context );
+            UpdateGroupHistorical();
 
-            UpdateGroupMemberHistorical( context );
+            UpdateGroupMemberHistorical();
 
-            UpdateGroupLocationHistorical( context );
+            UpdateGroupLocationHistorical();
 
             if ( _jobStatusMessages.Any() )
             {
-                context.UpdateLastStatusMessage( _jobStatusMessages.AsDelimited( ", ", " and " ) );
+                this.UpdateLastStatusMessage( _jobStatusMessages.AsDelimited( ", ", " and " ) );
             }
             else
             {
-                context.UpdateLastStatusMessage( "No group changes detected" );
+                this.UpdateLastStatusMessage( "No group changes detected" );
             }
         }
 
         /// <summary>
         /// Updates Group Historical for any groups that have data group history enabled
         /// </summary>
-        /// <param name="context">The context.</param>
-        public void UpdateGroupHistorical( IJobExecutionContext context )
+        public void UpdateGroupHistorical()
         {
             var rockContext = new RockContext();
             var groupHistoricalService = new GroupHistoricalService( rockContext );
@@ -179,8 +170,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Updates GroupMemberHistorical for any group members in groups that have data group history enabled
         /// </summary>
-        /// <param name="context">The context.</param>
-        public void UpdateGroupMemberHistorical( IJobExecutionContext context )
+        public void UpdateGroupMemberHistorical()
         {
             var rockContext = new RockContext();
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
@@ -257,8 +247,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Updates GroupLocationHistorical for any group locations in groups that have data group history enabled
         /// </summary>
-        /// <param name="context">The context.</param>
-        public void UpdateGroupLocationHistorical( IJobExecutionContext context )
+        public void UpdateGroupLocationHistorical()
         {
             var rockContext = new RockContext();
             var groupLocationHistoricalService = new GroupLocationHistoricalService( rockContext );
