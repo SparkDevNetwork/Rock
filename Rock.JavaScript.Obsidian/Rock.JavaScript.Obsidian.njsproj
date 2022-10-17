@@ -309,6 +309,7 @@
     <TypeScriptCompile Include="Framework\Enums\Event\registrationFeeType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\registrationFieldSource.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\registrationPersonFieldType.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\rsvp.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\sessionStatus.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\signatureDocumentAction.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\alertType.d.ts" />

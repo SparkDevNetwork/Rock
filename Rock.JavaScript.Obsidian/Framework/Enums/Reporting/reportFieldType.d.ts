@@ -28,6 +28,6 @@ export const enum ReportFieldType {
     /** The field is one of the attributes of the entity */
     Attribute = 1,
 
-    /** The field(s) that result from a Rock.Reporting.DataSelectComponent */
+    /** The field(s) that result from a DataSelectComponent */
     DataSelectComponent = 2
 }

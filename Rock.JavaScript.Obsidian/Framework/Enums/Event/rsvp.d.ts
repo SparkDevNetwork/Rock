@@ -21,17 +21,20 @@
 // </copyright>
 //
 
-/** The entity that attribute applies to */
-export const enum RegistrationFieldSource {
-    /** Person field */
-    PersonField = 0,
+/** RSVP Response */
+export const enum RSVP {
+    /** No */
+    No = 0,
 
-    /** Person attribute */
-    PersonAttribute = 1,
+    /** Yes */
+    Yes = 1,
 
-    /** Group Member attribute */
-    GroupMemberAttribute = 2,
+    /**
+     * Here's my number, call me Maybe.
+     * Not used by Group Scheduler.
+     */
+    Maybe = 2,
 
-    /** Registrant attribute */
-    RegistrantAttribute = 4
+    /** RSVP not answered yet (or doesn't apply) */
+    Unknown = 3
 }

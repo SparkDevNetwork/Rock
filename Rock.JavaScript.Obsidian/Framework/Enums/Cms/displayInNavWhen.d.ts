@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** Represents how a Rock.Model.Page should be displayed in the page navigation controls. */
+/** Represents how a Page should be displayed in the page navigation controls. */
 export const enum DisplayInNavWhen {
     /** Display this page in navigation controls when allowed by security */
     WhenAllowed = 0,
