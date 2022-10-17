@@ -33,6 +33,7 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="message">The message.</param>
+        [RockObsolete( "15.0" )]
         [Obsolete]
         public static void UpdateLastStatusMessage( this Quartz.IJobExecutionContext context, string message )
         {
@@ -57,6 +58,7 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
+        [RockObsolete( "15.0" )]
         [Obsolete]
         public static int GetJobId( this Quartz.IJobExecutionContext context )
         {
@@ -79,6 +81,7 @@ namespace Rock
         /// <param name="context">The context.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>ServiceJob.</returns>
+        [RockObsolete( "15.0" )]
         [Obsolete]
         public static ServiceJob GetJob( this Quartz.IJobExecutionContext context, RockContext rockContext )
         {
@@ -91,6 +94,7 @@ namespace Rock
         /// </summary>
         /// <param name="jobDataMap">The job data map.</param>
         /// <param name="job">The job.</param>
+        [RockObsolete( "15.0" )]
         [Obsolete]
         internal static void LoadFromJobAttributeValues( this Quartz.JobDataMap jobDataMap, ServiceJob job )
         {

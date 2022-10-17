@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Quartz;
 
 namespace Rock.Tests.Integration.Jobs
@@ -55,6 +56,8 @@ namespace Rock.Tests.Integration.Jobs
         /// <value>
         /// The merged job data map.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "15.0" )]
         public JobDataMap MergedJobDataMap => throw new NotImplementedException();
 
         /// <summary>
@@ -63,6 +66,8 @@ namespace Rock.Tests.Integration.Jobs
         /// <value>
         /// The job detail.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "15.0" )]
         public IJobDetail JobDetail { get; set; } = new TestJobDetail();
 
         /// <summary>
@@ -71,6 +76,8 @@ namespace Rock.Tests.Integration.Jobs
         /// <value>
         /// The job instance.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "15.0" )]
         public IJob JobInstance => throw new NotImplementedException();
 
         /// <summary>
