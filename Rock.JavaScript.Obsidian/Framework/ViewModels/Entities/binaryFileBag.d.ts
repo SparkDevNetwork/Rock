@@ -25,6 +25,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BinaryFile View Model */
 export type BinaryFileBag = {
+    /** Gets or sets additional information for the file. */
+    additionalInformation?: string | null;
+
     /** Gets or sets the id of the Rock.Model.BinaryFileType that this file belongs to. */
     binaryFileTypeId?: number | null;
 
@@ -51,6 +54,12 @@ export type BinaryFileBag = {
 
     /** Gets or sets the Mime Type for the file. This property is required */
     mimeType?: string | null;
+
+    /** Gets or sets the parent Entity ID to determine security access. */
+    parentEntityId?: number | null;
+
+    /** Gets or sets the Parent EntityType ID to determine security access. */
+    parentEntityTypeId?: number | null;
 
     /** Gets or sets a path to the file that is understandable by the storage provider. */
     path?: string | null;

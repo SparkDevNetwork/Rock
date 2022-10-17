@@ -74,40 +74,19 @@ namespace RockWeb
 
                 var rockContext = new RockContext();
 
-                var requiresViewSecurity = false;
+                bool requiresViewSecurity;
                 BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    UserLogin currentUser;
-                    Person currentPerson;
+                    UserLogin currentUser = UserLoginService.GetCurrentUser();
+                    Person currentPerson = currentUser?.Person;
+                    var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-                    if ( binaryFile.ParentEntityTypeId.HasValue && binaryFile.ParentEntityId.HasValue )
+                    // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                    // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
+                    if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {
-                        currentUser = UserLoginService.GetCurrentUser();
-                        currentPerson = currentUser?.Person;
-
-                        // Check auth here and return 403 if necessary
-                        var entityType = EntityTypeCache.Get( binaryFile.ParentEntityTypeId.Value )?.GetEntityType();
-                        if ( entityType != null )
-                        {
-                            ISecured parentEntity = Rock.Reflection.GetIEntityForEntityType( entityType, binaryFile.ParentEntityId.Value ) as ISecured;
-
-                            if ( parentEntity != null && !parentEntity.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                            {
-                                SendError( context, 403, "Not authorized to view file." );
-                                return;
-                            }
-                        }
-                    }
-
-                    //// if the binaryFile's BinaryFileType requires security, check security
-                    //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
-                    if ( requiresViewSecurity )
-                    {
-                        currentUser = UserLoginService.GetCurrentUser();
-                        currentPerson = currentUser?.Person;
-
                         if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             SendError( context, 403, "Not authorized to view file." );
@@ -115,6 +94,14 @@ namespace RockWeb
                         }
                     }
 
+                    // Since this has a value use it
+                    if ( parentEntityAllowsView == false )
+                    {
+                        SendError( context, 403, "Not authorized to view file." );
+                        return;
+                    }
+
+                    // Security checks pass so send the file
                     var binaryFileType = BinaryFileTypeCache.Get( binaryFile.BinaryFileTypeId.Value );
                     SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString( "N" ), binaryFileType.CacheControlHeader );
                     return;
