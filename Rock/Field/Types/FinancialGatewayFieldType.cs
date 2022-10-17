@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Web.UI;
 using System.Linq;
-
+#if WEBFORMS
+using System.Web.UI;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -33,39 +34,23 @@ namespace Rock.Field.Types
     /// Stored as FinancialGateway.Guid
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_GATEWAY )]
+    [RockPlatformSupport(Utility.RockPlatform.WebForms)]
+    [Rock.SystemGuid.FieldTypeGuid(Rock.SystemGuid.FieldType.FINANCIAL_GATEWAY)]
     public class FinancialGatewayFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
-    {
-
+    { 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override string GetTextValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
         {
             string formattedValue = string.Empty;
 
             Guid? financialGatewayGuid = privateValue.AsGuidOrNull();
-            if ( financialGatewayGuid.HasValue )
+            if (financialGatewayGuid.HasValue)
             {
-                using ( var rockContext = new RockContext() )
+                using (var rockContext = new RockContext())
                 {
-                    var financialGatewayName = new FinancialGatewayService( rockContext ).GetSelect( financialGatewayGuid.Value, s => s.Name );
+                    var financialGatewayName = new FinancialGatewayService(rockContext).GetSelect(financialGatewayGuid.Value, s => s.Name);
                     formattedValue = financialGatewayName;
                 }
             }
@@ -77,6 +62,94 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        #endregion
+
+        #region IEntityFieldType
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity(string value)
+        {
+            return GetEntity(value, null);
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity(string value, RockContext rockContext)
+        {
+            var guid = value.AsGuidOrNull();
+            if (guid.HasValue)
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new FinancialGatewayService(rockContext).Get(guid.Value);
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if (!guid.HasValue)
+            {
+                return null;
+            }
+
+            using (var rockContext = new RockContext())
+            {
+                var financialGatewayId = new FinancialGatewayService(rockContext).GetId(guid.Value);
+
+                if (!financialGatewayId.HasValue)
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<FinancialGateway>().Value, financialGatewayId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties(Dictionary<string, string> privateConfigurationValues)
+        {
+            // This field type references the Name property of a Financial Gateway and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialGateway>().Value, nameof( FinancialGateway.Name ) )
+            };
+        }
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -85,7 +158,7 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             return new FinancialGatewayPicker { ID = id, IncludeInactive = false, ShowAllGatewayComponents = false };
         }
@@ -96,18 +169,18 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
             var picker = control as FinancialGatewayPicker;
-            if ( picker != null )
+            if (picker != null)
             {
                 int? itemId = picker.SelectedValue.AsIntegerOrNull();
                 Guid? itemGuid = null;
-                if ( itemId.HasValue )
+                if (itemId.HasValue)
                 {
-                    using ( var rockContext = new RockContext() )
+                    using (var rockContext = new RockContext())
                     {
-                        itemGuid = new FinancialGatewayService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new FinancialGatewayService(rockContext).Queryable().AsNoTracking().Where(a => a.Id == itemId.Value).Select(a => (Guid?)a.Guid).FirstOrDefault();
                     }
                 }
 
@@ -123,39 +196,36 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
             var picker = control as FinancialGatewayPicker;
-            if ( picker != null )
+            if (picker != null)
             {
                 int? itemId = null;
                 Guid? itemGuid = value.AsGuidOrNull();
-                if ( itemGuid.HasValue )
+                if (itemGuid.HasValue)
                 {
-                    using ( var rockContext = new RockContext() )
+                    using (var rockContext = new RockContext())
                     {
-                        itemId = new FinancialGatewayService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                        itemId = new FinancialGatewayService(rockContext).Queryable().Where(a => a.Guid == itemGuid.Value).Select(a => (int?)a.Id).FirstOrDefault();
                     }
                 }
 
-                picker.SetValue( itemId );
+                picker.SetValue(itemId);
             }
         }
 
-        #endregion
-
-        #region IEntityFieldType
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialGatewayService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : ( int? ) null;
+            var guid = GetEditValue(control, configurationValues).AsGuid();
+            var item = new FinancialGatewayService(new RockContext()).Get(guid);
+            return item != null ? item.Id : (int?)null;
         }
 
         /// <summary>
@@ -164,77 +234,14 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
         {
-            var item = new FinancialGatewayService( new RockContext() ).Get( id ?? 0 );
+            var item = new FinancialGatewayService(new RockContext()).Get(id ?? 0);
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            SetEditValue(control, configurationValues, guidValue);
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            var guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new FinancialGatewayService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            Guid? guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var financialGatewayId = new FinancialGatewayService( rockContext ).GetId( guid.Value );
-
-                if ( !financialGatewayId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<FinancialGateway>().Value, financialGatewayId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Financial Gateway and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<FinancialGateway>().Value, nameof( FinancialGateway.Name ) )
-            };
-        }
+#endif
         #endregion
     }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -34,12 +35,20 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COLOR )]
     public class ColorFieldType : FieldType
     {
-
         #region Configuration
 
         private const string SELECTION_TYPE = "selectiontype";
         private const string COLOR_PICKER = "Color Picker";
         private const string NAMED_COLOR = "Named Color";
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -48,7 +57,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( SELECTION_TYPE );
+            configKeys.Add(SELECTION_TYPE);
             return configKeys;
         }
 
@@ -61,13 +70,13 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             var ddl = new RockDropDownList();
-            controls.Add( ddl );
+            controls.Add(ddl);
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Selection Type";
             ddl.Help = "The type of control to select color.";
-            ddl.Items.Add( COLOR_PICKER );
-            ddl.Items.Add( NAMED_COLOR );
+            ddl.Items.Add(COLOR_PICKER);
+            ddl.Items.Add(NAMED_COLOR);
 
             return controls;
         }
@@ -77,14 +86,14 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( SELECTION_TYPE, new ConfigurationValue( "Selection Type", "The type of control to select color.", "" ) );
+            configurationValues.Add(SELECTION_TYPE, new ConfigurationValue("Selection Type", "The type of control to select color.", ""));
 
-            if ( controls.Count > 0 && controls[0] is RockDropDownList )
+            if (controls.Count > 0 && controls[0] is RockDropDownList)
             {
-                configurationValues[SELECTION_TYPE].Value = ( ( RockDropDownList ) controls[0] ).SelectedValue;
+                configurationValues[SELECTION_TYPE].Value = ((RockDropDownList)controls[0]).SelectedValue;
             }
 
             return configurationValues;
@@ -95,20 +104,16 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            if ( configurationValues != null )
+            if (configurationValues != null)
             {
-                if ( controls.Count > 0 && controls[0] is RockDropDownList && configurationValues.ContainsKey( SELECTION_TYPE ) )
+                if (controls.Count > 0 && controls[0] is RockDropDownList && configurationValues.ContainsKey(SELECTION_TYPE))
                 {
-                    ( ( RockDropDownList ) controls[0] ).SetValue( configurationValues[SELECTION_TYPE].Value );
+                    ((RockDropDownList)controls[0]).SetValue(configurationValues[SELECTION_TYPE].Value);
                 }
             }
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -118,20 +123,20 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
-            if ( configurationValues != null &&
-              configurationValues.ContainsKey( SELECTION_TYPE ) &&
-              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR )
+            if (configurationValues != null &&
+              configurationValues.ContainsKey(SELECTION_TYPE) &&
+              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR)
             {
                 var ddl = new RockDropDownList { ID = id };
-                ddl.Items.Add( new ListItem() );
+                ddl.Items.Add(new ListItem());
 
-                Type colors = typeof( System.Drawing.Color );
-                PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );
-                foreach ( PropertyInfo info in colorInfo )
+                Type colors = typeof(System.Drawing.Color);
+                PropertyInfo[] colorInfo = colors.GetProperties(BindingFlags.Public | BindingFlags.Static);
+                foreach (PropertyInfo info in colorInfo)
                 {
-                    ddl.Items.Add( new ListItem( info.Name, info.Name ) );
+                    ddl.Items.Add(new ListItem(info.Name, info.Name));
                 }
 
                 return ddl;
@@ -151,16 +156,16 @@ namespace Rock.Field.Types
         /// <returns>
         ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
         /// </returns>
-        public override bool HasChangeHandler( Control editControl )
+        public override bool HasChangeHandler(Control editControl)
         {
-            if ( editControl is ColorPicker )
+            if (editControl is ColorPicker)
             {
                 // The ColorPicker can get stuck in a postback loop if we enable AutoPostback, so disable ChangeHandler support when using the ColorPicker control.
                 return false;
             }
             else
             {
-                return base.HasChangeHandler( editControl );
+                return base.HasChangeHandler(editControl);
             }
         }
 
@@ -169,16 +174,16 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="editControl">The edit control.</param>
         /// <param name="action">The action.</param>
-        public override void AddChangeHandler( Control editControl, Action action )
+        public override void AddChangeHandler(Control editControl, Action action)
         {
-            if ( editControl is ColorPicker )
+            if (editControl is ColorPicker)
             {
                 // The ColorPicker can get stuck in a postback loop if we enable AutoPostback, so disable ChangeHandler support when using the ColorPicker control.
                 return;
             }
             else
             {
-                base.AddChangeHandler( editControl, action );
+                base.AddChangeHandler(editControl, action);
             };
         }
 
@@ -188,14 +193,14 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            if ( configurationValues != null &&
-              configurationValues.ContainsKey( SELECTION_TYPE ) &&
-              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR )
+            if (configurationValues != null &&
+              configurationValues.ContainsKey(SELECTION_TYPE) &&
+              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR)
             {
                 var editControl = control as ListControl;
-                if ( editControl != null )
+                if (editControl != null)
                 {
                     return editControl.SelectedValue;
                 }
@@ -203,7 +208,7 @@ namespace Rock.Field.Types
             else
             {
                 var editControl = control as ColorPicker;
-                if ( editControl != null )
+                if (editControl != null)
                 {
                     return editControl.Text;
                 }
@@ -218,28 +223,29 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
-            if ( configurationValues != null &&
-              configurationValues.ContainsKey( SELECTION_TYPE ) &&
-              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR )
+            if (configurationValues != null &&
+              configurationValues.ContainsKey(SELECTION_TYPE) &&
+              configurationValues[SELECTION_TYPE].Value == NAMED_COLOR)
             {
                 var editControl = control as ListControl;
-                if ( editControl != null )
+                if (editControl != null)
                 {
-                    editControl.SetValue( value );
+                    editControl.SetValue(value);
                 }
             }
             else
             {
                 var editControl = control as ColorPicker;
-                if ( editControl != null )
+                if (editControl != null)
                 {
                     editControl.Text = value;
                 }
             }
         }
 
+#endif
         #endregion
 
     }

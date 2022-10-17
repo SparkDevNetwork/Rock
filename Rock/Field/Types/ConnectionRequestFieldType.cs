@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -61,129 +62,13 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            ConnectionRequestPicker connectionRequestPicker = new ConnectionRequestPicker { ID = id };
-            return connectionRequestPicker;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field (as id)
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            ConnectionRequestPicker picker = control as ConnectionRequestPicker;
-            if ( picker != null )
-            {
-                int? id = picker.ItemId.AsIntegerOrNull();
-
-                if ( id.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var connectionRequestGuid = new ConnectionRequestService( rockContext ).GetGuid( id.Value );
-
-                        if ( connectionRequestGuid.HasValue )
-                        {
-                            return connectionRequestGuid.ToString();
-                        }
-                    }
-                }
-
-                return string.Empty;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value (as id)
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var picker = control as ConnectionRequestPicker;
-
-            if ( picker != null )
-            {
-                ConnectionRequest connectionRequest = null;
-
-                Guid? guid = value.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
-                }
-
-                picker.SetValue( connectionRequest );
-            }
-        }
-
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
-            {
-                return new ConnectionRequestService( rockContext ).GetId( guid );
-            }
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var itemGuid = new ConnectionRequestService( rockContext ).GetGuid( id ?? 0 );
-                string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;
-                SetEditValue( control, configurationValues, guidValue );
-            }
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -257,6 +142,128 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            ConnectionRequestPicker connectionRequestPicker = new ConnectionRequestPicker { ID = id };
+            return connectionRequestPicker;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field (as id)
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            ConnectionRequestPicker picker = control as ConnectionRequestPicker;
+            if (picker != null)
+            {
+                int? id = picker.ItemId.AsIntegerOrNull();
+
+                if (id.HasValue)
+                {
+                    using (var rockContext = new RockContext())
+                    {
+                        var connectionRequestGuid = new ConnectionRequestService(rockContext).GetGuid(id.Value);
+
+                        if (connectionRequestGuid.HasValue)
+                        {
+                            return connectionRequestGuid.ToString();
+                        }
+                    }
+                }
+
+                return string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value (as id)
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            var picker = control as ConnectionRequestPicker;
+
+            if (picker != null)
+            {
+                ConnectionRequest connectionRequest = null;
+
+                Guid? guid = value.AsGuidOrNull();
+                if (guid.HasValue)
+                {
+                    connectionRequest = new ConnectionRequestService(new RockContext()).Get(guid.Value);
+                }
+
+                picker.SetValue(connectionRequest);
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            Guid guid = GetEditValue(control, configurationValues).AsGuid();
+            using (var rockContext = new RockContext())
+            {
+                return new ConnectionRequestService(rockContext).GetId(guid);
+            }
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
+        {
+            using (var rockContext = new RockContext())
+            {
+                var itemGuid = new ConnectionRequestService(rockContext).GetGuid(id ?? 0);
+                string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;
+                SetEditValue(control, configurationValues, guidValue);
+            }
+        }
+
+#endif
         #endregion
     }
 }

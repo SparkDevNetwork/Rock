@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -30,12 +32,47 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of MEF Components of a specific type
     /// Stored as EntityType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMPONENT )]
+    [RockPlatformSupport(Utility.RockPlatform.WebForms)]
+    [Rock.SystemGuid.FieldTypeGuid(Rock.SystemGuid.FieldType.COMPONENT)]
     public class ComponentFieldType : FieldType
     {
-
         #region Configuration
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        {
+            if (privateValue.IsNullOrWhiteSpace())
+            {
+                return string.Empty;
+            }
+
+            var entityTypeGuid = privateValue.AsGuid();
+
+            if (entityTypeGuid != Guid.Empty)
+            {
+                var entityType = EntityTypeCache.Get(entityTypeGuid);
+
+                if (entityType != null)
+                {
+                    return entityType.FriendlyName;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -44,7 +81,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "container" );
+            configKeys.Add("container");
             return configKeys;
         }
 
@@ -57,7 +94,7 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             var tb = new RockTextBox();
-            controls.Add( tb );
+            controls.Add(tb);
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
             tb.Label = "Container Assembly Name";
@@ -70,15 +107,15 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "container", new ConfigurationValue( "Container Assembly Name", "The assembly name of the MEF container to show components of", "" ) );
+            configurationValues.Add("container", new ConfigurationValue("Container Assembly Name", "The assembly name of the MEF container to show components of", ""));
 
-            if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is TextBox )
+            if (controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is TextBox)
             {
-                configurationValues["container"].Value = ( (TextBox)controls[0] ).Text;
+                configurationValues["container"].Value = ((TextBox)controls[0]).Text;
             }
 
             return configurationValues;
@@ -89,40 +126,13 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "container" ) )
+            if (controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("container"))
             {
-                ( (TextBox)controls[0] ).Text = configurationValues["container"].Value;
+                ((TextBox)controls[0]).Text = configurationValues["container"].Value;
             }
-        }
-
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( privateValue.IsNullOrWhiteSpace() )
-            {
-                return string.Empty;
-            }
-
-            var entityTypeGuid = privateValue.AsGuid();
-
-            if ( entityTypeGuid != Guid.Empty )
-            {
-                var entityType = EntityTypeCache.Get( entityTypeGuid );
-
-                if ( entityType != null )
-                {
-                    return entityType.FriendlyName;
-                }
-            }
-
-            return string.Empty;
         }
 
         /// <summary>
@@ -133,16 +143,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -152,22 +158,22 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             try
             {
                 ComponentPicker editControl = new ComponentPicker { ID = id };
 
-                if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
+                if (configurationValues != null && configurationValues.ContainsKey("container"))
                 {
                     editControl.ContainerType = configurationValues["container"].Value;
                 }
 
                 return editControl;
             }
-            catch ( SystemException ex )
+            catch (SystemException ex)
             {
-                return new LiteralControl( ex.Message );
+                return new LiteralControl(ex.Message);
             }
         }
 
@@ -177,14 +183,14 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
             var picker = control as ComponentPicker;
-            if ( picker != null )
+            if (picker != null)
             {
                 // NOTE: ComponentPicker uses the Entity.Guid as the ListItem value
                 var guid = picker.SelectedValue.AsGuidOrNull();
-                if ( guid.HasValue )
+                if (guid.HasValue)
                 {
                     return guid.Value.ToString();
                 }
@@ -199,17 +205,17 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
             var picker = control as ComponentPicker;
-            if ( picker != null )
+            if (picker != null)
             {
                 Guid? guid = value.AsGuidOrNull();
-                picker.SetValue( guid );
+                picker.SetValue(guid);
             }
         }
 
+#endif
         #endregion
-
     }
 }

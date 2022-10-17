@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -61,7 +61,7 @@ namespace Rock.Field.Types
                 .ToDictionary( s => s.Guid, s => s.Name );
         }
 
-        #region IEntityReferenceFieldType
+#region IEntityReferenceFieldType
 
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -97,6 +97,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
+#endregion
     }
 }
