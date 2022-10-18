@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -40,7 +41,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [EnableQuery]
+        [RockEnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/Public" )]
         [Rock.SystemGuid.RestActionGuid( "2FDAA0CF-37F4-4B1F-9847-8E028759871D" )]
         public IQueryable<PrayerRequest> Public()
@@ -63,7 +64,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [EnableQuery]
+        [RockEnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/GetByCategory/{categoryId}" )]
         [Rock.SystemGuid.RestActionGuid( "1EA8EFAA-1481-4FC0-9681-CA940AB25309" )]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
@@ -78,7 +79,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="prayerId">The prayer identifier.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
-        /// <exception cref="System.Web.Http.OData.IEdmEntityObject"></exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{prayerId}/{personAliasId}" )]
@@ -104,7 +104,6 @@ namespace Rock.Rest.Controllers
         /// Flags the specified prayer request.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <exception cref="System.Web.Http.OData.IEdmEntityObject"></exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Flag/{id}" )]
@@ -132,7 +131,6 @@ namespace Rock.Rest.Controllers
         /// Increment the prayer count for a prayer request
         /// </summary>
         /// <param name="id">The prayer identifier.</param>
-        /// <exception cref="System.Web.Http.OData.IEdmEntityObject"></exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{id:int}" )]

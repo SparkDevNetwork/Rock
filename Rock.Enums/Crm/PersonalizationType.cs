@@ -24,12 +24,12 @@ namespace Rock.Model
     public enum PersonalizationType
     {
         /// <summary>
-        /// Personalization type based on <seealso cref="Rock.Model.PersonalizationSegment"/>.
+        /// Personalization type based on Rock.Model.PersonalizationSegment.
         /// </summary>
         Segment = 0,
 
         /// <summary>
-        /// Personalization type based on <seealso cref="Rock.Model.RequestFilter"/>.
+        /// Personalization type based on Rock.Model.RequestFilter.
         /// </summary>
         RequestFilter = 1
     }

@@ -23,17 +23,17 @@ namespace Rock.Model
     public enum ContentChannelItemStatus
     {
         /// <summary>
-        /// The <see cref="ContentChannelItem"/> is pending approval.
+        /// The ContentChannelItem is pending approval.
         /// </summary>
         PendingApproval = 1,
 
         /// <summary>
-        /// The <see cref="ContentChannelItem"/> has been approved.
+        /// The ContentChannelItem has been approved.
         /// </summary>
         Approved = 2,
 
         /// <summary>
-        /// The <see cref="ContentChannelItem"/> was denied.
+        /// The ContentChannelItem was denied.
         /// </summary>
         Denied = 3
     }

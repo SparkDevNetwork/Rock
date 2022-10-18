@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
             var sendNotification = !action.LastProcessedDateTime.HasValue &&
                 actionType != null &&
                 actionType.WorkflowForm != null &&
-                ( actionType.WorkflowForm.NotificationSystemCommunicationId.HasValue || actionType.WorkflowForm.NotificationSystemEmailId.HasValue );
+                ( actionType.WorkflowForm.NotificationSystemCommunicationId.HasValue );
 #pragma warning restore CS0618 // Type or member is obsolete
 
             if ( sendNotification )
@@ -117,17 +117,6 @@ namespace Rock.Workflow.Action
                                 emailMessage = new RockEmailMessage( systemCommunication );
                             }
                         }
-#pragma warning disable CS0618 // Type or member is obsolete
-                        else if ( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.HasValue )
-                        {                            
-                            var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
-
-                            if ( systemEmail != null )
-                            {
-                                emailMessage = new RockEmailMessage( systemEmail );
-                            }
-                        }
-#pragma warning restore CS0618 // Type or member is obsolete
 
                         if ( emailMessage != null )
                         {

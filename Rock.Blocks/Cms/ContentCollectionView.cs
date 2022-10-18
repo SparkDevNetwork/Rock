@@ -236,9 +236,6 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
-        private IEnumerable<int> _blockInitPersonalizationSegmentIds = Array.Empty<int>();
-        private IEnumerable<int> _blockInitPersonalizationRequestFilterIds = Array.Empty<int>();
-
         #region Methods
 
         /// <inheritdoc/>
@@ -266,9 +263,6 @@ namespace Rock.Blocks.Cms
                 {
                     try
                     {
-                        _blockInitPersonalizationSegmentIds = RequestContext.GetPersonalizationSegmentIds();
-                        _blockInitPersonalizationRequestFilterIds = RequestContext.GetPersonalizationRequestFilterIds();
-
                         var searchTask = Task.Run( PerformInitialSearchAsync );
                         searchTask.Wait();
                         initialSearchResults = searchTask.Result;
@@ -725,7 +719,7 @@ namespace Rock.Blocks.Cms
             // Add all the personalization segments this person matches.
             if ( contentCollection.EnableSegments )
             {
-                var segmentIds = _blockInitPersonalizationSegmentIds ?? RequestContext.GetPersonalizationSegmentIds();
+                var segmentIds = RequestContext.PersonalizationSegmentIds;
 
                 foreach ( var segmentId in segmentIds )
                 {
@@ -743,7 +737,7 @@ namespace Rock.Blocks.Cms
             // Add all the request filters this request matches.
             if ( contentCollection.EnableRequestFilters )
             {
-                var filterIds = _blockInitPersonalizationRequestFilterIds ?? RequestContext.GetPersonalizationRequestFilterIds();
+                var filterIds = RequestContext.PersonalizationRequestFilterIds;
 
                 foreach ( var filterId in filterIds )
                 {

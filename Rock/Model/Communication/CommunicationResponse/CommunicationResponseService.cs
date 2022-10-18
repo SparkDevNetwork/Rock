@@ -358,7 +358,7 @@ namespace Rock.Model
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetCommunicationConversation instead" )]
+        [Obsolete( "Use GetCommunicationConversation instead", true )]
         public DataSet GetConversation( int personAliasId, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -408,7 +408,7 @@ namespace Rock.Model
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetCommunicationConversation instead" )]
+        [Obsolete( "Use GetCommunicationConversation instead", true )]
         public DataSet GetConversation( string messageKey, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -444,7 +444,7 @@ namespace Rock.Model
         /// <param name="messageKey">The message key.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No longer needed (use UpdateReadPropertyByFromPersonAliasId)" )]
+        [Obsolete( "No longer needed (use UpdateReadPropertyByFromPersonAliasId)", true )]
         public void UpdateReadPropertyByMessageKey( string messageKey, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -470,7 +470,7 @@ namespace Rock.Model
         /// <param name="messageKey">The message key.</param>
         /// <param name="personAliasType">Type of the person alias.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No longer needed (SMS Pipeline and RockCleanup will take care of this)" )]
+        [Obsolete( "No longer needed (SMS Pipeline and RockCleanup will take care of this)", true )]
         public void UpdatePersonAliasByMessageKey( int personAliasId, string messageKey, PersonAliasType personAliasType )
         {
             string sql = string.Empty;
@@ -494,7 +494,7 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="messageKey">The message key.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use UpdateReadPropertyByFromPersonAliasId instead" )]
+        [Obsolete( "Use UpdateReadPropertyByFromPersonAliasId instead", true )]
         private void UpdateToPersonAliasByMessageKey( int personAliasId, string messageKey )
         {
             var communicationResponsesToUpdate = Queryable().Where( a => a.MessageKey == messageKey );
@@ -508,7 +508,7 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="messageKey">The message key.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No longer needed (SMS Pipeline and RockCleanup will take care of this)" )]
+        [Obsolete( "No longer needed (SMS Pipeline and RockCleanup will take care of this)", true )]
         private void UpdateFromPersonAliasByMessageKey( int personAliasId, string messageKey )
         {
             var communicationResponsesToUpdate = Queryable().Where( a => a.MessageKey == messageKey );
@@ -523,7 +523,7 @@ namespace Rock.Model
         /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetCommunicationResponseRecipients instead" )]
+        [Obsolete( "Use GetCommunicationResponseRecipients instead", true )]
         public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
@@ -589,7 +589,7 @@ namespace Rock.Model
         /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetCommunicationResponseRecipients instead" )]
+        [Obsolete( "Use GetCommunicationResponseRecipients instead", true )]
         public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
@@ -635,7 +635,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [RockObsolete( "1.10" )]
-    [Obsolete( "No longer needed" )]
+    [Obsolete( "No longer needed", true )]
     public enum PersonAliasType
     {
         /// <summary>

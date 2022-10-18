@@ -223,7 +223,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The System Email Workflow Category guid
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_WORKFLOW instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_WORKFLOW instead.", true )]
         [RockObsolete("1.10")]
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
 

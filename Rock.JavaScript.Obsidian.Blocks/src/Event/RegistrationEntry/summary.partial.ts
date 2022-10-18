@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, inject, ref } from "vue";
+import { computed, defineComponent, inject, ref } from "vue";
 import GatewayControl from "@Obsidian/Controls/gatewayControl";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
@@ -29,6 +29,7 @@ import CostSummary from "./costSummary.partial";
 import DiscountCodeForm from "./discountCodeForm.partial";
 import Registrar from "./registrar.partial";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { Guid } from "@Obsidian/Types";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Summary",
@@ -57,10 +58,33 @@ export default defineComponent({
 
         const persistSession = inject("persistSession") as (force: boolean) => Promise<void>;
 
+        const hasPaymentCost = computed(() => {
+            const usedFeeIds: Guid[] = [];
+
+            // Get a list of all fees that are in use.
+            for (const registrant of registrationEntryState.registrants) {
+                for (const feeId in registrant.feeItemQuantities) {
+                    if (registrant.feeItemQuantities[feeId] > 0) {
+                        usedFeeIds.push(feeId);
+                    }
+                }
+            }
+
+            // See if any of those fees have a cost.
+            const hasCostFees = registrationEntryState.viewModel.fees.some(f => f.items.some(i => i.cost > 0 && usedFeeIds.includes(i.guid)));
+
+            return hasCostFees || registrationEntryState.viewModel.cost > 0;
+        });
+
+        if (!hasPaymentCost.value) {
+            registrationEntryState.amountToPayToday = 0;
+        }
+
         return {
             loading,
             submitErrorMessage,
             getRegistrationEntryBlockArgs,
+            hasPaymentCost,
             invokeBlockAction,
             persistSession,
             registrationEntryState: registrationEntryState
@@ -96,7 +120,7 @@ export default defineComponent({
             else {
                 return "Finish";
             }
-        },
+        }
     },
 
     methods: {
@@ -182,13 +206,13 @@ export default defineComponent({
 
         <Registrar />
 
-        <div v-if="viewModel.cost">
+        <div v-if="hasPaymentCost">
             <h4>Payment Summary</h4>
             <DiscountCodeForm />
             <CostSummary />
         </div>
 
-        <div v-if="!viewModel.cost" class="margin-b-md">
+        <div v-if="!hasPaymentCost" class="margin-b-md">
             <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
             <ul>
                 <li v-for="r in registrantInfos" :key="r.guid">

@@ -18,8 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -56,24 +58,6 @@ namespace Rock.Field.Types
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
         private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
-
-        /// <summary>
-        /// Returns a list of the configuration keys.
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( DEFINED_TYPE_KEY );
-            configKeys.Add( ALLOW_MULTIPLE_KEY );
-            configKeys.Add( DISPLAY_DESCRIPTION );
-            configKeys.Add( ENHANCED_SELECTION_KEY );
-            configKeys.Add( INCLUDE_INACTIVE_KEY );
-            configKeys.Add( ALLOW_ADDING_NEW_VALUES_KEY );
-            configKeys.Add( REPEAT_COLUMNS_KEY );
-            configKeys.Add( SELECTABLE_VALUES_KEY );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -231,293 +215,6 @@ namespace Rock.Field.Types
             return privateConfigurationValues;
         }
 
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            // build a drop down list of defined types (the one that gets selected is
-            // used to build a list of defined values)
-            var ddlDefinedType = new RockDropDownList
-            {
-                AutoPostBack = true,
-                Label = "Defined Type",
-                Help = "The Defined Type to select values from."
-            };
-
-            ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
-
-            var definedTypeService = new DefinedTypeService( new RockContext() );
-            ddlDefinedType.Items.Add( new ListItem() );
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
-            {
-                ddlDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
-            }
-
-            // Add checkbox for deciding if the defined values list is rendered as a drop down list or a checkbox list.
-            var cbAllowMultipleValues = new RockCheckBox
-            {
-                AutoPostBack = true,
-                Label = "Allow Multiple Values",
-                Text = "Yes",
-                Help = "When set, allows multiple defined type values to be selected."
-            };
-
-            cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
-
-            // option for Display Descriptions
-            var cbDescription = new RockCheckBox
-            {
-                AutoPostBack = true,
-                Label = "Display Descriptions",
-                Text = "Yes",
-                Help = "When set, the defined value descriptions will be displayed instead of the values."
-            };
-
-            cbDescription.CheckedChanged += OnQualifierUpdated;
-
-            // option for Displaying an enhanced 'chosen' value picker
-            var cbEnhanced = new RockCheckBox
-            {
-                AutoPostBack = true,
-                Label = "Enhance For Long Lists",
-                Text = "Yes",
-                Help = "When set, will render a searchable selection of options."
-            };
-
-            cbEnhanced.CheckedChanged += OnQualifierUpdated;
-
-            // Add checkbox for deciding if the list should include inactive items
-            var cbIncludeInactive = new RockCheckBox
-            {
-                AutoPostBack = true,
-                Label = "Include Inactive",
-                Text = "Yes",
-                Help = "When set, inactive defined values will be included in the list."
-            };
-
-            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
-
-            // Checkbox to indicate if new defined types can be added via the field type.
-            var cbAllowAddingNewValues = new RockCheckBox
-            {
-                AutoPostBack = true,
-                Label = "Allow Adding New Values",
-                Text = "Yes",
-                Help = "When set the defined type picker can be used to add new defined types."
-            };
-
-            cbAllowAddingNewValues.CheckedChanged += OnQualifierUpdated;
-
-            var tbRepeatColumns = new NumberBox
-            {
-                AutoPostBack = true,
-                Label = "Repeat Columns",
-                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.",
-                MinimumValue = "0"
-            };
-
-            tbRepeatColumns.TextChanged += OnQualifierUpdated;
-
-            List<(string, string)> definedValues = new List<(string, string)>();
-            if ( ddlDefinedType.SelectedValue.IsNotNullOrWhiteSpace() )
-            {
-                definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => (Text: v.Value, Value: v.Id.ToString()) ).ToList();
-            }
-
-            var cblSelectableDefinedValues = new RockCheckBoxList
-            {
-                AutoPostBack = true,
-                RepeatDirection = RepeatDirection.Horizontal,
-                Label = "Selectable Values",
-                DataTextField = "Text",
-                DataValueField = "Value",
-                DataSource = definedValues,
-                Visible = definedValues.Any()
-            };
-
-            cblSelectableDefinedValues.DataBind();
-
-            controls.Add( ddlDefinedType );
-            controls.Add( cbAllowMultipleValues );
-            controls.Add( cbDescription );
-            controls.Add( cbEnhanced );
-            controls.Add( cbIncludeInactive );
-            controls.Add( cbAllowAddingNewValues );
-            controls.Add( tbRepeatColumns );
-            controls.Add( cblSelectableDefinedValues );
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
-            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
-            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
-            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
-            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive defined values will be included in the list.", string.Empty ) );
-            configurationValues.Add( ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue( "Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty ) );
-            configurationValues.Add( REPEAT_COLUMNS_KEY, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty ) );
-            configurationValues.Add( SELECTABLE_VALUES_KEY, new ConfigurationValue( "Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
-
-            if ( controls != null )
-            {
-                DropDownList ddlDefinedType = controls.Count > 0 ? controls[0] as DropDownList : null;
-                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[1] as CheckBox : null;
-                CheckBox cbDescription = controls.Count > 2 ? controls[2] as CheckBox : null;
-                CheckBox cbEnhanced = controls.Count > 3 ? controls[3] as CheckBox : null;
-                CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
-                CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
-                NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
-
-                if ( ddlDefinedType != null )
-                {
-                    configurationValues[DEFINED_TYPE_KEY].Value = ddlDefinedType.SelectedValue;
-                }
-
-                if ( cbAllowMultipleValues != null )
-                {
-                    configurationValues[ALLOW_MULTIPLE_KEY].Value = cbAllowMultipleValues.Checked.ToString();
-                }
-
-                if ( cbDescription != null )
-                {
-                    configurationValues[DISPLAY_DESCRIPTION].Value = cbDescription.Checked.ToString();
-                }
-
-                if ( cbEnhanced != null )
-                {
-                    configurationValues[ENHANCED_SELECTION_KEY].Value = cbEnhanced.Checked.ToString();
-                }
-
-                if ( cbIncludeInactive != null )
-                {
-                    configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive.Checked.ToString();
-                }
-
-                if ( cbAllowAddNewValues != null )
-                {
-                    configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value = cbAllowAddNewValues.Checked.ToString();
-                }
-
-                if ( nbRepeatColumns != null )
-                {
-                    configurationValues[REPEAT_COLUMNS_KEY].Value = nbRepeatColumns.Text;
-                }
-
-                if ( cblSelectableValues != null )
-                {
-                    var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
-                    var includeInactive = cbIncludeInactive?.Checked ?? false;
-
-                    var definedValues = includeInactive ?
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
-                    cblSelectableValues.DataSource = definedValues;
-                    cblSelectableValues.DataBind();
-                    cblSelectableValues.Visible = definedValues?.Any() ?? false;
-
-                    if ( selectableValues != null && selectableValues.Any() )
-                    {
-                        foreach ( ListItem listItem in cblSelectableValues.Items )
-                        {
-                            listItem.Selected = selectableValues.Contains( listItem.Value );
-                        }
-                    }
-
-                    configurationValues[SELECTABLE_VALUES_KEY].Value = cblSelectableValues.SelectedValues.AsDelimited( "," );
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && configurationValues != null )
-            {
-                DropDownList ddlDefinedType = controls.Count > 0 ? controls[0] as DropDownList : null;
-                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[1] as CheckBox : null;
-                CheckBox cbDescription = controls.Count > 2 ? controls[2] as CheckBox : null;
-                CheckBox cbEnhanced = controls.Count > 3 ? controls[3] as CheckBox : null;
-                CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
-                CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
-                NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
-
-                if ( ddlDefinedType != null )
-                {
-                    ddlDefinedType.SelectedValue = configurationValues.GetValueOrNull( DEFINED_TYPE_KEY );
-                }
-
-                if ( cbAllowMultipleValues != null )
-                {
-                    cbAllowMultipleValues.Checked = configurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBooleanOrNull() ?? false;
-                }
-
-                if ( cbDescription != null )
-                {
-                    cbDescription.Checked = configurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ).AsBooleanOrNull() ?? false;
-                }
-
-                if ( cbEnhanced != null )
-                {
-                    cbEnhanced.Checked = configurationValues.GetValueOrNull( ENHANCED_SELECTION_KEY ).AsBooleanOrNull() ?? false;
-                }
-
-                if ( cbIncludeInactive != null )
-                {
-                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
-                }
-
-                if ( cbAllowAddNewValues != null )
-                {
-                    cbAllowAddNewValues.Checked = configurationValues.GetValueOrNull( ALLOW_ADDING_NEW_VALUES_KEY ).AsBooleanOrNull() ?? false;
-                }
-
-                if ( nbRepeatColumns != null )
-                {
-                    nbRepeatColumns.Text = configurationValues.GetValueOrNull( REPEAT_COLUMNS_KEY );
-                }
-
-                if ( cblSelectableValues != null )
-                {
-                    var includeInactive = cbIncludeInactive?.Checked ?? false;
-
-                    var definedValues = includeInactive ?
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
-                    cblSelectableValues.DataSource = definedValues;
-                    cblSelectableValues.DataBind();
-
-                    var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY )?.SplitDelimitedValues( false );
-                    if ( selectableValues != null && selectableValues.Any() )
-                    {
-                        foreach ( ListItem listItem in cblSelectableValues.Items )
-                        {
-                            listItem.Selected = selectableValues.Contains( listItem.Value );
-                        }
-                    }
-                }
-            }
-        }
-
         #endregion
 
         #region EntityQualifierConfiguration
@@ -605,54 +302,6 @@ namespace Rock.Field.Types
             return formattedValue.Truncate( 100 );
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                bool useDescription = false;
-                if ( configurationValues != null &&
-                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
-                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
-                {
-                    useDescription = true;
-                }
-
-                // if there are multiple defined values, just pick the first one as the sort value
-                Guid guid = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList().FirstOrDefault();
-                var definedValue = DefinedValueCache.Get( guid );
-                if ( definedValue != null )
-                {
-                    // sort by Order then Description/Value (using a padded string)
-                    var sortValue = definedValue.Order.ToString().PadLeft( 10 ) + "," + ( useDescription ? definedValue.Description : definedValue.Value );
-                    return sortValue;
-                }
-            }
-
-            return base.SortValue( parentControl, value, configurationValues );
-        }
-
         #endregion
 
         #region Edit Control
@@ -691,222 +340,9 @@ namespace Rock.Field.Types
             return value?.Value ?? string.Empty;
         }
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            if ( configurationValues == null )
-            {
-                return null;
-            }
-
-            Control editControl;
-
-            bool useDescription = configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
-            int? definedTypeId = configurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
-            int repeatColumns = ( configurationValues.ContainsKey( REPEAT_COLUMNS_KEY ) ? configurationValues[REPEAT_COLUMNS_KEY].Value.AsIntegerOrNull() : null ) ?? 4;
-            bool allowAdd = configurationValues.ContainsKey( ALLOW_ADDING_NEW_VALUES_KEY ) && configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean();
-            bool enhanceForLongLists = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
-            bool allowMultiple = configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-
-            int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
-                ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split( ',' ).Select( int.Parse ).ToArray()
-                : null;
-
-            if ( allowMultiple )
-            {
-                if ( allowAdd )
-                {
-                    editControl = new DefinedValuePickerWithAddMultipleSelect
-                    {
-                        ID = id,
-                        DisplayDescriptions = useDescription,
-                        DefinedTypeId = definedTypeId,
-                        RepeatColumns = repeatColumns,
-                        IsAllowAddDefinedValue = allowAdd,
-                        EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues,
-                        IncludeInactive = includeInactive
-                    };
-                }
-                else
-                {
-                    if ( enhanceForLongLists )
-                    {
-                        editControl = new DefinedValuesPickerEnhanced
-                        {
-                            ID = id,
-                            DisplayDescriptions = useDescription,
-                            DefinedTypeId = definedTypeId,
-                            SelectableDefinedValuesId = selectableValues,
-                            IncludeInactive = includeInactive
-                        };
-                    }
-                    else
-                    {
-                        editControl = new DefinedValuesPicker
-                        {
-                            ID = id,
-                            DisplayDescriptions = useDescription,
-                            DefinedTypeId = definedTypeId,
-                            RepeatColumns = repeatColumns,
-                            SelectableDefinedValuesId = selectableValues,
-                            IncludeInactive = includeInactive
-                        };
-                    }
-                }
-            }
-            else
-            {
-                // TODO: The add versions of the controls are not working with AttributeValuesContainer, so keep the old ones for now
-                if ( allowAdd )
-                {
-                    editControl = new DefinedValuePickerWithAddSingleSelect
-                    {
-                        ID = id,
-                        DisplayDescriptions = useDescription,
-                        DefinedTypeId = definedTypeId,
-                        IsAllowAddDefinedValue = allowAdd,
-                        EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues,
-                        IncludeInactive = includeInactive
-                    };
-                }
-                else
-                {
-                    editControl = new DefinedValuePicker
-                    {
-                        ID = id,
-                        DisplayDescriptions = useDescription,
-                        DefinedTypeId = definedTypeId,
-                        EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues,
-                        IncludeInactive = includeInactive
-                    };
-                }
-            }
-
-            if ( definedTypeId.HasValue )
-            {
-                return editControl;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var definedValueIdList = new List<int>();
-
-            var definedValuePicker = control as IDefinedValuePicker;
-            var definedValuePickerWithAdd = control as DefinedValuePickerWithAdd;
-
-            if ( definedValuePicker != null )
-            {
-                definedValueIdList = definedValuePicker.SelectedDefinedValuesId.ToList();
-            }
-            else if ( definedValuePickerWithAdd != null )
-            {
-                definedValueIdList = definedValuePickerWithAdd.SelectedDefinedValuesId.ToList();
-            }
-
-            var guids = new List<Guid>();
-
-            foreach ( int definedValueId in definedValueIdList )
-            {
-                var definedValue = DefinedValueCache.Get( definedValueId );
-                if ( definedValue != null )
-                {
-                    guids.Add( definedValue.Guid );
-                }
-            }
-
-            return guids.AsDelimited( "," );
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( value != null )
-            {
-                var definedValuePicker = control as IDefinedValuePicker;
-                var definedValuePickerWithAdd = control as DefinedValuePickerWithAdd;
-
-                if ( definedValuePicker == null && definedValuePickerWithAdd == null )
-                {
-                    return;
-                }
-
-                var ids = new List<int>();
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var definedValue = DefinedValueCache.Get( guid );
-                    if ( definedValue != null )
-                    {
-                        ids.Add( definedValue.Id );
-                    }
-                }
-
-                if ( definedValuePicker != null )
-                {
-                    definedValuePicker.SelectedDefinedValuesId = ids.ToArray();
-                }
-                else if ( definedValuePickerWithAdd != null )
-                {
-                    definedValuePickerWithAdd.SelectedDefinedValuesId = ids.ToArray();
-                }
-            }
-        }
-
         #endregion
 
         #region Filter Control
-
-        /// <summary>
-        /// Gets the filter compare control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-            if ( allowMultiple )
-            {
-                return base.FilterCompareControl( configurationValues, id, required, filterMode );
-            }
-            else
-            {
-                var lbl = new Label();
-                lbl.ID = string.Format( "{0}_lIs", id );
-                lbl.AddCssClass( "data-view-filter-label" );
-                lbl.Text = "Is";
-
-                // hide the compare control when in SimpleFilter mode
-                lbl.Visible = filterMode != FilterMode.SimpleFilter;
-                return lbl;
-            }
-        }
 
         /// <summary>
         /// Gets the type of the filter comparison.
@@ -920,95 +356,6 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.ContainsFilterComparisonTypes;
             }
-        }
-
-        /// <summary>
-        /// Filters the value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-
-            var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
-            foreach ( var keyVal in configurationValues )
-            {
-                overrideConfigValues.Add( keyVal.Key, keyVal.Value );
-            }
-
-            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( true.ToString() ) );
-
-            return base.FilterValueControl( overrideConfigValues, id, required, filterMode );
-        }
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the filter value.
-        /// </summary>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
-        {
-            var values = new List<string>();
-
-            if ( filterControl != null )
-            {
-                bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-
-                try
-                {
-                    if ( allowMultiple )
-                    {
-                        var filterValues = base.GetFilterValues( filterControl, configurationValues, filterMode );
-                        if ( filterValues != null )
-                        {
-                            filterValues.ForEach( v => values.Add( v ) );
-                        }
-                    }
-                    else
-                    {
-                        values.Add( GetEditValue( filterControl.Controls[1].Controls[0], configurationValues ) );
-                    }
-                }
-                catch
-                {
-                    // intentionally ignore
-                }
-            }
-
-            return values;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            string value = base.GetFilterValueValue( control, configurationValues );
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-            if ( allowMultiple && string.IsNullOrWhiteSpace( value ) )
-            {
-                return null;
-            }
-
-            return value;
         }
 
         /// <summary>
@@ -1214,37 +561,6 @@ namespace Rock.Field.Types
         #region Entity Methods
 
         /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = DefinedValueCache.Get( guid );
-            return item != null ? item.Id : ( int? ) null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            DefinedValueCache item = null;
-            if ( id.HasValue )
-            {
-                item = DefinedValueCache.Get( id.Value );
-            }
-
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
-        }
-
-        /// <summary>
         /// Gets the entity.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -1351,6 +667,698 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys.
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add(DEFINED_TYPE_KEY);
+            configKeys.Add(ALLOW_MULTIPLE_KEY);
+            configKeys.Add(DISPLAY_DESCRIPTION);
+            configKeys.Add(ENHANCED_SELECTION_KEY);
+            configKeys.Add(INCLUDE_INACTIVE_KEY);
+            configKeys.Add(ALLOW_ADDING_NEW_VALUES_KEY);
+            configKeys.Add(REPEAT_COLUMNS_KEY);
+            configKeys.Add(SELECTABLE_VALUES_KEY);
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // build a drop down list of defined types (the one that gets selected is
+            // used to build a list of defined values)
+            var ddlDefinedType = new RockDropDownList
+            {
+                AutoPostBack = true,
+                Label = "Defined Type",
+                Help = "The Defined Type to select values from."
+            };
+
+            ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
+
+            var definedTypeService = new DefinedTypeService(new RockContext());
+            ddlDefinedType.Items.Add(new ListItem());
+            foreach (var definedType in definedTypeService.Queryable().OrderBy(d => d.Name))
+            {
+                ddlDefinedType.Items.Add(new ListItem(definedType.Name, definedType.Id.ToString()));
+            }
+
+            // Add checkbox for deciding if the defined values list is rendered as a drop down list or a checkbox list.
+            var cbAllowMultipleValues = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Allow Multiple Values",
+                Text = "Yes",
+                Help = "When set, allows multiple defined type values to be selected."
+            };
+
+            cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
+
+            // option for Display Descriptions
+            var cbDescription = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Display Descriptions",
+                Text = "Yes",
+                Help = "When set, the defined value descriptions will be displayed instead of the values."
+            };
+
+            cbDescription.CheckedChanged += OnQualifierUpdated;
+
+            // option for Displaying an enhanced 'chosen' value picker
+            var cbEnhanced = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Enhance For Long Lists",
+                Text = "Yes",
+                Help = "When set, will render a searchable selection of options."
+            };
+
+            cbEnhanced.CheckedChanged += OnQualifierUpdated;
+
+            // Add checkbox for deciding if the list should include inactive items
+            var cbIncludeInactive = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Include Inactive",
+                Text = "Yes",
+                Help = "When set, inactive defined values will be included in the list."
+            };
+
+            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
+
+            // Checkbox to indicate if new defined types can be added via the field type.
+            var cbAllowAddingNewValues = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Allow Adding New Values",
+                Text = "Yes",
+                Help = "When set the defined type picker can be used to add new defined types."
+            };
+
+            cbAllowAddingNewValues.CheckedChanged += OnQualifierUpdated;
+
+            var tbRepeatColumns = new NumberBox
+            {
+                AutoPostBack = true,
+                Label = "Repeat Columns",
+                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.",
+                MinimumValue = "0"
+            };
+
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+
+            List<(string, string)> definedValues = new List<(string, string)>();
+            if (ddlDefinedType.SelectedValue.IsNotNullOrWhiteSpace())
+            {
+                definedValues = DefinedTypeCache.Get(ddlDefinedType.SelectedValue.AsInteger()).DefinedValues.Select(v => (Text: v.Value, Value: v.Id.ToString())).ToList();
+            }
+
+            var cblSelectableDefinedValues = new RockCheckBoxList
+            {
+                AutoPostBack = true,
+                RepeatDirection = RepeatDirection.Horizontal,
+                Label = "Selectable Values",
+                DataTextField = "Text",
+                DataValueField = "Value",
+                DataSource = definedValues,
+                Visible = definedValues.Any()
+            };
+
+            cblSelectableDefinedValues.DataBind();
+
+            controls.Add(ddlDefinedType);
+            controls.Add(cbAllowMultipleValues);
+            controls.Add(cbDescription);
+            controls.Add(cbEnhanced);
+            controls.Add(cbIncludeInactive);
+            controls.Add(cbAllowAddingNewValues);
+            controls.Add(tbRepeatColumns);
+            controls.Add(cblSelectableDefinedValues);
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add(DEFINED_TYPE_KEY, new ConfigurationValue("Defined Type", "The Defined Type to select values from", string.Empty));
+            configurationValues.Add(ALLOW_MULTIPLE_KEY, new ConfigurationValue("Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty));
+            configurationValues.Add(DISPLAY_DESCRIPTION, new ConfigurationValue("Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty));
+            configurationValues.Add(ENHANCED_SELECTION_KEY, new ConfigurationValue("Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty));
+            configurationValues.Add(INCLUDE_INACTIVE_KEY, new ConfigurationValue("Include Inactive", "When set, inactive defined values will be included in the list.", string.Empty));
+            configurationValues.Add(ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue("Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty));
+            configurationValues.Add(REPEAT_COLUMNS_KEY, new ConfigurationValue("Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty));
+            configurationValues.Add(SELECTABLE_VALUES_KEY, new ConfigurationValue("Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty));
+
+            if (controls != null)
+            {
+                DropDownList ddlDefinedType = controls.Count > 0 ? controls[0] as DropDownList : null;
+                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[1] as CheckBox : null;
+                CheckBox cbDescription = controls.Count > 2 ? controls[2] as CheckBox : null;
+                CheckBox cbEnhanced = controls.Count > 3 ? controls[3] as CheckBox : null;
+                CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
+                CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
+                NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
+
+                if (ddlDefinedType != null)
+                {
+                    configurationValues[DEFINED_TYPE_KEY].Value = ddlDefinedType.SelectedValue;
+                }
+
+                if (cbAllowMultipleValues != null)
+                {
+                    configurationValues[ALLOW_MULTIPLE_KEY].Value = cbAllowMultipleValues.Checked.ToString();
+                }
+
+                if (cbDescription != null)
+                {
+                    configurationValues[DISPLAY_DESCRIPTION].Value = cbDescription.Checked.ToString();
+                }
+
+                if (cbEnhanced != null)
+                {
+                    configurationValues[ENHANCED_SELECTION_KEY].Value = cbEnhanced.Checked.ToString();
+                }
+
+                if (cbIncludeInactive != null)
+                {
+                    configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive.Checked.ToString();
+                }
+
+                if (cbAllowAddNewValues != null)
+                {
+                    configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value = cbAllowAddNewValues.Checked.ToString();
+                }
+
+                if (nbRepeatColumns != null)
+                {
+                    configurationValues[REPEAT_COLUMNS_KEY].Value = nbRepeatColumns.Text;
+                }
+
+                if (cblSelectableValues != null)
+                {
+                    var selectableValues = new List<string>(cblSelectableValues.SelectedValues);
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
+
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get(ddlDefinedType.SelectedValue.AsInteger())?.DefinedValues.Select(v => new { Text = v.Value, Value = v.Id }) :
+                        DefinedTypeCache.Get(ddlDefinedType.SelectedValue.AsInteger())?.DefinedValues.Where(v => v.IsActive).Select(v => new { Text = v.Value, Value = v.Id });
+                    cblSelectableValues.DataSource = definedValues;
+                    cblSelectableValues.DataBind();
+                    cblSelectableValues.Visible = definedValues?.Any() ?? false;
+
+                    if (selectableValues != null && selectableValues.Any())
+                    {
+                        foreach (ListItem listItem in cblSelectableValues.Items)
+                        {
+                            listItem.Selected = selectableValues.Contains(listItem.Value);
+                        }
+                    }
+
+                    configurationValues[SELECTABLE_VALUES_KEY].Value = cblSelectableValues.SelectedValues.AsDelimited(",");
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            if (controls != null && configurationValues != null)
+            {
+                DropDownList ddlDefinedType = controls.Count > 0 ? controls[0] as DropDownList : null;
+                CheckBox cbAllowMultipleValues = controls.Count > 1 ? controls[1] as CheckBox : null;
+                CheckBox cbDescription = controls.Count > 2 ? controls[2] as CheckBox : null;
+                CheckBox cbEnhanced = controls.Count > 3 ? controls[3] as CheckBox : null;
+                CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
+                CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
+                NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
+
+                if (ddlDefinedType != null)
+                {
+                    ddlDefinedType.SelectedValue = configurationValues.GetValueOrNull(DEFINED_TYPE_KEY);
+                }
+
+                if (cbAllowMultipleValues != null)
+                {
+                    cbAllowMultipleValues.Checked = configurationValues.GetValueOrNull(ALLOW_MULTIPLE_KEY).AsBooleanOrNull() ?? false;
+                }
+
+                if (cbDescription != null)
+                {
+                    cbDescription.Checked = configurationValues.GetValueOrNull(DISPLAY_DESCRIPTION).AsBooleanOrNull() ?? false;
+                }
+
+                if (cbEnhanced != null)
+                {
+                    cbEnhanced.Checked = configurationValues.GetValueOrNull(ENHANCED_SELECTION_KEY).AsBooleanOrNull() ?? false;
+                }
+
+                if (cbIncludeInactive != null)
+                {
+                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull(INCLUDE_INACTIVE_KEY).AsBooleanOrNull() ?? false;
+                }
+
+                if (cbAllowAddNewValues != null)
+                {
+                    cbAllowAddNewValues.Checked = configurationValues.GetValueOrNull(ALLOW_ADDING_NEW_VALUES_KEY).AsBooleanOrNull() ?? false;
+                }
+
+                if (nbRepeatColumns != null)
+                {
+                    nbRepeatColumns.Text = configurationValues.GetValueOrNull(REPEAT_COLUMNS_KEY);
+                }
+
+                if (cblSelectableValues != null)
+                {
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
+
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get(ddlDefinedType.SelectedValue.AsInteger())?.DefinedValues.Select(v => new { Text = v.Value, Value = v.Id }) :
+                        DefinedTypeCache.Get(ddlDefinedType.SelectedValue.AsInteger())?.DefinedValues.Where(v => v.IsActive).Select(v => new { Text = v.Value, Value = v.Id });
+                    cblSelectableValues.DataSource = definedValues;
+                    cblSelectableValues.DataBind();
+
+                    var selectableValues = configurationValues.GetValueOrNull(SELECTABLE_VALUES_KEY)?.SplitDelimitedValues(false);
+                    if (selectableValues != null && selectableValues.Any())
+                    {
+                        foreach (ListItem listItem in cblSelectableValues.Items)
+                        {
+                            listItem.Selected = selectableValues.Contains(listItem.Value);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                bool useDescription = false;
+                if (configurationValues != null &&
+                     configurationValues.ContainsKey(DISPLAY_DESCRIPTION) &&
+                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean())
+                {
+                    useDescription = true;
+                }
+
+                // if there are multiple defined values, just pick the first one as the sort value
+                Guid guid = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).AsGuidList().FirstOrDefault();
+                var definedValue = DefinedValueCache.Get(guid);
+                if (definedValue != null)
+                {
+                    // sort by Order then Description/Value (using a padded string)
+                    var sortValue = definedValue.Order.ToString().PadLeft(10) + "," + (useDescription ? definedValue.Description : definedValue.Value);
+                    return sortValue;
+                }
+            }
+
+            return base.SortValue(parentControl, value, configurationValues);
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            if (configurationValues == null)
+            {
+                return null;
+            }
+
+            Control editControl;
+
+            bool useDescription = configurationValues.ContainsKey(DISPLAY_DESCRIPTION) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+            int? definedTypeId = configurationValues.ContainsKey(DEFINED_TYPE_KEY) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
+            int repeatColumns = (configurationValues.ContainsKey(REPEAT_COLUMNS_KEY) ? configurationValues[REPEAT_COLUMNS_KEY].Value.AsIntegerOrNull() : null) ?? 4;
+            bool allowAdd = configurationValues.ContainsKey(ALLOW_ADDING_NEW_VALUES_KEY) && configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean();
+            bool enhanceForLongLists = configurationValues.ContainsKey(ENHANCED_SELECTION_KEY) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
+            bool allowMultiple = configurationValues.ContainsKey(ALLOW_MULTIPLE_KEY) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            bool includeInactive = configurationValues.ContainsKey(INCLUDE_INACTIVE_KEY) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+
+            int[] selectableValues = configurationValues.ContainsKey(SELECTABLE_VALUES_KEY) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split(',').Select(int.Parse).ToArray()
+                : null;
+
+            if (allowMultiple)
+            {
+                if (allowAdd)
+                {
+                    editControl = new DefinedValuePickerWithAddMultipleSelect
+                    {
+                        ID = id,
+                        DisplayDescriptions = useDescription,
+                        DefinedTypeId = definedTypeId,
+                        RepeatColumns = repeatColumns,
+                        IsAllowAddDefinedValue = allowAdd,
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
+                    };
+                }
+                else
+                {
+                    if (enhanceForLongLists)
+                    {
+                        editControl = new DefinedValuesPickerEnhanced
+                        {
+                            ID = id,
+                            DisplayDescriptions = useDescription,
+                            DefinedTypeId = definedTypeId,
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
+                        };
+                    }
+                    else
+                    {
+                        editControl = new DefinedValuesPicker
+                        {
+                            ID = id,
+                            DisplayDescriptions = useDescription,
+                            DefinedTypeId = definedTypeId,
+                            RepeatColumns = repeatColumns,
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
+                        };
+                    }
+                }
+            }
+            else
+            {
+                // TODO: The add versions of the controls are not working with AttributeValuesContainer, so keep the old ones for now
+                if (allowAdd)
+                {
+                    editControl = new DefinedValuePickerWithAddSingleSelect
+                    {
+                        ID = id,
+                        DisplayDescriptions = useDescription,
+                        DefinedTypeId = definedTypeId,
+                        IsAllowAddDefinedValue = allowAdd,
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
+                    };
+                }
+                else
+                {
+                    editControl = new DefinedValuePicker
+                    {
+                        ID = id,
+                        DisplayDescriptions = useDescription,
+                        DefinedTypeId = definedTypeId,
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
+                    };
+                }
+            }
+
+            if (definedTypeId.HasValue)
+            {
+                return editControl;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var definedValueIdList = new List<int>();
+
+            var definedValuePicker = control as IDefinedValuePicker;
+            var definedValuePickerWithAdd = control as DefinedValuePickerWithAdd;
+
+            if (definedValuePicker != null)
+            {
+                definedValueIdList = definedValuePicker.SelectedDefinedValuesId.ToList();
+            }
+            else if (definedValuePickerWithAdd != null)
+            {
+                definedValueIdList = definedValuePickerWithAdd.SelectedDefinedValuesId.ToList();
+            }
+
+            var guids = new List<Guid>();
+
+            foreach (int definedValueId in definedValueIdList)
+            {
+                var definedValue = DefinedValueCache.Get(definedValueId);
+                if (definedValue != null)
+                {
+                    guids.Add(definedValue.Guid);
+                }
+            }
+
+            return guids.AsDelimited(",");
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            if (value != null)
+            {
+                var definedValuePicker = control as IDefinedValuePicker;
+                var definedValuePickerWithAdd = control as DefinedValuePickerWithAdd;
+
+                if (definedValuePicker == null && definedValuePickerWithAdd == null)
+                {
+                    return;
+                }
+
+                var ids = new List<int>();
+                foreach (Guid guid in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).AsGuidList())
+                {
+                    var definedValue = DefinedValueCache.Get(guid);
+                    if (definedValue != null)
+                    {
+                        ids.Add(definedValue.Id);
+                    }
+                }
+
+                if (definedValuePicker != null)
+                {
+                    definedValuePicker.SelectedDefinedValuesId = ids.ToArray();
+                }
+                else if (definedValuePickerWithAdd != null)
+                {
+                    definedValuePickerWithAdd.SelectedDefinedValuesId = ids.ToArray();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey(ALLOW_MULTIPLE_KEY) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if (allowMultiple)
+            {
+                return base.FilterCompareControl(configurationValues, id, required, filterMode);
+            }
+            else
+            {
+                var lbl = new Label();
+                lbl.ID = string.Format("{0}_lIs", id);
+                lbl.AddCssClass("data-view-filter-label");
+                lbl.Text = "Is";
+
+                // hide the compare control when in SimpleFilter mode
+                lbl.Visible = filterMode != FilterMode.SimpleFilter;
+                return lbl;
+            }
+        }
+
+        /// <summary>
+        /// Filters the value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey(ALLOW_MULTIPLE_KEY) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+
+            var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
+            foreach (var keyVal in configurationValues)
+            {
+                overrideConfigValues.Add(keyVal.Key, keyVal.Value);
+            }
+
+            overrideConfigValues.AddOrReplace(ALLOW_MULTIPLE_KEY, new ConfigurationValue(true.ToString()));
+
+            return base.FilterValueControl(overrideConfigValues, id, required, filterMode);
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues(Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode)
+        {
+            var values = new List<string>();
+
+            if (filterControl != null)
+            {
+                bool allowMultiple = configurationValues != null && configurationValues.ContainsKey(ALLOW_MULTIPLE_KEY) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+
+                try
+                {
+                    if (allowMultiple)
+                    {
+                        var filterValues = base.GetFilterValues(filterControl, configurationValues, filterMode);
+                        if (filterValues != null)
+                        {
+                            filterValues.ForEach(v => values.Add(v));
+                        }
+                    }
+                    else
+                    {
+                        values.Add(GetEditValue(filterControl.Controls[1].Controls[0], configurationValues));
+                    }
+                }
+                catch
+                {
+                    // intentionally ignore
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            string value = base.GetFilterValueValue(control, configurationValues);
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey(ALLOW_MULTIPLE_KEY) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if (allowMultiple && string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return value;
+        }
+        
+         /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            Guid guid = GetEditValue(control, configurationValues).AsGuid();
+            var item = DefinedValueCache.Get(guid);
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
+        {
+            DefinedValueCache item = null;
+            if (id.HasValue)
+            {
+                item = DefinedValueCache.Get(id.Value);
+            }
+
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue(control, configurationValues, guidValue);
+        }
+
+#endif
         #endregion
 
         private class PublicValue

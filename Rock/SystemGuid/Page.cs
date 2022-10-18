@@ -1877,15 +1877,7 @@ namespace Rock.SystemGuid
         /// ParentPage: CMS Configuration
         /// </summary>
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
-
-        /// <summary>
-        /// Gets the SMS Phone Numbers page guid
-        /// ParentPage: Communications
-        /// </summary>
-        [Obsolete( "Use SMS_PHONE_NUMBERS instead", true )]
-        [RockObsolete( "1.9" )]
-        public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
-
+        
         /// <summary>
         /// The SMS phone numbers
         /// ParentPage: Communications
@@ -1980,7 +1972,7 @@ namespace Rock.SystemGuid
         /// Gets the System Email Details page guid
         /// ParentPage: System Emails
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead.", true )]
         [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL_DETAILS = "588C72A8-7DEC-405F-BA4A-FE64F87CB817";
 
@@ -1988,7 +1980,7 @@ namespace Rock.SystemGuid
         /// Gets the System Emails page guid
         /// ParentPage: Communications
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead.", true )]
         [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAILS = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E";
 

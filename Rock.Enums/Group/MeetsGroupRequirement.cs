@@ -44,7 +44,7 @@ namespace Rock.Model
         NotApplicable,
 
         /// <summary>
-        /// The Requirement calculation resulted in an exception <see cref="GroupRequirementStatus.CalculationException"/>
+        /// The Requirement calculation resulted in an exception GroupRequirementStatus.CalculationException
         /// </summary>
         Error
     }

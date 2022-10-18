@@ -147,7 +147,7 @@ namespace Rock.Utility
                 Type valueType = value.GetType();
 
                 // if this is an OData 'SelectAndExpand', we have convert stuff to Dictionary manually to get the stuff to serialize the way we want
-                if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
+                if ( valueType.IsGenericType && ( valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" || valueType.GenericTypeArguments[0].Name == "SelectSome`1" ) )
                 {
                     isSelectAndExpand = true;
 
@@ -262,30 +262,56 @@ namespace Rock.Utility
             // So, this will do all that manually using reflection and our own dictionary of each Entity
             var valueAsDictionary = new List<Dictionary<string, object>>();
             var isPersonModel = type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
-            Dictionary<int, Rock.Model.PersonAlias> personAliasLookup = null;
-            if ( isPersonModel )
+            Lazy<Dictionary<int, Rock.Model.PersonAlias>> personAliasLookupLazy = new Lazy<Dictionary<int, Model.PersonAlias>>( () =>
             {
-                var personIds = selectAndExpandList.Select( a => ( a.GetPropertyValue( "Instance" ) as Rock.Model.Person ).Id ).ToList();
+                if ( isPersonModel )
+                {
+                    var personIds = selectAndExpandList.Select( a =>
+                    {
+                        var selectPropertyType = a.GetType();
+                        var instanceProperty = selectPropertyType.GetProperty( "Instance" );
+                        var person = ( Rock.Model.Person ) instanceProperty.GetValue( a );
+                        if ( person != null )
+                        {
+                            return person.Id;
+                        }
+                        else
+                        {
+                            return ( int? ) null;
+                        }
+                    }
+                    ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
 
-                // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
-                // so if it is more than 20000 just get *all* the PersonAlias records which would probably be much faster than a giant where clause
-                var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
-                if ( personIds.Count < 20000 )
-                {
-                    personAliasLookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
-                }
-                else
-                {
-                    personAliasLookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
-                }
-            }
+                    // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
+                    // so if it is more than 20000 just get *all* the PersonAlias records which would probably be much faster than a giant where clause
+                    var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
+                    Dictionary<int, Rock.Model.PersonAlias> lookup;
+                    //Dictionary<int, Rock.Model.PersonAlias>> lookup;
+
+                    if ( personIds.Count < 20000 )
+                    {
+                        lookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                    }
+                    else
+                    {
+                        lookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                    }
+
+                    return lookup;
+                };
+
+                return new Dictionary<int, Model.PersonAlias>();
+            } );
+
 
             foreach ( var selectExpandItem in selectAndExpandList )
             {
                 var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
                 var entity = entityProperty.GetValue( selectExpandItem ) as Rock.Data.IEntity;
-                if ( entity is Rock.Model.Person )
+
+                if ( entity != null && entity is Rock.Model.Person )
                 {
+                    var personAliasLookup = personAliasLookupLazy.Value;
                     // if this is a SelectAndExpand of Person, we manually need to load Aliases so that the PrimaryAliasId is populated
                     var person = entity as Rock.Model.Person;
                     if ( !person.Aliases.Any() )
@@ -298,30 +324,17 @@ namespace Rock.Utility
                     }
                 }
 
-                Dictionary<string, object> valueDictionary = new Dictionary<string, object>();
+                Dictionary<string, object> valueDictionary = selectExpandItem.GetType().GetMethod( "ToDictionary", new Type[0] )?.Invoke( selectExpandItem, null ) as Dictionary<string, object>;
 
-                // add the "Expanded" stuff first to emulate the default behavior
-                var expandedStuff = selectExpandItem.GetPropertyValue( "Container" );
-                while ( expandedStuff != null )
+                if ( entity != null )
                 {
-                    var expandedName = expandedStuff.GetPropertyValue( "Name" ) as string;
-                    var expandedValue = expandedStuff.GetPropertyValue( "Value" );
-                    valueDictionary.Add( expandedName, expandedValue );
-                    expandedStuff = expandedStuff.GetPropertyValue( "Next" );
-                }
-
-                // add each of the Entity's properties
-                foreach ( var entityKeyValue in entity.ToDictionary() )
-                {
-                    valueDictionary.Add( entityKeyValue.Key, entityKeyValue.Value );
-                }
-
-                // if LoadAttributes was specified, add those last
-                if ( loadAttributesOptions.LoadAttributesEnabled && ( entity is Attribute.IHasAttributes ) )
-                {
-                    // Add Attributes and AttributeValues
-                    valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
-                    valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
+                    // if LoadAttributes was specified, add those last
+                    if ( loadAttributesOptions.LoadAttributesEnabled && ( entity is Attribute.IHasAttributes ) )
+                    {
+                        // Add Attributes and AttributeValues
+                        valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
+                        valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
+                    }
                 }
 
                 valueAsDictionary.Add( valueDictionary );

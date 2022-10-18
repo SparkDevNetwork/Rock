@@ -14,22 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
-namespace Rock.Rest
+namespace Rock.ViewModels.Utility
 {
     /// <summary>
-    /// Interface for controllers that need to add additional routes beyond the default
-    /// api/{controller}/{id} route.
+    /// Defines the generic structure that all task activity progress messages
+    /// must conform to.
     /// </summary>
-    [RockObsolete( "1.9" )]
-    [Obsolete( "Use IHasCustomHttpRoutes instead.", true )]
-    public interface IHasCustomRoutes
+    public interface ITaskActivityProgressMessage
     {
         /// <summary>
-        /// Adds the routes.
+        /// A unique identifier for the task to which this log message applies.
         /// </summary>
-        /// <param name="routes">The routes.</param>
-        void AddRoutes( System.Web.Routing.RouteCollection routes );
+        string TaskId { get; }
     }
 }

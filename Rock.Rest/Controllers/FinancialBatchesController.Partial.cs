@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
+using Microsoft.AspNet.OData.Query;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -36,7 +39,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialBatches/GetControlTotals" )]
         [Rock.SystemGuid.RestActionGuid( "76DA430F-1470-4BDC-8466-28BDD47894BE" )]
-        public IEnumerable<ControlTotalResult> GetControlTotals( System.Web.Http.OData.Query.ODataQueryOptions<FinancialBatch> queryOptions = null )
+        public IEnumerable<ControlTotalResult> GetControlTotals( ODataQueryOptions<FinancialBatch> queryOptions = null )
         {
             var financialBatchQuery = new FinancialBatchService( this.Service.Context as Rock.Data.RockContext ).Queryable();
             financialBatchQuery = queryOptions.ApplyTo( financialBatchQuery ) as IOrderedQueryable<FinancialBatch>;

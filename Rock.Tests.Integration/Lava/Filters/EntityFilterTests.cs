@@ -36,19 +36,20 @@ namespace Rock.Tests.Integration.Lava
         #region IsInDataView
 
         private const string DataViewNameAdultMembersAndAttendees = "Adult Member & Attendees";
+        private const string DataViewNameAdultMembersAndAttendeesFemales = "Adult Member & Attendees > Females";
 
         [TestMethod]
         public void IsInDataView_WithEntityInDataView_ReturnsTrue()
         {
             // Ted Decker exists in the Data View because he is an adult member.
-            IsInDataView_AssertResult( TestGuids.TestPeople.TedDecker, DataViewNameAdultMembersAndAttendees, "true" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.TedDecker }'", DataViewNameAdultMembersAndAttendees, "true" );
         }
 
         [TestMethod]
         public void IsInDataView_WithEntityNotInDataView_ReturnsFalse()
         {
             // Brian Jones does not exist in the Data View because he is not an adult.
-            IsInDataView_AssertResult( TestGuids.TestPeople.BrianJones, DataViewNameAdultMembersAndAttendees, "false" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.BrianJones }'", DataViewNameAdultMembersAndAttendees, "false" );
         }
 
         [TestMethod]
@@ -59,12 +60,13 @@ namespace Rock.Tests.Integration.Lava
 
             var template = @"
 {% assign inDataView = CurrentPerson | IsInDataView:'<dataViewRef>' %}
-{{ inDataView }}"
-                .Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendees );
-            var outputExpected = @"true";
+{{ inDataView }}";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
+            TestHelper.AssertTemplateOutput( "true",
+                template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendees ),
+                options );
+            TestHelper.AssertTemplateOutput( "false",
+                template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendeesFemales ),
                 options );
         }
 
@@ -74,47 +76,53 @@ namespace Rock.Tests.Integration.Lava
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             var person = ( Person ) values["CurrentPerson"];
 
+            // Verify input as integer.
             IsInDataView_AssertResult( person.Id.ToString(), DataViewNameAdultMembersAndAttendees, "true" );
+            IsInDataView_AssertResult( person.Id.ToString(), DataViewNameAdultMembersAndAttendeesFemales, "false" );
+            // Verify input as numeric string.
+            IsInDataView_AssertResult( $"'{ person.Id }'", DataViewNameAdultMembersAndAttendees, "true" );
+            IsInDataView_AssertResult( $"'{ person.Id }'", DataViewNameAdultMembersAndAttendeesFemales, "false" );
         }
 
         [TestMethod]
         public void IsInDataView_WithInputAsEntityGuid_CorrectlyIdentifiesTargetEntity()
         {
-            IsInDataView_AssertResult( TestGuids.TestPeople.TedDecker, DataViewNameAdultMembersAndAttendees, "true" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.TedDecker }'", DataViewNameAdultMembersAndAttendees, "true" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.TedDecker }'", DataViewNameAdultMembersAndAttendeesFemales, "false" );
         }
 
         [TestMethod]
         public void IsInDataView_WithInputAsInvalidEntityReference_ReturnsFalse()
         {
-            IsInDataView_AssertResult( "#invalid_entity_reference#", DataViewNameAdultMembersAndAttendees, "false" );
+            IsInDataView_AssertResult( "'#invalid_entity_reference#'", DataViewNameAdultMembersAndAttendees, "false" );
         }
 
         [TestMethod]
         public void IsInDataView_WithParameterDataViewAsGuid_CorrectlyIdentifiesTargetDataView()
         {
             var dataView = IsInDataView_GetTestDataView();
-            IsInDataView_AssertResult( TestGuids.TestPeople.TedDecker, dataView.Guid.ToString(), "true" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.TedDecker }'", dataView.Guid.ToString(), "true" );
         }
 
         [TestMethod]
         public void IsInDataView_WithParameterDataViewAsId_CorrectlyIdentifiesTargetDataView()
         {
             var dataView = IsInDataView_GetTestDataView();
-            IsInDataView_AssertResult( TestGuids.TestPeople.TedDecker, dataView.Id.ToString(), "true" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.TedDecker }'", dataView.Id.ToString(), "true" );
         }
 
         [TestMethod]
         public void IsInDataView_WithParameterDataViewAsInvalidReference_ReturnsFalse()
         {
             // The Data View "#Invalid#" does not exist, so the filter should return False.
-            IsInDataView_AssertResult( TestGuids.TestPeople.BrianJones, "#Invalid#", "false" );
+            IsInDataView_AssertResult( $"'{ TestGuids.TestPeople.BrianJones }'", "#Invalid#", "false" );
         }
 
         [TestMethod]
         public void IsInDataView_WithInputAsUnmatchedEntityReference_ReturnsFalse()
         {
             // The Entity Reference does not match any existing entity, so the filter should return False.
-            IsInDataView_AssertResult( TestGuids.NoMatch, DataViewNameAdultMembersAndAttendees, "false" );
+            IsInDataView_AssertResult( $"'{ TestGuids.NoMatch }'", DataViewNameAdultMembersAndAttendees, "false" );
         }
 
         private DataView IsInDataView_GetTestDataView()
@@ -127,12 +135,12 @@ namespace Rock.Tests.Integration.Lava
             return dataView;
         }
 
-        private void IsInDataView_AssertResult( string entityRef, string dataViewRef, string expectedOutput )
+        private void IsInDataView_AssertResult( string inputValue, string dataViewRef, string expectedOutput )
         {
             var template = @"
-{% assign inDataView = '<entityRef>' | IsInDataView:'<dataViewRef>' %}
+{% assign inDataView = <entityRef> | IsInDataView:'<dataViewRef>' %}
 {{ inDataView }}"
-                .Replace( "<entityRef>", entityRef )
+                .Replace( "<entityRef>", inputValue )
                 .Replace( "<dataViewRef>", dataViewRef );
 
             TestHelper.AssertTemplateOutput( expectedOutput,

@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web;
 using System.Web.UI;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -42,18 +44,6 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         #region Configuration
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Insert(0, "keyprompt" );
-            configKeys.Insert( 0, "displayvaluefirst" );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -143,112 +133,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var tbKeyPrompt = new RockTextBox();
-            controls.Insert(0, tbKeyPrompt );
-            tbKeyPrompt.AutoPostBack = true;
-            tbKeyPrompt.TextChanged += OnQualifierUpdated;
-            tbKeyPrompt.Label = "Key Prompt";
-            tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
-
-            var cbDisplayValueFirst = new RockCheckBox();
-            controls.Insert( 5, cbDisplayValueFirst );
-            cbDisplayValueFirst.Label = "Display Value First";
-            cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "keyprompt", new ConfigurationValue( "Key Prompt", "The text to display as a prompt in the key textbox.", "" ) );
-            configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
-            configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
-            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", "" ) );
-            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow HTML", "Allow HTML content in values", "" ) );
-            configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
-
-            if ( controls != null )
-            {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox   )
-                {
-                    configurationValues["keyprompt"].Value = ( (RockTextBox)controls[0] ).Text;
-                }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox  )
-                {
-                    configurationValues["valueprompt"].Value = ( (RockTextBox)controls[1] ).Text;
-                }
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList  )
-                {
-                    configurationValues["definedtype"].Value = ( (RockDropDownList)controls[2] ).SelectedValue;
-                }
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox )
-                {
-                    configurationValues["customvalues"].Value = ( (RockTextBox)controls[3] ).Text;
-                }
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
-                {
-                    configurationValues["allowhtml"].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
-                }
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox )
-                {
-                    configurationValues["displayvaluefirst"].Value = ( (RockCheckBox)controls[5] ).Checked.ToString();
-                }
-            }
-
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && configurationValues != null )
-            {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( "keyprompt" ) )
-                {
-                    ( (RockTextBox)controls[0] ).Text = configurationValues["keyprompt"].Value;
-                }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox && configurationValues.ContainsKey( "valueprompt" ) )
-                {
-                    ( (RockTextBox)controls[1] ).Text = configurationValues["valueprompt"].Value;
-                }
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList && configurationValues.ContainsKey( "definedtype" ) )
-                {
-                    ( (RockDropDownList)controls[2] ).SelectedValue = configurationValues["definedtype"].Value;
-                }
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox && configurationValues.ContainsKey( "customvalues" ) )
-                {
-                   ( (RockTextBox)controls[3] ).Text = configurationValues["customvalues"].Value;
-                }
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( "allowhtml" ) )
-                {
-                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues["allowhtml"].Value.AsBoolean();
-                }
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
-                {
-                    ( (RockCheckBox)controls[5] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the custom values that have been defined. These reflect either the
         /// defined type values or the custom options entered into the custom values
         /// text box.
@@ -322,20 +206,6 @@ namespace Rock.Field.Types
             return values.AsDelimited( ", " );
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            // Never use condensed format for webforms.
-            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
@@ -381,93 +251,9 @@ namespace Rock.Field.Types
                 .JoinStrings( "|" );
         }
 
-        /// <summary>
-        /// Edits the control.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override ValueList EditControl( string id )
-        {
-            return new KeyValueList { ID = id };
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var control = base.EditControl( configurationValues, id ) as KeyValueList;
-
-            if ( configurationValues != null )
-            {
-                if ( configurationValues.ContainsKey( "keyprompt" ) )
-                {
-                    control.KeyPrompt = configurationValues["keyprompt"].Value;
-                }
-
-                if ( configurationValues.ContainsKey( "displayvaluefirst" ) )
-                {
-                    control.DisplayValueFirst = configurationValues["displayvaluefirst"].Value.AsBoolean();
-                }
-            }
-
-            return control;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var picker = control as KeyValueList;
-            if ( picker != null )
-            {
-                return picker.Value;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var picker = control as KeyValueList;
-            if ( picker != null )
-            {
-                picker.Value = value;
-            }
-        }
-
         #endregion
 
         #region Filter Control
-
-        /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
-        {
-            // This field type does not support filtering
-            return null;
-        }
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -481,56 +267,6 @@ namespace Rock.Field.Types
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Gets the values from string.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
-
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
-
-            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-
-            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            foreach ( string nameValue in nameValues )
-            {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
-                if ( nameAndValue.Length == 2 )
-                {
-                    if ( isDefinedType )
-                    {
-                        var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
-                        if ( definedValue != null )
-                        {
-                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );
-                        }
-                        else
-                        {
-                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
-                        }
-                    }
-                    else
-                    {
-                        values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
-                    }
-                }
-                else
-                {
-                    values.Add( new KeyValuePair<string, object>( nameAndValue[0], null ) );
-                }
-            }
-
-            return values;
-        }
 
         #endregion
 
@@ -619,6 +355,278 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Insert(0, "keyprompt");
+            configKeys.Insert(0, "displayvaluefirst");
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var tbKeyPrompt = new RockTextBox();
+            controls.Insert(0, tbKeyPrompt);
+            tbKeyPrompt.AutoPostBack = true;
+            tbKeyPrompt.TextChanged += OnQualifierUpdated;
+            tbKeyPrompt.Label = "Key Prompt";
+            tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
+
+            var cbDisplayValueFirst = new RockCheckBox();
+            controls.Insert(5, cbDisplayValueFirst);
+            cbDisplayValueFirst.Label = "Display Value First";
+            cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add("keyprompt", new ConfigurationValue("Key Prompt", "The text to display as a prompt in the key textbox.", ""));
+            configurationValues.Add("valueprompt", new ConfigurationValue("Label Prompt", "The text to display as a prompt in the label textbox.", ""));
+            configurationValues.Add("definedtype", new ConfigurationValue("Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", ""));
+            configurationValues.Add("customvalues", new ConfigurationValue("Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", ""));
+            configurationValues.Add("allowhtml", new ConfigurationValue("Allow HTML", "Allow HTML content in values", ""));
+            configurationValues.Add("displayvaluefirst", new ConfigurationValue("Display Value First", "Reverses the display order of the key and the value.", ""));
+
+            if (controls != null)
+            {
+                if (controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox)
+                {
+                    configurationValues["keyprompt"].Value = ((RockTextBox)controls[0]).Text;
+                }
+                if (controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox)
+                {
+                    configurationValues["valueprompt"].Value = ((RockTextBox)controls[1]).Text;
+                }
+                if (controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList)
+                {
+                    configurationValues["definedtype"].Value = ((RockDropDownList)controls[2]).SelectedValue;
+                }
+                if (controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox)
+                {
+                    configurationValues["customvalues"].Value = ((RockTextBox)controls[3]).Text;
+                }
+                if (controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox)
+                {
+                    configurationValues["allowhtml"].Value = ((RockCheckBox)controls[4]).Checked.ToString();
+                }
+                if (controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox)
+                {
+                    configurationValues["displayvaluefirst"].Value = ((RockCheckBox)controls[5]).Checked.ToString();
+                }
+            }
+
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            if (controls != null && configurationValues != null)
+            {
+                if (controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey("keyprompt"))
+                {
+                    ((RockTextBox)controls[0]).Text = configurationValues["keyprompt"].Value;
+                }
+                if (controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox && configurationValues.ContainsKey("valueprompt"))
+                {
+                    ((RockTextBox)controls[1]).Text = configurationValues["valueprompt"].Value;
+                }
+                if (controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList && configurationValues.ContainsKey("definedtype"))
+                {
+                    ((RockDropDownList)controls[2]).SelectedValue = configurationValues["definedtype"].Value;
+                }
+                if (controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox && configurationValues.ContainsKey("customvalues"))
+                {
+                    ((RockTextBox)controls[3]).Text = configurationValues["customvalues"].Value;
+                }
+                if (controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey("allowhtml"))
+                {
+                    ((RockCheckBox)controls[4]).Checked = configurationValues["allowhtml"].Value.AsBoolean();
+                }
+                if (controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox && configurationValues.ContainsKey("displayvaluefirst"))
+                {
+                    ((RockCheckBox)controls[5]).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            // Never use condensed format for webforms.
+            return GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Edits the control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override ValueList EditControl(string id)
+        {
+            return new KeyValueList { ID = id };
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            var control = base.EditControl(configurationValues, id) as KeyValueList;
+
+            if (configurationValues != null)
+            {
+                if (configurationValues.ContainsKey("keyprompt"))
+                {
+                    control.KeyPrompt = configurationValues["keyprompt"].Value;
+                }
+
+                if (configurationValues.ContainsKey("displayvaluefirst"))
+                {
+                    control.DisplayValueFirst = configurationValues["displayvaluefirst"].Value.AsBoolean();
+                }
+            }
+
+            return control;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var picker = control as KeyValueList;
+            if (picker != null)
+            {
+                return picker.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            var picker = control as KeyValueList;
+            if (picker != null)
+            {
+                picker.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode)
+        {
+            // This field type does not support filtering
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the values from string.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public List<KeyValuePair<string, object>> GetValuesFromString(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
+
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey("definedtype") && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
+
+            string[] nameValues = value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+            nameValues = nameValues.Select(s => HttpUtility.UrlDecode(s)).ToArray();
+
+            foreach (string nameValue in nameValues)
+            {
+                string[] nameAndValue = nameValue.Split(new char[] { '^' });
+                if (nameAndValue.Length == 2)
+                {
+                    if (isDefinedType)
+                    {
+                        var definedValue = DefinedValueCache.Get(nameAndValue[1].AsInteger());
+                        if (definedValue != null)
+                        {
+                            values.Add(new KeyValuePair<string, object>(nameAndValue[0], definedValue));
+                        }
+                        else
+                        {
+                            values.Add(new KeyValuePair<string, object>(nameAndValue[0], nameAndValue[1]));
+                        }
+                    }
+                    else
+                    {
+                        values.Add(new KeyValuePair<string, object>(nameAndValue[0], nameAndValue[1]));
+                    }
+                }
+                else
+                {
+                    values.Add(new KeyValuePair<string, object>(nameAndValue[0], null));
+                }
+            }
+
+            return values;
+        }
+
+#endif
         #endregion
 
         /// <summary>

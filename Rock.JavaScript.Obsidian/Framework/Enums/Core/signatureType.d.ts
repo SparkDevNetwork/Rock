@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** Represents the type of signature. Either Rock.Model.SignatureType.Drawn or Rock.Model.SignatureType.Typed */
+/** Represents the type of signature. Either Drawn  or Typed */
 export const enum SignatureType {
     /** Typed */
     Typed = 0,

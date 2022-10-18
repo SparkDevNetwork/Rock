@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -37,30 +38,6 @@ namespace Rock.Field.Types
     public class DateTimeFieldType : DateFieldType
     {
         #region Configuration
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
-        {
-            // DateFieldType takes care of creating the ConfigurationControls, and
-            return base.ConfigurationControls();
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            var values = base.ConfigurationValues( controls );
-            values["format"].Name = "Date Time Format";
-            values["format"].Description = "The format string to use for date (default is system short date and time).";
-            values["displayCurrentOption"].Description = "Include option to specify value as the current time.";
-            return values;
-        }
 
         #endregion
 
@@ -161,19 +138,6 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Formats date display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return FormatValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
-        }
-
         #endregion
 
         #region Edit Control
@@ -190,171 +154,9 @@ namespace Rock.Field.Types
             return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
         }
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var dateTimePicker = new DateTimePicker { ID = id };
-            dateTimePicker.DisplayCurrentOption = configurationValues != null &&
-                configurationValues.ContainsKey( "displayCurrentOption" ) &&
-                configurationValues["displayCurrentOption"].Value.AsBoolean();
-            return dateTimePicker;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var dtp = control as DateTimePicker;
-            if ( dtp != null )
-            {
-                if ( dtp.DisplayCurrentOption && dtp.IsCurrentTimeOffset )
-                {
-                    return string.Format( "CURRENT:{0}", dtp.CurrentTimeOffsetMinutes );
-                }
-                else if ( dtp.SelectedDateTime.HasValue )
-                {
-                    return dtp.SelectedDateTime.Value.ToString( "o" );
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var dtp = control as DateTimePicker;
-            if ( dtp != null )
-            {
-                if ( dtp.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    dtp.IsCurrentTimeOffset = true;
-                    var valueParts = value.Split( ':' );
-                    if ( valueParts.Length > 1 )
-                    {
-                        dtp.CurrentTimeOffsetMinutes = valueParts[1].AsInteger();
-                    }
-                    else
-                    {
-                        dtp.CurrentTimeOffsetMinutes = 0;
-                    }
-                }
-                else
-                {
-                    // NullReferenceException will *NOT* be thrown if value is null because the AsDateTime() extension method is null safe.
-                    dtp.SelectedDateTime = value.AsDateTime();
-                }
-            }
-        }
-
         #endregion
 
         #region Filter Control
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            var dateFiltersPanel = new Panel();
-            dateFiltersPanel.ID = string.Format( "{0}_dtFilterControls", id );
-
-            var datePickerPanel = new Panel();
-            dateFiltersPanel.Controls.Add( datePickerPanel );
-
-            var datePicker = new DateTimePicker();
-            datePicker.ID = string.Format( "{0}_dtPicker", id );
-            datePicker.DisplayCurrentOption = true;
-            datePickerPanel.AddCssClass( "js-filter-control" );
-            datePickerPanel.Controls.Add( datePicker );
-
-            var slidingDateRangePicker = new SlidingDateRangePicker();
-            slidingDateRangePicker.ID = string.Format( "{0}_dtSlidingDateRange", id );
-            slidingDateRangePicker.AddCssClass( "js-filter-control-between" );
-            slidingDateRangePicker.Label = string.Empty;
-            slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
-            dateFiltersPanel.Controls.Add( slidingDateRangePicker );
-
-            return dateFiltersPanel;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var dateFiltersPanel = control as Panel;
-            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
-            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-            string datePickerValue = string.Empty;
-            string slidingDateRangePickerValue = string.Empty;
-            if ( datePicker != null )
-            {
-                datePickerValue = this.GetEditValue( datePicker, configurationValues );
-            }
-
-            if ( slidingDateRangePicker != null )
-            {
-                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
-            }
-
-            // use Tab Delimited since slidingDateRangePicker is | delimited
-            return string.Format( "{0}\t{1}", datePickerValue, slidingDateRangePickerValue );
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            // uses Tab Delimited since slidingDateRangePicker is | delimited
-            var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
-
-            var dateFiltersPanel = control as Panel;
-
-            var dateTimePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
-            if ( dateTimePicker != null && filterValues.Length > 0 )
-            {
-                this.SetEditValue( dateTimePicker, configurationValues, filterValues[0] );
-            }
-
-            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-            if ( slidingDateRangePicker != null && filterValues.Length > 1 )
-            {
-                slidingDateRangePicker.DelimitedValues = filterValues[1];
-            }
-        }
 
         /// <summary>
         /// Gets the filter format script.
@@ -397,6 +199,211 @@ namespace Rock.Field.Types
             return value;
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
+        {
+            // DateFieldType takes care of creating the ConfigurationControls, and
+            return base.ConfigurationControls();
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            var values = base.ConfigurationValues(controls);
+            values["format"].Name = "Date Time Format";
+            values["format"].Description = "The format string to use for date (default is system short date and time).";
+            values["displayCurrentOption"].Description = "Include option to specify value as the current time.";
+            return values;
+        }
+
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return FormatValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value), condensed);
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            var dateTimePicker = new DateTimePicker { ID = id };
+            dateTimePicker.DisplayCurrentOption = configurationValues != null &&
+                configurationValues.ContainsKey("displayCurrentOption") &&
+                configurationValues["displayCurrentOption"].Value.AsBoolean();
+            return dateTimePicker;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var dtp = control as DateTimePicker;
+            if (dtp != null)
+            {
+                if (dtp.DisplayCurrentOption && dtp.IsCurrentTimeOffset)
+                {
+                    return string.Format("CURRENT:{0}", dtp.CurrentTimeOffsetMinutes);
+                }
+                else if (dtp.SelectedDateTime.HasValue)
+                {
+                    return dtp.SelectedDateTime.Value.ToString("o");
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            var dtp = control as DateTimePicker;
+            if (dtp != null)
+            {
+                if (dtp.DisplayCurrentOption && value != null && value.StartsWith("CURRENT", StringComparison.OrdinalIgnoreCase))
+                {
+                    dtp.IsCurrentTimeOffset = true;
+                    var valueParts = value.Split(':');
+                    if (valueParts.Length > 1)
+                    {
+                        dtp.CurrentTimeOffsetMinutes = valueParts[1].AsInteger();
+                    }
+                    else
+                    {
+                        dtp.CurrentTimeOffsetMinutes = 0;
+                    }
+                }
+                else
+                {
+                    // NullReferenceException will *NOT* be thrown if value is null because the AsDateTime() extension method is null safe.
+                    dtp.SelectedDateTime = value.AsDateTime();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        {
+            var dateFiltersPanel = new Panel();
+            dateFiltersPanel.ID = string.Format("{0}_dtFilterControls", id);
+
+            var datePickerPanel = new Panel();
+            dateFiltersPanel.Controls.Add(datePickerPanel);
+
+            var datePicker = new DateTimePicker();
+            datePicker.ID = string.Format("{0}_dtPicker", id);
+            datePicker.DisplayCurrentOption = true;
+            datePickerPanel.AddCssClass("js-filter-control");
+            datePickerPanel.Controls.Add(datePicker);
+
+            var slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = string.Format("{0}_dtSlidingDateRange", id);
+            slidingDateRangePicker.AddCssClass("js-filter-control-between");
+            slidingDateRangePicker.Label = string.Empty;
+            slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
+            dateFiltersPanel.Controls.Add(slidingDateRangePicker);
+
+            return dateFiltersPanel;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var dateFiltersPanel = control as Panel;
+            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
+            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+            string datePickerValue = string.Empty;
+            string slidingDateRangePickerValue = string.Empty;
+            if (datePicker != null)
+            {
+                datePickerValue = this.GetEditValue(datePicker, configurationValues);
+            }
+
+            if (slidingDateRangePicker != null)
+            {
+                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
+            }
+
+            // use Tab Delimited since slidingDateRangePicker is | delimited
+            return string.Format("{0}\t{1}", datePickerValue, slidingDateRangePickerValue);
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            // uses Tab Delimited since slidingDateRangePicker is | delimited
+            var filterValues = value.Split(new string[] { "\t" }, StringSplitOptions.None);
+
+            var dateFiltersPanel = control as Panel;
+
+            var dateTimePicker = dateFiltersPanel.ControlsOfTypeRecursive<DateTimePicker>().FirstOrDefault();
+            if (dateTimePicker != null && filterValues.Length > 0)
+            {
+                this.SetEditValue(dateTimePicker, configurationValues, filterValues[0]);
+            }
+
+            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+            if (slidingDateRangePicker != null && filterValues.Length > 1)
+            {
+                slidingDateRangePicker.DelimitedValues = filterValues[1];
+            }
+        }
+
+#endif
         #endregion
     }
 }

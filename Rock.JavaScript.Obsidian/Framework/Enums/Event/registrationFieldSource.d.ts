@@ -33,11 +33,5 @@ export const enum RegistrationFieldSource {
     GroupMemberAttribute = 2,
 
     /** Registrant attribute */
-    RegistrantAttribute = 4,
-
-    /**
-     * Registration attribute
-     * NOTE: Put obsolete Enums AFTER the one that replaces it so that enum.ConvertToString() returns the non-obsolete name
-     */
-    RegistrationAttribute = 4
+    RegistrantAttribute = 4
 }

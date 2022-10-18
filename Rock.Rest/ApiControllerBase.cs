@@ -21,7 +21,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
 
 using Rock.Data;
 using Rock.Model;

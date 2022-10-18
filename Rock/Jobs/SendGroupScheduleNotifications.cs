@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -30,8 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Send Group Schedule Confirmations and Reminders" )]
     [Description( "Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet. Only Email and SMS are supported. PUSH is not supported." )]
 
@@ -41,7 +37,7 @@ namespace Rock.Jobs
         Description = "Only people in or under this group will receive the schedule notifications.",
         IsRequired = false,
         Order = 0 )]
-    public class SendGroupScheduleNotifications : IJob
+    public class SendGroupScheduleNotifications : RockJob
     {
         #region Attribute Keys
 
@@ -69,13 +65,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var rootGroupGuid = context.JobDetail.JobDataMap.GetString( AttributeKey.RootGroup ).AsGuidOrNull();
+            var rootGroupGuid = this.GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
 
             var confirmationSends = SendGroupScheduleConfirmationCommunications( rootGroupGuid );
             var reminderSends = SendGroupScheduleReminderCommunications( rootGroupGuid );
@@ -101,7 +94,7 @@ namespace Rock.Jobs
                 throw new Exception( exceptionMessage );
             }
 
-            context.Result = $@"{confirmationSends.MessagesSent} confirmation messages were sent.
+            this.Result = $@"{confirmationSends.MessagesSent} confirmation messages were sent.
                                 {reminderSends.MessagesSent} reminder messages were sent.";
         }
 

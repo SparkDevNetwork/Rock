@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -41,74 +42,6 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( ENABLE_SELF_SELECTION_KEY );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var cbEnableSelfSelection = new RockCheckBox();
-            controls.Add( cbEnableSelfSelection );
-            cbEnableSelfSelection.Label = "Enable Self Selection";
-            cbEnableSelfSelection.Text = "Yes";
-            cbEnableSelfSelection.Help = "When using Person Picker, show the self selection option";
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ENABLE_SELF_SELECTION_KEY, new ConfigurationValue( "Enable Self Selection", "When using Person Picker, show the self selection option", string.Empty ) );
-
-            if ( controls != null && controls.Count > 0 )
-            {
-                var cbEnableSelfSelection = controls[0] as RockCheckBox;
-                if ( cbEnableSelfSelection != null )
-                {
-                    configurationValues[ENABLE_SELF_SELECTION_KEY].Value = cbEnableSelfSelection.Checked.ToString();
-                }
-
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && configurationValues != null && controls.Count > 0 )
-            {
-                var cbEnableSelfSelection = controls[0] as RockCheckBox;
-
-                if ( cbEnableSelfSelection != null && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
-                {
-                    cbEnableSelfSelection.Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
-                }
-            }
-        }
 
         #endregion
 
@@ -137,21 +70,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <summary>
         /// Formats the value extended.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -175,87 +93,6 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var personPicker = new PersonPicker { ID = id }; 
-            if ( configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
-            {
-                personPicker.EnableSelfSelection = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
-            }
-
-            return personPicker;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field (as PersonAlias.Guid)
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            PersonPicker ppPerson = control as PersonPicker;
-            string result = string.Empty;
-
-            if ( ppPerson != null )
-            {
-                Guid personGuid = Guid.Empty;
-                int? personId = ppPerson.PersonId;
-
-                if ( personId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var personAlias = new PersonAliasService( rockContext ).GetByAliasId( personId.Value );
-                        if ( personAlias != null )
-                        {
-                            result = personAlias.Guid.ToString();
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value (as PersonAlias.Guid)
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            PersonPicker ppPerson = control as PersonPicker;
-            if ( ppPerson != null )
-            {
-                Person person = null;
-                Guid? personAliasGuid = value.AsGuidOrNull();
-                if ( personAliasGuid.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        person = new PersonAliasService( rockContext ).Queryable()
-                            .Where( a => a.Guid == personAliasGuid.Value )
-                            .Select( a => a.Person )
-                            .FirstOrDefault();
-                    }
-                }
-
-                ppPerson.SetValue( person );
-            }
-        }
 
         #endregion
 
@@ -297,32 +134,6 @@ namespace Rock.Field.Types
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new PersonAliasService( new RockContext() ).Get( guid );
-            return item != null ? item.PersonId : (int?)null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            var item = new PersonService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.PrimaryAlias.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -405,5 +216,202 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add(ENABLE_SELF_SELECTION_KEY);
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var cbEnableSelfSelection = new RockCheckBox();
+            controls.Add(cbEnableSelfSelection);
+            cbEnableSelfSelection.Label = "Enable Self Selection";
+            cbEnableSelfSelection.Text = "Yes";
+            cbEnableSelfSelection.Help = "When using Person Picker, show the self selection option";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add(ENABLE_SELF_SELECTION_KEY, new ConfigurationValue("Enable Self Selection", "When using Person Picker, show the self selection option", string.Empty));
+
+            if (controls != null && controls.Count > 0)
+            {
+                var cbEnableSelfSelection = controls[0] as RockCheckBox;
+                if (cbEnableSelfSelection != null)
+                {
+                    configurationValues[ENABLE_SELF_SELECTION_KEY].Value = cbEnableSelfSelection.Checked.ToString();
+                }
+
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            if (controls != null && configurationValues != null && controls.Count > 0)
+            {
+                var cbEnableSelfSelection = controls[0] as RockCheckBox;
+
+                if (cbEnableSelfSelection != null && configurationValues.ContainsKey(ENABLE_SELF_SELECTION_KEY))
+                {
+                    cbEnableSelfSelection.Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            var personPicker = new PersonPicker { ID = id };
+            if (configurationValues.ContainsKey(ENABLE_SELF_SELECTION_KEY))
+            {
+                personPicker.EnableSelfSelection = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+            }
+
+            return personPicker;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field (as PersonAlias.Guid)
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            PersonPicker ppPerson = control as PersonPicker;
+            string result = string.Empty;
+
+            if (ppPerson != null)
+            {
+                Guid personGuid = Guid.Empty;
+                int? personId = ppPerson.PersonId;
+
+                if (personId.HasValue)
+                {
+                    using (var rockContext = new RockContext())
+                    {
+                        var personAlias = new PersonAliasService(rockContext).GetByAliasId(personId.Value);
+                        if (personAlias != null)
+                        {
+                            result = personAlias.Guid.ToString();
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value (as PersonAlias.Guid)
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            PersonPicker ppPerson = control as PersonPicker;
+            if (ppPerson != null)
+            {
+                Person person = null;
+                Guid? personAliasGuid = value.AsGuidOrNull();
+                if (personAliasGuid.HasValue)
+                {
+                    using (var rockContext = new RockContext())
+                    {
+                        person = new PersonAliasService(rockContext).Queryable()
+                            .Where(a => a.Guid == personAliasGuid.Value)
+                            .Select(a => a.Person)
+                            .FirstOrDefault();
+                    }
+                }
+
+                ppPerson.SetValue(person);
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            Guid guid = GetEditValue(control, configurationValues).AsGuid();
+            var item = new PersonAliasService(new RockContext()).Get(guid);
+            return item != null ? item.PersonId : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
+        {
+            var item = new PersonService(new RockContext()).Get(id ?? 0);
+            string guidValue = item != null ? item.PrimaryAlias.Guid.ToString() : string.Empty;
+            SetEditValue(control, configurationValues, guidValue);
+        }
+
+#endif
+        #endregion
+
     }
 }

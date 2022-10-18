@@ -34,7 +34,7 @@ namespace Rock.Model
         Attribute = 1,
 
         /// <summary>
-        /// The field(s) that result from a <see cref="Rock.Reporting.DataSelectComponent" />
+        /// The field(s) that result from a DataSelectComponent
         /// </summary>
         DataSelectComponent = 2
     }

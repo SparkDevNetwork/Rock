@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Utility;
@@ -282,7 +281,7 @@ namespace Rock.Model
         /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
         /// <param name="registrationInstanceName"></param>
         /// <param name="options">The options.</param>
-        [Obsolete( "Use the other GroupPlacementRegistrant constructor " )]
+        [Obsolete( "Use the other GroupPlacementRegistrant constructor ", true )]
         [RockObsolete( "1.10.3" )]
         public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, string registrationInstanceName, GetGroupPlacementRegistrantsParameters options )
             : this( registrationRegistrant, person, alreadyPlacedInGroup, registrationRegistrant.Registration.RegistrationInstance, options )

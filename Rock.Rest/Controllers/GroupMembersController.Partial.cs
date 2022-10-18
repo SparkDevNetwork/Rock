@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -33,7 +35,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <returns>A queryable collection of GroupMembers, including deceased, that match the provided query.</returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [RockEnableQuery]
         public override IQueryable<GroupMember> Get()
         {
             var queryString = Request.RequestUri.Query;
@@ -48,6 +50,22 @@ namespace Rock.Rest.Controllers
             {
                 return base.Get();
             }
+        }
+
+        /// <summary>
+        /// Gets the group placement group members.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/GroupMembers/GetGroupPlacementGroupMembers" )]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "6E5F85FB-5D43-4C3A-96C0-0D94D347A6FE" )]
+        public IEnumerable<GroupPlacementGroupMember> GetGroupPlacementGroupMembers( [FromBody] GetGroupPlacementGroupMembersParameters options )
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            return groupMemberService.GetGroupPlacementGroupMembers( options, this.GetPerson() );
         }
 
         /// <summary>

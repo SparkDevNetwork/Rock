@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -40,77 +41,6 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( INCLUDE_INACTIVE_KEY );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            // Add CheckBox for deciding if the list should include inactive items
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Include Inactive";
-            cb.Text = "Yes";
-            cb.Help = "When set, inactive assessments will be included in the list.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
-
-            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Assessment Type", "When set, inactive assessments will be included in the list.", string.Empty ) );
-
-            if ( controls != null )
-            {
-                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
-                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            base.SetConfigurationValues( controls, configurationValues );
-
-            if ( controls != null && configurationValues != null )
-            {
-                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
-
-                if ( cbIncludeInactive != null )
-                {
-                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
-                }
-            }
-        }
 
         #endregion
 
@@ -179,6 +109,83 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add(INCLUDE_INACTIVE_KEY);
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add CheckBox for deciding if the list should include inactive items
+            var cb = new RockCheckBox();
+            controls.Add(cb);
+            cb.AutoPostBack = true;
+            cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Include Inactive";
+            cb.Text = "Yes";
+            cb.Help = "When set, inactive assessments will be included in the list.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues(controls);
+
+            configurationValues.Add(INCLUDE_INACTIVE_KEY, new ConfigurationValue("Assessment Type", "When set, inactive assessments will be included in the list.", string.Empty));
+
+            if (controls != null)
+            {
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            base.SetConfigurationValues(controls, configurationValues);
+
+            if (controls != null && configurationValues != null)
+            {
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+
+                if (cbIncludeInactive != null)
+                {
+                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull(INCLUDE_INACTIVE_KEY).AsBooleanOrNull() ?? false;
+                }
+            }
+        }
+
+#endif
         #endregion
     }
 }

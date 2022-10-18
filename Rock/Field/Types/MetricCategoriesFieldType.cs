@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -35,23 +37,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC_CATEGORIES )]
     public class MetricCategoriesFieldType : FieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
@@ -85,103 +71,9 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return new MetricCategoryPicker { ID = id, AllowMultiSelect = true };
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var picker = control as MetricCategoryPicker;
-            string result = string.Empty;
-
-            if ( picker != null )
-            {
-                var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
-                {
-                    var metricCategories = new MetricCategoryService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
-
-                    if ( metricCategories.Any() )
-                    {
-                        var guidPairList = metricCategories.Select( a => new { MetricGuid = a.Metric.Guid, CategoryGuid = a.Category.Guid } ).ToList();
-                        result = guidPairList.Select( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) ).ToList().AsDelimited( "," );
-                    }
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var picker = control as MetricCategoryPicker;
-
-            if ( picker != null )
-            {
-                List<MetricCategory> metricCategories = new List<MetricCategory>();
-                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
-                MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
-
-                foreach ( var guidPair in guidPairs )
-                {
-                    // first try to get each metric from the category that it was selected from
-                    var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
-                    if ( metricCategory == null )
-                    {
-                        // if the metric isn't found in the original category, just the first one, ignoring category
-                        metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
-                    }
-
-                    if ( metricCategory != null )
-                    {
-                        metricCategories.Add( metricCategory );
-                    }
-                }
-
-                picker.SetValues( metricCategories );
-            }
-        }
-
         #endregion
 
         #region Filter Control
-
-        /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
-        {
-            // This field type does not support filtering
-            return null;
-        }
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -235,6 +127,121 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            return new MetricCategoryPicker { ID = id, AllowMultiSelect = true };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var picker = control as MetricCategoryPicker;
+            string result = string.Empty;
+
+            if (picker != null)
+            {
+                var ids = picker.SelectedValuesAsInt();
+                using (var rockContext = new RockContext())
+                {
+                    var metricCategories = new MetricCategoryService(rockContext).Queryable().AsNoTracking().Where(a => ids.Contains(a.Id));
+
+                    if (metricCategories.Any())
+                    {
+                        var guidPairList = metricCategories.Select(a => new { MetricGuid = a.Metric.Guid, CategoryGuid = a.Category.Guid }).ToList();
+                        result = guidPairList.Select(s => string.Format("{0}|{1}", s.MetricGuid, s.CategoryGuid)).ToList().AsDelimited(",");
+                    }
+                }
+
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            var picker = control as MetricCategoryPicker;
+
+            if (picker != null)
+            {
+                List<MetricCategory> metricCategories = new List<MetricCategory>();
+                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs(value);
+                MetricCategoryService metricCategoryService = new MetricCategoryService(new RockContext());
+
+                foreach (var guidPair in guidPairs)
+                {
+                    // first try to get each metric from the category that it was selected from
+                    var metricCategory = metricCategoryService.Queryable().Where(a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid).FirstOrDefault();
+                    if (metricCategory == null)
+                    {
+                        // if the metric isn't found in the original category, just the first one, ignoring category
+                        metricCategory = metricCategoryService.Queryable().Where(a => a.Metric.Guid == guidPair.MetricGuid).FirstOrDefault();
+                    }
+
+                    if (metricCategory != null)
+                    {
+                        metricCategories.Add(metricCategory);
+                    }
+                }
+
+                picker.SetValues(metricCategories);
+            }
+        }
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode)
+        {
+            // This field type does not support filtering
+            return null;
+        }
+
+#endif
         #endregion
     }
 }

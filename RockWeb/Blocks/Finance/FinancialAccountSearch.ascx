@@ -42,6 +42,10 @@
                     </div>
                 </ItemTemplate>
             </Rock:RockTemplateField>
+            <Rock:RockBoundField
+                HeaderText="Campus"
+                DataField="Campus"
+                SortExpression="Campus" />
         </Columns>
     </Rock:Grid>
 </div>

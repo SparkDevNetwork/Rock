@@ -30,6 +30,7 @@ export default defineComponent({
         RockForm
     },
     setup(props, { emit }) {
+        const clearFormErrors = ref(true);
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
 
         const attributeValues = ref<Record<string, string>>({});
@@ -69,6 +70,7 @@ export default defineComponent({
         return {
             attributes,
             attributeValues,
+            clearFormErrors,
             onNext,
             onPrevious,
             showPrevious
@@ -77,7 +79,7 @@ export default defineComponent({
 
     template: `
 <div class="registrationentry-registration-attributes">
-    <RockForm @submit="onNext">
+    <RockForm @submit="onNext" v-model:clearErrors="clearFormErrors">
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
 
         <div class="actions row">

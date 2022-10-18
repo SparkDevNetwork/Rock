@@ -60,9 +60,11 @@
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHideFullGroups" runat="server" CssClass="js-options-hide-full-groups" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayRegistrantAttributes" runat="server" CssClass="js-options-display-registrant-attributes" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsApplyRegistrantFilters" runat="server" CssClass="js-options-apply-registrant-filters" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsRegistrantPersonDataViewFilterId" runat="server" CssClass="js-options-registrant-person-dataviewfilter-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
-                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeIds" runat="server" CssClass="js-options-displayed-groupmember-attribute-ids" />
 
                         <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeId" runat="server" CssClass="js-options-filter-fee-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeItemIds" runat="server" CssClass="js-options-filter-fee-item-ids" />
@@ -153,6 +155,8 @@
                                             <div class="details-container js-groupmember-details hide-transit">
                                                 <div class="groupmember-attributes-container js-groupmember-attributes-container">
                                                 </div>
+                                                <div class="registrant-attributes-container js-registrant-attributes-container">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -223,10 +227,10 @@
 
                                                                             <asp:Panel ID="pnlGroupRoleStatusLabels" runat="server" CssClass="panel-labels">
                                                                                 <div class="js-grouptyperole-statuslabels-container grouptyperole-status-labels">
+                                                                                    <span class='badge badge-info'><asp:Literal ID="lGroupRoleCount" runat="server" /></span>
                                                                                     <span class="label label-custom placement-capacity-label js-grouptyperole-max-members-label" data-status="none">1:1</span>
                                                                                 </div>
-                                                                            </asp:Panel>
-                                                                        </div>
+                                                                            </asp:Panel>                                                                        </div>
                                                                         <div class="alert alert-danger js-alert js-placement-place-registrant-error margin-all-md" style="display: none">
                                                                             <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
                                                                             <span class="js-placement-place-registrant-error-text"></span>
@@ -316,8 +320,14 @@
         <asp:Panel ID="pnlConfiguration" runat="server">
             <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" CssClass=".js-configuration-modal" OnSaveClick="mdPlacementConfiguration_SaveClick">
                 <Content>
-                    <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" CssClass="input-width-xl" />
-
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" CssClass="input-width-xl" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
+                        </div>
+                    </div>
                     <%-- This will only be shown when in Registration Template mode --%>
                     <Rock:PanelWidget ID="pwRegistrationTemplateConfiguration" runat="server" Title="Registration Template Configuration">
                         <div class="row">
@@ -331,19 +341,17 @@
 
                     <Rock:PanelWidget ID="pnlRegistrantConfiguration" runat="server" Title="Registrant Configuration" Expanded="true">
                         <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
-                            </div>
+                            
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbShowFees" runat="server" Label="Show Fees" Help="Enable this to show any fees associated with each registrant." />
                             </div>
                         </div>
 
                         <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="pwFilterConfiguration" runat="server" Title="Filters">
-                         <div class="row">
+                        <Rock:RockCheckBox ID="cbDisplayRegistrantAttributes" runat="server" Text="Display Registrant Attributes on Group Members" />
+                        <hr />
+                        <h3>Filters</h3>
+                        <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
                                     <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
@@ -360,20 +368,29 @@
                         <Rock:RockControlWrapper ID="rcwPersonFilters" runat="server" Label="Person Filters">
                             <Rock:DynamicPlaceholder ID="phPersonFilters" runat="server" />
                         </Rock:RockControlWrapper>
+                        <Rock:RockCheckBox ID="cbApplyRegistrantFilters" runat="server" Text="Apply Registrant Filters to Group Members" />
+                        
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" />
-                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" />
+                                <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupAttributes_SelectedIndexChanged" />
+                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupMemberAttributes_SelectedIndexChanged" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbHideFullGroups" runat="server" Label="Hide Full Groups" Help="Enable this to hide placement groups that are at the group capacity." />
                             </div>
                         </div>
+                        <hr />
+                        <h3>Filters</h3>
+                        <Rock:RockControlWrapper ID="rcwGroupFilters" runat="server" Label="Group Filters">
+                            <Rock:DynamicPlaceholder ID="phGroupFilters" runat="server" />
+                        </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwGroupMemberFilters" runat="server" Label="Group Member Filters">
+                            <Rock:DynamicPlaceholder ID="phGroupMemberFilters" runat="server" />
+                        </Rock:RockControlWrapper>
                     </Rock:PanelWidget>
-
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

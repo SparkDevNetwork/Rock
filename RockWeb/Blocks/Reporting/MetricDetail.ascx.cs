@@ -380,15 +380,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
-            avcEditAttributeValues.GetEditValues( metric );
-
-            // only save if everything saves:
-            rockContext.WrapTransaction( () =>
-            {
-                rockContext.SaveChanges();
-                metric.SaveAttributeValues();
-            } );
-
             int sourceTypeDataView = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
             int sourceTypeLava = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
@@ -501,7 +492,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 {
                     metric.ScheduleId = null;
                 }
-
+                
                 if ( metric.Id == 0 )
                 {
                     metricService.Add( metric );
@@ -509,6 +500,16 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     // save to make sure we have a metricId
                     rockContext.SaveChanges();
                 }
+                
+                // safely, add the attribute values.
+                avcEditAttributeValues.GetEditValues( metric );
+
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    metric.SaveAttributeValues();
+                } );
 
                 // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();

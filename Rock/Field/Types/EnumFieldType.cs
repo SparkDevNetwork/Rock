@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -33,17 +34,6 @@ namespace Rock.Field.Types
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( REPEAT_COLUMNS );
-            return configKeys;
-        }
 
         private Dictionary<int, string> _EnumValues { get; set; }
 
@@ -111,61 +101,6 @@ namespace Rock.Field.Types
         }
 
         #region Configuration
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = base.ConfigurationControls();
-
-            var tbRepeatColumns = new NumberBox();
-            tbRepeatColumns.Label = "Columns";
-            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
-            tbRepeatColumns.MinimumValue = "0";
-            tbRepeatColumns.AutoPostBack = true;
-            tbRepeatColumns.TextChanged += OnQualifierUpdated;
-            controls.Add( tbRepeatColumns );
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
-
-            string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
-
-            if ( controls != null && controls.Count > 0 )
-            {
-                var tbRepeatColumns = controls[0] as NumberBox;
-                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            base.SetConfigurationValues( controls, configurationValues );
-
-            if ( controls != null && controls.Count > 0 && configurationValues != null )
-            {
-                var tbRepeatColumns = controls[0] as NumberBox;
-                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
-            }
-        }
 
         #endregion Configuration
 
@@ -184,155 +119,13 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            // Don't ever truncate the value even in condensed mode.
-            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return value.AsIntegerOrNull();
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            if ( configurationValues != null )
-            {
-                var editControl = new RockRadioButtonList { ID = id };
-                editControl.RepeatDirection = RepeatDirection.Horizontal;
-
-                if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
-                {
-                    ( ( RockRadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
-                }
-
-                foreach ( var keyVal in _EnumValues )
-                {
-                    editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
-                }
-
-                if ( editControl.Items.Count > 0 )
-                {
-                    return editControl;
-                }
-            }
-
-            return null;
-
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var editControl = control as ListControl;
-            if ( editControl != null )
-            {
-                return editControl.SelectedValue;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var editControl = control as ListControl;
-            if ( editControl != null )
-            {
-                editControl.SetValue( value );
-            }
-        }
-
         #endregion
 
         #region Filter Control
-         
-        /// <summary>
-        /// Gets the filter compare control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            var lbl = new Label();
-            lbl.ID = string.Format( "{0}_lIs", id );
-            lbl.AddCssClass( "data-view-filter-label" );
-            lbl.Text = "Is";
-
-            // hide the compare control when in SimpleFilter mode
-            lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
-            return lbl;
-        }
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            var cbList = new RockCheckBoxList();
-            cbList.ID = string.Format( "{0}_cbList", id );
-            cbList.AddCssClass( "js-filter-control" );
-            cbList.RepeatDirection = RepeatDirection.Horizontal;
-
-            foreach ( var keyVal in _EnumValues )
-            {
-                cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
-            }
-
-            if ( cbList.Items.Count > 0 )
-            {
-                return cbList;
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -344,77 +137,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
         /// </summary>
         /// <returns></returns>
         public override string GetEqualToCompareValue()
         {
             return null;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var values = new List<string>();
-
-            if ( control != null && control is CheckBoxList )
-            {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                {
-                    if ( li.Selected )
-                    {
-                        values.Add( li.Value );
-                    }
-                }
-            }
-
-            return values.AsDelimited( "," );
-        }
-
-        /// <summary>
-        /// Sets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterCompareValue( Control control, string value )
-        {
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( control != null && control is CheckBoxList && value != null )
-            {
-                var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                {
-                    li.Selected = values.Contains( li.Value );
-                }
-            }
         }
 
         /// <summary>
@@ -553,6 +281,286 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add(REPEAT_COLUMNS);
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = base.ConfigurationControls();
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add(tbRepeatColumns);
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues(controls);
+
+            string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add(REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty));
+
+            if (controls != null && controls.Count > 0)
+            {
+                var tbRepeatColumns = controls[0] as NumberBox;
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            base.SetConfigurationValues(controls, configurationValues);
+
+            if (controls != null && controls.Count > 0 && configurationValues != null)
+            {
+                var tbRepeatColumns = controls[0] as NumberBox;
+                tbRepeatColumns.Text = configurationValues.ContainsKey(REPEAT_COLUMNS) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            // Don't ever truncate the value even in condensed mode.
+            return GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            return value.AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            if (configurationValues != null)
+            {
+                var editControl = new RockRadioButtonList { ID = id };
+                editControl.RepeatDirection = RepeatDirection.Horizontal;
+
+                if (configurationValues.ContainsKey(REPEAT_COLUMNS))
+                {
+                    ((RockRadioButtonList)editControl).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                }
+
+                foreach (var keyVal in _EnumValues)
+                {
+                    editControl.Items.Add(new ListItem(keyVal.Value, keyVal.Key.ToString()));
+                }
+
+                if (editControl.Items.Count > 0)
+                {
+                    return editControl;
+                }
+            }
+
+            return null;
+
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var editControl = control as ListControl;
+            if (editControl != null)
+            {
+                return editControl.SelectedValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            var editControl = control as ListControl;
+            if (editControl != null)
+            {
+                editControl.SetValue(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        {
+            var lbl = new Label();
+            lbl.ID = string.Format("{0}_lIs", id);
+            lbl.AddCssClass("data-view-filter-label");
+            lbl.Text = "Is";
+
+            // hide the compare control when in SimpleFilter mode
+            lbl.Visible = filterMode != FilterMode.SimpleFilter;
+
+            return lbl;
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        {
+            var cbList = new RockCheckBoxList();
+            cbList.ID = string.Format("{0}_cbList", id);
+            cbList.AddCssClass("js-filter-control");
+            cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+            foreach (var keyVal in _EnumValues)
+            {
+                cbList.Items.Add(new ListItem(keyVal.Value, keyVal.Key.ToString()));
+            }
+
+            if (cbList.Items.Count > 0)
+            {
+                return cbList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue(Control control, FilterMode filterMode)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            var values = new List<string>();
+
+            if (control != null && control is CheckBoxList)
+            {
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach (ListItem li in cbl.Items)
+                {
+                    if (li.Selected)
+                    {
+                        values.Add(li.Value);
+                    }
+                }
+            }
+
+            return values.AsDelimited(",");
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue(Control control, string value)
+        {
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            if (control != null && control is CheckBoxList && value != null)
+            {
+                var values = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach (ListItem li in cbl.Items)
+                {
+                    li.Selected = values.Contains(li.Value);
+                }
+            }
+        }
+
+#endif
         #endregion
 
     }

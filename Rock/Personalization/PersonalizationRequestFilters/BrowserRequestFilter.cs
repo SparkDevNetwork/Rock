@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -61,17 +62,28 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
+        /// <inheritdoc/>
+        public override bool IsMatch( HttpRequest httpRequest )
+        {
+            return IsMatch( uaParser.ParseUserAgent( httpRequest.UserAgent ) );
+        }
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            return IsMatch( request.ClientInformation.Browser.UA );
+        }
+
         /// <summary>
         /// Determines whether the specified HTTP request meets the criteria of this filter.
         /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
-        public override bool IsMatch( HttpRequest httpRequest )
+        /// <param name="ua">The user agent object.</param>
+        /// <returns><c>true</c> if the specified user agent is a match; otherwise, <c>false</c>.</returns>
+        private bool IsMatch( UAParser.UserAgent ua )
         {
-            var ua = uaParser.ParseUserAgent( httpRequest.UserAgent );
             var detectedFamily = ua.Family;
 
-            var filteredBrowserFamily = this.BrowserFamily.ConvertToString(); 
+            var filteredBrowserFamily = this.BrowserFamily.ConvertToString();
 
             if ( !detectedFamily.Equals( filteredBrowserFamily, StringComparison.OrdinalIgnoreCase ) )
             {

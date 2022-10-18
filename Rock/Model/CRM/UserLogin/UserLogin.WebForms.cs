@@ -62,16 +62,27 @@ namespace Rock.Model
             {
                 HttpContext current = HttpContext.Current;
                 if ( current != null && current.User != null )
+                {
                     return current.User.Identity.Name;
+                }
             }
+
             IPrincipal currentPrincipal = Thread.CurrentPrincipal;
             if ( currentPrincipal == null || currentPrincipal.Identity == null )
+            {
                 return string.Empty;
+            }
+            else if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
+            {
+                var currentUserLogin = UserLoginService.GetCurrentUser( true );
+                return currentUserLogin?.UserName ?? currentPrincipal.Identity.Name;
+            }
             else
+            {
                 return currentPrincipal.Identity.Name;
+            }
         }
 
         #endregion
-
     }
 }

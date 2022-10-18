@@ -18,23 +18,23 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the status of a <see cref="Rock.Model.GroupMember"/> in a <see cref="Rock.Model.Group"/>.
+    /// Represents the status of a GroupMember in a Group.
     /// </summary>
     [Enums.EnumDomain( "Group" )]
     public enum GroupMemberStatus
     {
         /// <summary>
-        /// The <see cref="Rock.Model.GroupMember"/> is not an active member of the <see cref="Rock.Model.Group"/>.
+        /// The GroupMember is not an active member of the Group.
         /// </summary>
         Inactive = 0,
 
         /// <summary>
-        /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
+        /// The GroupMember is an active member of the Group.
         /// </summary>
         Active = 1,
 
         /// <summary>
-        /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
+        /// The GroupMember's membership in the Group is pending.
         /// </summary>
         Pending = 2
     }

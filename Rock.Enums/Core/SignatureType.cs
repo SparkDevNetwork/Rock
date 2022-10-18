@@ -17,7 +17,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the type of signature. Either <see cref="Drawn"/> or <see cref="Typed"/>
+    /// Represents the type of signature. Either Drawn  or Typed
     /// </summary>
     [Enums.EnumDomain( "Core" )]
     public enum SignatureType

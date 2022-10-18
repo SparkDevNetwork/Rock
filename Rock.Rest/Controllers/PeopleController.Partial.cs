@@ -25,7 +25,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
 
 using Rock.BulkExport;
 using Rock.Data;
@@ -68,7 +69,7 @@ namespace Rock.Rest.Controllers
         /// <param name="key">The Id of the record</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [RockEnableQuery]
         public override Person Get( [FromODataUri] int key )
         {
             // NOTE: We want PrimaryAliasId to be populated, so call this.GetById( key ) which includes "Aliases"
@@ -80,7 +81,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [RockEnableQuery]
         public override IQueryable<Person> Get()
         {
             // NOTE: We want PrimaryAliasId to be populated, so include Aliases
@@ -93,7 +94,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [RockEnableQuery]
         [Rock.SystemGuid.RestActionGuid( "2A3BE8FB-0A64-4096-9AFA-D11AEB6E169D" )]
         public IQueryable<Person> Get( bool includeDeceased )
         {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Reporting;
@@ -35,6 +36,23 @@ namespace Rock.Field.Types
     {
         #region Edit Control
 
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            var helper = new StructuredContentHelper( value );
+
+            return helper.Render();
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -43,7 +61,7 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             var editor = new StructureContentEditor { ID = id };
 
@@ -56,10 +74,10 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
             var structureContentEditor = control as StructureContentEditor;
-            if ( structureContentEditor != null )
+            if (structureContentEditor != null)
             {
                 return structureContentEditor.StructuredContent;
             }
@@ -73,31 +91,19 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
             var structureContentEditor = control as StructureContentEditor;
-            if ( structureContentEditor != null )
+            if (structureContentEditor != null)
             {
                 structureContentEditor.StructuredContent = value;
             }
         }
 
-        #endregion
-
-        #region Formatting
-
         /// <inheritdoc/>
-        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
         {
-            var helper = new StructuredContentHelper( value );
-
-            return helper.Render();
-        }
-
-        /// <inheritdoc/>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+            return GetHtmlValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
         }
 
         /// <summary>
@@ -108,9 +114,9 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        public override string FormatValueAsHtml(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
         {
-            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+            return GetHtmlValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
         }
 
         /// <summary>
@@ -123,11 +129,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        public override string FormatValueAsHtml(Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
         {
-            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+            return GetHtmlValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
         }
 
+#endif
         #endregion
     }
 }

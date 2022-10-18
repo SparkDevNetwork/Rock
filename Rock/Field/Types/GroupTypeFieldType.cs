@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -36,111 +38,13 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_TYPE )]
     public class GroupTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         private const string GROUP_TYPE_PURPOSE_VALUE_GUID = "groupTypePurposeValueGuid";
-        
-        /// <summary>
-        /// Configurations the keys.
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( GROUP_TYPE_PURPOSE_VALUE_GUID );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var dvpGroupTypePurpose = new DefinedValuePicker();
-            dvpGroupTypePurpose.DisplayDescriptions = true;
-            controls.Add( dvpGroupTypePurpose );
-            dvpGroupTypePurpose.AutoPostBack = true;
-            dvpGroupTypePurpose.SelectedIndexChanged += OnQualifierUpdated;
-
-            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
-            dvpGroupTypePurpose.DefinedTypeId = definedType?.Id;
-            dvpGroupTypePurpose.Label = "Purpose";
-            dvpGroupTypePurpose.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( GROUP_TYPE_PURPOSE_VALUE_GUID, new ConfigurationValue( "Purpose", "An optional setting to limit the selection of group types to those that have the selected purpose.", string.Empty ) );
-
-            if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DefinedValuePicker )
-            {
-                int? definedValueId = ( ( DefinedValuePicker ) controls[0] ).SelectedValueAsInt();
-                if ( definedValueId.HasValue )
-                {
-                    var definedValue = DefinedValueCache.Get( definedValueId.Value );
-                    if ( definedValue != null )
-                    {
-                        configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value = definedValue.Guid.ToString();
-                    }
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DefinedValuePicker && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
-            {
-                Guid? definedValueGuid = configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value.AsGuidOrNull();
-                if ( definedValueGuid.HasValue )
-                {
-                    var definedValue = DefinedValueCache.Get( definedValueGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        ( ( DefinedValuePicker ) controls[0] ).SetValue( definedValue.Id.ToString() );
-                    }
-                }
-            }
-        }
 
         #endregion
 
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -164,113 +68,9 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var editControl = new GroupTypePicker { ID = id };
-            editControl.EnhanceForLongLists = true;
-            var qryGroupTypes = new GroupTypeService( new RockContext() ).Queryable();
-            
-            if ( configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
-            {
-                var groupTypePurposeValueGuid = ( configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID] ).Value.AsGuidOrNull();
-                if ( groupTypePurposeValueGuid.HasValue )
-                {
-                    qryGroupTypes = qryGroupTypes.Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeValueGuid.Value );
-                }
-            }
-
-            editControl.IsSortedByName = true;
-            editControl.GroupTypes = qryGroupTypes.ToList();
-            return editControl;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field ( as Guid )
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            List<string> values = new List<string>();
-
-            GroupTypePicker groupTypePicker = control as GroupTypePicker;
-            if ( groupTypePicker != null )
-            {
-                if ( groupTypePicker.SelectedGroupTypeId.HasValue )
-                {
-                    var groupType = GroupTypeCache.Get( groupTypePicker.SelectedGroupTypeId.Value );
-                    if ( groupType != null )
-                    {
-                        return groupType.Guid.ToString();
-                    }
-                }
-
-                return string.Empty;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value. ( as Guid )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            GroupTypePicker groupTypePicker = control as GroupTypePicker;
-            if ( groupTypePicker != null )
-            {
-                Guid? groupTypeGuid = value.AsGuidOrNull();
-                GroupTypeCache groupType = null;
-                if ( groupTypeGuid.HasValue )
-                {
-                    groupType = GroupTypeCache.Get( groupTypeGuid.Value );
-                }
-
-                groupTypePicker.SelectedGroupTypeId = groupType?.Id;
-            }
-        }
-
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new GroupTypeService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            var item = new GroupTypeService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -341,6 +141,214 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Configurations the keys.
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add(GROUP_TYPE_PURPOSE_VALUE_GUID);
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var dvpGroupTypePurpose = new DefinedValuePicker();
+            dvpGroupTypePurpose.DisplayDescriptions = true;
+            controls.Add(dvpGroupTypePurpose);
+            dvpGroupTypePurpose.AutoPostBack = true;
+            dvpGroupTypePurpose.SelectedIndexChanged += OnQualifierUpdated;
+
+            var definedType = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid());
+            dvpGroupTypePurpose.DefinedTypeId = definedType?.Id;
+            dvpGroupTypePurpose.Label = "Purpose";
+            dvpGroupTypePurpose.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add(GROUP_TYPE_PURPOSE_VALUE_GUID, new ConfigurationValue("Purpose", "An optional setting to limit the selection of group types to those that have the selected purpose.", string.Empty));
+
+            if (controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is DefinedValuePicker)
+            {
+                int? definedValueId = ((DefinedValuePicker)controls[0]).SelectedValueAsInt();
+                if (definedValueId.HasValue)
+                {
+                    var definedValue = DefinedValueCache.Get(definedValueId.Value);
+                    if (definedValue != null)
+                    {
+                        configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value = definedValue.Guid.ToString();
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            if (controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is DefinedValuePicker && configurationValues.ContainsKey(GROUP_TYPE_PURPOSE_VALUE_GUID))
+            {
+                Guid? definedValueGuid = configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value.AsGuidOrNull();
+                if (definedValueGuid.HasValue)
+                {
+                    var definedValue = DefinedValueCache.Get(definedValueGuid.Value);
+                    if (definedValue != null)
+                    {
+                        ((DefinedValuePicker)controls[0]).SetValue(definedValue.Id.ToString());
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            return !condensed
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        {
+            var editControl = new GroupTypePicker { ID = id };
+            editControl.EnhanceForLongLists = true;
+            var qryGroupTypes = new GroupTypeService(new RockContext()).Queryable();
+
+            if (configurationValues.ContainsKey(GROUP_TYPE_PURPOSE_VALUE_GUID))
+            {
+                var groupTypePurposeValueGuid = (configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID]).Value.AsGuidOrNull();
+                if (groupTypePurposeValueGuid.HasValue)
+                {
+                    qryGroupTypes = qryGroupTypes.Where(a => a.GroupTypePurposeValue.Guid == groupTypePurposeValueGuid.Value);
+                }
+            }
+
+            editControl.IsSortedByName = true;
+            editControl.GroupTypes = qryGroupTypes.ToList();
+            return editControl;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field ( as Guid )
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            List<string> values = new List<string>();
+
+            GroupTypePicker groupTypePicker = control as GroupTypePicker;
+            if (groupTypePicker != null)
+            {
+                if (groupTypePicker.SelectedGroupTypeId.HasValue)
+                {
+                    var groupType = GroupTypeCache.Get(groupTypePicker.SelectedGroupTypeId.Value);
+                    if (groupType != null)
+                    {
+                        return groupType.Guid.ToString();
+                    }
+                }
+
+                return string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value. ( as Guid )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        {
+            GroupTypePicker groupTypePicker = control as GroupTypePicker;
+            if (groupTypePicker != null)
+            {
+                Guid? groupTypeGuid = value.AsGuidOrNull();
+                GroupTypeCache groupType = null;
+                if (groupTypeGuid.HasValue)
+                {
+                    groupType = GroupTypeCache.Get(groupTypeGuid.Value);
+                }
+
+                groupTypePicker.SelectedGroupTypeId = groupType?.Id;
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        {
+            Guid guid = GetEditValue(control, configurationValues).AsGuid();
+            var item = new GroupTypeService(new RockContext()).Get(guid);
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
+        {
+            var item = new GroupTypeService(new RockContext()).Get(id ?? 0);
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue(control, configurationValues, guidValue);
+        }
+
+
+#endif
         #endregion
 
     }

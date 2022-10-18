@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
+
 using Rock.Badge.Component;
 using Rock.Data;
 using Rock.Model;
@@ -150,7 +152,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [EnableQuery]
+        [RockEnableQuery]
         [System.Web.Http.Route( "api/StreakTypes/Locations/{streakTypeId}" )]
         [Rock.SystemGuid.RestActionGuid( "3FAAF9AE-F244-4E3E-B47D-F21266DC52C9" )]
         public virtual IQueryable<Location> GetLocations( int streakTypeId )
@@ -191,7 +193,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [EnableQuery]
+        [RockEnableQuery]
         [System.Web.Http.Route( "api/StreakTypes/LocationSchedules/{streakTypeId}/{locationId}" )]
         [Rock.SystemGuid.RestActionGuid( "CE54BF07-97B2-4025-89B8-6E9CFD69F3B8" )]
         public virtual IQueryable<Schedule> GetLocationSchedules( int streakTypeId, int locationId )

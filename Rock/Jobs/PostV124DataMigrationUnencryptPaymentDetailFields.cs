@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,8 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V12.4
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.4 - Decrypt expiration month / year and name on card fields." )]
     [Description( "This job will decrypt the expiration month / year and the name on card fields." )]
 
@@ -41,23 +37,18 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]
-    public class PostV124DataMigrationUnencryptPaymentDetailFields : IJob
+    public class PostV124DataMigrationUnencryptPaymentDetailFields : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // Get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             // Get a list of all FinancialPaymentDetails that need to have the Encrypted fields decrypted into the plain text fields
 #pragma warning disable 612, 618
@@ -102,16 +93,16 @@ namespace Rock.Jobs
                     if ( RockDateTime.Now - lastProgressUpdate > TimeSpan.FromSeconds( 10 ) )
                     {
                         // Update the status every 10 seconds so that the progress can be shown.
-                        context.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalRecords} records. Approximately {minutesRemaining:N0} minutes remaining." );
+                        this.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalRecords} records. Approximately {minutesRemaining:N0} minutes remaining." );
                         lastProgressUpdate = RockDateTime.Now;
                     }
                 }
             }
 
-            context.UpdateLastStatusMessage( $"Processed {recordsProcessed} of {totalRecords} records. " );
+            this.UpdateLastStatusMessage( $"Processed {recordsProcessed} of {totalRecords} records. " );
 
             // Now that all the rows that need to have been decrypted have been processed, the job can be deleted.
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( this.ServiceJobId );
         }
     }
 }

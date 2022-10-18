@@ -526,7 +526,11 @@ namespace RockWeb.Blocks.Event
             {
                 // clone the workflow type
                 eventItemOccurrence = oldOccurrence.CloneWithoutIdentity();
-                eventItemOccurrence.Schedule = oldOccurrence.Schedule;
+                if ( oldOccurrence.Schedule != null )
+                {
+                    eventItemOccurrence.ScheduleId = null;
+                    eventItemOccurrence.Schedule = oldOccurrence.Schedule.CloneWithoutIdentity();
+                }
                 eventItemOccurrence.EventItem = oldOccurrence.EventItem;
                 eventItemOccurrence.ContactPersonAlias = oldOccurrence.ContactPersonAlias;
 

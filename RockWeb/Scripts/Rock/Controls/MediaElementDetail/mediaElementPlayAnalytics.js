@@ -345,9 +345,11 @@
             clientType.setAttribute("title", item.ClientType);
 
             const interactions = document.createElement("span");
-            interactions.setAttribute("class", "badge-circle badge-info ml-1");
-            interactions.setAttribute("title", "Interactions");
-            interactions.textContent = item.InteractionsCount;
+            if (item.InteractionsCount > 0) {
+                interactions.setAttribute("class", "badge-circle badge-info ml-1");
+                interactions.setAttribute("title", "Interactions");
+                interactions.textContent = item.InteractionsCount;
+            }
 
             const personInfo = document.createElement("div");
             personInfo.setAttribute("class", "individual-play-person-info");

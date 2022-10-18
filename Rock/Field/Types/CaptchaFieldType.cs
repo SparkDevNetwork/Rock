@@ -16,8 +16,10 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using AngleSharp.Dom;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -33,6 +35,40 @@ namespace Rock.Field.Types
     public class CaptchaFieldType : FieldType
     {
         #region Configuration
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            bool? boolValue = privateValue.AsBooleanOrNull();
+
+            if ( boolValue == true )
+            {
+                return "Verified";
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Gets a value indicating whether this field has a control to configure the default value
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has default control; otherwise, <c>false</c>.
+        /// </value>
+        public override bool HasDefaultControl => false;
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -58,19 +94,19 @@ namespace Rock.Field.Types
                 NotificationBoxType = NotificationBoxType.Info,
                 Text = "The user will be prompted to complete verify they are human each time this field is displayed in edit mode."
             };
-            controls.Add( infoBox );
+            controls.Add(infoBox);
 
-            var siteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
-            var secretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
+            var siteKey = GlobalAttributesCache.Value("core_GoogleReCaptchaSiteKey");
+            var secretKey = GlobalAttributesCache.Value("core_GoogleReCaptchaSecretKey");
 
-            if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
+            if (siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace())
             {
                 var nokeysBox = new NotificationBox
                 {
                     NotificationBoxType = NotificationBoxType.Warning,
                     Text = "Google ReCaptcha site key or secret key have not been configured yet. Captcha will not work until those are set."
                 };
-                controls.Add( nokeysBox );
+                controls.Add(nokeysBox);
             }
 
             return controls;
@@ -81,7 +117,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
         {
             var configurationValues = new Dictionary<string, ConfigurationValue>();
 
@@ -93,26 +129,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
         {
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            bool? boolValue = privateValue.AsBooleanOrNull();
-
-            if ( boolValue == true )
-            {
-                return "Verified";
-            }
-
-            return string.Empty;
-        }
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -121,11 +141,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
         }
 
         /// <summary>
@@ -135,7 +155,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object ValueAsFieldType(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
         {
             return value.AsDoubleOrNull();
         }
@@ -147,23 +167,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
         {
             // return ValueAsFieldType which returns the value as a double
-            return this.ValueAsFieldType( parentControl, value, configurationValues );
+            return this.ValueAsFieldType(parentControl, value, configurationValues);
         }
-
-        #endregion
-
-        #region Edit Control
-
-        /// <summary>
-        /// Gets a value indicating whether this field has a control to configure the default value
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has default control; otherwise, <c>false</c>.
-        /// </value>
-        public override bool HasDefaultControl => false;
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -173,7 +181,7 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             return new Captcha
             {
@@ -187,9 +195,9 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            if ( control is Captcha captcha )
+            if (control is Captcha captcha)
             {
                 return captcha.IsResponseValid().ToString();
             }
@@ -203,10 +211,11 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
         }
 
+#endif
         #endregion
     }
 }

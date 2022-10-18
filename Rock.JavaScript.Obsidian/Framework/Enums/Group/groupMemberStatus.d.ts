@@ -21,14 +21,14 @@
 // </copyright>
 //
 
-/** Represents the status of a Rock.Model.GroupMember in a Rock.Model.Group. */
+/** Represents the status of a GroupMember in a Group. */
 export const enum GroupMemberStatus {
-    /** The Rock.Model.GroupMember is not an active member of the Rock.Model.Group. */
+    /** The GroupMember is not an active member of the Group. */
     Inactive = 0,
 
-    /** The Rock.Model.GroupMember is an active member of the Rock.Model.Group. */
+    /** The GroupMember is an active member of the Group. */
     Active = 1,
 
-    /** The GroupMember's membership in the Rock.Model.Group is pending. */
+    /** The GroupMember's membership in the Group is pending. */
     Pending = 2
 }
