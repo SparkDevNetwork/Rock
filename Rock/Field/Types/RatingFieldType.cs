@@ -19,10 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -40,6 +39,66 @@ namespace Rock.Field.Types
     public class RatingFieldType : FieldType
     {
         #region Configuration
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "max" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var nb = new NumberBox();
+            controls.Add( nb );
+            nb.NumberType = System.Web.UI.WebControls.ValidationDataType.Integer;
+            nb.AutoPostBack = true;
+            nb.TextChanged += OnQualifierUpdated;
+            nb.Label = "Max Rating";
+            nb.Help = "The number of stars ( max rating ) that should be displayed.";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "max", new ConfigurationValue( "Max Rating", "The number of stars ( max rating ) that should be displayed.", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is NumberBox )
+                    configurationValues["max"].Value = ( (NumberBox)controls[0] ).Text;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( "max" ) )
+                ( (NumberBox)controls[0] ).Text = configurationValues["max"].Value;
+        }
 
         /// <summary>
         /// Gets the maximum rating.
@@ -111,6 +170,81 @@ namespace Rock.Field.Types
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condsed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            int rating = value.AsInteger();
+            var sb = new StringBuilder();
+            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
+            {
+                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsInteger();
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as an integer
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control
@@ -128,12 +262,27 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetPrivateEditValue(string publicValue, Dictionary<string, string> privateConfigurationValues)
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
 
             return ratingValue?.Value.ToString() ?? string.Empty;
         }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            int max = GetMaxRating(configurationValues);
+            return new RockRating { ID = id, Max = max };
+        }
+
 
         #endregion
 
@@ -148,6 +297,49 @@ namespace Rock.Field.Types
         public override ComparisonType FilterComparisonType
         {
             get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var panel = new Panel();
+            panel.ID = string.Format( "{0}_ctlComparePanel", id );
+            panel.AddCssClass( "js-filter-control" );
+
+            var control = EditControl( configurationValues, id );
+            control.ID = string.Format( "{0}_ctlCompareValue", id );
+            panel.Controls.Add( control );
+
+            return panel;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return base.GetFilterValueValue( control.Controls[0], configurationValues );
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            base.SetFilterValueValue( control.Controls[0], configurationValues, value );
         }
 
         /// <summary>
@@ -246,204 +438,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add("max");
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            var nb = new NumberBox();
-            controls.Add(nb);
-            nb.NumberType = System.Web.UI.WebControls.ValidationDataType.Integer;
-            nb.AutoPostBack = true;
-            nb.TextChanged += OnQualifierUpdated;
-            nb.Label = "Max Rating";
-            nb.Help = "The number of stars ( max rating ) that should be displayed.";
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add("max", new ConfigurationValue("Max Rating", "The number of stars ( max rating ) that should be displayed.", ""));
-
-            if (controls != null && controls.Count == 1)
-            {
-                if (controls[0] != null && controls[0] is NumberBox)
-                    configurationValues["max"].Value = ((NumberBox)controls[0]).Text;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey("max"))
-                ((NumberBox)controls[0]).Text = configurationValues["max"].Value;
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetHtmlValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedHtmlValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condsed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
-        {
-            int rating = value.AsInteger();
-            var sb = new StringBuilder();
-            for (int i = 1; i <= GetMaxRating(configurationValues); i++)
-            {
-                sb.AppendFormat("<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected");
-            }
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml(Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
-        {
-            return FormatValueAsHtml(parentControl, value, configurationValues, condensed);
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return value.AsInteger();
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            // return ValueAsFieldType which returns the value as an integer
-            return this.ValueAsFieldType(parentControl, value, configurationValues);
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            int max = GetMaxRating(configurationValues);
-            return new RockRating { ID = id, Max = max };
-        }
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var panel = new Panel();
-            panel.ID = string.Format("{0}_ctlComparePanel", id);
-            panel.AddCssClass("js-filter-control");
-
-            var control = EditControl(configurationValues, id);
-            control.ID = string.Format("{0}_ctlCompareValue", id);
-            panel.Controls.Add(control);
-
-            return panel;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return base.GetFilterValueValue(control.Controls[0], configurationValues);
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            base.SetFilterValueValue(control.Controls[0], configurationValues, value);
-        }
-
-#endif
         #endregion
 
         private class RatingPublicValue

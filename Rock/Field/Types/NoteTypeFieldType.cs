@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -54,6 +53,103 @@ namespace Rock.Field.Types
         /// </summary>
         protected const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( ENTITY_TYPE_NAME_KEY );
+            configKeys.Add( QUALIFIER_COLUMN_KEY );
+            configKeys.Add( QUALIFIER_VALUE_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var ddl = new RockDropDownList();
+            controls.Add( ddl );
+            ddl.Items.Add( new ListItem( None.Text, None.IdValue ) );
+            foreach ( var entityType in new EntityTypeService( new RockContext() ).GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
+            {
+                ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
+            }
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Entity Type";
+            ddl.Help = "The type of entity to display categories for.";
+
+            var tbColumn = new RockTextBox();
+            controls.Add( tbColumn );
+            tbColumn.AutoPostBack = true;
+            tbColumn.TextChanged += OnQualifierUpdated;
+            tbColumn.Label = "Qualifier Column";
+            tbColumn.Help = "Entity column qualifier.";
+
+            var tbValue = new RockTextBox();
+            controls.Add( tbValue );
+            tbValue.AutoPostBack = true;
+            tbValue.TextChanged += OnQualifierUpdated;
+            tbValue.Label = "Qualifier Value";
+            tbValue.Help = "Entity column value.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ENTITY_TYPE_NAME_KEY, new ConfigurationValue( "Entity Type", "The type of entity to display categories for", "" ) );
+            configurationValues.Add( QUALIFIER_COLUMN_KEY, new ConfigurationValue( "Qualifier Column", "Entity column qualifier", "" ) );
+            configurationValues.Add( QUALIFIER_VALUE_KEY, new ConfigurationValue( "Qualifier Value", "Entity column value", "" ) );
+
+            if ( controls != null && controls.Count == 3 )
+            {
+                if ( controls[0] != null && controls[0] is DropDownList )
+                    configurationValues[ENTITY_TYPE_NAME_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
+
+                if ( controls[1] != null && controls[1] is TextBox )
+                    configurationValues[QUALIFIER_COLUMN_KEY].Value = ( ( TextBox ) controls[1] ).Text;
+
+                if ( controls[2] != null && controls[2] is TextBox )
+                    configurationValues[QUALIFIER_VALUE_KEY].Value = ( ( TextBox ) controls[2] ).Text;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 3 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                    ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+
+                if ( controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                    ( ( TextBox ) controls[1] ).Text = configurationValues[QUALIFIER_COLUMN_KEY].Value;
+
+                if ( controls[2] != null && controls[2] is TextBox && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                    ( ( TextBox ) controls[2] ).Text = configurationValues[QUALIFIER_VALUE_KEY].Value;
+            }
+        }
+
         #endregion
 
         #region Formatting
@@ -79,13 +175,158 @@ namespace Rock.Field.Types
             return privateValue;
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
         #endregion
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            int entityTypeId = 0;
+            string entityTypeName = string.Empty;
+            string qualifierColumn = string.Empty;
+            string qualifierValue = string.Empty;
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                {
+                    entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                    if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
+                    {
+                        var entityType = EntityTypeCache.Get( entityTypeName );
+                        if ( entityType != null )
+                        {
+                            entityTypeId = entityType.Id;
+                        }
+                    }
+                }
+                if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                {
+                    qualifierColumn = configurationValues[QUALIFIER_COLUMN_KEY].Value;
+                }
+
+                if ( configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                {
+                    qualifierValue = configurationValues[QUALIFIER_VALUE_KEY].Value;
+                }
+            }
+
+            var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( string.IsNullOrWhiteSpace( entityTypeName ) )
+                {
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name ) )
+                    {
+                        editControl.Items.Add( new ListItem( string.Format( "{0}: {1}", noteType.EntityType.FriendlyName, noteType.Name ), noteType.Guid.ToString().ToUpper() ) );
+                    }
+                }
+                else
+                {
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Get( entityTypeId, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name ) )
+                    {
+                        editControl.Items.Add( new ListItem( noteType.Name, noteType.Guid.ToString().ToUpper() ) );
+                    }
+                }
+            }
+
+            return editControl;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// return value as Category.Guid
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as DropDownList;
+            if ( picker != null )
+            {
+                // picker has value as NoteType.Guid
+                return picker.SelectedValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// value is a Category.Guid string
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var editControl = control as ListControl;
+            if ( editControl != null )
+            {
+                editControl.SetValue( value );
+            }
+        }
+
         #endregion
 
         #region Entity Methods
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var noteType = NoteTypeCache.Get( guid );
+            return noteType != null ? noteType.Id : ( int? ) null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var noteType = NoteTypeCache.Get( id ?? 0 );
+            string guidValue = noteType != null ? noteType.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
 
         /// <summary>
         /// Gets the entity.
@@ -155,254 +396,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add(ENTITY_TYPE_NAME_KEY);
-            configKeys.Add(QUALIFIER_COLUMN_KEY);
-            configKeys.Add(QUALIFIER_VALUE_KEY);
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            var ddl = new RockDropDownList();
-            controls.Add(ddl);
-            ddl.Items.Add(new ListItem(None.Text, None.IdValue));
-            foreach (var entityType in new EntityTypeService(new RockContext()).GetEntities().OrderBy(e => e.FriendlyName).ThenBy(e => e.Name))
-            {
-                ddl.Items.Add(new ListItem(entityType.FriendlyName, entityType.Name));
-            }
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Label = "Entity Type";
-            ddl.Help = "The type of entity to display categories for.";
-
-            var tbColumn = new RockTextBox();
-            controls.Add(tbColumn);
-            tbColumn.AutoPostBack = true;
-            tbColumn.TextChanged += OnQualifierUpdated;
-            tbColumn.Label = "Qualifier Column";
-            tbColumn.Help = "Entity column qualifier.";
-
-            var tbValue = new RockTextBox();
-            controls.Add(tbValue);
-            tbValue.AutoPostBack = true;
-            tbValue.TextChanged += OnQualifierUpdated;
-            tbValue.Label = "Qualifier Value";
-            tbValue.Help = "Entity column value.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add(ENTITY_TYPE_NAME_KEY, new ConfigurationValue("Entity Type", "The type of entity to display categories for", ""));
-            configurationValues.Add(QUALIFIER_COLUMN_KEY, new ConfigurationValue("Qualifier Column", "Entity column qualifier", ""));
-            configurationValues.Add(QUALIFIER_VALUE_KEY, new ConfigurationValue("Qualifier Value", "Entity column value", ""));
-
-            if (controls != null && controls.Count == 3)
-            {
-                if (controls[0] != null && controls[0] is DropDownList)
-                    configurationValues[ENTITY_TYPE_NAME_KEY].Value = ((DropDownList)controls[0]).SelectedValue;
-
-                if (controls[1] != null && controls[1] is TextBox)
-                    configurationValues[QUALIFIER_COLUMN_KEY].Value = ((TextBox)controls[1]).Text;
-
-                if (controls[2] != null && controls[2] is TextBox)
-                    configurationValues[QUALIFIER_VALUE_KEY].Value = ((TextBox)controls[2]).Text;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (controls != null && controls.Count == 3 && configurationValues != null)
-            {
-                if (controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey(ENTITY_TYPE_NAME_KEY))
-                    ((DropDownList)controls[0]).SelectedValue = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
-
-                if (controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey(QUALIFIER_COLUMN_KEY))
-                    ((TextBox)controls[1]).Text = configurationValues[QUALIFIER_COLUMN_KEY].Value;
-
-                if (controls[2] != null && controls[2] is TextBox && configurationValues.ContainsKey(QUALIFIER_VALUE_KEY))
-                    ((TextBox)controls[2]).Text = configurationValues[QUALIFIER_VALUE_KEY].Value;
-            }
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-               ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-               : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            int entityTypeId = 0;
-            string entityTypeName = string.Empty;
-            string qualifierColumn = string.Empty;
-            string qualifierValue = string.Empty;
-
-            if (configurationValues != null)
-            {
-                if (configurationValues.ContainsKey(ENTITY_TYPE_NAME_KEY))
-                {
-                    entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
-                    if (!string.IsNullOrWhiteSpace(entityTypeName) && entityTypeName != None.IdValue)
-                    {
-                        var entityType = EntityTypeCache.Get(entityTypeName);
-                        if (entityType != null)
-                        {
-                            entityTypeId = entityType.Id;
-                        }
-                    }
-                }
-                if (configurationValues.ContainsKey(QUALIFIER_COLUMN_KEY))
-                {
-                    qualifierColumn = configurationValues[QUALIFIER_COLUMN_KEY].Value;
-                }
-
-                if (configurationValues.ContainsKey(QUALIFIER_VALUE_KEY))
-                {
-                    qualifierValue = configurationValues[QUALIFIER_VALUE_KEY].Value;
-                }
-            }
-
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Items.Add(new ListItem());
-
-            using (var rockContext = new RockContext())
-            {
-                if (string.IsNullOrWhiteSpace(entityTypeName))
-                {
-                    foreach (var noteType in new NoteTypeService(rockContext)
-                        .Queryable()
-                        .OrderBy(n => n.EntityType.Name)
-                        .ThenBy(n => n.Name))
-                    {
-                        editControl.Items.Add(new ListItem(string.Format("{0}: {1}", noteType.EntityType.FriendlyName, noteType.Name), noteType.Guid.ToString().ToUpper()));
-                    }
-                }
-                else
-                {
-                    foreach (var noteType in new NoteTypeService(rockContext)
-                        .Get(entityTypeId, qualifierColumn, qualifierValue)
-                        .OrderBy(n => n.Name))
-                    {
-                        editControl.Items.Add(new ListItem(noteType.Name, noteType.Guid.ToString().ToUpper()));
-                    }
-                }
-            }
-
-            return editControl;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// return value as Category.Guid
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var picker = control as DropDownList;
-            if (picker != null)
-            {
-                // picker has value as NoteType.Guid
-                return picker.SelectedValue;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// value is a Category.Guid string
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var editControl = control as ListControl;
-            if (editControl != null)
-            {
-                editControl.SetValue(value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            Guid guid = GetEditValue(control, configurationValues).AsGuid();
-            var noteType = NoteTypeCache.Get(guid);
-            return noteType != null ? noteType.Id : (int?)null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
-        {
-            var noteType = NoteTypeCache.Get(id ?? 0);
-            string guidValue = noteType != null ? noteType.Guid.ToString() : string.Empty;
-            SetEditValue(control, configurationValues, guidValue);
-        }
-
-#endif
         #endregion
     }
 }

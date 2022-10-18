@@ -16,10 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -37,6 +36,74 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string NUMBER_OF_ROWS = "numberofrows";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( NUMBER_OF_ROWS );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add number box for selecting the number of rows
+            var nb = new NumberBox();
+            controls.Add( nb );
+            nb.AutoPostBack = true;
+            nb.TextChanged += OnQualifierUpdated;
+            nb.NumberType = ValidationDataType.Integer;
+            nb.Label = "Rows";
+            nb.Help = "The number of rows to display (default is 3).";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
+
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is NumberBox )
+                {
+                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[0] ).Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                {
+                    ( (NumberBox)controls[0] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                }
+            }
+        }
 
         #endregion
 
@@ -77,9 +144,55 @@ namespace Rock.Field.Types
             return result.Truncate( 100 );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var result = !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+
+            result = HtmlSanitizer.SanitizeHtml( result );
+            return result;
+        }
+
         #endregion
 
         #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The id.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var mdEditor = new MarkdownEditor { ID = id };
+            int? rows = 3;
+            bool allowHtml = false;
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                {
+                    rows = configurationValues[NUMBER_OF_ROWS].Value.AsIntegerOrNull() ?? 3;
+                }
+            }
+
+            mdEditor.Rows = rows.HasValue ? rows.Value : 3;
+            mdEditor.ValidateRequestMode = allowHtml ? ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
+
+            return mdEditor;
+        }
 
         #endregion
 
@@ -99,125 +212,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add(NUMBER_OF_ROWS);
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            // Add number box for selecting the number of rows
-            var nb = new NumberBox();
-            controls.Add(nb);
-            nb.AutoPostBack = true;
-            nb.TextChanged += OnQualifierUpdated;
-            nb.NumberType = ValidationDataType.Integer;
-            nb.Label = "Rows";
-            nb.Help = "The number of rows to display (default is 3).";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add(NUMBER_OF_ROWS, new ConfigurationValue("Rows", "The number of rows to display (default is 3).", ""));
-
-            if (controls != null)
-            {
-                if (controls.Count > 0 && controls[0] != null && controls[0] is NumberBox)
-                {
-                    configurationValues[NUMBER_OF_ROWS].Value = ((NumberBox)controls[0]).Text;
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (controls != null && configurationValues != null)
-            {
-                if (controls.Count > 0 && controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey(NUMBER_OF_ROWS))
-                {
-                    ((NumberBox)controls[0]).Text = configurationValues[NUMBER_OF_ROWS].Value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            var result = !condensed
-                ? GetHtmlValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedHtmlValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-
-            result = HtmlSanitizer.SanitizeHtml(result);
-            return result;
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The id.</param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var mdEditor = new MarkdownEditor { ID = id };
-            int? rows = 3;
-            bool allowHtml = false;
-
-            if (configurationValues != null)
-            {
-                if (configurationValues.ContainsKey(NUMBER_OF_ROWS))
-                {
-                    rows = configurationValues[NUMBER_OF_ROWS].Value.AsIntegerOrNull() ?? 3;
-                }
-            }
-
-            mdEditor.Rows = rows.HasValue ? rows.Value : 3;
-            mdEditor.ValidateRequestMode = allowHtml ? ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
-
-            return mdEditor;
-        }
-
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
@@ -226,15 +220,14 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var tbValue = new RockTextBox();
-            tbValue.ID = string.Format("{0}_ctlCompareValue", id);
-            tbValue.AddCssClass("js-filter-control");
+            tbValue.ID = string.Format( "{0}_ctlCompareValue", id );
+            tbValue.AddCssClass( "js-filter-control" );
             return tbValue;
         }
 
-#endif
         #endregion
     }
 }

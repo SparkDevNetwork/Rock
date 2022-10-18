@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -39,15 +38,6 @@ namespace Rock.Field.Types
 
         private const string REPEAT_COLUMNS = "repeatColumns";
 
-        #endregion Configuration
-
-        #region Edit Control
-
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -55,7 +45,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add(REPEAT_COLUMNS);
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -73,7 +63,7 @@ namespace Rock.Field.Types
             tbRepeatColumns.MinimumValue = "0";
             tbRepeatColumns.AutoPostBack = true;
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
-            controls.Add(tbRepeatColumns);
+            controls.Add( tbRepeatColumns );
 
             return controls;
         }
@@ -83,14 +73,14 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues(controls);
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
             string description = $"Select how many columns the list should use before going to the next row. If blank {LavaCommandsPicker.DefaultRepeatColumns} is used.";
-            configurationValues.Add(REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, LavaCommandsPicker.DefaultRepeatColumns.ToString()));
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, LavaCommandsPicker.DefaultRepeatColumns.ToString() ) );
 
-            if (controls != null && controls.Count > 0)
+            if ( controls != null && controls.Count > 0 )
             {
                 var tbRepeatColumns = controls[0] as NumberBox;
                 configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : LavaCommandsPicker.DefaultRepeatColumns.ToString();
@@ -104,16 +94,21 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            base.SetConfigurationValues(controls, configurationValues);
+            base.SetConfigurationValues( controls, configurationValues );
 
-            if (controls != null && controls.Count > 0 && configurationValues != null)
+            if ( controls != null && controls.Count > 0 && configurationValues != null )
             {
                 var tbRepeatColumns = controls[0] as NumberBox;
-                tbRepeatColumns.Text = configurationValues.ContainsKey(REPEAT_COLUMNS) ? configurationValues[REPEAT_COLUMNS].Value : LavaCommandsPicker.DefaultRepeatColumns.ToString();
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : LavaCommandsPicker.DefaultRepeatColumns.ToString();
             }
         }
+
+        #endregion Configuration
+
+
+        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -123,11 +118,11 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new LavaCommandsPicker { ID = id };
 
-            if (configurationValues.ContainsKey(REPEAT_COLUMNS))
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
             {
                 editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
             }
@@ -141,12 +136,12 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as LavaCommandsPicker;
-            if (picker != null)
+            if ( picker != null )
             {
-                return picker.SelectedLavaCommands?.AsDelimited(",");
+                return picker.SelectedLavaCommands?.AsDelimited( "," );
             }
 
             return null;
@@ -158,16 +153,15 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var picker = control as LavaCommandsPicker;
-            if (picker != null)
+            if ( picker != null )
             {
                 picker.SelectedLavaCommands = value?.SplitDelimitedValues().ToList() ?? new List<string>();
             }
         }
 
-#endif
         #endregion
     }
 }

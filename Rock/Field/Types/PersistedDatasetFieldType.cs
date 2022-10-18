@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -56,9 +55,108 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var persistedDatasetGuid = value.AsGuidOrNull();
+            if ( persistedDatasetGuid.HasValue )
+            {
+                return PersistedDatasetCache.Get( persistedDatasetGuid.Value ).ResultDataObject;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var persistedDatasetGuid = value.AsGuidOrNull();
+            if ( persistedDatasetGuid.HasValue )
+            {
+                return PersistedDatasetCache.Get( persistedDatasetGuid.Value ).Name;
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var ddlPersistedDataset = new RockDropDownList { ID = id };
+            ddlPersistedDataset.Items.Clear();
+            ddlPersistedDataset.Items.Add( new ListItem() );
+            foreach ( var persistedDataset in PersistedDatasetCache.All().OrderBy( a => a.Name ) )
+            {
+                ddlPersistedDataset.Items.Add( new ListItem( persistedDataset.Name, persistedDataset.Guid.ToString() ) );
+            }
+
+            return ddlPersistedDataset;
+        }
+
+        /// <summary>
+        /// Gets the edit value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var ddlPersistedDataset = control as RockDropDownList;
+            return ddlPersistedDataset?.SelectedValue;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var ddlPersistedDataset = control as RockDropDownList;
+            if ( ddlPersistedDataset != null )
+            {
+                ddlPersistedDataset.SetValue( value );
+            }
+        }
 
         /// <summary>
         /// Gets the cached entities as a list.
@@ -114,111 +212,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-               ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-               : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var persistedDatasetGuid = value.AsGuidOrNull();
-            if (persistedDatasetGuid.HasValue)
-            {
-                return PersistedDatasetCache.Get(persistedDatasetGuid.Value).ResultDataObject;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var persistedDatasetGuid = value.AsGuidOrNull();
-            if (persistedDatasetGuid.HasValue)
-            {
-                return PersistedDatasetCache.Get(persistedDatasetGuid.Value).Name;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var ddlPersistedDataset = new RockDropDownList { ID = id };
-            ddlPersistedDataset.Items.Clear();
-            ddlPersistedDataset.Items.Add(new ListItem());
-            foreach (var persistedDataset in PersistedDatasetCache.All().OrderBy(a => a.Name))
-            {
-                ddlPersistedDataset.Items.Add(new ListItem(persistedDataset.Name, persistedDataset.Guid.ToString()));
-            }
-
-            return ddlPersistedDataset;
-        }
-
-        /// <summary>
-        /// Gets the edit value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var ddlPersistedDataset = control as RockDropDownList;
-            return ddlPersistedDataset?.SelectedValue;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var ddlPersistedDataset = control as RockDropDownList;
-            if (ddlPersistedDataset != null)
-            {
-                ddlPersistedDataset.SetValue(value);
-            }
-        }
-
-#endif
         #endregion
     }
 }

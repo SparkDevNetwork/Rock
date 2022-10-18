@@ -148,20 +148,6 @@
                 </div>
             </div>
 
-            <span class="segment-and"><span class="text">And</span></span>
-
-             <%-- Environment --%>
-                <asp:Panel ID="pnlEnvironment" runat="server" CssClass="panel panel-section">
-                    <div class="panel-heading">
-                        <div class="panel-title">Environment</div>
-                    </div>
-                    <div class="panel-body">
-                       <Rock:SlidingDateRangePicker ID="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="DateRange" TimeUnit="Hour" />
-                       <Rock:TimePicker ID="tpTimeOfDay" runat="server" Label="Time of Day"  />
-                    </div>
-                </asp:Panel>
-            </div>
-
             <%-- Modal for Query String Filter --%>
             <Rock:ModalDialog ID="mdQueryStringFilter" runat="server" OnSaveClick="mdQueryStringFilter_SaveClick" ValidationGroup="vgQueryStringFilter">
                 <Content>

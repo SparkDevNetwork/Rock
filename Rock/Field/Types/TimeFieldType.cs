@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -38,6 +36,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.TIME )]
     public class TimeFieldType : FieldType
     {
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -51,9 +50,101 @@ namespace Rock.Field.Types
             return timeValue.ToTimeString();
         }
 
+        /// <summary>
+        /// Formats time display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsTimeSpan();
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as a TimeSpan
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var tp = new TimePicker { ID = id };
+            return tp;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as TimePicker;
+            if ( picker != null )
+            {
+                if ( picker.SelectedTime.HasValue )
+                {
+                    // serialize the time using culture-insensitive "constant" format
+                    return picker.SelectedTime.Value.ToString( "c" );
+                }
+
+                return string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var picker = control as TimePicker;
+            if ( picker != null )
+            {
+                picker.SelectedTime = value.AsTimeSpan();
+            }
+        }
 
         #endregion
 
@@ -87,103 +178,6 @@ namespace Rock.Field.Types
             return null;
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Formats time display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return value.AsTimeSpan();
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            // return ValueAsFieldType which returns the value as a TimeSpan
-            return this.ValueAsFieldType(parentControl, value, configurationValues);
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var tp = new TimePicker { ID = id };
-            return tp;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var picker = control as TimePicker;
-            if (picker != null)
-            {
-                if (picker.SelectedTime.HasValue)
-                {
-                    // serialize the time using culture-insensitive "constant" format
-                    return picker.SelectedTime.Value.ToString("c");
-                }
-
-                return string.Empty;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var picker = control as TimePicker;
-            if (picker != null)
-            {
-                picker.SelectedTime = value.AsTimeSpan();
-            }
-        }
-
         /// <summary>
         /// Determines whether this FieldType supports doing PostBack for the editControl
         /// </summary>
@@ -191,7 +185,7 @@ namespace Rock.Field.Types
         /// <returns>
         ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
         /// </returns>
-        public override bool HasChangeHandler(Control editControl)
+        public override bool HasChangeHandler( Control editControl )
         {
             // the TimePicker can cause a postback loop if OnChange and AutoPostback is enabled, so disable the HasChangeHandler
             return false;
@@ -202,12 +196,12 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="editControl">The edit control.</param>
         /// <param name="action">The action.</param>
-        public override void AddChangeHandler(Control editControl, Action action)
+        public override void AddChangeHandler( Control editControl, Action action )
         {
             // the TimePicker can cause a postback loop if OnChange and AutoPostback is enabled, so disable the HasChangeHandler
         }
 
-#endif
         #endregion
+
     }
 }

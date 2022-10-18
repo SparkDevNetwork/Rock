@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -34,6 +33,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMOTE_AUTHS )]
     public class RemoteAuthsFieldType : FieldType
     {
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -61,28 +61,6 @@ namespace Rock.Field.Types
             return names.AsDelimited( ", " );
         }
 
-        #endregion
-
-        #region Edit Control
-
-        #endregion 
-
-        #region Filter Control
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -91,13 +69,16 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -107,15 +88,15 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             try
             {
-                return new RemoteAuthsPicker { ID = id };
+                return new RemoteAuthsPicker { ID = id }; 
             }
-            catch (SystemException ex)
+            catch ( SystemException ex )
             {
-                return new LiteralControl(ex.Message);
+                return new LiteralControl( ex.Message );
             }
         }
 
@@ -125,11 +106,11 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (control != null && control is RemoteAuthsPicker)
+            if ( control != null && control is RemoteAuthsPicker )
             {
-                return ((RemoteAuthsPicker)control).SelectedValues.AsDelimited("|");
+                return ( (RemoteAuthsPicker)control ).SelectedValues.AsDelimited( "|" );
             }
             return null;
         }
@@ -140,15 +121,19 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var picker = control as RemoteAuthsPicker;
-            if (picker != null)
+            if ( picker != null )
             {
                 var selectedGuids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
                 picker.SelectedValues = selectedGuids;
             }
         }
+
+        #endregion 
+
+        #region Filter Control
 
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
@@ -158,13 +143,21 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode)
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
             // This field type does not support filtering
             return null;
         }
 
-#endif
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
         #endregion
 
     }

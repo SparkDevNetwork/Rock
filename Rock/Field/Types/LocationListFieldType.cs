@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -68,13 +67,248 @@ namespace Rock.Field.Types
             public const string AddressRequired = "AddressRequired";
         }
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configurationKeys = base.ConfigurationKeys();
+
+            configurationKeys.Add( ConfigurationKey.LocationType );
+            configurationKeys.Add( ConfigurationKey.ParentLocation );
+            configurationKeys.Add( ConfigurationKey.AllowAddingNewLocations );
+            configurationKeys.Add( ConfigurationKey.ShowCityState );
+            configurationKeys.Add( ConfigurationKey.AddressRequired );
+
+            return configurationKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var locationTypeDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
+
+            var dvpLocationType = new DefinedValuePicker();
+            controls.Add( dvpLocationType );
+            dvpLocationType.AutoPostBack = true;
+            dvpLocationType.SelectedIndexChanged += OnQualifierUpdated;
+            dvpLocationType.Label = "Location Type";
+            dvpLocationType.DefinedTypeId = locationTypeDefinedType.Id;
+
+            var lpParentLocation = new LocationPicker();
+            controls.Add( lpParentLocation );
+            lpParentLocation.Label = "Parent Location";
+            lpParentLocation.Required = true;
+            lpParentLocation.AllowedPickerModes = LocationPickerMode.Named;
+            lpParentLocation.CurrentPickerMode = LocationPickerMode.Named;
+            lpParentLocation.SelectLocation += OnQualifierUpdated;
+
+            var cbAllowAddingNewLocations = new RockCheckBox();
+            controls.Add( cbAllowAddingNewLocations );
+            cbAllowAddingNewLocations.AutoPostBack = true;
+            cbAllowAddingNewLocations.CheckedChanged += OnQualifierUpdated;
+            cbAllowAddingNewLocations.Label = "Allow Adding New Locations";
+
+            var cbShowCityState = new RockCheckBox();
+            controls.Add( cbShowCityState );
+            cbShowCityState.AutoPostBack = true;
+            cbShowCityState.CheckedChanged += OnQualifierUpdated;
+            cbShowCityState.Label = "Show City / State";
+
+            var cbAddressRequired = new RockCheckBox();
+            controls.Add( cbAddressRequired );
+            cbAddressRequired.AutoPostBack = true;
+            cbAddressRequired.CheckedChanged += OnQualifierUpdated;
+            cbAddressRequired.Label = "Address Required";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ConfigurationKey.LocationType, new ConfigurationValue( "Location Type", string.Empty, string.Empty ) );
+            configurationValues.Add( ConfigurationKey.AddressRequired, new ConfigurationValue( "Address Required", string.Empty, "false" ) );
+            configurationValues.Add( ConfigurationKey.AllowAddingNewLocations, new ConfigurationValue( "Allow Adding New Locations", string.Empty, "false" ) );
+            configurationValues.Add( ConfigurationKey.ParentLocation, new ConfigurationValue( "Parent Location", string.Empty, string.Empty ) );
+            configurationValues.Add( ConfigurationKey.ShowCityState, new ConfigurationValue( "Show City / State", string.Empty, "false" ) );
+
+            if ( controls.Count > 0 && controls[0] is DefinedValuePicker )
+            {
+                configurationValues[ConfigurationKey.LocationType].Value = ( ( DefinedValuePicker ) controls[0] ).SelectedDefinedValueId.ToString();
+            }
+
+            if ( controls.Count > 1 && controls[1] is LocationPicker )
+            {
+                configurationValues[ConfigurationKey.ParentLocation].Value = ( ( LocationPicker ) controls[1] ).Location?.Id.ToStringSafe();
+            }
+
+            if ( controls.Count > 2 && controls[2] is RockCheckBox )
+            {
+                configurationValues[ConfigurationKey.AllowAddingNewLocations].Value = ( ( RockCheckBox ) controls[2] ).Checked.ToString();
+            }
+
+            if ( controls.Count > 3 && controls[3] is RockCheckBox )
+            {
+                configurationValues[ConfigurationKey.ShowCityState].Value = ( ( RockCheckBox ) controls[3] ).Checked.ToString();
+            }
+
+            if ( controls.Count > 4 && controls[4] is RockCheckBox )
+            {
+                configurationValues[ConfigurationKey.AddressRequired].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( configurationValues != null )
+            {
+                if ( controls.Count > 0 && controls[0] is DefinedValuePicker && configurationValues.ContainsKey( ConfigurationKey.LocationType ) )
+                {
+                    ( ( DefinedValuePicker ) controls[0] ).SetValue( configurationValues[ConfigurationKey.LocationType].Value );
+                }
+
+                if ( controls.Count > 1 && controls[1] is LocationPicker && configurationValues.ContainsKey( ConfigurationKey.ParentLocation ) )
+                {
+                    var locationId = configurationValues[ConfigurationKey.ParentLocation].Value.AsIntegerOrNull();
+                    Location location = null;
+                    if ( locationId != null )
+                    {
+                        location = GetLocationById( locationId.Value );
+                    }
+
+                    ( ( LocationPicker ) controls[1] ).Location = location;
+                }
+
+                if ( controls.Count > 2 && controls[2] is RockCheckBox && configurationValues.ContainsKey( ConfigurationKey.AllowAddingNewLocations ) )
+                {
+                    ( ( RockCheckBox ) controls[2] ).Checked = configurationValues[ConfigurationKey.AllowAddingNewLocations].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 3 && controls[3] is RockCheckBox && configurationValues.ContainsKey( ConfigurationKey.ShowCityState ) )
+                {
+                    ( ( RockCheckBox ) controls[3] ).Checked = configurationValues[ConfigurationKey.ShowCityState].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 4 && controls[4] is RockCheckBox && configurationValues.ContainsKey( ConfigurationKey.AddressRequired ) )
+                {
+                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues[ConfigurationKey.AddressRequired].Value.AsBoolean();
+                }
+            }
+        }
         #endregion
 
         #region Edit Control
-        
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var locationList = new LocationList
+            {
+                ID = id,
+                LocationTypeValueId = configurationValues.GetConfigurationValueAsString( ConfigurationKey.LocationType ).AsIntegerOrNull(),
+                ParentLocationId = configurationValues.GetConfigurationValueAsString( ConfigurationKey.ParentLocation ).AsIntegerOrNull(),
+                AllowAdd = configurationValues.GetConfigurationValueAsString( ConfigurationKey.AllowAddingNewLocations ).AsBoolean(),
+                ShowCityState = configurationValues.GetConfigurationValueAsString( ConfigurationKey.ShowCityState ).AsBoolean(),
+                IsAddressRequired = configurationValues.GetConfigurationValueAsString( ConfigurationKey.AddressRequired ).AsBoolean(),
+            };
+            return locationList;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var locationList = control as LocationList;
+
+            if ( locationList == null )
+            {
+                return null;
+            }
+
+            var locationId = locationList.SelectedValue.AsIntegerOrNull();
+            if ( locationId == null )
+            {
+                return null;
+            }
+
+            var location = GetLocationById( locationId.Value );
+            if ( location == null )
+            {
+                return null;
+            }
+
+            return location.Guid.ToString();
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var locationList = control as LocationList;
+
+            if ( locationList == null )
+            {
+                return;
+            }
+
+            var locationGuid = value.AsGuid();
+            var location = GetLocationByGuid( locationGuid );
+
+            if ( location != null )
+            {
+                locationList.SelectedValue = location.Id.ToString();
+            }
+        }
         #endregion
 
         #region Formatting
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -100,13 +334,54 @@ namespace Rock.Field.Types
         #endregion
 
         #region IEntityFieldType implementation
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var guid = GetEditValue( control, configurationValues ).AsGuid();
+            var location = GetLocationByGuid( guid );
+
+            if ( location == null )
+            {
+                return null;
+            }
+
+            return location.Id;
+        }
 
         /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated(Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues)
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
         {
-            var oldShowCityState = oldPrivateConfigurationValues.GetValueOrNull(ConfigurationKey.ShowCityState) ?? string.Empty;
-            var newShowCityState = newPrivateConfigurationValues.GetValueOrNull(ConfigurationKey.ShowCityState) ?? string.Empty;
+            var oldShowCityState = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
+            var newShowCityState = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
             return newShowCityState != oldShowCityState;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var locationEditValue = string.Empty;
+            if ( id != null )
+            {
+                var location = GetLocationById( id.Value );
+                if ( location != null )
+                {
+                    locationEditValue = location.Guid.ToString();
+                }
+            }
+
+            SetEditValue( control, configurationValues, locationEditValue );
         }
 
         /// <summary>
@@ -214,294 +489,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configurationKeys = base.ConfigurationKeys();
-
-            configurationKeys.Add(ConfigurationKey.LocationType);
-            configurationKeys.Add(ConfigurationKey.ParentLocation);
-            configurationKeys.Add(ConfigurationKey.AllowAddingNewLocations);
-            configurationKeys.Add(ConfigurationKey.ShowCityState);
-            configurationKeys.Add(ConfigurationKey.AddressRequired);
-
-            return configurationKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var locationTypeDefinedType = DefinedTypeCache.Get(SystemGuid.DefinedType.LOCATION_TYPE.AsGuid());
-
-            var dvpLocationType = new DefinedValuePicker();
-            controls.Add(dvpLocationType);
-            dvpLocationType.AutoPostBack = true;
-            dvpLocationType.SelectedIndexChanged += OnQualifierUpdated;
-            dvpLocationType.Label = "Location Type";
-            dvpLocationType.DefinedTypeId = locationTypeDefinedType.Id;
-
-            var lpParentLocation = new LocationPicker();
-            controls.Add(lpParentLocation);
-            lpParentLocation.Label = "Parent Location";
-            lpParentLocation.Required = true;
-            lpParentLocation.AllowedPickerModes = LocationPickerMode.Named;
-            lpParentLocation.CurrentPickerMode = LocationPickerMode.Named;
-            lpParentLocation.SelectLocation += OnQualifierUpdated;
-
-            var cbAllowAddingNewLocations = new RockCheckBox();
-            controls.Add(cbAllowAddingNewLocations);
-            cbAllowAddingNewLocations.AutoPostBack = true;
-            cbAllowAddingNewLocations.CheckedChanged += OnQualifierUpdated;
-            cbAllowAddingNewLocations.Label = "Allow Adding New Locations";
-
-            var cbShowCityState = new RockCheckBox();
-            controls.Add(cbShowCityState);
-            cbShowCityState.AutoPostBack = true;
-            cbShowCityState.CheckedChanged += OnQualifierUpdated;
-            cbShowCityState.Label = "Show City / State";
-
-            var cbAddressRequired = new RockCheckBox();
-            controls.Add(cbAddressRequired);
-            cbAddressRequired.AutoPostBack = true;
-            cbAddressRequired.CheckedChanged += OnQualifierUpdated;
-            cbAddressRequired.Label = "Address Required";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            var configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add(ConfigurationKey.LocationType, new ConfigurationValue("Location Type", string.Empty, string.Empty));
-            configurationValues.Add(ConfigurationKey.AddressRequired, new ConfigurationValue("Address Required", string.Empty, "false"));
-            configurationValues.Add(ConfigurationKey.AllowAddingNewLocations, new ConfigurationValue("Allow Adding New Locations", string.Empty, "false"));
-            configurationValues.Add(ConfigurationKey.ParentLocation, new ConfigurationValue("Parent Location", string.Empty, string.Empty));
-            configurationValues.Add(ConfigurationKey.ShowCityState, new ConfigurationValue("Show City / State", string.Empty, "false"));
-
-            if (controls.Count > 0 && controls[0] is DefinedValuePicker)
-            {
-                configurationValues[ConfigurationKey.LocationType].Value = ((DefinedValuePicker)controls[0]).SelectedDefinedValueId.ToString();
-            }
-
-            if (controls.Count > 1 && controls[1] is LocationPicker)
-            {
-                configurationValues[ConfigurationKey.ParentLocation].Value = ((LocationPicker)controls[1]).Location?.Id.ToStringSafe();
-            }
-
-            if (controls.Count > 2 && controls[2] is RockCheckBox)
-            {
-                configurationValues[ConfigurationKey.AllowAddingNewLocations].Value = ((RockCheckBox)controls[2]).Checked.ToString();
-            }
-
-            if (controls.Count > 3 && controls[3] is RockCheckBox)
-            {
-                configurationValues[ConfigurationKey.ShowCityState].Value = ((RockCheckBox)controls[3]).Checked.ToString();
-            }
-
-            if (controls.Count > 4 && controls[4] is RockCheckBox)
-            {
-                configurationValues[ConfigurationKey.AddressRequired].Value = ((RockCheckBox)controls[4]).Checked.ToString();
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (configurationValues != null)
-            {
-                if (controls.Count > 0 && controls[0] is DefinedValuePicker && configurationValues.ContainsKey(ConfigurationKey.LocationType))
-                {
-                    ((DefinedValuePicker)controls[0]).SetValue(configurationValues[ConfigurationKey.LocationType].Value);
-                }
-
-                if (controls.Count > 1 && controls[1] is LocationPicker && configurationValues.ContainsKey(ConfigurationKey.ParentLocation))
-                {
-                    var locationId = configurationValues[ConfigurationKey.ParentLocation].Value.AsIntegerOrNull();
-                    Location location = null;
-                    if (locationId != null)
-                    {
-                        location = GetLocationById(locationId.Value);
-                    }
-
-                    ((LocationPicker)controls[1]).Location = location;
-                }
-
-                if (controls.Count > 2 && controls[2] is RockCheckBox && configurationValues.ContainsKey(ConfigurationKey.AllowAddingNewLocations))
-                {
-                    ((RockCheckBox)controls[2]).Checked = configurationValues[ConfigurationKey.AllowAddingNewLocations].Value.AsBoolean();
-                }
-
-                if (controls.Count > 3 && controls[3] is RockCheckBox && configurationValues.ContainsKey(ConfigurationKey.ShowCityState))
-                {
-                    ((RockCheckBox)controls[3]).Checked = configurationValues[ConfigurationKey.ShowCityState].Value.AsBoolean();
-                }
-
-                if (controls.Count > 4 && controls[4] is RockCheckBox && configurationValues.ContainsKey(ConfigurationKey.AddressRequired))
-                {
-                    ((RockCheckBox)controls[4]).Checked = configurationValues[ConfigurationKey.AddressRequired].Value.AsBoolean();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var locationList = new LocationList
-            {
-                ID = id,
-                LocationTypeValueId = configurationValues.GetConfigurationValueAsString(ConfigurationKey.LocationType).AsIntegerOrNull(),
-                ParentLocationId = configurationValues.GetConfigurationValueAsString(ConfigurationKey.ParentLocation).AsIntegerOrNull(),
-                AllowAdd = configurationValues.GetConfigurationValueAsString(ConfigurationKey.AllowAddingNewLocations).AsBoolean(),
-                ShowCityState = configurationValues.GetConfigurationValueAsString(ConfigurationKey.ShowCityState).AsBoolean(),
-                IsAddressRequired = configurationValues.GetConfigurationValueAsString(ConfigurationKey.AddressRequired).AsBoolean(),
-            };
-            return locationList;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var locationList = control as LocationList;
-
-            if (locationList == null)
-            {
-                return null;
-            }
-
-            var locationId = locationList.SelectedValue.AsIntegerOrNull();
-            if (locationId == null)
-            {
-                return null;
-            }
-
-            var location = GetLocationById(locationId.Value);
-            if (location == null)
-            {
-                return null;
-            }
-
-            return location.Guid.ToString();
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var locationList = control as LocationList;
-
-            if (locationList == null)
-            {
-                return;
-            }
-
-            var locationGuid = value.AsGuid();
-            var location = GetLocationByGuid(locationGuid);
-
-            if (location != null)
-            {
-                locationList.SelectedValue = location.Id.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var guid = GetEditValue(control, configurationValues).AsGuid();
-            var location = GetLocationByGuid(guid);
-
-            if (location == null)
-            {
-                return null;
-            }
-
-            return location.Id;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
-        {
-            var locationEditValue = string.Empty;
-            if (id != null)
-            {
-                var location = GetLocationById(id.Value);
-                if (location != null)
-                {
-                    locationEditValue = location.Guid.ToString();
-                }
-            }
-
-            SetEditValue(control, configurationValues, locationEditValue);
-        }
-
-#endif
         #endregion
     }
 }
