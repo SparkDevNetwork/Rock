@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -535,6 +535,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PreferredLanguageValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder count associated with the Person.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the reminder count that is associated with the Person.
+        /// </value>
+        [DataMember]
+        public int? ReminderCount { get; set; }
 
         #endregion
 
