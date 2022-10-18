@@ -1765,26 +1765,51 @@ namespace Rock.MyWell
                 TransactionTypeSearch = new QuerySearchTransactionType( TransactionType.sale )
             };
 
-            var searchResult = this.SearchTransactions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), queryTransactionStatusRequest );
-
-            if ( !searchResult.IsSuccessStatus() )
-            {
-                errorMessage = searchResult.Message;
-                return null;
-            }
-
+            List<TransactionQueryResultData> transactionQueryResultList = new List<TransactionQueryResultData>();
+            bool getMoreTransactions = true;
+            int offset = 0;
             errorMessage = string.Empty;
 
+            // NOTE 2500 is the max that MyWell supports
+            int fetchLimit = 2500;
             var paymentList = new List<Payment>();
 
-            if ( searchResult.Data == null )
+            while ( getMoreTransactions )
+            {
+                queryTransactionStatusRequest.Limit = fetchLimit;
+                queryTransactionStatusRequest.Offset = offset;
+                TransactionSearchResult searchResult = this.SearchTransactions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), queryTransactionStatusRequest );
+                int expectedTotal = searchResult?.TotalCount ?? 0;
+
+                if ( !searchResult.IsSuccessStatus() )
+                {
+                    errorMessage = searchResult.Message;
+                    return null;
+                }
+
+                var downloadedTransactions = searchResult.Data ?? new TransactionQueryResultData[0];
+                var actualDownloadCount = downloadedTransactions.Count();
+
+                transactionQueryResultList.AddRange( downloadedTransactions );
+
+                errorMessage = string.Empty;
+                if ( !downloadedTransactions.Any() || actualDownloadCount < fetchLimit )
+                {
+                    getMoreTransactions = false;
+                }
+
+                offset += fetchLimit;
+            }
+
+            if ( !transactionQueryResultList.Any() )
             {
                 // If no payments were found for the date range, searchResult.Data will be null,
                 // so just return an empty paymentList.
                 return paymentList;
             }
+            
 
-            foreach ( var transaction in searchResult.Data )
+            foreach ( var transaction in transactionQueryResultList )
             {
                 if ( !transaction.TransactionType.HasValue || ( transaction.TransactionType != TransactionType.sale ) )
                 {
