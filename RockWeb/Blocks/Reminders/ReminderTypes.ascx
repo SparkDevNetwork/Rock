@@ -22,7 +22,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="EntityType" HeaderText="Entity Type" />
                             <Rock:RockBoundField DataField="IsActive" HeaderText="Active" />
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gReminderTypes_Delete" />
                         </Columns>
                     </Rock:Grid>

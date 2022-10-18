@@ -222,5 +222,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string KIOSK_INFO_UPDATE = "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881";
 
+        /// <summary>
+        /// Gets the template guid for Reminder Notifications.
+        /// </summary>
+        public const string REMINDER_NOTIFICATION = "7899958C-BC2F-499E-A5CC-11DE1EF8DF20";
     }
 }

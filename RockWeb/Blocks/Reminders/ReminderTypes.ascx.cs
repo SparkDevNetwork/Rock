@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reminders
@@ -50,6 +51,12 @@ namespace RockWeb.Blocks.Reminders
             gReminderTypes.GridRebind += gReminderTypes_GridRebind;
             gReminderTypes.GridReorder += gReminderTypes_GridReorder;
             gReminderTypes.RowItemText = "Reminder Type";
+
+            var securityField = gReminderTypes.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( ReminderType ) ).Id;
+            }
 
             var isUserAuthorized = IsUserAuthorized( Authorization.EDIT );
             gReminderTypes.Actions.ShowAdd = isUserAuthorized;

@@ -32,10 +32,10 @@
 
                 <div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="rnbRepeatDays" runat="server" Label="Repeat Every" />
+                        <Rock:NumberBox ID="rnbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" />
+                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinately." AppendText="times" />
                     </div>
                 </div>
 

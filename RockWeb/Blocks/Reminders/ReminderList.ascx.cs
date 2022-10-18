@@ -397,11 +397,11 @@ namespace RockWeb.Blocks.Reminders
         {
             LinkButton btnEntityType = sender as LinkButton;
             var entityTypeId = btnEntityType.CommandArgument.AsIntegerOrNull();
-            var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
+            var currentEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
 
-            if ( entityTypeId != selectedEntityTypeId )
+            if ( entityTypeId != currentEntityTypeId )
             {
-                RefreshPage( selectedEntityTypeId, null, null );
+                RefreshPage( entityTypeId, null, null );
             }
         }
 

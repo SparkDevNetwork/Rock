@@ -171,8 +171,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
 
-        /// The Calculate Reminder Counts Job. <see cref="Rock.Jobs.CalculateReminderCounts"/>
+        /// <summary>
+        /// The <see cref="Rock.Jobs.ProcessReminders"/> job.
         /// </summary>
-        public const string CALCULATE_REMINDER_COUNTS = "3F697C80-4C33-4552-9038-D3470445EA40";
+        public const string PROCESS_REMINDERS = "3F697C80-4C33-4552-9038-D3470445EA40";
     }
 }

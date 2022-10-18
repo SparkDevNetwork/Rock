@@ -110,6 +110,8 @@ namespace RockWeb.Blocks.Reminders
                 {
                     lbReminders.Visible = true;
 
+                    rppPerson.SetValue( CurrentPerson );
+
                     int reminderCount = CurrentPerson?.ReminderCount ?? 0;
                     if ( reminderCount > 0 )
                     {
@@ -119,6 +121,7 @@ namespace RockWeb.Blocks.Reminders
                     hfContextEntityTypeId.Value = "0";
 
                     var contextEntity = GetFirstContextEntity();
+                    var contextEntity2 = this.ContextEntity();
                     if ( contextEntity == null )
                     {
                         return;
@@ -142,7 +145,7 @@ namespace RockWeb.Blocks.Reminders
             }
             else
             {
-                ShowDialog();
+                //ShowDialog();
             }
         }
 
@@ -424,7 +427,11 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
-                var person = new PersonService( rockContext ).Get( rppPerson.SelectedValue.Value );
+                var person = CurrentPerson;
+                if ( rppPerson.SelectedValue.HasValue )
+                {
+                    person = new PersonService( rockContext ).Get( rppPerson.SelectedValue.Value );
+                }
                 reminder.PersonAliasId = person.PrimaryAliasId.Value;
 
                 var reminderService = new ReminderService( rockContext );

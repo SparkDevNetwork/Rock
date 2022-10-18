@@ -45,6 +45,7 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
             CreateReminderTable();
             CreateReminderTypeTable();
             AddPersonReminderCountField();
+            AddReminderCommunicationTemplate();
 
             AddBlockTypes();
             AddReminderLinksBlock();
@@ -264,12 +265,57 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
 
         #endregion Blocks, Pages, and Routes
 
+        private void AddReminderCommunicationTemplate()
+        {
+            string emailSubject = "Reminder: {{ ReminderType.Name }} for {{ EntityName }} on {{ ReminderDate|Date: 'ddd,MMMM d,yyyy' }}";
+            string emailBody= @"{{ 'Global' | Attribute:'EmailHeader' }}
+
+<h1>System Reminder</h1>
+
+<p>Hi {{  Person.NickName  }}!</p>
+
+<p>This is a ""{{ ReminderType.Name }}"" reminder for {{ EntityName }} on {{ Reminder.ReminderDate | Date:'dddd, MMMM d, yyyy' }}.</p>
+
+{% if ReminderType.ShouldShowNote %}
+  <p>Reminder Note:<br />
+    {{ ReminderType.Note }}
+  </p>
+{% endif %}
+
+<p>Thanks!</p>
+
+<p>{{ 'Global' | Attribute:'OrganizationName' }}</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}";
+
+            string smsMessage = "This is a reminder from {{ 'Global' | Attribute:'OrganizationName' }} that you have a \"{{ ReminderType.Name }}\" reminder for {{ EntityName }} on {{ Reminder.ReminderDate | Date:'dddd, MMMM d, yyyy' }}.";
+            string pushTitle = "{{ ReminderType.Name }} Reminder";
+            string pushMessage = "You have a \"{{ ReminderType.Name }}\" reminder for {{ EntityName }} on {{ Reminder.ReminderDate | Date:'dddd, MMMM d, yyyy' }}.";
+
+            RockMigrationHelper.UpdateSystemCommunication(
+                "Reminders",
+                "Reminder Notification",
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                emailSubject,
+                emailBody,
+                SystemGuid.SystemCommunication.REMINDER_NOTIFICATION,
+                true,
+                smsMessage,
+                null,
+                pushTitle,
+                pushMessage );
+        }
+
         private void AddReminderJob()
         {
-            var jobClass = "Rock.Jobs.CalculateReminderCounts";
+            var jobClass = "Rock.Jobs.ProcessReminders";
 
             Sql( $@"
-            IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = '{jobClass}' AND [Guid] = '{SystemGuid.ServiceJob.CALCULATE_REMINDER_COUNTS}' ) 
+            IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = '{jobClass}' AND [Guid] = '{SystemGuid.ServiceJob.PROCESS_REMINDERS}' ) 
             BEGIN 
                 INSERT INTO [ServiceJob] (
                     [IsSystem],
@@ -288,7 +334,7 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
                     '{jobClass}',
                     '{CRON_EXPRESSION}',
                     1,
-                    '{SystemGuid.ServiceJob.CALCULATE_REMINDER_COUNTS}' );
+                    '{SystemGuid.ServiceJob.PROCESS_REMINDERS}' );
             END" );
         }
 

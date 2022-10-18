@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 
@@ -153,6 +154,24 @@ namespace Rock.Model
             var entityTypes = new EntityTypeService( this.Context as RockContext ).Queryable()
                 .Where( t => entityTypeIds.Contains( t.Id ) );
             return entityTypes;
+        }
+
+        /// <summary>
+        /// Gets active reminders based on the current date.
+        /// </summary>
+        /// <param name="currentDate">The current date (e.g., RockDateTime.Now).</param>
+        /// <returns></returns>
+        public IQueryable<Reminder> GetActiveReminders( DateTime currentDate )
+        {
+            var activeReminders = this
+                .Queryable().AsNoTracking()                 // Get reminders that:
+                .Where( r => r.ReminderType.IsActive        //   have active reminder types;
+                        && !r.IsComplete                    //   are not complete; and
+                        && r.ReminderDate <= currentDate )  //   are active (i.e., reminder date has passed).
+                .Include( r => r.ReminderType )             // Make sure to include the ReminderType
+                .Include( r => r.PersonAlias.Person );      // and Person.
+
+            return activeReminders;
         }
     }
 }

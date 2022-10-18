@@ -15,17 +15,6 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Serialization;
-using Ical.Net;
-using Ical.Net.DataTypes;
-using Rock.Lava;
-using Rock.Data;
-using Rock.Web.Cache;
-using Ical.Net.CalendarComponents;
 
 namespace Rock.Model
 {
@@ -97,10 +86,32 @@ namespace Rock.Model
                 {
                     this.ReminderDate = this.GetNextDate( currentDate ).Value;
                     this.IsComplete = false;
+                    this.RenewCurrentCount++;
                 }
-
-                this.RenewCurrentCount++;
             }
+
+            // If this reminder is completed (and doesn't have a future occurrence) then the Person's reminder count should be decremented.
+            if ( this.IsComplete )
+            {
+                this.PersonAlias.Person.ReminderCount -= 1;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ResetCompletedReminder()
+        {
+            var currentDate = RockDateTime.Now;
+            this.IsComplete = false;
+            this.RenewCurrentCount = 0;
+            if ( this.ReminderDate < currentDate )
+            {
+                this.ReminderDate = this.GetNextDate( currentDate ).Value;
+            }
+
+            // Add this reminder back to the Person's reminder count.
+            this.PersonAlias.Person.ReminderCount += 1;
         }
 
         /// <summary>
