@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -49,6 +48,20 @@ namespace Rock.Field.Types
         private const string CAMPUSES_PROPERTY_KEY = "campuses";
         private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
         private const string CAMPUS_STATUSES_PROPERTY_KEY = "campusStatuses";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( FILTER_CAMPUS_TYPES_KEY );
+            configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
+            configKeys.Add( SELECTABLE_CAMPUSES_KEY );
+            return configKeys;
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -150,6 +163,181 @@ namespace Rock.Field.Types
             return privateConfigurationValues;
         }
 
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            // Add checkbox for deciding if the list should include inactive items
+            var cbIncludeInactive = new RockCheckBox();
+            cbIncludeInactive.AutoPostBack = true;
+            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
+            cbIncludeInactive.Label = "Include Inactive";
+            cbIncludeInactive.Text = "Yes";
+            cbIncludeInactive.Help = "When set, inactive campuses will be included in the list.";
+
+            // Checkbox list to select Filter Campus Types
+            var campusTypeDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+            var cblCampusTypes = new RockCheckBoxList();
+            cblCampusTypes.AutoPostBack = true;
+            cblCampusTypes.SelectedIndexChanged += OnQualifierUpdated;
+            cblCampusTypes.RepeatDirection = RepeatDirection.Horizontal;
+            cblCampusTypes.Label = "Filter Campus Types";
+            cblCampusTypes.Help = "When set this will filter the campuses displayed in the list to the selected Types. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
+            cblCampusTypes.DataTextField = "Text";
+            cblCampusTypes.DataValueField = "Value";
+            cblCampusTypes.DataSource = campusTypeDefinedValues;
+            cblCampusTypes.DataBind();
+
+            // Checkbox list to select Filter Campus Status
+            var campusStatusDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+            var cblCampusStatuses = new RockCheckBoxList();
+            cblCampusStatuses.AutoPostBack = true;
+            cblCampusStatuses.SelectedIndexChanged += OnQualifierUpdated;
+            cblCampusStatuses.RepeatDirection = RepeatDirection.Horizontal;
+            cblCampusStatuses.Label = "Filter Campus Status";
+            cblCampusStatuses.Help = "When set this will filter the campuses displayed in the list to the selected Statuses. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
+            cblCampusStatuses.DataTextField = "Text";
+            cblCampusStatuses.DataValueField = "Value";
+            cblCampusStatuses.DataSource = campusStatusDefinedValues;
+            cblCampusStatuses.DataBind();
+
+            var activeCampuses = CampusCache.All( false ).Select( v => new { Text = v.Name, Value = v.Id } );
+            var cblSelectableCampuses = new RockCheckBoxList
+            {
+                AutoPostBack = true,
+                RepeatDirection = RepeatDirection.Horizontal,
+                Label = "Selectable Campuses",
+                DataTextField = "Text",
+                DataValueField = "Value",
+                DataSource = activeCampuses
+            };
+
+            cblCampusStatuses.SelectedIndexChanged += OnQualifierUpdated;
+            cblSelectableCampuses.DataBind();
+
+            var controls = base.ConfigurationControls();
+            controls.Add( cbIncludeInactive );
+            controls.Add( cblCampusTypes );
+            controls.Add( cblCampusStatuses );
+            controls.Add( cblSelectableCampuses );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
+
+            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive campuses will be included in the list.", string.Empty ) );
+            configurationValues.Add( FILTER_CAMPUS_TYPES_KEY, new ConfigurationValue( "Filter Campus Types", string.Empty, string.Empty ) );
+            configurationValues.Add( FILTER_CAMPUS_STATUS_KEY, new ConfigurationValue( "Filter Campus Status", string.Empty, string.Empty ) );
+            configurationValues.Add( SELECTABLE_CAMPUSES_KEY, new ConfigurationValue( "Selectable Campuses", "Specify the campuses eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
+
+            if ( controls != null )
+            {
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
+                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
+
+                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
+                configurationValues[FILTER_CAMPUS_TYPES_KEY].Value = cblCampusTypes != null ? string.Join( ",", cblCampusTypes.SelectedValues ) : null;
+                configurationValues[FILTER_CAMPUS_STATUS_KEY].Value = cblCampusStatuses != null ? string.Join( ",", cblCampusStatuses.SelectedValues ) : null;
+
+                if ( cblSelectableValues != null )
+                {
+                    var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+
+                    var activeCampuses = CampusCache.All( cbIncludeInactive.Checked ).Select( v => new { Text = v.Name, Value = v.Id } );
+                    cblSelectableValues.DataSource = activeCampuses;
+                    cblSelectableValues.DataBind();
+
+                    if ( selectableValues != null && selectableValues.Any() )
+                    {
+                        foreach ( ListItem listItem in cblSelectableValues.Items )
+                        {
+                            listItem.Selected = selectableValues.Contains( listItem.Value );
+                        }
+                    }
+
+                    configurationValues[SELECTABLE_CAMPUSES_KEY].Value = string.Join( ",", cblSelectableValues.SelectedValues );
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && configurationValues != null )
+            {
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
+                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
+
+                if ( cbIncludeInactive != null )
+                {
+                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                }
+
+                if ( cblCampusTypes != null )
+                {
+                    var selectedCampusTypes = configurationValues.GetValueOrNull( FILTER_CAMPUS_TYPES_KEY )?.SplitDelimitedValues( false );
+                    if ( selectedCampusTypes != null && selectedCampusTypes.Any() )
+                    {
+                        foreach ( ListItem listItem in cblCampusTypes.Items )
+                        {
+                            listItem.Selected = selectedCampusTypes.Contains( listItem.Value );
+                        }
+                    }
+                }
+
+                if ( cblCampusStatuses != null )
+                {
+                    var selectedCampusStatuses = configurationValues.GetValueOrNull( FILTER_CAMPUS_STATUS_KEY )?.SplitDelimitedValues( false );
+                    if ( selectedCampusStatuses != null && selectedCampusStatuses.Any() )
+                    {
+                        foreach ( ListItem listItem in cblCampusStatuses.Items )
+                        {
+                            listItem.Selected = selectedCampusStatuses.Contains( listItem.Value );
+                        }
+                    }
+                }
+
+                if (cblSelectableValues != null )
+                {
+                    var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_CAMPUSES_KEY )?.SplitDelimitedValues( false );
+
+                    var activeCampuses = CampusCache.All( cbIncludeInactive.Checked ).Select( v => new { Text = v.Name, Value = v.Id } );
+                    cblSelectableValues.DataSource = activeCampuses;
+                    cblSelectableValues.DataBind();
+
+                    if ( selectableValues != null && selectableValues.Any() )
+                    {
+                        foreach ( ListItem listItem in cblSelectableValues.Items )
+                        {
+                            listItem.Selected = selectableValues.Contains( listItem.Value );
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -238,201 +426,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add(INCLUDE_INACTIVE_KEY);
-            configKeys.Add(FILTER_CAMPUS_TYPES_KEY);
-            configKeys.Add(FILTER_CAMPUS_STATUS_KEY);
-            configKeys.Add(SELECTABLE_CAMPUSES_KEY);
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            // Add checkbox for deciding if the list should include inactive items
-            var cbIncludeInactive = new RockCheckBox();
-            cbIncludeInactive.AutoPostBack = true;
-            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
-            cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
-            cbIncludeInactive.Help = "When set, inactive campuses will be included in the list.";
-
-            // Checkbox list to select Filter Campus Types
-            var campusTypeDefinedValues = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid()).DefinedValues.Select(v => new { Text = v.Value, Value = v.Id });
-            var cblCampusTypes = new RockCheckBoxList();
-            cblCampusTypes.AutoPostBack = true;
-            cblCampusTypes.SelectedIndexChanged += OnQualifierUpdated;
-            cblCampusTypes.RepeatDirection = RepeatDirection.Horizontal;
-            cblCampusTypes.Label = "Filter Campus Types";
-            cblCampusTypes.Help = "When set this will filter the campuses displayed in the list to the selected Types. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
-            cblCampusTypes.DataTextField = "Text";
-            cblCampusTypes.DataValueField = "Value";
-            cblCampusTypes.DataSource = campusTypeDefinedValues;
-            cblCampusTypes.DataBind();
-
-            // Checkbox list to select Filter Campus Status
-            var campusStatusDefinedValues = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid()).DefinedValues.Select(v => new { Text = v.Value, Value = v.Id });
-            var cblCampusStatuses = new RockCheckBoxList();
-            cblCampusStatuses.AutoPostBack = true;
-            cblCampusStatuses.SelectedIndexChanged += OnQualifierUpdated;
-            cblCampusStatuses.RepeatDirection = RepeatDirection.Horizontal;
-            cblCampusStatuses.Label = "Filter Campus Status";
-            cblCampusStatuses.Help = "When set this will filter the campuses displayed in the list to the selected Statuses. Setting a filter will cause the campus picker to display even if 0 campuses are in the list.";
-            cblCampusStatuses.DataTextField = "Text";
-            cblCampusStatuses.DataValueField = "Value";
-            cblCampusStatuses.DataSource = campusStatusDefinedValues;
-            cblCampusStatuses.DataBind();
-
-            var activeCampuses = CampusCache.All(false).Select(v => new { Text = v.Name, Value = v.Id });
-            var cblSelectableCampuses = new RockCheckBoxList
-            {
-                AutoPostBack = true,
-                RepeatDirection = RepeatDirection.Horizontal,
-                Label = "Selectable Campuses",
-                DataTextField = "Text",
-                DataValueField = "Value",
-                DataSource = activeCampuses
-            };
-
-            cblCampusStatuses.SelectedIndexChanged += OnQualifierUpdated;
-            cblSelectableCampuses.DataBind();
-
-            var controls = base.ConfigurationControls();
-            controls.Add(cbIncludeInactive);
-            controls.Add(cblCampusTypes);
-            controls.Add(cblCampusStatuses);
-            controls.Add(cblSelectableCampuses);
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues(controls);
-
-            configurationValues.Add(INCLUDE_INACTIVE_KEY, new ConfigurationValue("Include Inactive", "When set, inactive campuses will be included in the list.", string.Empty));
-            configurationValues.Add(FILTER_CAMPUS_TYPES_KEY, new ConfigurationValue("Filter Campus Types", string.Empty, string.Empty));
-            configurationValues.Add(FILTER_CAMPUS_STATUS_KEY, new ConfigurationValue("Filter Campus Status", string.Empty, string.Empty));
-            configurationValues.Add(SELECTABLE_CAMPUSES_KEY, new ConfigurationValue("Selectable Campuses", "Specify the campuses eligible for this control. If none are specified then all will be displayed.", string.Empty));
-
-            if (controls != null)
-            {
-                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
-                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
-                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
-
-                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
-                configurationValues[FILTER_CAMPUS_TYPES_KEY].Value = cblCampusTypes != null ? string.Join(",", cblCampusTypes.SelectedValues) : null;
-                configurationValues[FILTER_CAMPUS_STATUS_KEY].Value = cblCampusStatuses != null ? string.Join(",", cblCampusStatuses.SelectedValues) : null;
-
-                if (cblSelectableValues != null)
-                {
-                    var selectableValues = new List<string>(cblSelectableValues.SelectedValues);
-
-                    var activeCampuses = CampusCache.All(cbIncludeInactive.Checked).Select(v => new { Text = v.Name, Value = v.Id });
-                    cblSelectableValues.DataSource = activeCampuses;
-                    cblSelectableValues.DataBind();
-
-                    if (selectableValues != null && selectableValues.Any())
-                    {
-                        foreach (ListItem listItem in cblSelectableValues.Items)
-                        {
-                            listItem.Selected = selectableValues.Contains(listItem.Value);
-                        }
-                    }
-
-                    configurationValues[SELECTABLE_CAMPUSES_KEY].Value = string.Join(",", cblSelectableValues.SelectedValues);
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            base.SetConfigurationValues(controls, configurationValues);
-
-            if (controls != null && configurationValues != null)
-            {
-                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
-                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
-                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
-
-                if (cbIncludeInactive != null)
-                {
-                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull(INCLUDE_INACTIVE_KEY).AsBooleanOrNull() ?? false;
-                }
-
-                if (cblCampusTypes != null)
-                {
-                    var selectedCampusTypes = configurationValues.GetValueOrNull(FILTER_CAMPUS_TYPES_KEY)?.SplitDelimitedValues(false);
-                    if (selectedCampusTypes != null && selectedCampusTypes.Any())
-                    {
-                        foreach (ListItem listItem in cblCampusTypes.Items)
-                        {
-                            listItem.Selected = selectedCampusTypes.Contains(listItem.Value);
-                        }
-                    }
-                }
-
-                if (cblCampusStatuses != null)
-                {
-                    var selectedCampusStatuses = configurationValues.GetValueOrNull(FILTER_CAMPUS_STATUS_KEY)?.SplitDelimitedValues(false);
-                    if (selectedCampusStatuses != null && selectedCampusStatuses.Any())
-                    {
-                        foreach (ListItem listItem in cblCampusStatuses.Items)
-                        {
-                            listItem.Selected = selectedCampusStatuses.Contains(listItem.Value);
-                        }
-                    }
-                }
-
-                if (cblSelectableValues != null)
-                {
-                    var selectableValues = configurationValues.GetValueOrNull(SELECTABLE_CAMPUSES_KEY)?.SplitDelimitedValues(false);
-
-                    var activeCampuses = CampusCache.All(cbIncludeInactive.Checked).Select(v => new { Text = v.Name, Value = v.Id });
-                    cblSelectableValues.DataSource = activeCampuses;
-                    cblSelectableValues.DataBind();
-
-                    if (selectableValues != null && selectableValues.Any())
-                    {
-                        foreach (ListItem listItem in cblSelectableValues.Items)
-                        {
-                            listItem.Selected = selectableValues.Contains(listItem.Value);
-                        }
-                    }
-                }
-            }
-        }
-
-#endif
         #endregion
     }
 }

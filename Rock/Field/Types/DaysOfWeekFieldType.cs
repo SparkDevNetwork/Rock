@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -35,6 +34,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DAYS_OF_WEEK )]
     public class DaysOfWeekFieldType : FieldType
     {
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -51,9 +51,70 @@ namespace Rock.Field.Types
             return dayNames.AsDelimited( ", " );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
+
         #endregion
 
         #region EditControl
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new DaysOfWeekPicker { ID = id };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var daysOfWeekPicker = control as DaysOfWeekPicker;
+            if ( daysOfWeekPicker != null )
+            {
+                return daysOfWeekPicker.SelectedDaysOfWeek.Select( a => a.ConvertToInt().ToString() ).ToList().AsDelimited( "," );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var daysOfWeekPicker = control as DaysOfWeekPicker;
+            if ( daysOfWeekPicker != null )
+            {
+                var selectedDaysOfWeek = ( value ?? string.Empty ).SplitDelimitedValues().AsIntegerList().Select( a => ( DayOfWeek ) a ).ToList();
+                daysOfWeekPicker.SelectedDaysOfWeek = selectedDaysOfWeek;
+            }
+        }
 
         #endregion
 
@@ -95,72 +156,5 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value));
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            return new DaysOfWeekPicker { ID = id };
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
-            {
-                return daysOfWeekPicker.SelectedDaysOfWeek.Select(a => a.ConvertToInt().ToString()).ToList().AsDelimited(",");
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
-            {
-                var selectedDaysOfWeek = (value ?? string.Empty).SplitDelimitedValues().AsIntegerList().Select(a => (DayOfWeek)a).ToList();
-                daysOfWeekPicker.SelectedDaysOfWeek = selectedDaysOfWeek;
-            }
-        }
-
-
-#endif
-        #endregion
     }
 }

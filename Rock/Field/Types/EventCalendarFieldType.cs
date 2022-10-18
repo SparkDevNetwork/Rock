@@ -18,10 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -39,7 +38,23 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.EVENT_CALENDAR )]
     public class EventCalendarFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+
         #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -68,9 +83,139 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var eventCalendarPicker = new EventCalendarPicker { ID = id };
+
+            if ( EventCalendarCache.All().Any() )
+            {
+                return eventCalendarPicker;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// returns EventCalendar.Guid as string
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            EventCalendarPicker eventCalendarPicker = control as EventCalendarPicker;
+
+            if ( eventCalendarPicker != null )
+            {
+                int? eventCalendarId = eventCalendarPicker.SelectedEventCalendarId;
+                if ( eventCalendarId.HasValue )
+                {
+                    var eventCalendar = EventCalendarCache.Get( eventCalendarId.Value );
+                    if ( eventCalendar != null )
+                    {
+                        return eventCalendar.Guid.ToString();
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// Expects value as a EventCalendar.Guid as string
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            EventCalendarPicker eventCalendarPicker = control as EventCalendarPicker;
+
+            if ( eventCalendarPicker != null )
+            {
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var eventCalendar = EventCalendarCache.Get( guid );
+                eventCalendarPicker.SetValue( eventCalendar == null ? "0" : eventCalendar.Id.ToString() );
+            }
+        }
+
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+
+            // hide the compare control when in SimpleFilter mode
+            lbl.Visible = filterMode != FilterMode.SimpleFilter;
+
+            return lbl;
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var cbList = new RockCheckBoxList();
+            cbList.ID = string.Format( "{0}_cbList", id );
+            cbList.AddCssClass( "js-filter-control" );
+            cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+            var eventCalendarList = EventCalendarCache.All();
+            if ( eventCalendarList.Any() )
+            {
+                foreach ( var eventCalendar in eventCalendarList )
+                {
+                    ListItem listItem = new ListItem( eventCalendar.Name, eventCalendar.Guid.ToString() );
+                    cbList.Items.Add( listItem );
+                }
+
+                return cbList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
+        {
+            return null;
+        }
 
         /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
@@ -81,7 +226,60 @@ namespace Rock.Field.Types
             return null;
         }
 
-        
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            if ( control != null && control is CheckBoxList )
+            {
+                CheckBoxList cbl = ( CheckBoxList ) control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    if ( li.Selected )
+                    {
+                        values.Add( li.Value );
+                    }
+                }
+            }
+
+            return values.AsDelimited( "," );
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
+        {
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is CheckBoxList && value != null )
+            {
+                var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                CheckBoxList cbl = ( CheckBoxList ) control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    li.Selected = values.Contains( li.Value );
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the filters expression.
         /// </summary>
@@ -143,6 +341,36 @@ namespace Rock.Field.Types
         #endregion
 
         #region Entity Methods
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = EventCalendarCache.Get( guid );
+            return item != null ? item.Id : ( int? ) null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            EventCalendarCache item = null;
+            if ( id.HasValue )
+            {
+                item = EventCalendarCache.Get( id.Value );
+            }
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
 
         /// <summary>
         /// Gets the entity.
@@ -207,241 +435,6 @@ namespace Rock.Field.Types
             };
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var eventCalendarPicker = new EventCalendarPicker { ID = id };
-
-            if (EventCalendarCache.All().Any())
-            {
-                return eventCalendarPicker;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// returns EventCalendar.Guid as string
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            EventCalendarPicker eventCalendarPicker = control as EventCalendarPicker;
-
-            if (eventCalendarPicker != null)
-            {
-                int? eventCalendarId = eventCalendarPicker.SelectedEventCalendarId;
-                if (eventCalendarId.HasValue)
-                {
-                    var eventCalendar = EventCalendarCache.Get(eventCalendarId.Value);
-                    if (eventCalendar != null)
-                    {
-                        return eventCalendar.Guid.ToString();
-                    }
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// Expects value as a EventCalendar.Guid as string
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            EventCalendarPicker eventCalendarPicker = control as EventCalendarPicker;
-
-            if (eventCalendarPicker != null)
-            {
-                Guid guid = value.AsGuid();
-
-                // get the item (or null) and set it
-                var eventCalendar = EventCalendarCache.Get(guid);
-                eventCalendarPicker.SetValue(eventCalendar == null ? "0" : eventCalendar.Id.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter compare control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var lbl = new Label();
-            lbl.ID = string.Format("{0}_lIs", id);
-            lbl.AddCssClass("data-view-filter-label");
-            lbl.Text = "Is";
-
-            // hide the compare control when in SimpleFilter mode
-            lbl.Visible = filterMode != FilterMode.SimpleFilter;
-
-            return lbl;
-        }
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var cbList = new RockCheckBoxList();
-            cbList.ID = string.Format("{0}_cbList", id);
-            cbList.AddCssClass("js-filter-control");
-            cbList.RepeatDirection = RepeatDirection.Horizontal;
-
-            var eventCalendarList = EventCalendarCache.All();
-            if (eventCalendarList.Any())
-            {
-                foreach (var eventCalendar in eventCalendarList)
-                {
-                    ListItem listItem = new ListItem(eventCalendar.Name, eventCalendar.Guid.ToString());
-                    cbList.Items.Add(listItem);
-                }
-
-                return cbList;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override string GetFilterCompareValue(Control control, FilterMode filterMode)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var values = new List<string>();
-
-            if (control != null && control is CheckBoxList)
-            {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach (ListItem li in cbl.Items)
-                {
-                    if (li.Selected)
-                    {
-                        values.Add(li.Value);
-                    }
-                }
-            }
-
-            return values.AsDelimited(",");
-        }
-
-        /// <summary>
-        /// Sets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterCompareValue(Control control, string value)
-        {
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            if (control != null && control is CheckBoxList && value != null)
-            {
-                var values = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach (ListItem li in cbl.Items)
-                {
-                    li.Selected = values.Contains(li.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            Guid guid = GetEditValue(control, configurationValues).AsGuid();
-            var item = EventCalendarCache.Get(guid);
-            return item != null ? item.Id : (int?)null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId(System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
-        {
-            EventCalendarCache item = null;
-            if (id.HasValue)
-            {
-                item = EventCalendarCache.Get(id.Value);
-            }
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue(control, configurationValues, guidValue);
-        }
-
-#endif
         #endregion
 
     }

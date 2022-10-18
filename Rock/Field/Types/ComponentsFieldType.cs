@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
 
 using Rock.Attribute;
 using Rock.Reporting;
@@ -37,7 +35,70 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMPONENTS )]
     public class ComponentsFieldType : FieldType
     {
+
         #region Configuration
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( "container" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var tb = new RockTextBox();
+            controls.Add( tb );
+            tb.AutoPostBack = true;
+            tb.TextChanged += OnQualifierUpdated;
+            tb.Label = "Container Assembly Name";
+            tb.Help = "The assembly name of the MEF container to show components of.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "container", new ConfigurationValue( "Container Assembly Name", "The assembly name of the MEF container to show components of", string.Empty ) );
+
+            if ( controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is TextBox )
+            {
+                configurationValues["container"].Value = ( (TextBox)controls[0] ).Text;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "container" ) )
+            {
+                ( (TextBox)controls[0] ).Text = configurationValues["container"].Value;
+            }
+        }
 
         #endregion
 
@@ -58,9 +119,85 @@ namespace Rock.Field.Types
                 .JoinStrings( ", " );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
         #endregion 
 
         #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            try
+            {
+                ComponentsPicker editControl = new ComponentsPicker { ID = id };
+
+                if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
+                {
+                    editControl.ContainerType = configurationValues["container"].Value;
+                }
+
+                return editControl;
+            }
+            catch ( SystemException ex )
+            {
+                return new LiteralControl( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as ComponentsPicker;
+            if ( picker != null )
+            {
+                return picker.SelectedComponents.AsDelimited( "|" );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var picker = control as ComponentsPicker;
+            if ( picker != null )
+            {
+                {
+                    picker.SelectedComponents = value.SplitDelimitedValues().AsGuidList();
+                }
+            }
+        }
 
         #endregion
 
@@ -82,148 +219,5 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add("container");
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var tb = new RockTextBox();
-            controls.Add(tb);
-            tb.AutoPostBack = true;
-            tb.TextChanged += OnQualifierUpdated;
-            tb.Label = "Container Assembly Name";
-            tb.Help = "The assembly name of the MEF container to show components of.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add("container", new ConfigurationValue("Container Assembly Name", "The assembly name of the MEF container to show components of", string.Empty));
-
-            if (controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is TextBox)
-            {
-                configurationValues["container"].Value = ((TextBox)controls[0]).Text;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("container"))
-            {
-                ((TextBox)controls[0]).Text = configurationValues["container"].Value;
-            }
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            try
-            {
-                ComponentsPicker editControl = new ComponentsPicker { ID = id };
-
-                if (configurationValues != null && configurationValues.ContainsKey("container"))
-                {
-                    editControl.ContainerType = configurationValues["container"].Value;
-                }
-
-                return editControl;
-            }
-            catch (SystemException ex)
-            {
-                return new LiteralControl(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var picker = control as ComponentsPicker;
-            if (picker != null)
-            {
-                return picker.SelectedComponents.AsDelimited("|");
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var picker = control as ComponentsPicker;
-            if (picker != null)
-            {
-                {
-                    picker.SelectedComponents = value.SplitDelimitedValues().AsGuidList();
-                }
-            }
-        }
-
-#endif
-        #endregion
     }
 }
