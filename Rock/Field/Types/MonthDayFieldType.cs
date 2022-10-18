@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +33,8 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MONTH_DAY )]
     public class MonthDayFieldType : FieldType
     {
-        #region Edit Control
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -42,7 +44,7 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             var mdpMonthDatePicker = new MonthDayPicker { ID = id };
 
@@ -57,18 +59,18 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
+                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
         }
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue(string value, Dictionary<string, string> configurationValues)
         {
             var valueAsDateTime = value.MonthDayStringAsDateTime();
-            if ( valueAsDateTime.HasValue )
+            if (valueAsDateTime.HasValue)
             {
                 return valueAsDateTime.Value.ToMonthDayString();
             }
@@ -82,10 +84,10 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
             var mdpMonthDatePicker = control as MonthDayPicker;
-            return mdpMonthDatePicker?.SelectedDate?.ToString( "M/d" ) ?? string.Empty;
+            return mdpMonthDatePicker?.SelectedDate?.ToString("M/d") ?? string.Empty;
         }
 
         /// <summary>
@@ -94,15 +96,16 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
             var mdpMonthDatePicker = control as MonthDayPicker;
-            if ( mdpMonthDatePicker != null )
+            if (mdpMonthDatePicker != null)
             {
                 mdpMonthDatePicker.SelectedDate = value.MonthDayStringAsDateTime();
             }
         }
 
+#endif
         #endregion
     }
 }

@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -53,67 +54,6 @@ namespace Rock.Field.Types
             return GetTextValue( privateValue, privateConfigurationValues );
         }
 
-        /// <summary>
-        /// Formats the value.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string newValue = value;
-
-            if ( value.IsLavaTemplate() )
-            {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                if ( entityTypeId.HasValue && entityId.HasValue )
-                {
-                    var entity = new EntityTypeService( new RockContext() ).GetEntity( entityTypeId.Value, entityId.Value );
-                    if ( entity != null )
-                    {
-                        mergeFields.Add( "Entity", entity );
-                    }
-                }
-                newValue = value.ResolveMergeFields( mergeFields ).Trim();
-            }
-
-            return base.FormatValue( parentControl, entityTypeId, entityId, newValue, configurationValues, condensed );
-        }
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            // implementing this as the base method encodes the HTML and we don't want to do that with the Lava control
-            return FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed );
-        }
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            // implementing this as the base method encodes the HTML and we don't want to do that with the Lava control
-            return FormatValue( parentControl, value, configurationValues, condensed );
-        }
-
         #endregion
 
         #region Persistence
@@ -125,6 +65,73 @@ namespace Rock.Field.Types
             return false;
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValue(Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
+        {
+            string newValue = value;
+
+            if (value.IsLavaTemplate())
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(null);
+                if (entityTypeId.HasValue && entityId.HasValue)
+                {
+                    var entity = new EntityTypeService(new RockContext()).GetEntity(entityTypeId.Value, entityId.Value);
+                    if (entity != null)
+                    {
+                        mergeFields.Add("Entity", entity);
+                    }
+                }
+                newValue = value.ResolveMergeFields(mergeFields).Trim();
+            }
+
+            return base.FormatValue(parentControl, entityTypeId, entityId, newValue, configurationValues, condensed);
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml(Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
+        {
+            // implementing this as the base method encodes the HTML and we don't want to do that with the Lava control
+            return FormatValue(parentControl, entityTypeId, entityId, value, configurationValues, condensed);
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
+        {
+            // implementing this as the base method encodes the HTML and we don't want to do that with the Lava control
+            return FormatValue(parentControl, value, configurationValues, condensed);
+        }
+
+#endif
         #endregion
     }
 }

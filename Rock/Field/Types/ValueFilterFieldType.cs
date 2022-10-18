@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -45,6 +46,49 @@ namespace Rock.Field.Types
         /// </summary>
         public const string COMPARISON_TYPES = "comparisontypes";
 
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var filter = FilterExpression.FromJsonOrNull( privateValue );
+
+            try
+            {
+                return filter.ToString();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Support Methods
+
+        /// <summary>
+        /// Gets the filter object that can be used to evaluate an object against the filter.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <returns>A CompoundFilter object that can be used to evaluate the truth of the filter.</returns>
+        public static FilterExpression GetFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            return FilterExpression.FromJsonOrNull( value );
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -53,8 +97,8 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
 
-            configKeys.Add( HIDE_FILTER_MODE );
-            configKeys.Add( COMPARISON_TYPES );
+            configKeys.Add(HIDE_FILTER_MODE);
+            configKeys.Add(COMPARISON_TYPES);
 
             return configKeys;
         }
@@ -76,7 +120,7 @@ namespace Rock.Field.Types
                 Help = "When set, filter mode will be hidden."
             };
             cbHideFilterMode.CheckedChanged += OnQualifierUpdated;
-            controls.Add( cbHideFilterMode );
+            controls.Add(cbHideFilterMode);
 
             var defaultComparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | Model.ComparisonType.RegularExpression;
             var cbComparisonTypes = new RockCheckBoxList()
@@ -88,9 +132,9 @@ namespace Rock.Field.Types
                 Help = "The comparison types the user can select from."
             };
             cbComparisonTypes.BindToEnum<Model.ComparisonType>();
-            cbComparisonTypes.SetValues( defaultComparisonType.GetFlags<Model.ComparisonType>().Cast<int>() );
+            cbComparisonTypes.SetValues(defaultComparisonType.GetFlags<Model.ComparisonType>().Cast<int>());
             cbComparisonTypes.SelectedIndexChanged += OnQualifierUpdated;
-            controls.Add( cbComparisonTypes );
+            controls.Add(cbComparisonTypes);
 
             return controls;
         }
@@ -100,7 +144,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>
             {
@@ -108,25 +152,25 @@ namespace Rock.Field.Types
                 { COMPARISON_TYPES, new ConfigurationValue( "Comparison Types", "The comparison types the user can select from.", "" ) }
             };
 
-            if ( controls != null )
+            if (controls != null)
             {
-                if ( controls.Count > 1 )
+                if (controls.Count > 1)
                 {
-                    if ( controls[0] is CheckBox cbHideFilterMode )
+                    if (controls[0] is CheckBox cbHideFilterMode)
                     {
                         configurationValues[HIDE_FILTER_MODE].Value = cbHideFilterMode.Checked.ToString();
                     }
 
-                    if ( controls[1] is RockCheckBoxList cbComparisonTypes )
+                    if (controls[1] is RockCheckBoxList cbComparisonTypes)
                     {
                         Model.ComparisonType comparisonType = 0;
 
-                        foreach ( int value in cbComparisonTypes.SelectedValuesAsInt )
+                        foreach (int value in cbComparisonTypes.SelectedValuesAsInt)
                         {
-                            comparisonType |= ( Model.ComparisonType ) value;
+                            comparisonType |= (Model.ComparisonType)value;
                         }
 
-                        configurationValues[COMPARISON_TYPES].Value = ( ( int ) comparisonType ).ToString();
+                        configurationValues[COMPARISON_TYPES].Value = ((int)comparisonType).ToString();
                     }
                 }
             }
@@ -139,33 +183,29 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            if ( controls != null && controls.Count > 1 && configurationValues != null )
+            if (controls != null && controls.Count > 1 && configurationValues != null)
             {
-                if ( configurationValues.ContainsKey( HIDE_FILTER_MODE ) )
+                if (configurationValues.ContainsKey(HIDE_FILTER_MODE))
                 {
-                    if ( controls[0] is CheckBox cbHidefilterMode )
+                    if (controls[0] is CheckBox cbHidefilterMode)
                     {
                         cbHidefilterMode.Checked = configurationValues[HIDE_FILTER_MODE].Value.AsBoolean();
                     }
                 }
 
-                if ( configurationValues.ContainsKey( COMPARISON_TYPES ) )
+                if (configurationValues.ContainsKey(COMPARISON_TYPES))
                 {
-                    if ( controls[1] is RockCheckBoxList cbComparisonTypes )
+                    if (controls[1] is RockCheckBoxList cbComparisonTypes)
                     {
-                        Model.ComparisonType comparisonType = ( Model.ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
+                        Model.ComparisonType comparisonType = (Model.ComparisonType)configurationValues[COMPARISON_TYPES].Value.AsInteger();
 
-                        cbComparisonTypes.SetValues( comparisonType.GetFlags<Model.ComparisonType>().Cast<int>() );
+                        cbComparisonTypes.SetValues(comparisonType.GetFlags<Model.ComparisonType>().Cast<int>());
                     }
                 }
             }
         }
-
-        #endregion
-
-        #region Formatting
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -175,24 +215,9 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
         {
-            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var filter = FilterExpression.FromJsonOrNull( privateValue );
-
-            try
-            {
-                return filter.ToString();
-            }
-            catch
-            {
-                return string.Empty;
-            }
+            return GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
         }
 
         /// <summary>
@@ -202,10 +227,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
         {
             // use un-condensed formatted value as the sort value
-            return this.FormatValue( parentControl, value, configurationValues, false );
+            return this.FormatValue(parentControl, value, configurationValues, false);
         }
 
         /// <summary>
@@ -216,11 +241,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        public override string FormatValueAsHtml(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
         {
             // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
             // but keeping it here for backward compatibility.
-            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
+            return System.Web.HttpUtility.HtmlEncode(FormatValue(parentControl, value, configurationValues, condensed));
         }
 
         /// <summary>
@@ -233,16 +258,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        public override string FormatValueAsHtml(Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false)
         {
             // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
             // but keeping it here for backward compatibility.
-            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed ) );
+            return System.Web.HttpUtility.HtmlEncode(FormatValue(parentControl, entityTypeId, entityId, value, configurationValues, condensed));
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -252,26 +273,26 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
             ValueFilter ft = new ValueFilter
             {
                 ID = id
             };
 
-            if ( configurationValues != null )
+            if (configurationValues != null)
             {
-                if ( configurationValues.ContainsKey( HIDE_FILTER_MODE ) &&
-                    configurationValues[HIDE_FILTER_MODE].Value.AsBoolean() )
+                if (configurationValues.ContainsKey(HIDE_FILTER_MODE) &&
+                    configurationValues[HIDE_FILTER_MODE].Value.AsBoolean())
                 {
                     ft.HideFilterMode = true;
                 }
 
-                if ( configurationValues.ContainsKey( COMPARISON_TYPES ) )
+                if (configurationValues.ContainsKey(COMPARISON_TYPES))
                 {
-                    Model.ComparisonType comparisonType = ( Model.ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
+                    Model.ComparisonType comparisonType = (Model.ComparisonType)configurationValues[COMPARISON_TYPES].Value.AsInteger();
 
-                    if ( comparisonType == 0 )
+                    if (comparisonType == 0)
                     {
                         comparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | Model.ComparisonType.RegularExpression;
                     }
@@ -289,13 +310,13 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
         {
             var tvf = control as ValueFilter;
 
-            if ( control != null )
+            if (control != null)
             {
-                tvf.Filter = ( CompoundFilterExpression ) FilterExpression.FromJsonOrNull( value );
+                tvf.Filter = (CompoundFilterExpression)FilterExpression.FromJsonOrNull(value);
             }
         }
 
@@ -305,11 +326,11 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
         {
             var tvf = control as ValueFilter;
 
-            if ( control == null || tvf.Filter.Filters.Count == 0 )
+            if (control == null || tvf.Filter.Filters.Count == 0)
             {
                 return string.Empty;
             }
@@ -317,21 +338,7 @@ namespace Rock.Field.Types
             return tvf.Filter.ToJson();
         }
 
-        #endregion
-
-        #region Support Methods
-
-        /// <summary>
-        /// Gets the filter object that can be used to evaluate an object against the filter.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The attribute value.</param>
-        /// <returns>A CompoundFilter object that can be used to evaluate the truth of the filter.</returns>
-        public static FilterExpression GetFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            return FilterExpression.FromJsonOrNull( value );
-        }
-
+#endif
         #endregion
     }
 }
