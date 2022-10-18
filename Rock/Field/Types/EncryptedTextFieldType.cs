@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.UI.Controls;
@@ -39,6 +40,68 @@ namespace Rock.Field.Types
         private const string IS_PASSWORD_KEY = "ispassword";
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string ALLOW_HTML = "allowhtml";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues != null &&
+                privateConfigurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                privateConfigurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return Encryption.DecryptString( privateValue );
+        }
+
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        public override bool IsSensitive()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Persisted values store the unencrypted value in the database, which is bad.
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -137,23 +200,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( privateConfigurationValues != null &&
-                privateConfigurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
-                privateConfigurationValues[IS_PASSWORD_KEY].AsBoolean() )
-            {
-                return "********";
-            }
-
-            return Encryption.DecryptString( privateValue );
-        }
-
         /// <inheritdoc/>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
@@ -161,22 +207,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <summary>
-        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
-        /// whether or not the value of this attribute is logged when changed.
-        /// </summary>
-        /// <returns>
-        ///   <c>false</c> By default, any field is not sensitive.
-        /// </returns>
-        public override bool IsSensitive()
-        {
-            return true;
-        }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -235,10 +265,6 @@ namespace Rock.Field.Types
             base.SetEditValue( control, configurationValues, Encryption.DecryptString( value ) );
         }
 
-        #endregion
-
-        #region Filter Control
-
         // Note: Even though this is a 'text' type field, the comparisons like 'Starts with', 'Contains', etc. can't be performed
         // on the encrypted text. Every time the same value is encrypted, the value is different. So a binary comparison cannot be performed.
 
@@ -256,27 +282,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
+#endif
         #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Persisted values store the unencrypted value in the database, which is bad.
-            return false;
-        }
-
-        #endregion
-
     }
 }

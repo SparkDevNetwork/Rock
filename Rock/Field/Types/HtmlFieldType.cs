@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -38,6 +39,58 @@ namespace Rock.Field.Types
         private const string DOCUMENT_FOLDER_ROOT = "documentfolderroot";
         private const string IMAGE_FOLDER_ROOT = "imagefolderroot";
         private const string USER_SPECIFIC_ROOT = "userspecificroot";
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue.StripHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The base method will encode for HTML which we don't want. The
+            // privateValue is the raw HTML we want to return.
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // We need to clean up the HTML right around the truncate length.
+            return privateValue.TruncateHtml( 100 );
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -161,10 +214,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Edit Control
-
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -206,24 +255,6 @@ namespace Rock.Field.Types
             return editor;
         }
 
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.StringFilterComparisonTypes;
-            }
-        }
-
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
@@ -263,31 +294,6 @@ namespace Rock.Field.Types
             // the HTML Editor can cause a postback loop if OnChange and AutoPostback is enabled, so disable the HasChangeHandler
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            return privateValue.StripHtml();
-        }
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            // The base method will encode for HTML which we don't want. The
-            // privateValue is the raw HTML we want to return.
-            return privateValue;
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            // We need to clean up the HTML right around the truncate length.
-            return privateValue.TruncateHtml( 100 );
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -303,6 +309,7 @@ namespace Rock.Field.Types
                 : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
+#endif
         #endregion
     }
 }

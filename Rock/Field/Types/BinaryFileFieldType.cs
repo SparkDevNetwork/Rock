@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,17 +46,6 @@ namespace Rock.Field.Types
 
         private const string BINARY_FILE_TYPES_PROPERTY_KEY = "binaryFileTypes";
 
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( BINARY_FILE_TYPE );
-            return configKeys;
-        }
-
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
@@ -77,66 +67,6 @@ namespace Rock.Field.Types
             }
 
             return configurationProperties;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Items.Clear();
-            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
-                .Queryable()
-                .OrderBy( f => f.Name )
-                .Select( f => new { f.Guid, f.Name } ) )
-            {
-                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower() ) );
-            }
-            ddl.Label = "File Type";
-            ddl.Help = "File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( BINARY_FILE_TYPE, new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
-
-            if ( controls != null && controls.Count > 0 &&
-                controls[0] != null && controls[0] is DropDownList )
-            {
-                configurationValues[BINARY_FILE_TYPE].Value = ( (DropDownList)controls[0] ).SelectedValue;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count > 0 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
-            {
-                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value?.ToLower() ?? string.Empty );
-            }
         }
 
         #endregion
@@ -201,21 +131,6 @@ namespace Rock.Field.Types
             return GetFormattedValue( privateValue, true );
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
@@ -264,6 +179,198 @@ namespace Rock.Field.Types
         {
             // Extract the raw value.
             return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                // This field type only supports IsBlank and IsNotBlank since the content is stored as binarydata
+                return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
+            }
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new BinaryFileService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
+
+                if ( !binaryFileId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<BinaryFile>().Value, binaryFileId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the FileName property of a BinaryFile and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( BINARY_FILE_TYPE );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var ddl = new RockDropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Items.Clear();
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
+                .Queryable()
+                .OrderBy( f => f.Name )
+                .Select( f => new { f.Guid, f.Name } ) )
+            {
+                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower() ) );
+            }
+            ddl.Label = "File Type";
+            ddl.Help = "File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( BINARY_FILE_TYPE, new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
+
+            if ( controls != null && controls.Count > 0 &&
+                controls[0] != null && controls[0] is DropDownList )
+            {
+                configurationValues[BINARY_FILE_TYPE].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count > 0 && configurationValues != null &&
+                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                ( ( DropDownList ) controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value?.ToLower() ?? string.Empty );
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -342,10 +449,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Gets the filter value control with the specified FilterMode
         /// </summary>
@@ -379,34 +482,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                // This field type only supports IsBlank and IsNotBlank since the content is stored as binarydata
-                return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
-            }
-        }
-        
-        #endregion
-
-        #region Entity Methods
-
-        /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
         /// <param name="control">The control.</param>
@@ -417,7 +492,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             int? itemId = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
-            return itemId != null ? itemId : (int?)null;
+            return itemId != null ? itemId : ( int? ) null;
         }
 
         /// <summary>
@@ -439,75 +514,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new BinaryFileService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
-
-                if ( !binaryFileId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<BinaryFile>().Value, binaryFileId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the FileName property of a BinaryFile and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

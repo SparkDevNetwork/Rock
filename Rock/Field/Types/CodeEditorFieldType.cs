@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -35,6 +36,53 @@ namespace Rock.Field.Types
         private const string EDITOR_MODE = "editorMode";
         private const string EDITOR_THEME = "editorTheme";
         private const string EDITOR_HEIGHT = "editorHeight";
+
+        #endregion
+
+        #region Edit Controls
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.EncodeHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Encode because if the user typed <span>hello</span> then we want
+            // it to display on screen as "<span>hello</span>" rather than "hello".
+            return privateValue.Truncate( 100 ).EncodeHtml();
+        }
+
+        #endregion
+
+        #region FilterControl
+
+        /// <summary>
+        /// /*Get*/s the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -100,15 +148,15 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is RockDropDownList )
                 {
-                    configurationValues[EDITOR_MODE].Value = ( (RockDropDownList)controls[0] ).SelectedValue;
+                    configurationValues[EDITOR_MODE].Value = ( ( RockDropDownList ) controls[0] ).SelectedValue;
                 }
                 if ( controls[1] != null && controls[1] is RockDropDownList )
                 {
-                    configurationValues[EDITOR_THEME].Value = ( (RockDropDownList)controls[1] ).SelectedValue;
+                    configurationValues[EDITOR_THEME].Value = ( ( RockDropDownList ) controls[1] ).SelectedValue;
                 }
                 if ( controls[2] != null && controls[2] is NumberBox )
                 {
-                    configurationValues[EDITOR_HEIGHT].Value = ( (NumberBox)controls[2] ).Text;
+                    configurationValues[EDITOR_HEIGHT].Value = ( ( NumberBox ) controls[2] ).Text;
                 }
             }
 
@@ -126,22 +174,18 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is RockDropDownList && configurationValues.ContainsKey( EDITOR_MODE ) )
                 {
-                    ( (RockDropDownList)controls[0] ).SelectedValue = configurationValues[EDITOR_MODE].Value;
+                    ( ( RockDropDownList ) controls[0] ).SelectedValue = configurationValues[EDITOR_MODE].Value;
                 }
                 if ( controls[1] != null && controls[1] is RockDropDownList && configurationValues.ContainsKey( EDITOR_THEME ) )
                 {
-                    ( (RockDropDownList)controls[1] ).SelectedValue = configurationValues[EDITOR_THEME].Value;
+                    ( ( RockDropDownList ) controls[1] ).SelectedValue = configurationValues[EDITOR_THEME].Value;
                 }
                 if ( controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( EDITOR_HEIGHT ) )
                 {
-                    ( (NumberBox)controls[2] ).Text = configurationValues[EDITOR_HEIGHT].Value;
+                    ( ( NumberBox ) controls[2] ).Text = configurationValues[EDITOR_HEIGHT].Value;
                 }
             }
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -176,26 +220,6 @@ namespace Rock.Field.Types
             return editor;
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            // Encode because if the user typed <span>hello</span> then we want
-            // it to display on screen as "<span>hello</span>" rather than "hello".
-            return privateValue.EncodeHtml();
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            // Encode because if the user typed <span>hello</span> then we want
-            // it to display on screen as "<span>hello</span>" rather than "hello".
-            return privateValue.Truncate( 100 ).EncodeHtml();
-        }
-
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>
@@ -228,24 +252,6 @@ namespace Rock.Field.Types
             return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed ) );
         }
 
-        #endregion
-
-        #region FilterControl
-
-        /// <summary>
-        /// /*Get*/s the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.StringFilterComparisonTypes;
-            }
-        }
-
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
@@ -262,6 +268,7 @@ namespace Rock.Field.Types
             return tbValue;
         }
 
+#endif
         #endregion
     }
 }
