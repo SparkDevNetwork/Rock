@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,10 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -32,8 +31,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.TIME_ZONE )]
     public class TimeZoneFieldType : FieldType
     {
-        #region WebForms
-#if WEBFORMS
+        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -87,7 +85,7 @@ namespace Rock.Field.Types
                 editControl.SetValue( value );
             }
         }
-#endif
+
         #endregion
 
     }

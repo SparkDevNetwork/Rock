@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -39,6 +38,22 @@ namespace Rock.Field.Types
     {
 
         #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -64,9 +79,99 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new EventItemPicker { ID = id };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as EventItemPicker;
+            if ( picker != null )
+            {
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        itemGuid = new EventItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                    }
+                }
+
+                return itemGuid?.ToString();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value where value is the EventItem.Guid as a string (or null)
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var picker = control as EventItemPicker;
+            if ( picker != null )
+            {
+                EventItem eventItem = null;
+                Guid? eventItemGuid = value.AsGuidOrNull();
+                if ( eventItemGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        eventItem = new EventItemService( rockContext ).Get( eventItemGuid.Value );
+                    }
+                }
+
+                picker.SetValue( eventItem );
+            }
+        }
+
         #endregion
 
         #region IEntityFieldType
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new EventItemService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : ( int? ) null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new EventItemService( new RockContext() ).Get( id ?? 0 );
+            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
 
         /// <summary>
         /// Gets the entity.
@@ -130,119 +235,6 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<EventItem>().Value, nameof( EventItem.Name ) )
             };
         }
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            return new EventItemPicker { ID = id };
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var picker = control as EventItemPicker;
-            if (picker != null)
-            {
-                int? itemId = picker.SelectedValue.AsIntegerOrNull();
-                Guid? itemGuid = null;
-                if (itemId.HasValue)
-                {
-                    using (var rockContext = new RockContext())
-                    {
-                        itemGuid = new EventItemService(rockContext).Queryable().AsNoTracking().Where(a => a.Id == itemId.Value).Select(a => (Guid?)a.Guid).FirstOrDefault();
-                    }
-                }
-
-                return itemGuid?.ToString();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value where value is the EventItem.Guid as a string (or null)
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var picker = control as EventItemPicker;
-            if (picker != null)
-            {
-                EventItem eventItem = null;
-                Guid? eventItemGuid = value.AsGuidOrNull();
-                if (eventItemGuid.HasValue)
-                {
-                    using (var rockContext = new RockContext())
-                    {
-                        eventItem = new EventItemService(rockContext).Get(eventItemGuid.Value);
-                    }
-                }
-
-                picker.SetValue(eventItem);
-            }
-        }
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var guid = GetEditValue(control, configurationValues).AsGuid();
-            var item = new EventItemService(new RockContext()).Get(guid);
-            return item != null ? item.Id : (int?)null;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId(Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id)
-        {
-            var item = new EventItemService(new RockContext()).Get(id ?? 0);
-            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue(control, configurationValues, guidValue);
-        }
-
-#endif
         #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -39,11 +38,6 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -52,11 +46,11 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var control = new Rock.Web.UI.Controls.FileUploader { ID = id };
 
-            if (configurationValues != null && configurationValues.ContainsKey("binaryFileType"))
+            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {
                 control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
             }
@@ -70,18 +64,18 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
-            if (fileUploader != null)
+            if ( fileUploader != null )
             {
                 int? binaryFileId = fileUploader.BinaryFileId;
                 Guid? binaryFileGuid = null;
-                if (binaryFileId.HasValue)
+                if ( binaryFileId.HasValue )
                 {
-                    using (var rockContext = new RockContext())
+                    using ( var rockContext = new RockContext() )
                     {
-                        binaryFileGuid = new BinaryFileService(rockContext).Queryable().AsNoTracking().Where(a => a.Id == binaryFileId.Value).Select(a => (Guid?)a.Guid).FirstOrDefault();
+                        binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
@@ -97,18 +91,18 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
-            if (fileUploader != null)
+            if ( fileUploader != null )
             {
                 int? binaryFileId = null;
                 Guid? binaryFileGuid = value.AsGuidOrNull();
-                if (binaryFileGuid.HasValue)
+                if ( binaryFileGuid.HasValue )
                 {
-                    using (var rockContext = new RockContext())
+                    using ( var rockContext = new RockContext() )
                     {
-                        binaryFileId = new BinaryFileService(rockContext).Queryable().Where(a => a.Guid == binaryFileGuid.Value).Select(a => (int?)a.Id).FirstOrDefault();
+                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
 
@@ -116,7 +110,7 @@ namespace Rock.Field.Types
             }
         }
 
-#endif
         #endregion
+
     }
 }

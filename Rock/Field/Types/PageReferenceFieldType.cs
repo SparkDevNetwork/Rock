@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
-using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -82,13 +80,145 @@ namespace Rock.Field.Types
             return privateValue;
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns>System.String.</returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Note that the original FormatValue didn't call Base.FormatValue, so it wouldn't have done any condensing.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
         #endregion
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new PagePicker { ID = id };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid 
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            PagePicker ppPage = control as PagePicker;
+            string result = string.Empty;
+
+            if ( ppPage != null )
+            {
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                //// If only a Page is specified, this is just a reference to a page without a special route
+
+                using ( var rockContext = new RockContext() )
+                {
+
+                    if ( ppPage.IsPageRoute )
+                    {
+                        int? pageRouteId = ppPage.PageRouteId;
+                        var pageRoute = new PageRouteService( rockContext ).GetNoTracking( pageRouteId ?? 0 );
+                        if ( pageRoute != null )
+                        {
+                            result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                        }
+                    }
+                    else
+                    {
+                        var page = new PageService( rockContext ).GetNoTracking( ppPage.PageId ?? 0 );
+                        if ( page != null )
+                        {
+                            result = page.Guid.ToString();
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value ( as either Page.Guid,PageRoute.Guid or just Page.Guid if not specific to a route )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            PagePicker ppPage = control as PagePicker;
+            if ( ppPage != null )
+            {
+                string[] valuePair = ( value ?? string.Empty ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                Page page = null;
+                PageRoute pageRoute = null;
+
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                //// If only the Page.Guid is specified this is just a reference to a page without a special route
+                //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+                var rockContext = new RockContext();
+
+                if ( valuePair.Length == 2 )
+                {
+                    Guid pageRouteGuid;
+                    Guid.TryParse( valuePair[1], out pageRouteGuid );
+                    pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+                }
+
+                if ( pageRoute != null )
+                {
+                    ppPage.SetValue( pageRoute );
+                }
+                else
+                {
+                    if ( valuePair.Length > 0 )
+                    {
+                        Guid pageGuid;
+                        Guid.TryParse( valuePair[0], out pageGuid );
+                        page = new PageService( rockContext ).Get( pageGuid );
+                    }
+
+                    ppPage.SetValue( page );
+                }
+            }
+        }
+
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        {
+            // This field type does not support filtering
+            return null;
+        }
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -149,150 +279,11 @@ namespace Rock.Field.Types
             // should have its persisted values updated when changed.
             return new List<ReferencedProperty>
             {
-                new ReferencedProperty( EntityTypeCache.GetId<Rock.Model.Page>().Value, nameof( Rock.Model.Page.PageTitle ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Page>().Value, nameof( Page.PageTitle ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<PageRoute>().Value, nameof( PageRoute.Route ) )
             };
         }
 
         #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns>System.String.</returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            // Note that the original FormatValue didn't call Base.FormatValue, so it wouldn't have done any condensing.
-            return GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            return new PagePicker { ID = id };
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid 
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            PagePicker ppPage = control as PagePicker;
-            string result = string.Empty;
-
-            if (ppPage != null)
-            {
-                //// Value is in format "Page.Guid,PageRoute.Guid"
-                //// If only a Page is specified, this is just a reference to a page without a special route
-
-                using (var rockContext = new RockContext())
-                {
-
-                    if (ppPage.IsPageRoute)
-                    {
-                        int? pageRouteId = ppPage.PageRouteId;
-                        var pageRoute = new PageRouteService(rockContext).GetNoTracking(pageRouteId ?? 0);
-                        if (pageRoute != null)
-                        {
-                            result = string.Format("{0},{1}", pageRoute.Page.Guid, pageRoute.Guid);
-                        }
-                    }
-                    else
-                    {
-                        var page = new PageService(rockContext).GetNoTracking(ppPage.PageId ?? 0);
-                        if (page != null)
-                        {
-                            result = page.Guid.ToString();
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value ( as either Page.Guid,PageRoute.Guid or just Page.Guid if not specific to a route )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            PagePicker ppPage = control as PagePicker;
-            if (ppPage != null)
-            {
-                string[] valuePair = (value ?? string.Empty).Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                Rock.Model.Page page = null;
-                PageRoute pageRoute = null;
-
-                //// Value is in format "Page.Guid,PageRoute.Guid"
-                //// If only the Page.Guid is specified this is just a reference to a page without a special route
-                //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
-
-                var rockContext = new RockContext();
-
-                if (valuePair.Length == 2)
-                {
-                    Guid pageRouteGuid;
-                    Guid.TryParse(valuePair[1], out pageRouteGuid);
-                    pageRoute = new PageRouteService(rockContext).Get(pageRouteGuid);
-                }
-
-                if (pageRoute != null)
-                {
-                    ppPage.SetValue(pageRoute);
-                }
-                else
-                {
-                    if (valuePair.Length > 0)
-                    {
-                        Guid pageGuid;
-                        Guid.TryParse(valuePair[0], out pageGuid);
-                        page = new PageService(rockContext).Get(pageGuid);
-                    }
-
-                    ppPage.SetValue(page);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode)
-        {
-            // This field type does not support filtering
-            return null;
-        }
-
-#endif
-        #endregion
-
     }
 }

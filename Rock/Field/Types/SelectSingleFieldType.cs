@@ -19,10 +19,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -41,6 +40,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SINGLE_SELECT )]
     public class SelectSingleFieldType : FieldType
     {
+
         #region Configuration
 
         private const string VALUES_KEY = "values";
@@ -48,6 +48,169 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS = "repeatColumns";
 
         private const string CUSTOM_VALUES_PUBLIC_KEY = "customValues";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( VALUES_KEY );
+            configKeys.Add( FIELDTYPE_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            if ( publicConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                if ( usage == ConfigurationValueUsage.Configure )
+                {
+                    // customValues contains the actual raw string that comprises the values.
+                    // is used while editing the configuration values only.
+                    publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
+                }
+
+                var options = Helper.GetConfiguredValues( privateConfigurationValues )
+                    .Select( kvp => new
+                    {
+                        value = kvp.Key,
+                        text = kvp.Value
+                    } );
+
+                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                publicConfigurationValues[VALUES_KEY] = "[]";
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Don't allow them to provide the actual value items.
+            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                privateConfigurationValues.Remove( VALUES_KEY );
+            }
+
+            // Convert the custom values string into the values to be stored.
+            if ( privateConfigurationValues.ContainsKey( CUSTOM_VALUES_PUBLIC_KEY ) )
+            {
+                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY];
+                privateConfigurationValues.Remove( CUSTOM_VALUES_PUBLIC_KEY );
+            }
+            else
+            {
+                privateConfigurationValues[VALUES_KEY] = "";
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var tbValues = new RockTextBox();
+            tbValues.TextMode = TextBoxMode.MultiLine;
+            tbValues.Rows = 3;
+            tbValues.AutoPostBack = true;
+            tbValues.TextChanged += OnQualifierUpdated;
+            tbValues.Label = "Values";
+            tbValues.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            controls.Add( tbValues );
+
+            var ddlFieldType = new RockDropDownList();
+            ddlFieldType.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
+            ddlFieldType.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
+            ddlFieldType.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
+            ddlFieldType.AutoPostBack = true;
+            ddlFieldType.SelectedIndexChanged += OnQualifierUpdated;
+            ddlFieldType.Label = "Control Type";
+            ddlFieldType.Help = "The type of control to use for selecting a single value from the list.";
+            controls.Add( ddlFieldType );
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+
+            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", description, string.Empty ) );
+
+            description = "The type of control to use for selecting a single value from the list.";
+            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", description, "ddl" ) );
+
+            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
+
+            if ( controls != null && controls.Count > 2 )
+            {
+                var tbValues = controls[0] as RockTextBox;
+                var ddlFieldType = controls[1] as RockDropDownList;
+                var tbRepeatColumns = controls[2] as NumberBox;
+
+                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
+
+                configurationValues[VALUES_KEY].Value = tbValues.Text;
+                configurationValues[FIELDTYPE_KEY].Value = ddlFieldType.SelectedValue;
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && controls.Count > 2 && configurationValues != null )
+            {
+                var tbValues = controls[0] as RockTextBox;
+                var ddlFieldType = controls[1] as RockDropDownList;
+                var tbRepeatColumns = controls[2] as NumberBox;
+
+                tbValues.Text = configurationValues.ContainsKey( VALUES_KEY ) ? configurationValues[VALUES_KEY].Value : string.Empty;
+                ddlFieldType.SelectedValue = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : ddlFieldType.SelectedValue;
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
+            }
+        }
 
         #endregion
 
@@ -70,13 +233,174 @@ namespace Rock.Field.Types
             return base.GetTextValue( privateValue, privateConfigurationValues );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
         #endregion
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            if ( configurationValues != null )
+            {
+                ListControl editControl = null;
+
+                string fieldType = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : "ddl";
+                if ( fieldType == "rb" )
+                {
+                    editControl = new RockRadioButtonList { ID = id };
+                    ( ( RadioButtonList ) editControl ).RepeatDirection = RepeatDirection.Horizontal;
+
+                    if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                    {
+                        ( ( RadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                    }
+                }
+                else
+                {
+                    editControl = new RockDropDownList { ID = id };
+                    ( ( RockDropDownList ) editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
+                    ( ( RockDropDownList ) editControl ).DisplayEnhancedAsAbsolute = true;
+                    editControl.Items.Add( new ListItem() );
+                }
+
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
+                {
+                    editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
+                }
+
+                if ( editControl.Items.Count > 0 )
+                {
+                    return editControl;
+                }
+            }
+
+            return null;
+
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control != null && control is ListControl )
+            {
+                return ( ( ListControl ) control ).SelectedValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( value != null )
+            {
+                if ( control != null && control is ListControl )
+                {
+                    ( ( ListControl ) control ).SetValue( value );
+                }
+            }
+        }
+
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+
+
+            // hide the compare control when in SimpleFilter mode
+            lbl.Visible = filterMode != FilterMode.SimpleFilter;
+
+            return lbl;
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            if ( configurationValues != null && configurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                var cbList = new RockCheckBoxList();
+                cbList.ID = string.Format( "{0}_cbList", id );
+                cbList.AddCssClass( "js-filter-control" );
+                cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
+                {
+                    cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
+                }
+
+                if ( cbList.Items.Count > 0 )
+                {
+                    return cbList;
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -88,12 +412,77 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
         /// </summary>
         /// <returns></returns>
         public override string GetEqualToCompareValue()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            if ( control != null && control is CheckBoxList )
+            {
+                CheckBoxList cbl = ( CheckBoxList ) control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    if ( li.Selected )
+                    {
+                        values.Add( li.Value );
+                    }
+                }
+            }
+
+            return values.AsDelimited( "," );
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
+        {
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is CheckBoxList && value != null )
+            {
+                var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                CheckBoxList cbl = ( CheckBoxList ) control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    li.Selected = values.Contains( li.Value );
+                }
+            }
         }
 
         /// <summary>
@@ -277,401 +666,6 @@ namespace Rock.Field.Types
             return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add(VALUES_KEY);
-            configKeys.Add(FIELDTYPE_KEY);
-            configKeys.Add(REPEAT_COLUMNS);
-            return configKeys;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues(Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue)
-        {
-            var publicConfigurationValues = base.GetPublicConfigurationValues(privateConfigurationValues, usage, privateValue);
-
-            if (publicConfigurationValues.ContainsKey(VALUES_KEY))
-            {
-                if (usage == ConfigurationValueUsage.Configure)
-                {
-                    // customValues contains the actual raw string that comprises the values.
-                    // is used while editing the configuration values only.
-                    publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
-                }
-
-                var options = Helper.GetConfiguredValues(privateConfigurationValues)
-                    .Select(kvp => new
-                    {
-                        value = kvp.Key,
-                        text = kvp.Value
-                    });
-
-                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson(false, true);
-            }
-            else
-            {
-                publicConfigurationValues[VALUES_KEY] = "[]";
-            }
-
-            return publicConfigurationValues;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPrivateConfigurationValues(Dictionary<string, string> publicConfigurationValues)
-        {
-            var privateConfigurationValues = base.GetPrivateConfigurationValues(publicConfigurationValues);
-
-            // Don't allow them to provide the actual value items.
-            if (privateConfigurationValues.ContainsKey(VALUES_KEY))
-            {
-                privateConfigurationValues.Remove(VALUES_KEY);
-            }
-
-            // Convert the custom values string into the values to be stored.
-            if (privateConfigurationValues.ContainsKey(CUSTOM_VALUES_PUBLIC_KEY))
-            {
-                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY];
-                privateConfigurationValues.Remove(CUSTOM_VALUES_PUBLIC_KEY);
-            }
-            else
-            {
-                privateConfigurationValues[VALUES_KEY] = "";
-            }
-
-            return privateConfigurationValues;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            var tbValues = new RockTextBox();
-            tbValues.TextMode = TextBoxMode.MultiLine;
-            tbValues.Rows = 3;
-            tbValues.AutoPostBack = true;
-            tbValues.TextChanged += OnQualifierUpdated;
-            tbValues.Label = "Values";
-            tbValues.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
-            controls.Add(tbValues);
-
-            var ddlFieldType = new RockDropDownList();
-            ddlFieldType.Items.Add(new ListItem("Drop Down List", "ddl"));
-            ddlFieldType.Items.Add(new ListItem("Drop Down List (Enhanced for Long Lists)", "ddl_enhanced"));
-            ddlFieldType.Items.Add(new ListItem("Radio Buttons", "rb"));
-            ddlFieldType.AutoPostBack = true;
-            ddlFieldType.SelectedIndexChanged += OnQualifierUpdated;
-            ddlFieldType.Label = "Control Type";
-            ddlFieldType.Help = "The type of control to use for selecting a single value from the list.";
-            controls.Add(ddlFieldType);
-
-            var tbRepeatColumns = new NumberBox();
-            tbRepeatColumns.Label = "Columns";
-            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space.";
-            tbRepeatColumns.MinimumValue = "0";
-            tbRepeatColumns.AutoPostBack = true;
-            tbRepeatColumns.TextChanged += OnQualifierUpdated;
-            controls.Add(tbRepeatColumns);
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-
-            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
-            configurationValues.Add(VALUES_KEY, new ConfigurationValue("Values", description, string.Empty));
-
-            description = "The type of control to use for selecting a single value from the list.";
-            configurationValues.Add(FIELDTYPE_KEY, new ConfigurationValue("Control Type", description, "ddl"));
-
-            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add(REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty));
-
-            if (controls != null && controls.Count > 2)
-            {
-                var tbValues = controls[0] as RockTextBox;
-                var ddlFieldType = controls[1] as RockDropDownList;
-                var tbRepeatColumns = controls[2] as NumberBox;
-
-                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
-
-                configurationValues[VALUES_KEY].Value = tbValues.Text;
-                configurationValues[FIELDTYPE_KEY].Value = ddlFieldType.SelectedValue;
-                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            base.SetConfigurationValues(controls, configurationValues);
-
-            if (controls != null && controls.Count > 2 && configurationValues != null)
-            {
-                var tbValues = controls[0] as RockTextBox;
-                var ddlFieldType = controls[1] as RockDropDownList;
-                var tbRepeatColumns = controls[2] as NumberBox;
-
-                tbValues.Text = configurationValues.ContainsKey(VALUES_KEY) ? configurationValues[VALUES_KEY].Value : string.Empty;
-                ddlFieldType.SelectedValue = configurationValues.ContainsKey(FIELDTYPE_KEY) ? configurationValues[FIELDTYPE_KEY].Value : ddlFieldType.SelectedValue;
-                tbRepeatColumns.Text = configurationValues.ContainsKey(REPEAT_COLUMNS) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
-                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
-            }
-        }
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            if (configurationValues != null)
-            {
-                ListControl editControl = null;
-
-                string fieldType = configurationValues.ContainsKey(FIELDTYPE_KEY) ? configurationValues[FIELDTYPE_KEY].Value : "ddl";
-                if (fieldType == "rb")
-                {
-                    editControl = new RockRadioButtonList { ID = id };
-                    ((RadioButtonList)editControl).RepeatDirection = RepeatDirection.Horizontal;
-
-                    if (configurationValues.ContainsKey(REPEAT_COLUMNS))
-                    {
-                        ((RadioButtonList)editControl).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
-                    }
-                }
-                else
-                {
-                    editControl = new RockDropDownList { ID = id };
-                    ((RockDropDownList)editControl).EnhanceForLongLists = fieldType == "ddl_enhanced";
-                    ((RockDropDownList)editControl).DisplayEnhancedAsAbsolute = true;
-                    editControl.Items.Add(new ListItem());
-                }
-
-                foreach (var keyVal in Helper.GetConfiguredValues(configurationValues))
-                {
-                    editControl.Items.Add(new ListItem(keyVal.Value, keyVal.Key));
-                }
-
-                if (editControl.Items.Count > 0)
-                {
-                    return editControl;
-                }
-            }
-
-            return null;
-
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            if (control != null && control is ListControl)
-            {
-                return ((ListControl)control).SelectedValue;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            if (value != null)
-            {
-                if (control != null && control is ListControl)
-                {
-                    ((ListControl)control).SetValue(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter compare control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var lbl = new Label();
-            lbl.ID = string.Format("{0}_lIs", id);
-            lbl.AddCssClass("data-view-filter-label");
-            lbl.Text = "Is";
-
-
-            // hide the compare control when in SimpleFilter mode
-            lbl.Visible = filterMode != FilterMode.SimpleFilter;
-
-            return lbl;
-        }
-
-        /// <summary>
-        /// Gets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override string GetFilterCompareValue(Control control, FilterMode filterMode)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var values = new List<string>();
-
-            if (control != null && control is CheckBoxList)
-            {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach (ListItem li in cbl.Items)
-                {
-                    if (li.Selected)
-                    {
-                        values.Add(li.Value);
-                    }
-                }
-            }
-
-            return values.AsDelimited(",");
-        }
-
-        /// <summary>
-        /// Sets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterCompareValue(Control control, string value)
-        {
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            if (control != null && control is CheckBoxList && value != null)
-            {
-                var values = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach (ListItem li in cbl.Items)
-                {
-                    li.Selected = values.Contains(li.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            if (configurationValues != null && configurationValues.ContainsKey(VALUES_KEY))
-            {
-                var cbList = new RockCheckBoxList();
-                cbList.ID = string.Format("{0}_cbList", id);
-                cbList.AddCssClass("js-filter-control");
-                cbList.RepeatDirection = RepeatDirection.Horizontal;
-
-                foreach (var keyVal in Helper.GetConfiguredValues(configurationValues))
-                {
-                    cbList.Items.Add(new ListItem(keyVal.Value, keyVal.Key));
-                }
-
-                if (cbList.Items.Count > 0)
-                {
-                    return cbList;
-                }
-            }
-
-            return null;
-        }
-
-#endif
         #endregion
     }
 }

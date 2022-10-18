@@ -18,10 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -62,6 +61,197 @@ namespace Rock.Field.Types
         #endregion
 
         #region Configuration
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var keys = base.ConfigurationKeys();
+            keys.Add( "format" );
+            keys.Add( "displayDiff" );
+            keys.Add( "displayCurrentOption" );
+            keys.Add( "datePickerControlType" );
+            keys.Add( "futureYearCount" );
+            return keys;
+        }
+
+        /// <summary>
+        /// This event handler is triggerend when the Control Type is modified to show or hide related
+        /// options ('Future Years' or 'Display Current Option').
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnControlTypeChanged( object sender, EventArgs e )
+        {
+            var senderControl = ( sender as Control );
+            if ( senderControl == null || senderControl.Parent == null )
+            {
+                OnQualifierUpdated( sender, e );
+                return;
+            }
+
+            // Reset the visibility of the nbFutureYearCount control when the Control Type changes.
+            var controls = senderControl.Parent.Controls;
+            if ( controls != null && controls.Count >= 5 )
+            {
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
+
+                DatePickerControlType datePickerControlType = ddlDatePickerMode.SelectedValue.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+
+                // only support the 'Use Current' option of they are using the DatePicker
+                cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
+
+                // only support the 'Future Years' option of they are using the DatePartsPicker
+                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
+            }
+
+            OnQualifierUpdated( sender, e );
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var tbDateFormat = new RockTextBox();
+            controls.Add( tbDateFormat );
+            tbDateFormat.Label = "Date Format";
+            tbDateFormat.Help = "The format string to use for date (default is system short date).";
+
+            var cbDisplayDiff = new RockCheckBox();
+            controls.Add( cbDisplayDiff );
+            cbDisplayDiff.Label = "Display as Elapsed Time";
+            cbDisplayDiff.Text = "Yes";
+            cbDisplayDiff.Help = "Display value as an elapsed time.";
+
+            var ddlDatePickerMode = new RockDropDownList();
+            controls.Add( ddlDatePickerMode );
+            ddlDatePickerMode.Items.Clear();
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Picker", DatePickerControlType.DatePicker.ConvertToString() ) );
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Parts Picker", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
+            ddlDatePickerMode.Label = "Control Type";
+            ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
+            ddlDatePickerMode.AutoPostBack = true;
+            ddlDatePickerMode.SelectedIndexChanged += OnControlTypeChanged;
+
+            var cbDisplayCurrent = new RockCheckBox();
+            controls.Add( cbDisplayCurrent );
+            cbDisplayCurrent.AutoPostBack = true;
+            cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
+            cbDisplayCurrent.Label = "Display Current Option";
+            cbDisplayCurrent.Text = "Yes";
+            cbDisplayCurrent.Help = "Include option to specify value as the current date.";
+
+            var nbFutureYearCount = new NumberBox();
+            controls.Add( nbFutureYearCount );
+            nbFutureYearCount.Label = "Future Years";
+            nbFutureYearCount.Text = "";
+            nbFutureYearCount.Help = "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.";
+
+            // if this is the child type of DateTimeFieldType, change the labels and visibility of the controls as needed
+            if ( this is DateTimeFieldType )
+            {
+                tbDateFormat.Label = "Date Time Format";
+                tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
+                ddlDatePickerMode.Visible = false;
+                nbFutureYearCount.Visible = false;
+                cbDisplayCurrent.Help = "Include option to specify value as the current time.";
+            }
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && controls.Count >= 5 )
+            {
+                var tbDateFormat = controls[0] as RockTextBox;
+                var cbDisplayDiff = controls[1] as RockCheckBox;
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
+
+                if ( configurationValues.ContainsKey( "format" ) && tbDateFormat != null )
+                {
+                    tbDateFormat.Text = configurationValues["format"].Value ?? string.Empty;
+                }
+
+                if ( configurationValues.ContainsKey( "displayDiff" ) && cbDisplayDiff != null )
+                {
+                    cbDisplayDiff.Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
+                }
+
+                DatePickerControlType datePickerControlType = DatePickerControlType.DatePicker;
+
+                if ( configurationValues.ContainsKey( "datePickerControlType" ) && ddlDatePickerMode != null )
+                {
+                    ddlDatePickerMode.SetValue( configurationValues["datePickerControlType"].Value );
+                    datePickerControlType = configurationValues["datePickerControlType"].Value.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+                }
+
+                if ( configurationValues.ContainsKey( "displayCurrentOption" ) && cbDisplayCurrent != null )
+                {
+                    cbDisplayCurrent.Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
+
+                    // only support the 'Use Current' option of they are using the DatePicker
+                    cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
+                }
+
+                if ( configurationValues.ContainsKey( "futureYearCount" ) )
+                {
+                    nbFutureYearCount.Text = configurationValues["futureYearCount"].Value;
+                }
+
+                // only support the 'Future Years' option of they are using the DatePartsPicker
+                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
+            }
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var values = base.ConfigurationValues( controls );
+            values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date).", "" ) );
+            values.Add( "displayDiff", new ConfigurationValue( "Display as Elapsed Time", "Display value as an elapsed time.", "False" ) );
+            values.Add( "displayCurrentOption", new ConfigurationValue( "Display Current Option", "Include option to specify value as the current date.", "False" ) );
+            values.Add( "datePickerControlType", new ConfigurationValue( "Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString() ) );
+            values.Add( "futureYearCount", new ConfigurationValue( "Future Years", "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.", string.Empty ) );
+
+            if ( controls != null && controls.Count > 4 )
+            {
+                var tbDateFormat = controls[0] as RockTextBox;
+                var cbDisplayDiff = controls[1] as RockCheckBox;
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
+
+                values["format"].Value = tbDateFormat.Text;
+                values["displayDiff"].Value = cbDisplayDiff.Checked.ToString();
+                values["displayCurrentOption"].Value = cbDisplayCurrent.Checked.ToString();
+                values["datePickerControlType"].Value = ddlDatePickerMode.SelectedValue;
+                values["futureYearCount"].Value = nbFutureYearCount.Text;
+            }
+
+            return values;
+        }
 
         #endregion
 
@@ -161,25 +351,191 @@ namespace Rock.Field.Types
 
         }
 
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsDateTime();
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as a DateTime
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetPrivateEditValue(string publicValue, Dictionary<string, string> privateConfigurationValues)
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Try to ensure the value is the proper format.
-            if (DateTime.TryParse(publicValue, out var dateTimeValue))
+            if ( DateTime.TryParse( publicValue, out var dateTimeValue ) )
             {
-                return dateTimeValue.ToString("o");
+                return dateTimeValue.ToString( "o" );
             }
 
-            return base.GetPrivateEditValue(publicValue, privateConfigurationValues);
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var datePickerControlType = configurationValues?.GetValueOrNull( "datePickerControlType" ).ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+            switch ( datePickerControlType )
+            {
+                case DatePickerControlType.DatePartsPicker:
+                    var datePartsPicker = new DatePartsPicker { ID = id };
+                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull( "futureYearCount" ).AsIntegerOrNull();
+                    return datePartsPicker;
+                case DatePickerControlType.DatePicker:
+                default:
+                    var datePicker = new DatePicker { ID = id };
+                    datePicker.DisplayCurrentOption = configurationValues?.GetValueOrNull( "displayCurrentOption" )?.AsBooleanOrNull() ?? false;
+                    return datePicker;
+            }
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var datePicker = control as DatePicker;
+            var datePartsPicker = control as DatePartsPicker;
+            if ( datePicker != null )
+            {
+                if ( datePicker.DisplayCurrentOption && datePicker.IsCurrentDateOffset )
+                {
+                    return string.Format( "CURRENT:{0}", datePicker.CurrentDateOffsetDays );
+                }
+                else if ( datePicker.SelectedDate.HasValue )
+                {
+                    return datePicker.SelectedDate.Value.ToString( "o" );
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+            else if ( datePartsPicker != null )
+            {
+                if ( datePartsPicker.SelectedDate.HasValue )
+                {
+                    return datePartsPicker.SelectedDate.Value.ToString( "o" );
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var datePicker = control as DatePicker;
+            var datePartsPicker = control as DatePartsPicker;
+            if ( datePicker != null )
+            {
+                if ( datePicker.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    datePicker.IsCurrentDateOffset = true;
+                    var valueParts = value.Split( ':' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        datePicker.CurrentDateOffsetDays = valueParts[1].AsInteger();
+                    }
+                    else
+                    {
+                        datePicker.CurrentDateOffsetDays = 0;
+                    }
+                }
+                else
+                {
+                    datePicker.SelectedDate = value.AsDateTime();
+                }
+            }
+            else if ( datePartsPicker != null )
+            {
+                datePartsPicker.SelectedDate = value.AsDateTime();
+            }
         }
 
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Gets the filter compare control with the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var ddlCompare = base.FilterCompareControl( configurationValues, id, required, filterMode );
+
+            if ( ddlCompare is DropDownList )
+            {
+                var liBetween = ( ddlCompare as DropDownList ).Items.FindByValue( ComparisonType.Between.ConvertToInt().ToString() );
+                if ( liBetween != null )
+                {
+                    // in the case of a 'between' comparison, change it to say 'range' since we use a sliding date range control to do the 'between' for dates
+                    liBetween.Text = "Range";
+                }
+            }
+
+            return ddlCompare;
+        }
 
         /// <summary>
         /// Gets the type of the filter comparison.
@@ -193,12 +549,128 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var dateFiltersPanel = new Panel();
+            dateFiltersPanel.ID = string.Format( "{0}_dtFilterControls", id );
+
+            var datePickerPanel = new Panel();
+            dateFiltersPanel.Controls.Add( datePickerPanel );
+
+            var datePickerControlType = configurationValues?.GetValueOrNull( "datePickerControlType" ).ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+
+            switch ( datePickerControlType )
+            {
+                case DatePickerControlType.DatePartsPicker:
+                    var datePartsPicker = new DatePartsPicker { ID = id };
+                    datePartsPicker.ID = string.Format( "{0}_dtPicker", id );
+                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull( "futureYearCount" ).AsIntegerOrNull();
+                    datePickerPanel.AddCssClass( "js-filter-control" );
+                    datePickerPanel.Controls.Add( datePartsPicker );
+                    break;
+                case DatePickerControlType.DatePicker:
+                default:
+                    var datePicker = new DatePicker();
+                    datePicker.ID = string.Format( "{0}_dtPicker", id );
+                    datePicker.DisplayCurrentOption = true;
+                    datePickerPanel.AddCssClass( "js-filter-control" );
+                    datePickerPanel.Controls.Add( datePicker );
+                    break;
+            }
+
+
+
+            var slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = string.Format( "{0}_dtSlidingDateRange", id );
+            slidingDateRangePicker.AddCssClass("js-filter-control-between");
+            slidingDateRangePicker.Label = string.Empty;
+            slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
+            dateFiltersPanel.Controls.Add( slidingDateRangePicker );
+
+            return dateFiltersPanel;
+        }
+
+        /// <summary>
         /// Determines whether this filter has a filter control
         /// </summary>
         /// <returns></returns>
         public override bool HasFilterControl()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var dateFiltersPanel = control as Panel;
+            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
+            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
+            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+            string datePickerValue = string.Empty;
+            string slidingDateRangePickerValue = string.Empty;
+            if ( datePicker != null )
+            {
+                datePickerValue = this.GetEditValue( datePicker, configurationValues );
+            }
+
+            if ( datePartsPicker != null )
+            {
+                datePickerValue = this.GetEditValue( datePartsPicker, configurationValues );
+            }
+
+            if ( slidingDateRangePicker != null)
+            {
+                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
+            }
+
+            // use Tab Delimited since slidingDateRangePicker is | delimited
+            return string.Format( "{0}\t{1}" , datePickerValue, slidingDateRangePickerValue );
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            // uses Tab Delimited since slidingDateRangePicker is | delimited
+            var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
+
+            var dateFiltersPanel = control as Panel;
+            if ( dateFiltersPanel != null )
+            {
+                var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
+                if ( datePicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePicker, configurationValues, filterValues[0] );
+                }
+
+                var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
+                if ( datePartsPicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
+                }
+
+                var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+                if ( slidingDateRangePicker != null && filterValues.Length > 1 )
+                {
+                    slidingDateRangePicker.DelimitedValues = filterValues[1];
+                }
+            }
         }
 
         /// <summary>
@@ -497,485 +969,6 @@ namespace Rock.Field.Types
             return false;
         }
 
-        #endregion
-
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var keys = base.ConfigurationKeys();
-            keys.Add("format");
-            keys.Add("displayDiff");
-            keys.Add("displayCurrentOption");
-            keys.Add("datePickerControlType");
-            keys.Add("futureYearCount");
-            return keys;
-        }
-
-        /// <summary>
-        /// This event handler is triggerend when the Control Type is modified to show or hide related
-        /// options ('Future Years' or 'Display Current Option').
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnControlTypeChanged(object sender, EventArgs e)
-        {
-            var senderControl = (sender as Control);
-            if (senderControl == null || senderControl.Parent == null)
-            {
-                OnQualifierUpdated(sender, e);
-                return;
-            }
-
-            // Reset the visibility of the nbFutureYearCount control when the Control Type changes.
-            var controls = senderControl.Parent.Controls;
-            if (controls != null && controls.Count >= 5)
-            {
-                var ddlDatePickerMode = controls[2] as RockDropDownList;
-                var cbDisplayCurrent = controls[3] as RockCheckBox;
-                var nbFutureYearCount = controls[4] as NumberBox;
-
-                DatePickerControlType datePickerControlType = ddlDatePickerMode.SelectedValue.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
-
-                // only support the 'Use Current' option of they are using the DatePicker
-                cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
-
-                // only support the 'Future Years' option of they are using the DatePartsPicker
-                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
-            }
-
-            OnQualifierUpdated(sender, e);
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var tbDateFormat = new RockTextBox();
-            controls.Add(tbDateFormat);
-            tbDateFormat.Label = "Date Format";
-            tbDateFormat.Help = "The format string to use for date (default is system short date).";
-
-            var cbDisplayDiff = new RockCheckBox();
-            controls.Add(cbDisplayDiff);
-            cbDisplayDiff.Label = "Display as Elapsed Time";
-            cbDisplayDiff.Text = "Yes";
-            cbDisplayDiff.Help = "Display value as an elapsed time.";
-
-            var ddlDatePickerMode = new RockDropDownList();
-            controls.Add(ddlDatePickerMode);
-            ddlDatePickerMode.Items.Clear();
-            ddlDatePickerMode.Items.Add(new ListItem("Date Picker", DatePickerControlType.DatePicker.ConvertToString()));
-            ddlDatePickerMode.Items.Add(new ListItem("Date Parts Picker", DatePickerControlType.DatePartsPicker.ConvertToString()));
-            ddlDatePickerMode.Label = "Control Type";
-            ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
-            ddlDatePickerMode.AutoPostBack = true;
-            ddlDatePickerMode.SelectedIndexChanged += OnControlTypeChanged;
-
-            var cbDisplayCurrent = new RockCheckBox();
-            controls.Add(cbDisplayCurrent);
-            cbDisplayCurrent.AutoPostBack = true;
-            cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
-            cbDisplayCurrent.Label = "Display Current Option";
-            cbDisplayCurrent.Text = "Yes";
-            cbDisplayCurrent.Help = "Include option to specify value as the current date.";
-
-            var nbFutureYearCount = new NumberBox();
-            controls.Add(nbFutureYearCount);
-            nbFutureYearCount.Label = "Future Years";
-            nbFutureYearCount.Text = "";
-            nbFutureYearCount.Help = "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.";
-
-            // if this is the child type of DateTimeFieldType, change the labels and visibility of the controls as needed
-            if (this is DateTimeFieldType)
-            {
-                tbDateFormat.Label = "Date Time Format";
-                tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
-                ddlDatePickerMode.Visible = false;
-                nbFutureYearCount.Visible = false;
-                cbDisplayCurrent.Help = "Include option to specify value as the current time.";
-            }
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues(List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            base.SetConfigurationValues(controls, configurationValues);
-
-            if (controls != null && controls.Count >= 5)
-            {
-                var tbDateFormat = controls[0] as RockTextBox;
-                var cbDisplayDiff = controls[1] as RockCheckBox;
-                var ddlDatePickerMode = controls[2] as RockDropDownList;
-                var cbDisplayCurrent = controls[3] as RockCheckBox;
-                var nbFutureYearCount = controls[4] as NumberBox;
-
-                if (configurationValues.ContainsKey("format") && tbDateFormat != null)
-                {
-                    tbDateFormat.Text = configurationValues["format"].Value ?? string.Empty;
-                }
-
-                if (configurationValues.ContainsKey("displayDiff") && cbDisplayDiff != null)
-                {
-                    cbDisplayDiff.Checked = configurationValues["displayDiff"].Value.AsBoolean(false);
-                }
-
-                DatePickerControlType datePickerControlType = DatePickerControlType.DatePicker;
-
-                if (configurationValues.ContainsKey("datePickerControlType") && ddlDatePickerMode != null)
-                {
-                    ddlDatePickerMode.SetValue(configurationValues["datePickerControlType"].Value);
-                    datePickerControlType = configurationValues["datePickerControlType"].Value.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
-                }
-
-                if (configurationValues.ContainsKey("displayCurrentOption") && cbDisplayCurrent != null)
-                {
-                    cbDisplayCurrent.Checked = configurationValues["displayCurrentOption"].Value.AsBoolean(false);
-
-                    // only support the 'Use Current' option of they are using the DatePicker
-                    cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
-                }
-
-                if (configurationValues.ContainsKey("futureYearCount"))
-                {
-                    nbFutureYearCount.Text = configurationValues["futureYearCount"].Value;
-                }
-
-                // only support the 'Future Years' option of they are using the DatePartsPicker
-                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
-            }
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues(List<Control> controls)
-        {
-            var values = base.ConfigurationValues(controls);
-            values.Add("format", new ConfigurationValue("Date Format", "The format string to use for date (default is system short date).", ""));
-            values.Add("displayDiff", new ConfigurationValue("Display as Elapsed Time", "Display value as an elapsed time.", "False"));
-            values.Add("displayCurrentOption", new ConfigurationValue("Display Current Option", "Include option to specify value as the current date.", "False"));
-            values.Add("datePickerControlType", new ConfigurationValue("Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString()));
-            values.Add("futureYearCount", new ConfigurationValue("Future Years", "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.", string.Empty));
-
-            if (controls != null && controls.Count > 4)
-            {
-                var tbDateFormat = controls[0] as RockTextBox;
-                var cbDisplayDiff = controls[1] as RockCheckBox;
-                var ddlDatePickerMode = controls[2] as RockDropDownList;
-                var cbDisplayCurrent = controls[3] as RockCheckBox;
-                var nbFutureYearCount = controls[4] as NumberBox;
-
-                values["format"].Value = tbDateFormat.Text;
-                values["displayDiff"].Value = cbDisplayDiff.Checked.ToString();
-                values["displayCurrentOption"].Value = cbDisplayCurrent.Checked.ToString();
-                values["datePickerControlType"].Value = ddlDatePickerMode.SelectedValue;
-                values["futureYearCount"].Value = nbFutureYearCount.Text;
-            }
-
-            return values;
-        }
-
-        /// <summary>
-        /// Formats date display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            return !condensed
-                ? GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetCondensedTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value));
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return value.AsDateTime();
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue(System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            // return ValueAsFieldType which returns the value as a DateTime
-            return this.ValueAsFieldType(parentControl, value, configurationValues);
-        }
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string, ConfigurationValue> configurationValues, string id)
-        {
-            var datePickerControlType = configurationValues?.GetValueOrNull("datePickerControlType").ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
-            switch (datePickerControlType)
-            {
-                case DatePickerControlType.DatePartsPicker:
-                    var datePartsPicker = new DatePartsPicker { ID = id };
-                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull("futureYearCount").AsIntegerOrNull();
-                    return datePartsPicker;
-                case DatePickerControlType.DatePicker:
-                default:
-                    var datePicker = new DatePicker { ID = id };
-                    datePicker.DisplayCurrentOption = configurationValues?.GetValueOrNull("displayCurrentOption")?.AsBooleanOrNull() ?? false;
-                    return datePicker;
-            }
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var datePicker = control as DatePicker;
-            var datePartsPicker = control as DatePartsPicker;
-            if (datePicker != null)
-            {
-                if (datePicker.DisplayCurrentOption && datePicker.IsCurrentDateOffset)
-                {
-                    return string.Format("CURRENT:{0}", datePicker.CurrentDateOffsetDays);
-                }
-                else if (datePicker.SelectedDate.HasValue)
-                {
-                    return datePicker.SelectedDate.Value.ToString("o");
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-            else if (datePartsPicker != null)
-            {
-                if (datePartsPicker.SelectedDate.HasValue)
-                {
-                    return datePartsPicker.SelectedDate.Value.ToString("o");
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            var datePicker = control as DatePicker;
-            var datePartsPicker = control as DatePartsPicker;
-            if (datePicker != null)
-            {
-                if (datePicker.DisplayCurrentOption && value != null && value.StartsWith("CURRENT", StringComparison.OrdinalIgnoreCase))
-                {
-                    datePicker.IsCurrentDateOffset = true;
-                    var valueParts = value.Split(':');
-                    if (valueParts.Length > 1)
-                    {
-                        datePicker.CurrentDateOffsetDays = valueParts[1].AsInteger();
-                    }
-                    else
-                    {
-                        datePicker.CurrentDateOffsetDays = 0;
-                    }
-                }
-                else
-                {
-                    datePicker.SelectedDate = value.AsDateTime();
-                }
-            }
-            else if (datePartsPicker != null)
-            {
-                datePartsPicker.SelectedDate = value.AsDateTime();
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter compare control with the specified FilterMode
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var ddlCompare = base.FilterCompareControl(configurationValues, id, required, filterMode);
-
-            if (ddlCompare is DropDownList)
-            {
-                var liBetween = (ddlCompare as DropDownList).Items.FindByValue(ComparisonType.Between.ConvertToInt().ToString());
-                if (liBetween != null)
-                {
-                    // in the case of a 'between' comparison, change it to say 'range' since we use a sliding date range control to do the 'between' for dates
-                    liBetween.Text = "Range";
-                }
-            }
-
-            return ddlCompare;
-        }
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl(Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode)
-        {
-            var dateFiltersPanel = new Panel();
-            dateFiltersPanel.ID = string.Format("{0}_dtFilterControls", id);
-
-            var datePickerPanel = new Panel();
-            dateFiltersPanel.Controls.Add(datePickerPanel);
-
-            var datePickerControlType = configurationValues?.GetValueOrNull("datePickerControlType").ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
-
-            switch (datePickerControlType)
-            {
-                case DatePickerControlType.DatePartsPicker:
-                    var datePartsPicker = new DatePartsPicker { ID = id };
-                    datePartsPicker.ID = string.Format("{0}_dtPicker", id);
-                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull("futureYearCount").AsIntegerOrNull();
-                    datePickerPanel.AddCssClass("js-filter-control");
-                    datePickerPanel.Controls.Add(datePartsPicker);
-                    break;
-                case DatePickerControlType.DatePicker:
-                default:
-                    var datePicker = new DatePicker();
-                    datePicker.ID = string.Format("{0}_dtPicker", id);
-                    datePicker.DisplayCurrentOption = true;
-                    datePickerPanel.AddCssClass("js-filter-control");
-                    datePickerPanel.Controls.Add(datePicker);
-                    break;
-            }
-
-
-
-            var slidingDateRangePicker = new SlidingDateRangePicker();
-            slidingDateRangePicker.ID = string.Format("{0}_dtSlidingDateRange", id);
-            slidingDateRangePicker.AddCssClass("js-filter-control-between");
-            slidingDateRangePicker.Label = string.Empty;
-            slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
-            dateFiltersPanel.Controls.Add(slidingDateRangePicker);
-
-            return dateFiltersPanel;
-        }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            var dateFiltersPanel = control as Panel;
-            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
-            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
-            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-            string datePickerValue = string.Empty;
-            string slidingDateRangePickerValue = string.Empty;
-            if (datePicker != null)
-            {
-                datePickerValue = this.GetEditValue(datePicker, configurationValues);
-            }
-
-            if (datePartsPicker != null)
-            {
-                datePickerValue = this.GetEditValue(datePartsPicker, configurationValues);
-            }
-
-            if (slidingDateRangePicker != null)
-            {
-                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
-            }
-
-            // use Tab Delimited since slidingDateRangePicker is | delimited
-            return string.Format("{0}\t{1}", datePickerValue, slidingDateRangePickerValue);
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue(Control control, Dictionary<string, ConfigurationValue> configurationValues, string value)
-        {
-            // uses Tab Delimited since slidingDateRangePicker is | delimited
-            var filterValues = value.Split(new string[] { "\t" }, StringSplitOptions.None);
-
-            var dateFiltersPanel = control as Panel;
-            if (dateFiltersPanel != null)
-            {
-                var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
-                if (datePicker != null && filterValues.Length > 0)
-                {
-                    this.SetEditValue(datePicker, configurationValues, filterValues[0]);
-                }
-
-                var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
-                if (datePartsPicker != null && filterValues.Length > 0)
-                {
-                    this.SetEditValue(datePartsPicker, configurationValues, filterValues[0]);
-                }
-
-                var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-                if (slidingDateRangePicker != null && filterValues.Length > 1)
-                {
-                    slidingDateRangePicker.DelimitedValues = filterValues[1];
-                }
-            }
-        }
-
-#endif
         #endregion
     }
 }

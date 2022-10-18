@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -32,8 +31,7 @@ namespace Rock.Field.Types
     public class LabelFieldType : BinaryFileFieldType
     {
 
-        #region WebForms
-#if WEBFORMS
+        #region Configuration
 
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
@@ -83,7 +81,6 @@ namespace Rock.Field.Types
         {
         }
 
-#endif
         #endregion
 
     }

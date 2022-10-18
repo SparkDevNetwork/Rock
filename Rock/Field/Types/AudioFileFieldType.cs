@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-#if WEBFORMS
 using System.Web.UI;
-#endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -107,21 +106,21 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="privateValue"></param>
         /// <returns></returns>
-        private static string GetFileName(string privateValue)
+        private static string GetFileName( string privateValue )
         {
             var binaryFileGuid = privateValue.AsGuidOrNull();
-            if (binaryFileGuid.HasValue)
+            if ( binaryFileGuid.HasValue )
             {
-                using (var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    var binaryFileService = new BinaryFileService(rockContext);
+                    var binaryFileService = new BinaryFileService( rockContext );
                     var filename = binaryFileService
                         .Queryable().AsNoTracking()
-                        .Where(a => a.Guid == binaryFileGuid.Value)
-                        .Select(s => s.FileName)
+                        .Where( a => a.Guid == binaryFileGuid.Value )
+                        .Select( s => s.FileName )
                         .FirstOrDefault();
 
-                    if (filename.IsNotNullOrWhiteSpace())
+                    if ( filename.IsNotNullOrWhiteSpace() )
                     {
                         return filename;
                     }
@@ -130,6 +129,22 @@ namespace Rock.Field.Types
 
             // value or binaryfile was null
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // For compatibility reasons, the condensed version is just the filename.
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
 
         #endregion
@@ -170,27 +185,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-        #region WebForms
-#if WEBFORMS
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed)
-        {
-            // For compatibility reasons, the condensed version is just the filename.
-            return !condensed
-                ? GetHtmlValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))
-                : GetTextValue(value, configurationValues.ToDictionary(cv => cv.Key, cv => cv.Value.Value))?.EncodeHtml();
-        }
-
-#endif
-        #endregion
-
     }
 }
