@@ -110,30 +110,45 @@ namespace Rock.Tests.UnitTests.Rest
             "Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747'",
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747" )]
+            "ModifiedDateTime eq 2022-10-04T10:56:50.7470000-07:00" )]
         [DataRow(
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53",
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
+            "ModifiedDateTime eq 2022-10-04T10:56:50.747Z and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53",
+            "ModifiedDateTime eq 2022-10-04T10:56:50.747Z and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
         [DataRow(
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747",
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747" )]
-        [DataRow(
-            "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747' and Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'",
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
+            "ModifiedDateTime eq 2022-10-04T10:56:50.747Z",
+            "ModifiedDateTime eq 2022-10-04T10:56:50.747Z" )]
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747' and Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'",
-            "ModifiedDateTime eq 2022-10-04T10:56:50.747 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
+            "ModifiedDateTime eq 2022-10-04T10:56:50.7470000-07:00 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
+        [DataRow(
+            "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747' and Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'",
+            "ModifiedDateTime eq 2022-10-04T10:56:50.7470000-07:00 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
         public void DidParseCorrectlyTest( string originalFilter, string expectedResult )
         {
-            string originalUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={originalFilter}" );
-            var actualResultUrlEncoded = RockEnableQueryAttribute.ParseUrl( originalUrlUrlEncoded, originalFilter );
-            string expectedUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={expectedResult}" );
-            Assert.AreEqual( actualResultUrlEncoded, expectedUrlUrlEncoded );
+            var tzDefault = RockDateTime.OrgTimeZoneInfo;
 
-            string originalUrlUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={originalFilter}" );
-            var actualResultUriEscapeUriString = RockEnableQueryAttribute.ParseUrl( originalUrlUriEscapeUriString, originalFilter );
-            string expectedUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={expectedResult}" );
-            Assert.AreEqual( actualResultUriEscapeUriString, expectedUriEscapeUriString );
+            // Set the Rock server timezone to UTC-07:00.
+            var tzMst = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+
+            try
+            {
+                RockDateTime.Initialize( tzMst );
+
+                string originalUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={originalFilter}" );
+                var actualResultUrlEncoded = RockEnableQueryAttribute.ParseUrl( originalUrlUrlEncoded, originalFilter );
+                string expectedUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={expectedResult}" );
+                Assert.AreEqual( actualResultUrlEncoded, expectedUrlUrlEncoded );
+
+                string originalUrlUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={originalFilter}" );
+                var actualResultUriEscapeUriString = RockEnableQueryAttribute.ParseUrl( originalUrlUriEscapeUriString, originalFilter );
+                string expectedUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={expectedResult}" );
+                Assert.AreEqual( actualResultUriEscapeUriString, expectedUriEscapeUriString );
+            }
+            finally
+            {
+                RockDateTime.Initialize( tzDefault );
+            }
+            
         }
     }
 }

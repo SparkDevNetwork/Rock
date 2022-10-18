@@ -69,6 +69,11 @@ namespace Rock.Rest
 
             config.Formatters.Insert( 0, new Utility.ApiPickerJsonMediaTypeFormatter() );
 
+            // Tell OData to support DateTime by letting it know which TimeZone we are in
+            // See https://learn.microsoft.com/en-us/odata/webapi/datetime-support#time-zone-configuration
+            TimeZoneInfo timeZoneInfo = RockDateTime.OrgTimeZoneInfo;
+            config.SetTimeZoneInfo( timeZoneInfo );
+
             // register Swagger and its routes first
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
 
