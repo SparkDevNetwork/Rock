@@ -309,6 +309,8 @@
     <Compile Include="Entities\RegistrationTemplateFormFieldBag.cs" />
     <Compile Include="Entities\RegistrationTemplatePlacementBag.cs" />
     <Compile Include="Entities\RelatedEntityBag.cs" />
+    <Compile Include="Entities\ReminderBag.cs" />
+    <Compile Include="Entities\ReminderTypeBag.cs" />
     <Compile Include="Entities\RemoteAuthenticationSessionBag.cs" />
     <Compile Include="Entities\ReportBag.cs" />
     <Compile Include="Entities\ReportFieldBag.cs" />
