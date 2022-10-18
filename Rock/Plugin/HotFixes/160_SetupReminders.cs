@@ -166,7 +166,7 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
 
             Sql( $@"
                 UPDATE [Page]
-                SET [DisplayInNavWhen] = 0
+                SET [DisplayInNavWhen] = 2
                 WHERE [Guid] = '{SystemGuid.Page.REMINDER_TYPES}'" );
 
             RockMigrationHelper.AddBlock(
