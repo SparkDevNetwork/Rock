@@ -1,6 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReminderLinks.ascx.cs" Inherits="RockWeb.Blocks.Reminders.ReminderLinks" %>
 <%@ Import Namespace="Rock" %>
 
+<style>
+    /* This is a temporary workaround to hide the reminders button - REMOVE THIS when the feature is ready for public deployment. */
+    .js-rock-reminders { display:none; }
+</style>
+
 <script type="text/javascript">
     function clearActiveReminderDialog() {
         $('#<%=hfActiveReminderDialog.ClientID %>').val('');

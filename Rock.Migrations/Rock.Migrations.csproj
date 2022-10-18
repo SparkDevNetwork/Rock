@@ -276,10 +276,6 @@
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208122155278_Rollup_20220812.designer.cs">
       <DependentUpon>202208122155278_Rollup_20220812.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202206261652363_AddReminders.cs" />
-    <Compile Include="Migrations\202206261652363_AddReminders.designer.cs">
-      <DependentUpon>202206261652363_AddReminders.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1504,9 +1500,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208122155278_Rollup_20220812.resx">
       <DependentUpon>202208122155278_Rollup_20220812.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202206261652363_AddReminders.resx">
-      <DependentUpon>202206261652363_AddReminders.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

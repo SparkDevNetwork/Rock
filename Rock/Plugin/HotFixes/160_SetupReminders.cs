@@ -13,17 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-namespace Rock.Migrations
+
+namespace Rock.Plugin.HotFixes
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
-    /// Adds Reminders to Rock.
+    /// Plug-in migration
     /// </summary>
-    public partial class AddReminders : RockMigration
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 160, "1.15.0" )]
+    public class SetupReminders : Migration
     {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            AddReminderCommunicationTemplate();
+            AddBlockTypes();
+            AddReminderLinksBlock();
+            AddReminderListPage();
+            AddReminderEditPage();
+            AddReminderTypesPage();
+            AddReminderJob();
+        }
+
         private const string REMINDER_LIST_BLOCK_INSTANCE = "8CD5AA01-88F3-4D7B-B25A-92280792451E";
         private const string REMINDER_EDIT_BLOCK_INSTANCE = "8987B121-AA92-4562-B3CD-196CE0CC3B15";
         private const string REMINDER_LINKS_BLOCK_INSTANCE = "A5F41693-2A52-4C78-AC3C-69A504D896D3";
@@ -36,106 +49,6 @@ SET		[Order] = [Order] + 1
 WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A753-EE4E9159C4C4')
 	AND	[Zone] = 'Header'
 ";
-
-        /// <summary>
-        /// Operations to be performed during the upgrade process.
-        /// </summary>
-        public override void Up()
-        {
-            CreateReminderTable();
-            CreateReminderTypeTable();
-            AddPersonReminderCountField();
-            AddReminderCommunicationTemplate();
-
-            AddBlockTypes();
-            AddReminderLinksBlock();
-            AddReminderListPage();
-            AddReminderEditPage();
-            AddReminderTypesPage();
-            AddReminderJob();
-        }
-
-        #region Model Migrations
-
-        private void CreateReminderTable()
-        {
-            CreateTable(
-                "dbo.Reminder",
-                c => new
-                    {
-                        Id = c.Int( nullable: false, identity: true ),
-                        ReminderTypeId = c.Int( nullable: false ),
-                        PersonAliasId = c.Int( nullable: false ),
-                        EntityId = c.Int( nullable: false ),
-                        Note = c.String(),
-                        ReminderDate = c.DateTime( nullable: false ),
-                        IsComplete = c.Boolean( nullable: false ),
-                        RenewPeriodDays = c.Int(),
-                        RenewMaxCount = c.Int(),
-                        RenewCurrentCount = c.Int(),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonAliasId = c.Int(),
-                        ModifiedByPersonAliasId = c.Int(),
-                        Guid = c.Guid( nullable: false ),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String( maxLength: 100 ),
-                    } )
-                .PrimaryKey(t => t.Id )
-                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
-                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
-                .ForeignKey( "dbo.PersonAlias", t => t.PersonAliasId, cascadeDelete: true )
-                .ForeignKey( "dbo.ReminderType", t => t.ReminderTypeId, cascadeDelete: true )
-                .Index( t => t.ReminderTypeId )
-                .Index( t => t.PersonAliasId )
-                .Index( t => t.CreatedByPersonAliasId )
-                .Index( t => t.ModifiedByPersonAliasId )
-                .Index( t => t.Guid, unique: true );
-        }
-
-        private void CreateReminderTypeTable()
-        {
-            CreateTable(
-                "dbo.ReminderType",
-                c => new
-                    {
-                        Id = c.Int( nullable: false, identity: true ),
-                        Name = c.String(),
-                        Description = c.String(),
-                        IsActive = c.Boolean( nullable: false ),
-                        NotificationType = c.Int( nullable: false ),
-                        NotificationWorkflowTypeId = c.Int(),
-                        ShouldShowNote = c.Boolean( nullable: false ),
-                        Order = c.Int( nullable: false ),
-                        EntityTypeId = c.Int( nullable: false ),
-                        ShouldAutoCompleteWhenNotified = c.Boolean( nullable: false ),
-                        HighlightColor = c.String( maxLength: 50 ),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonAliasId = c.Int(),
-                        ModifiedByPersonAliasId = c.Int(),
-                        Guid = c.Guid( nullable: false ),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String( maxLength: 100 ),
-                    } )
-                .PrimaryKey( t => t.Id )
-                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
-                .ForeignKey( "dbo.EntityType", t => t.EntityTypeId )
-                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
-                .Index( t => t.EntityTypeId )
-                .Index( t => t.CreatedByPersonAliasId )
-                .Index( t => t.ModifiedByPersonAliasId )
-                .Index( t => t.Guid, unique: true );
-        }
-
-        private void AddPersonReminderCountField()
-        {
-            AddColumn( "dbo.Person", "ReminderCount", c => c.Int() );
-        }
-
-        #endregion Model Migrations
 
         #region Blocks, Pages, and Routes
 
@@ -251,6 +164,11 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
                 SystemGuid.Page.REMINDER_TYPES,
                 "fa fa-bell" );
 
+            Sql( $@"
+                UPDATE [Page]
+                SET [DisplayInNavWhen] = 0
+                WHERE [Guid] = '{SystemGuid.Page.REMINDER_TYPES}'" );
+
             RockMigrationHelper.AddBlock(
                 SystemGuid.Page.REMINDER_TYPES,
                 string.Empty,
@@ -268,7 +186,7 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
         private void AddReminderCommunicationTemplate()
         {
             string emailSubject = "Reminder: {{ ReminderType.Name }} for {{ EntityName }} on {{ ReminderDate|Date: 'ddd,MMMM d,yyyy' }}";
-            string emailBody= @"{{ 'Global' | Attribute:'EmailHeader' }}
+            string emailBody = @"{{ 'Global' | Attribute:'EmailHeader' }}
 
 <h1>System Reminder</h1>
 
@@ -343,25 +261,7 @@ WHERE	[SiteId] = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A75
         /// </summary>
         public override void Down()
         {
-            DropForeignKey( "dbo.Reminder", "ReminderTypeId", "dbo.ReminderType" );
-            DropForeignKey( "dbo.ReminderType", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.ReminderType", "EntityTypeId", "dbo.EntityType" );
-            DropForeignKey( "dbo.ReminderType", "CreatedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.Reminder", "PersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.Reminder", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.Reminder", "CreatedByPersonAliasId", "dbo.PersonAlias" );
-            DropIndex( "dbo.ReminderType", new[] { "Guid" } );
-            DropIndex( "dbo.ReminderType", new[] { "ModifiedByPersonAliasId" } );
-            DropIndex( "dbo.ReminderType", new[] { "CreatedByPersonAliasId" } );
-            DropIndex( "dbo.ReminderType", new[] { "EntityTypeId" } );
-            DropIndex( "dbo.Reminder", new[] { "Guid" } );
-            DropIndex( "dbo.Reminder", new[] { "ModifiedByPersonAliasId" } );
-            DropIndex( "dbo.Reminder", new[] { "CreatedByPersonAliasId" } );
-            DropIndex( "dbo.Reminder", new[] { "PersonAliasId" } );
-            DropIndex( "dbo.Reminder", new[] { "ReminderTypeId" } );
-            DropColumn( "dbo.Person", "ReminderCount" );
-            DropTable( "dbo.ReminderType" );
-            DropTable( "dbo.Reminder" );
+            // Down migrations are not yet supported in plug-in migrations.
         }
     }
 }
