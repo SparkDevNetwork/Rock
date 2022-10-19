@@ -251,7 +251,8 @@
   }
 
   .individual-play-person-info {
-    flex: 1 1 auto;
+    width: 100%;
+    overflow: hidden;
   }
 
   .individual-play-person-location {
@@ -318,6 +319,15 @@
   }
 }
 
+.individual-play-person-detail {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  white-space: nowrap;
+}
+
 .individual-play-interaction {
   position: absolute;
   left: 0;
@@ -368,8 +378,8 @@
 }
 
 // For Media Player Shortcode
-.mediaplayer-hidecontrolswhenstopped .plyr--video.plyr--stopped .plyr__controls { 
-  display: none; 
+.mediaplayer-hidecontrolswhenstopped .plyr--video.plyr--stopped .plyr__controls {
+  display: none;
 }
 
 @collection-filter-width: 320px;
