@@ -26,15 +26,15 @@
  * settings component.
  */
 export type CustomSettingsBox<TSettings, TOptions> = {
-    /** Gets or sets the data. */
-    settings?: TSettings | null;
-
     /** Gets or sets the options. */
     options?: TOptions | null;
 
-    /** Gets or sets the valid properties. */
-    validProperties?: string[] | null;
-
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the data. */
+    settings?: TSettings | null;
+
+    /** Gets or sets the valid properties. */
+    validProperties?: string[] | null;
 };

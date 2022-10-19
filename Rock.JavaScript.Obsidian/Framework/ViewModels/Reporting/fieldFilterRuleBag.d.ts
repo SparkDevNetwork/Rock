@@ -29,8 +29,11 @@ import { Guid } from "@Obsidian/Types";
  * comparing them.
  */
 export type FieldFilterRuleBag = {
-    /** The unique identifier of this rule. */
-    guid?: Guid | null;
+    /**
+     * The attribute unique identifier to use as the left-hand side value
+     * if Rock.ViewModels.Reporting.FieldFilterRuleBag.SourceType specifies an Attribute.
+     */
+    attributeGuid?: Guid | null;
 
     /**
      * The type of comparison to use when comparing the source value (left-hand
@@ -38,15 +41,12 @@ export type FieldFilterRuleBag = {
      */
     comparisonType: number;
 
-    /** The right-hand side of the comparison to use when executing the rule. */
-    value?: string | null;
+    /** The unique identifier of this rule. */
+    guid?: Guid | null;
 
     /** The source location for where to get the left-hand side value. */
     sourceType: number;
 
-    /**
-     * The attribute unique identifier to use as the left-hand side value
-     * if Rock.ViewModels.Reporting.FieldFilterRuleBag.SourceType specifies an Attribute.
-     */
-    attributeGuid?: Guid | null;
+    /** The right-hand side of the comparison to use when executing the rule. */
+    value?: string | null;
 };

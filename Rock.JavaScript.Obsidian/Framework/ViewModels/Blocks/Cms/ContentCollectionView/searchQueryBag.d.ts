@@ -29,14 +29,8 @@ import { Guid } from "@Obsidian/Types";
  * View block.
  */
 export type SearchQueryBag = {
-    /** Gets or sets the text to use when searching for content. */
-    text?: string | null;
-
-    /**
-     * Gets or sets the source unique identifier to load results for. This
-     * is used by the show more feature.
-     */
-    sourceGuid?: Guid | null;
+    /** Gets or sets the filter values to use when searching for results. */
+    filters?: Record<string, string> | null;
 
     /**
      * Gets or sets the offset to start loading results for. This is used
@@ -44,9 +38,15 @@ export type SearchQueryBag = {
      */
     offset?: number | null;
 
-    /** Gets or sets the filter values to use when searching for results. */
-    filters?: Record<string, string> | null;
-
     /** Gets or sets the order to sort results into. */
     order?: SearchOrder | null;
+
+    /**
+     * Gets or sets the source unique identifier to load results for. This
+     * is used by the show more feature.
+     */
+    sourceGuid?: Guid | null;
+
+    /** Gets or sets the text to use when searching for content. */
+    text?: string | null;
 };

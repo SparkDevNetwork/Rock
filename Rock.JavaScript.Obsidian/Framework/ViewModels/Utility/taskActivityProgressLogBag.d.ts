@@ -23,9 +23,9 @@
 
 /** Contains a details about a new log message that should be recorded. */
 export type TaskActivityProgressLogBag = {
-    /** A unique identifier for the task to which this log message applies. */
-    taskId?: string | null;
-
     /** The message associated with this log message. */
     message?: string | null;
+
+    /** A unique identifier for the task to which this log message applies. */
+    taskId?: string | null;
 };

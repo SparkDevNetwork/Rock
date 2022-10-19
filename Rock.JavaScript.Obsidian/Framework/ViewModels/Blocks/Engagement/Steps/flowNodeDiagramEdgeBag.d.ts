@@ -26,18 +26,18 @@
  * one level to a node on the next level
  */
 export type FlowNodeDiagramEdgeBag = {
-    /** Gets or sets the target ID */
-    targetId: number;
+    /** Gets or sets the level */
+    level: number;
 
     /** Gets or sets the source ID */
     sourceId?: number | null;
 
-    /** Gets or sets the level */
-    level: number;
-
-    /** Gets or sets the units */
-    units: number;
+    /** Gets or sets the target ID */
+    targetId: number;
 
     /** Gets or sets the tooltip */
     tooltip?: string | null;
+
+    /** Gets or sets the units */
+    units: number;
 };

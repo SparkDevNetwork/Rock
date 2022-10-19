@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannel View Model */
 export type ContentChannelBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the channel URL. */
     channelUrl?: string | null;
 
@@ -37,6 +43,12 @@ export type ContentChannelBag = {
     /** Gets or sets the type of the control to render when editing content for items of this type. */
     contentControlType: number;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the description. */
     description?: string | null;
 
@@ -48,6 +60,9 @@ export type ContentChannelBag = {
 
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is index enabled. */
     isIndexEnabled: boolean;
@@ -67,6 +82,12 @@ export type ContentChannelBag = {
     /** Gets or sets the item URL. */
     itemUrl?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the name. */
     name?: string | null;
 
@@ -81,25 +102,4 @@ export type ContentChannelBag = {
 
     /** Gets or sets the number of minutes a feed can stay cached before refreshing it from the source. */
     timeToLive?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -23,15 +23,15 @@
 
 /** Contains updated progress about an ongoing task activity. */
 export type TaskActivityProgressUpdateBag = {
-    /** A unique identifier for the task to which this update applies. */
-    taskId?: string | null;
-
-    /** The message associated with this progress report. */
-    message?: string | null;
-
     /** The measure of completion for this task, as a percentage */
     completionPercentage: number;
 
     /** The total time elapsed for this task, measured in milliseconds. */
     elapsedMilliseconds: number;
+
+    /** The message associated with this progress report. */
+    message?: string | null;
+
+    /** A unique identifier for the task to which this update applies. */
+    taskId?: string | null;
 };

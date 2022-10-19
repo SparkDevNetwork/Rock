@@ -27,6 +27,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** A class representing the content we need to pass into mobile. */
 export type PreferencePageContentBag = {
+    /** Gets or sets a list of schedule assignments and locations. */
+    assignmentScheduleAndLocations?: AssignmentScheduleAndLocationBag[] | null;
+
+    /** Gets or sets a list of schedule keys and values.  */
+    listItems?: ListItemBag[] | null;
+
     /** Gets or sets an integer representing the previously selected offset of reminder days. */
     selectedOffset: number;
 
@@ -35,10 +41,4 @@ export type PreferencePageContentBag = {
 
     /** Gets or sets a System.DateTime representing the selected start date. */
     selectedStartDate?: string | null;
-
-    /** Gets or sets a list of schedule keys and values.  */
-    listItems?: ListItemBag[] | null;
-
-    /** Gets or sets a list of schedule assignments and locations. */
-    assignmentScheduleAndLocations?: AssignmentScheduleAndLocationBag[] | null;
 };

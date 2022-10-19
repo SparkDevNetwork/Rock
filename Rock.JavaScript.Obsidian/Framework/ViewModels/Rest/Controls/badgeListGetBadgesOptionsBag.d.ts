@@ -28,8 +28,11 @@ import { Guid } from "@Obsidian/Types";
  * the BadgeList control.
  */
 export type BadgeListGetBadgesOptionsBag = {
-    /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    /**
+     * Gets or sets the badge type guids being requested. If null or
+     * empty then all badges are returned.
+     */
+    badgeTypeGuids?: Guid[] | null;
 
     /**
      * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.BadgeListGetBadgesOptionsBag.EntityTypeGuid
@@ -37,11 +40,8 @@ export type BadgeListGetBadgesOptionsBag = {
      */
     entityKey?: string | null;
 
-    /**
-     * Gets or sets the badge type guids being requested. If null or
-     * empty then all badges are returned.
-     */
-    badgeTypeGuids?: Guid[] | null;
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

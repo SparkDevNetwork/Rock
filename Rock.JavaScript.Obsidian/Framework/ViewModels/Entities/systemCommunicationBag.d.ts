@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SystemCommunication View Model */
 export type SystemCommunicationBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
      * can remain empty.
@@ -43,6 +49,12 @@ export type SystemCommunicationBag = {
      */
     cc?: string | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets a value indicating whether CSS styles should be inlined in the message body to ensure compatibility with oldere HTML rendering engines. */
     cssInliningEnabled: boolean;
 
@@ -52,6 +64,9 @@ export type SystemCommunicationBag = {
     /** Gets or sets from name. */
     fromName?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this item is available for use. */
     isActive?: boolean | null;
 
@@ -60,6 +75,12 @@ export type SystemCommunicationBag = {
 
     /** The internal storage for Rock.Model.CommunicationTemplate.LavaFields */
     lavaFieldsJson?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the push data. */
     pushData?: string | null;
@@ -99,25 +120,4 @@ export type SystemCommunicationBag = {
      * remain empty.
      */
     to?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

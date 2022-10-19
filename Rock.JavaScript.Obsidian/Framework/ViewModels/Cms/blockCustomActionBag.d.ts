@@ -26,12 +26,6 @@
  * made available in a block's configuration bar.
  */
 export type BlockCustomActionBag = {
-    /** Gets or sets the icon CSS class used to display the button. */
-    iconCssClass?: string | null;
-
-    /** Gets or sets the tooltip text of the button. */
-    tooltip?: string | null;
-
     /**
      * Gets or sets the URL of the component that will be loaded when
      * the button is clicked. The component will be added to a hidden
@@ -39,4 +33,10 @@ export type BlockCustomActionBag = {
      * modal to handle its user interface.
      */
     componentFileUrl?: string | null;
+
+    /** Gets or sets the icon CSS class used to display the button. */
+    iconCssClass?: string | null;
+
+    /** Gets or sets the tooltip text of the button. */
+    tooltip?: string | null;
 };

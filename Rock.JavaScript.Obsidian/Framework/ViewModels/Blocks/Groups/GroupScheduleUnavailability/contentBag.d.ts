@@ -28,11 +28,11 @@ export type ContentBag = {
     /** Gets or sets the XAML content. */
     content?: string | null;
 
-    /** Gets or sets a list containing group member names and Guids */
-    groupInformation?: ListItemBag[] | null;
-
     /** Gets or sets a list containing family member's names and Guids */
     familyMemberInformation?: ListItemBag[] | null;
+
+    /** Gets or sets a list containing group member names and Guids */
+    groupInformation?: ListItemBag[] | null;
 
     /** Gets or sets a boolean representing whether or not a description is required. */
     isDescriptionRequired: boolean;

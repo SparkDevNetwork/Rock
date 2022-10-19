@@ -25,6 +25,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialPersonSavedAccount View Model */
 export type FinancialPersonSavedAccountBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Rock.Model.FinancialGateway identifier. */
     financialGatewayId?: number | null;
 
@@ -40,11 +52,20 @@ export type FinancialPersonSavedAccountBag = {
     /** Gets or sets the group identifier. */
     groupId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this saved account is the default payment option for the given person. */
     isDefault: boolean;
 
     /** Gets or sets a flag indicating if this saved account was created by and is a part of the Rock core system/framework. */
     isSystem: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the saved account. This property is required. */
     name?: string | null;
@@ -67,25 +88,4 @@ export type FinancialPersonSavedAccountBag = {
      * For gateways that have the concept of a Customer Vault (NMI and MyWell), Rock.Model.FinancialPersonSavedAccount.GatewayPersonIdentifier is what would be used.
      */
     transactionCode?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

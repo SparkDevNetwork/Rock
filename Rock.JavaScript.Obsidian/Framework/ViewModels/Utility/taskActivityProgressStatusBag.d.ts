@@ -23,30 +23,30 @@
 
 /** Contains information about the starting or stopping of a task. */
 export type TaskActivityProgressStatusBag = {
+    /** Additional custom data related to the status of this task. */
+    data?: unknown;
+
+    /** The total time elapsed for this task, measured in milliseconds. */
+    elapsedMilliseconds: number;
+
+    /** A collection of errors the task encountered while running. */
+    errors?: string[] | null;
+
+    /** A flag indicating if this task is finished. */
+    isFinished: boolean;
+
+    /** A flag indicating if this task has started. */
+    isStarted: boolean;
+
+    /** A message indicating the current state of this task. */
+    message?: string | null;
+
     /** A unique identifier for the task to which this status applies. */
     taskId?: string | null;
 
     /** The name of the task. */
     taskName?: string | null;
 
-    /** A flag indicating if this task has started. */
-    isStarted: boolean;
-
-    /** A flag indicating if this task is finished. */
-    isFinished: boolean;
-
-    /** A message indicating the current state of this task. */
-    message?: string | null;
-
-    /** A collection of errors the task encountered while running. */
-    errors?: string[] | null;
-
     /** A collection of warnings the task encountered while running. */
     warnings?: string[] | null;
-
-    /** Additional custom data related to the status of this task. */
-    data?: unknown;
-
-    /** The total time elapsed for this task, measured in milliseconds. */
-    elapsedMilliseconds: number;
 };
