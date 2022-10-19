@@ -4277,14 +4277,22 @@ namespace Rock.Model
             var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
                 .Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
+            // Unknown if Birthdate is not present and not in any family
+            var unknownBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => !p.BirthDate.HasValue && !familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any() );
+
             // Adult if Age >= 18 OR has a role of Adult in one or more (ANY) families
             var adultBasedOnBirthdateOrFamilyRole = personQuery
-                .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
-                    || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId ) );
+                .Where( p => !unknownBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                    &&
+                    ( ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                        || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId )
+                    ) );
 
             // Child if (not adultBasedOnBirthdateOrFamilyRole) AND (Age < 18 OR child in ALL families)
+            var alreadyClassified = unknownBasedOnBirthdateOrFamilyRole.Union( adultBasedOnBirthdateOrFamilyRole );
             var childBasedOnBirthdateOrFamilyRole = personQuery
-                .Where( p => !adultBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                .Where( p => !alreadyClassified.Any( a => a.Id == p.Id )
                     &&
                     ( ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
                         ||

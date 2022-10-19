@@ -195,7 +195,6 @@
     <Compile Include="Rock\Slingshot\PersonNoteCsvMapperTest.cs" />
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
-    <Compile Include="Rock\Utilities\ScheduleTestHelper.cs" />
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
