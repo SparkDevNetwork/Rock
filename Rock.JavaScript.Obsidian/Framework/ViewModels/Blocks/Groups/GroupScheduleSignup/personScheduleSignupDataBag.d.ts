@@ -28,23 +28,14 @@ export type PersonScheduleSignupDataBag = {
     /** Gets or sets a Guid representing the GroupId of the attendance. */
     groupGuid?: Guid | null;
 
-    /** Gets or sets an integer representing the GroupOrder of the attendance. */
-    groupOrder: number;
-
     /** Gets or sets a string representing the group name. */
     groupName?: string | null;
 
+    /** Gets or sets an integer representing the GroupOrder of the attendance. */
+    groupOrder: number;
+
     /** Gets or sets a Guid representing the default LocationId */
     locationGuid?: Guid | null;
-
-    /** Gets or sets a Guid representing the default ScheduleId */
-    scheduleGuid?: Guid | null;
-
-    /** Gets or sets a DateTime representing the schedule date time. */
-    scheduledDateTime?: string | null;
-
-    /** Gets or sets a string representing the schedule name. */
-    scheduleName?: string | null;
 
     /** Gets or sets a string representing the location name. */
     locationName?: string | null;
@@ -57,4 +48,13 @@ export type PersonScheduleSignupDataBag = {
 
     /** Gets or sets an integer representing how many people are left to schedule. */
     peopleNeeded: number;
+
+    /** Gets or sets a DateTime representing the schedule date time. */
+    scheduledDateTime?: string | null;
+
+    /** Gets or sets a Guid representing the default ScheduleId */
+    scheduleGuid?: Guid | null;
+
+    /** Gets or sets a string representing the schedule name. */
+    scheduleName?: string | null;
 };

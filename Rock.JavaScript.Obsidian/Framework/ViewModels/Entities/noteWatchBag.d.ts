@@ -31,6 +31,18 @@ export type NoteWatchBag = {
      */
     allowOverride: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /**
      * Set EntityTypeId and EntityId to watch all notes for a specific entity
      * NOTE: If EntityType is Person, make sure to watch the Person's PersonAlias' Persons
@@ -40,8 +52,17 @@ export type NoteWatchBag = {
     /** Set EntityTypeId and EntityId to watch all notes for a specific entity */
     entityTypeId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Set IsWatching to False to disable this NoteWatch (or specifically don't watch based on the notewatch criteria) */
     isWatching: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Set NoteId to watch a specific note */
     noteId?: number | null;
@@ -60,25 +81,4 @@ export type NoteWatchBag = {
 
     /** Gets or sets a value indicating whether [watch replies]. */
     watchReplies: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

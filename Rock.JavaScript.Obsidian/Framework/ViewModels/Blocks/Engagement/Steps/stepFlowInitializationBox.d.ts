@@ -28,24 +28,24 @@ export type StepFlowInitializationBox = {
     /** Gets or sets the list of campuses */
     campuses?: ListItemBag[] | null;
 
+    /** Gets or sets the chart height */
+    chartHeight?: number | null;
+
+    /** Gets or sets the chart width */
+    chartWidth?: number | null;
+
+    /** Gets or sets the legend HTML */
+    legendHtml?: string | null;
+
+    /** Gets or sets the Node vertical spacing */
+    nodeVerticalSpacing?: number | null;
+
+    /** Gets or sets the Node width */
+    nodeWidth?: number | null;
+
     /** Gets or sets the name of the step program */
     programName?: string | null;
 
     /** Gets or sets the step type count */
     stepTypeCount?: number | null;
-
-    /** Gets or sets the Node width */
-    nodeWidth?: number | null;
-
-    /** Gets or sets the Node vertical spacing */
-    nodeVerticalSpacing?: number | null;
-
-    /** Gets or sets the chart width */
-    chartWidth?: number | null;
-
-    /** Gets or sets the chart height */
-    chartHeight?: number | null;
-
-    /** Gets or sets the legend HTML */
-    legendHtml?: string | null;
 };

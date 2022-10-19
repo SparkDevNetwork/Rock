@@ -31,20 +31,20 @@ export type GroupPickerGetChildrenOptionsBag = {
     /** GUID of the group the member is part of. */
     guid?: Guid | null;
 
-    /** GUID of the group you want to use as the root. */
-    rootGroupGuid?: Guid | null;
-
     /** List of group types IDs to limit to groups of those types. */
     includedGroupTypeGuids?: Guid[] | null;
 
     /** Whether to include inactive groups or not. */
     includeInactiveGroups: boolean;
 
+    /** Whether to limit to only groups that have RSVPs enabled. */
+    limitToRSVPEnabled: boolean;
+
     /** Whether to limit to only groups that have scheduling enabled. */
     limitToSchedulingEnabled: boolean;
 
-    /** Whether to limit to only groups that have RSVPs enabled. */
-    limitToRSVPEnabled: boolean;
+    /** GUID of the group you want to use as the root. */
+    rootGroupGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

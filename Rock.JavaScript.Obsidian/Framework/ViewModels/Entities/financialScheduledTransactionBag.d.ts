@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialScheduledTransaction View Model */
 export type FinancialScheduledTransactionBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the authorized person alias identifier. */
     authorizedPersonAliasId: number;
 
     /** Gets or sets the date to remind user to update scheduled transaction. */
     cardReminderDate?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the end date for this transaction schedule. Transactions will cease to occur on or before this date.  This property is nullable for ongoing 
@@ -52,6 +64,9 @@ export type FinancialScheduledTransactionBag = {
      */
     gatewayScheduleId?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the inactivate date time. */
     inactivateDateTime?: string | null;
 
@@ -66,6 +81,12 @@ export type FinancialScheduledTransactionBag = {
      * the date and time the gateway was last queried for the status of the scheduled profile/transaction.
      */
     lastStatusUpdateDateTime?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the date of the next payment in this schedule. */
     nextPaymentDate?: string | null;
@@ -115,25 +136,4 @@ export type FinancialScheduledTransactionBag = {
 
     /** Gets or sets the transaction type value identifier. */
     transactionTypeValueId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

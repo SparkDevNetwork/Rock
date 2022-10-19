@@ -28,8 +28,11 @@ import { Guid } from "@Obsidian/Types";
  * the EntityTagList control.
  */
 export type EntityTagListGetEntityTagsOptionsBag = {
-    /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    /**
+     * Gets or sets the category unique identifier to limit tags to. If a
+     * value is specified then any tags must match the category.
+     */
+    categoryGuid?: Guid | null;
 
     /**
      * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.EntityTagListGetEntityTagsOptionsBag.EntityTypeGuid
@@ -37,11 +40,8 @@ export type EntityTagListGetEntityTagsOptionsBag = {
      */
     entityKey?: string | null;
 
-    /**
-     * Gets or sets the category unique identifier to limit tags to. If a
-     * value is specified then any tags must match the category.
-     */
-    categoryGuid?: Guid | null;
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

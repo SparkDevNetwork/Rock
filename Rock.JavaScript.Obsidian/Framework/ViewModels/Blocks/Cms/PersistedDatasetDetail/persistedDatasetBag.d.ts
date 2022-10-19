@@ -35,6 +35,12 @@ export type PersistedDatasetBag = {
     /** Gets or sets a value indicating whether [allow manual refresh]. */
     allowManualRefresh: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the build script. See Rock.Model.PersistedDataset.BuildScriptType */
     buildScript?: string | null;
 
@@ -50,6 +56,9 @@ export type PersistedDatasetBag = {
     /** The DateTime when to stop updating the Rock.Model.PersistedDataset.ResultData */
     expireDateTime?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
@@ -64,13 +73,4 @@ export type PersistedDatasetBag = {
 
     /** Gets or sets the refresh interval minutes */
     refreshIntervalHours?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -26,6 +26,12 @@ import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentColle
 
 /** Class FilterSettingsBag. */
 export type FilterSettingsBag = {
+    /**
+     * Gets or sets the attributes that are enabled for filtering
+     * and indexing on the content collection.
+     */
+    attributeFilters?: AttributeFilterBag[] | null;
+
     /** Gets or sets a value indicating whether full text search should be enabled. */
     fullTextSearchEnabled: boolean;
 
@@ -34,12 +40,6 @@ export type FilterSettingsBag = {
      * should be enabled.
      */
     yearSearchEnabled: boolean;
-
-    /**
-     * Gets or sets the label to use for the filter that allows an
-     * individual to search for content by a specific year.
-     */
-    yearSearchLabel?: string | null;
 
     /** Gets or sets the year search filter control. */
     yearSearchFilterControl: ContentCollectionFilterControl;
@@ -51,8 +51,8 @@ export type FilterSettingsBag = {
     yearSearchFilterIsMultipleSelection: boolean;
 
     /**
-     * Gets or sets the attributes that are enabled for filtering
-     * and indexing on the content collection.
+     * Gets or sets the label to use for the filter that allows an
+     * individual to search for content by a specific year.
      */
-    attributeFilters?: AttributeFilterBag[] | null;
+    yearSearchLabel?: string | null;
 };

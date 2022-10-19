@@ -28,6 +28,12 @@ export type FinancialBatchBag = {
     /** Gets or sets an optional transaction code from an accounting system that batch is associated with */
     accountingSystemCode?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets end of the posting date and time range for FinancialTransactions that are included in this batch.
      * Transactions that post before or on this date and time and after the Rock.Model.FinancialBatch.BatchStartDateTime can be included in this batch.
@@ -57,11 +63,26 @@ export type FinancialBatchBag = {
     /** Gets or sets the control item count. */
     controlItemCount?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /**
      * Gets or sets a value indicating whether this instance is automated.
      * If IsAutomated is True, the UI should not allow the status of Pending to be changed to Open or Closed ( an external process will be in change of changing the status )
      */
     isAutomated: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the batch. */
     name?: string | null;
@@ -71,25 +92,4 @@ export type FinancialBatchBag = {
 
     /** Gets or sets the status of the batch. */
     status: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

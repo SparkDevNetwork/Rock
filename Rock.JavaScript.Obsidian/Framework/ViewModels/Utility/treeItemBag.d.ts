@@ -23,19 +23,11 @@
 
 /** Describes a single item that can be displayed in a tree view. */
 export type TreeItemBag = {
-    /** Gets or sets the generic identifier of this item. */
-    value?: string | null;
-
-    /** Gets or sets the text that should be displayed to identify this item. */
-    text?: string | null;
-
     /**
-     * Gets or sets a value indicating whether this instance is a folder.
-     * A folder is an item that is intended to hold child items. This is
-     * a distinction from the Rock.ViewModels.Utility.TreeItemBag.HasChildren property which
-     * specifies if this item _currently_ has children or not.
+     * Gets or sets the children. A value of null indicates that the
+     * children should be lazy loaded by the caller.
      */
-    isFolder: boolean;
+    children?: TreeItemBag[] | null;
 
     /** Gets or sets a value indicating whether this instance has children. */
     hasChildren: boolean;
@@ -47,8 +39,16 @@ export type TreeItemBag = {
     isActive: boolean;
 
     /**
-     * Gets or sets the children. A value of null indicates that the
-     * children should be lazy loaded by the caller.
+     * Gets or sets a value indicating whether this instance is a folder.
+     * A folder is an item that is intended to hold child items. This is
+     * a distinction from the Rock.ViewModels.Utility.TreeItemBag.HasChildren property which
+     * specifies if this item _currently_ has children or not.
      */
-    children?: TreeItemBag[] | null;
+    isFolder: boolean;
+
+    /** Gets or sets the text that should be displayed to identify this item. */
+    text?: string | null;
+
+    /** Gets or sets the generic identifier of this item. */
+    value?: string | null;
 };

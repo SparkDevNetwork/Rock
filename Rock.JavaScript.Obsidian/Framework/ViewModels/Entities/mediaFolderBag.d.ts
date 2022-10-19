@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** MediaFolder View Model */
 export type MediaFolderBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the synced content channel item attribute identifier
      * to store the Guid value into.
@@ -37,8 +43,17 @@ export type MediaFolderBag = {
     /** Gets or sets the Rock.Model.ContentChannelItemStatus Content channel Item status. */
     contentChannelItemStatus?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets a description of the MediaFolder. */
     description?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether the content channel sync is enabled. */
     isContentChannelSyncEnabled: boolean;
@@ -51,6 +66,12 @@ export type MediaFolderBag = {
 
     /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Name of the MediaFolder. This property is required. */
     name?: string | null;
@@ -68,25 +89,4 @@ export type MediaFolderBag = {
      * object to the workflow.
      */
     workflowTypeId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

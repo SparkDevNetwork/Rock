@@ -26,6 +26,9 @@ import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
 
 /** Class SlidingDateRangeBag. */
 export type SlidingDateRangeBag = {
+    /** Gets or sets the id */
+    lowerDate?: string | null;
+
     /** Gets or sets the range type */
     rangeType: SlidingDateRangeType;
 
@@ -34,9 +37,6 @@ export type SlidingDateRangeBag = {
 
     /** Gets or sets the id */
     timeValue?: number | null;
-
-    /** Gets or sets the id */
-    lowerDate?: string | null;
 
     /** Gets or sets the id */
     upperDate?: string | null;

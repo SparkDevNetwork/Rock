@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BinaryFile View Model */
 export type BinaryFileBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the id of the Rock.Model.BinaryFileType that this file belongs to. */
     binaryFileTypeId?: number | null;
 
     /** Gets or sets the content last modified. */
     contentLastModified?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets a user defined description of the file. */
     description?: string | null;
@@ -43,6 +55,9 @@ export type BinaryFileBag = {
     /** Gets or sets a value indicating the height of a file type. */
     height?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this file is part of the Rock core system/framework. */
     isSystem: boolean;
 
@@ -52,6 +67,12 @@ export type BinaryFileBag = {
     /** Gets or sets the Mime Type for the file. This property is required */
     mimeType?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets a path to the file that is understandable by the storage provider. */
     path?: string | null;
 
@@ -60,25 +81,4 @@ export type BinaryFileBag = {
 
     /** Gets or sets a value indicating the width of a file type. */
     width?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };
