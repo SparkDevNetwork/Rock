@@ -44,6 +44,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_InteractiveExperienceScheduleIdCampusIdOccurrenceDateTime", IsUnique = true, Order = 0 )]
         public int InteractiveExperienceScheduleId { get; set; }
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Campus"/> that is associated with this Interactive Experience Occurrence. 
         /// </value>
         [DataMember]
+        [Index( "IX_InteractiveExperienceScheduleIdCampusIdOccurrenceDateTime", IsUnique = true, Order = 1 )]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -62,8 +64,8 @@ namespace Rock.Model
         /// The <see cref="DateTime"/> for when this occurrence started.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
         [Index( "IX_OccurrenceDateTime" )]
+        [Index( "IX_InteractiveExperienceScheduleIdCampusIdOccurrenceDateTime", IsUnique = true, Order = 2 )]
         public DateTime OccurrenceDateTime { get; set; }
 
         /// <summary>
