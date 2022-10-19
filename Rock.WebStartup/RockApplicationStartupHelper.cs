@@ -1017,11 +1017,6 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Initialize the job scheduler.
-        /// </summary>
-        
-
-        /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
         /// <param name="ex">The ex.</param>
