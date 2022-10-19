@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Examples
             public const string EnableStopwatch = "EnableStopwatch";
             public const string EnableGiving = "EnableGiving";
             public const string ProcessOnlyGivingData = "ProcessOnlyGivingData";
-            public const string DeleteDataFirst = "'DeleteDataFirst";
+            public const string DeleteDataFirst = "DeleteDataFirst";
             public const string RandomNumberSeed = "RandomNumberSeed";
         }
 
