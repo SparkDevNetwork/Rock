@@ -200,9 +200,6 @@ namespace Rock.Model
             target.Header = source.Header;
             target.IncludeActionsInNotification = source.IncludeActionsInNotification;
             target.NotificationSystemCommunicationId = source.NotificationSystemCommunicationId;
-            #pragma warning disable 612, 618
-            target.NotificationSystemEmailId = source.NotificationSystemEmailId;
-            #pragma warning restore 612, 618
             target.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
             target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;

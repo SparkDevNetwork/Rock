@@ -454,6 +454,12 @@ namespace RockWeb.Blocks.Administration
             rptIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
             rptIgnoreCampusChanges.DataBind();
 
+            if ( _campusSettings.ExcludeSchedules != null && _campusSettings.ExcludeSchedules.Count > 0 )
+            {
+                var excludedSchedules = new ScheduleService( _rockContext ).Queryable().Where( s => _campusSettings.ExcludeSchedules.Contains( s.Id ) ).ToList();
+                spExcludeSchedules.SetValues( excludedSchedules );
+            }
+
             // Adult Children
             cbAdultChildren.Checked = _adultChildrenSettings.IsEnabled;
             cbisMoveGraduated.Checked = _adultChildrenSettings.IsOnlyMoveGraduated;

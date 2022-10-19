@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -35,7 +35,6 @@ namespace Rock.Jobs
     /// <summary>
     /// This job send RSVP reminder notifications for any groups of the specified group type with notifications needing to be sent.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Send RSVP Reminders" )]
     [Description( "This job send RSVP reminder notifications for any groups of the specified group type with notifications needing to be sent." )]
 
@@ -47,8 +46,7 @@ namespace Rock.Jobs
         Order = 0 )]
     #endregion
 
-    [DisallowConcurrentExecution]
-    public class SendRsvpReminders : IJob
+    public class SendRsvpReminders : RockJob
     {
         /// <summary>
         /// Keys for DataMap Field Attributes.
@@ -69,16 +67,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will send RSVP Reminder messages. Called by the <see cref="IScheduler" /> when an <see cref="ITrigger" />
-        /// fires that is associated with the <see cref="IJob" />.
-        /// </summary>
-        /// <param name="context">The job's execution context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             try
             {
-                ProcessJob( context );
+                ProcessJob();
             }
             catch ( Exception ex )
             {
@@ -91,14 +85,12 @@ namespace Rock.Jobs
         /// Private method called by Execute() to process the job.  This method should be wrapped in a try/catch block to ensure than any exceptions are sent to the
         /// <see cref="ExceptionLogService"/>.
         /// </summary>
-        /// <param name="context">The job's execution context.</param>
-        private void ProcessJob( IJobExecutionContext context )
+        private void ProcessJob()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
             RockContext rockContext = new RockContext();
 
             // Make sure GroupType job attribute was assigned.
-            Guid? groupTypeGuid = dataMap.GetString( AttributeKey.GroupType ).AsGuidOrNull();
+            Guid? groupTypeGuid = GetAttributeValue( AttributeKey.GroupType ).AsGuidOrNull();
             List<GroupType> rsvpGroupTypes = new List<GroupType>();
             if ( groupTypeGuid != null )
             {
@@ -106,14 +98,14 @@ namespace Rock.Jobs
                 var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
                 if ( groupType == null )
                 {
-                    context.Result = "Job Exited:  The selected Group Type does not exist.";
+                    this.Result = "Job Exited:  The selected Group Type does not exist.";
                     return;
                 }
 
                 // Verify GroupType has RSVP enabled.
                 if ( !groupType.EnableRSVP )
                 {
-                    context.Result = "Job Exited:  The selected Group Type does not have RSVP enabled.";
+                    this.Result = "Job Exited:  The selected Group Type does not have RSVP enabled.";
                     return;
                 }
 
@@ -150,7 +142,7 @@ namespace Rock.Jobs
             {
                 jobResult = "Job completed successfully, but no reminders were sent.";
             }
-            context.Result = jobResult;
+            this.Result = jobResult;
         }
 
         #region Job Methods

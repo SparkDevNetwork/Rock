@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -75,6 +76,11 @@ namespace Rock.Web.UI.Controls
         /// Modal Dialog control to permit an override.
         /// </summary>
         private ModalDialog _modalDialog;
+
+        /// <summary>
+        /// Modal Alert control to notify of workflow processing.
+        /// </summary>
+        private ModalAlert _modalAlert;
 
         /// <summary>
         /// Gets or sets the title text.
@@ -272,6 +278,13 @@ namespace Rock.Web.UI.Controls
                         };
                         _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
                         Controls.Add( _lbDoesNotMeetWorkflow );
+
+                        _modalAlert = new ModalAlert
+                        {
+                            ID = "modalAlert_" + this.ClientID,
+                        };
+
+                        Controls.Add( _modalAlert );
                     }
                 }
 
@@ -293,6 +306,13 @@ namespace Rock.Web.UI.Controls
                         };
                         _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
                         Controls.Add( _lbWarningWorkflow );
+
+                        _modalAlert = new ModalAlert
+                        {
+                            ID = "modalAlert_" + this.ClientID,
+                        };
+
+                        Controls.Add( _modalAlert );
                     }
                 }
             }
@@ -338,6 +358,11 @@ namespace Rock.Web.UI.Controls
                 if ( _modalDialog != null )
                 {
                     _modalDialog.RenderControl( writer );
+                }
+
+                if ( _modalAlert != null )
+                {
+                    _modalAlert.RenderControl( writer );
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Small );
@@ -619,10 +644,12 @@ namespace Rock.Web.UI.Controls
                 if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
                 {
                     workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
-                    var qryParms = new Dictionary<string, string>();
-                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                    qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
+                    var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
 
                     this.RockBlock().NavigateToPage( workflowLink );
                 }
@@ -653,11 +680,24 @@ namespace Rock.Web.UI.Controls
                         groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
                         rockContext.SaveChanges();
 
-                        // Reload the page to make sure that the current status is reflected in the card styling.
-                        var currentPageReference = this.RockBlock().CurrentPageReference;
-                        Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-                        var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-                        this.RockBlock().NavigateToPage( pageRef );
+                        if ( workflow.HasActiveEntryForm( ( ( RockPage ) Page ).CurrentPerson ) )
+                        {
+                            var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                            var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+
+                            var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
+
+                            RegisterWorkflowDetailPageScript( workflowLink.BuildUrl(), message );
+                        }
+                        else
+                        {
+                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was started.", ModalAlertType.Information );
+                        }
                     }
                 }
             }
@@ -688,10 +728,12 @@ namespace Rock.Web.UI.Controls
                 if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
                 {
                     workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
-                    var qryParms = new Dictionary<string, string>();
-                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                    qryParms.Add( "WorkflowId", workflow.Id.ToString() );
-                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
+                    var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                    var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
 
                     this.RockBlock().NavigateToPage( workflowLink );
                 }
@@ -722,16 +764,75 @@ namespace Rock.Web.UI.Controls
                         groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
                         rockContext.SaveChanges();
 
-                        // Reload the page to make sure that the current status is reflected in the card styling.
-                        var currentPageReference = this.RockBlock().CurrentPageReference;
-                        Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-                        var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-                        this.RockBlock().NavigateToPage( pageRef );
+                        if ( workflow.HasActiveEntryForm( ( ( RockPage ) Page ).CurrentPerson ) )
+                        {
+                            var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                            var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+
+                            var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
+
+                            RegisterWorkflowDetailPageScript( workflowLink.BuildUrl(), message );
+                        }
+                        else
+                        {
+                            _modalAlert.Show( $"A '{workflowType.Name}' workflow was started.", ModalAlertType.Information );
+                        }
                     }
                 }
             }
         }
 
         #endregion Events
+
+        /// <summary>
+        /// Add a script to the client load event for the current page that will also open a new page for the workflow entry form.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="message"></param>
+        private void RegisterWorkflowDetailPageScript( string url, string message = null )
+        {
+            // When the script is executed, it is also removed from the client load event to ensure that it is only run once.
+            string script;
+
+            if ( string.IsNullOrEmpty( message ) )
+            {
+                // Open the workflow detail page.
+                script = $@"
+                <script language='javascript' type='text/javascript'>
+                    Sys.Application.add_load(openWorkflowEntryPage);
+                    function openWorkflowEntryPage() {{
+                        Sys.Application.remove_load( openWorkflowEntryPage );
+                        window.open('{url}');
+                    }}
+                </script>";
+            }
+            else
+            {
+                // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
+                message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
+                script = $@"
+                <script language='javascript' type='text/javascript'>
+                    Sys.Application.add_load(openWorkflowEntryPage);
+                    function openWorkflowEntryPage() {{
+                        Sys.Application.remove_load( openWorkflowEntryPage );
+                        bootbox.alert({{ message:'{message}',
+                            callback: function() {{ window.open('{url}'); }}
+                        }});
+                    }}
+                </script>
+                ";
+            }
+
+            ScriptManager.RegisterStartupScript( this,
+                this.GetType(),
+                "openWorkflowScript",
+                script,
+                false );
+        }
     }
 }

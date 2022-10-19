@@ -229,7 +229,17 @@ namespace RockWeb.Blocks.Fundraising
             }
             else
             {
-                var groupMember = new GroupMemberService( new RockContext() ).Get( hfGroupMemberId.Value.AsInteger() );
+                var rockContext = new RockContext();
+                var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+                // Set the requirements values only if there are requirements for this group / group type.
+                if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+                {
+                    gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                    gmrcRequirements.Visible = true;
+                    SetRequirementStatuses( rockContext );
+                }
+
                 if ( groupMember != null )
                 {
                     CreateDynamicControls( groupMember );
@@ -367,12 +377,6 @@ namespace RockWeb.Blocks.Fundraising
                 {
                     personAttribute.AddControl( phPersonAttributes.Controls, person.GetAttributeValue( personAttribute.Key ), "vgProfileEdit", true, true );
                 }
-            }
-
-            // Set the requirements values only if there are requirements for this group / group type.
-            if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
-            {
-                SetRequirementStatuses( new RockContext() );
             }
         }
 

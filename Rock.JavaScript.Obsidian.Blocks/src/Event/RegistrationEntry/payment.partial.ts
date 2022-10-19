@@ -25,6 +25,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
+import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Payment",
@@ -49,7 +50,7 @@ export default defineComponent({
         const gatewayErrorMessage = ref("");
 
         /** Gateway indicated validation issues */
-        const gatewayValidationFields = ref<Record<string, string>>({});
+        const gatewayValidationFields = ref<FormError[]>([]);
 
         /** An error message received from a bad submission */
         const submitErrorMessage = ref("");
@@ -150,7 +151,7 @@ export default defineComponent({
                 if (this.showGateway) {
                     // Otherwise, this is a traditional gateway
                     this.gatewayErrorMessage = "";
-                    this.gatewayValidationFields = {};
+                    this.gatewayValidationFields = [];
                     this.submitPayment();
                 }
                 else if (this.selectedSavedAccount !== "") {
@@ -207,7 +208,7 @@ export default defineComponent({
          * The gateway wants the user to fix some fields
          * @param invalidFields
          */
-        onGatewayControlValidation(invalidFields: Record<string, string>) {
+        onGatewayControlValidation(invalidFields: FormError[]) {
             this.loading = false;
             this.gatewayValidationFields = invalidFields;
         },

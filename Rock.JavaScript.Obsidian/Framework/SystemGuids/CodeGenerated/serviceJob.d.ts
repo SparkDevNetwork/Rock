@@ -84,4 +84,6 @@ export const enum ServiceJob {
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
+    /** The Rock.Jobs.ProcessReminders job. */
+    ProcessReminders = "3F697C80-4C33-4552-9038-D3470445EA40",
 }

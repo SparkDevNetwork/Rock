@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -51,6 +53,119 @@ namespace Rock.Field.Types
         }
 
         #region Configuration
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return string.Empty;
+            }
+
+            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            if ( shouldAlwaysShowCondensed )
+            {
+                return privateValue;
+            }
+
+            // Try to create a valid absolute Uri.
+            Uri uri;
+            if ( privateValue.StartsWith( "/" ) )
+            {
+                // Process as a relative Uri.
+                Uri.TryCreate( privateValue, UriKind.Relative, out uri );
+            }
+            else
+            {
+                // Try to process as an absolute Uri...
+                if ( !Uri.TryCreate( privateValue, UriKind.Absolute, out uri ) )
+                {
+                    // ... but if not, try adding a default "http://" prefix.
+                    Uri.TryCreate( "http://" + privateValue, UriKind.Absolute, out uri );
+                }
+            }
+
+            // If we have a valid Uri create a link, otherwise just display the unformatted value.
+            if ( uri != null )
+            {
+                return string.Format( "<a href='{0}'>{1}</a>",
+                    uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString,
+                    privateValue );
+            }
+
+            return privateValue;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="required"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool IsValid( string value, bool required, out string message )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                if ( Uri.TryCreate( value, UriKind.Absolute, out Uri _ ) )
+                {
+                    message = "The link provided is not valid";
+                    return true;
+                }
+            }
+
+            return base.IsValid( value, required, out message );
+        }
+
+        #endregion
+
+        #region FilterControl
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldShouldAlwaysShowCondensed = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+            var newShouldAlwaysShowCondensed = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+
+            if ( oldShouldAlwaysShowCondensed != newShouldAlwaysShowCondensed )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -137,51 +252,6 @@ namespace Rock.Field.Types
                 }
             }
         }
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return string.Empty;
-            }
-
-            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
-            if ( shouldAlwaysShowCondensed )
-            {
-                return privateValue;
-            }
-
-            // Try to create a valid absolute Uri.
-            Uri uri;
-            if ( privateValue.StartsWith( "/" ) )
-            {
-                // Process as a relative Uri.
-                Uri.TryCreate( privateValue, UriKind.Relative, out uri );
-            }
-            else
-            {
-                // Try to process as an absolute Uri...
-                if ( !Uri.TryCreate( privateValue, UriKind.Absolute, out uri ) )
-                {
-                    // ... but if not, try adding a default "http://" prefix.
-                    Uri.TryCreate( "http://" + privateValue, UriKind.Absolute, out uri );
-                }
-            }
-
-            // If we have a valid Uri create a link, otherwise just display the unformatted value.
-            if ( uri != null )
-            {
-                return string.Format( "<a href='{0}'>{1}</a>",
-                    uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString,
-                    privateValue );
-            }
-
-            return privateValue;
-        }
 
         /// <inheritdoc/>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
@@ -196,10 +266,6 @@ namespace Rock.Field.Types
                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -216,63 +282,7 @@ namespace Rock.Field.Types
             return new UrlLinkBox { ID = id, ShouldRequireTrailingForwardSlash = shouldRequireTrailingForwardSlash ?? false };
         }
 
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="required"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public override bool IsValid( string value, bool required, out string message )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                if ( Uri.TryCreate( value, UriKind.Absolute, out Uri _ ) )
-                {
-                    message = "The link provided is not valid";
-                    return true;
-                }
-            }
-
-            return base.IsValid( value, required, out message );
-        }
-
-        #endregion
-
-        #region FilterControl
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.StringFilterComparisonTypes;
-            }
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldShouldAlwaysShowCondensed = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
-            var newShouldAlwaysShowCondensed = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
-
-            if ( oldShouldAlwaysShowCondensed != newShouldAlwaysShowCondensed )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

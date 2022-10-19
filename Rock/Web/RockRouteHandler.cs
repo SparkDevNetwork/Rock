@@ -562,54 +562,7 @@ namespace Rock.Web
                 }
             }
         }
-        
-        /// <summary>
-        /// Gets the site from the site cache in the following order:
-        /// 1. check the query string and try to get the site
-        /// 2. Get the site using the domain of the current request
-        /// 3. Get the last site from the site cookie
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("The query string 'siteId' should not be used to specify the current site.")]
-        [RockObsolete("1.10")]
-        private SiteCache GetSite(HttpRequestBase routeHttpRequest, string host, HttpCookie siteCookie )
-        {
-            /*
-             * 2020-02-27 edrotning
-             * Keeping this version of the GetSite method in case it is needed later.
-             * Removed the option to use the SiteId parameter to determine what site the route belongs to.
-             * The intent of the parameter was to specify a site to use if multiple Rock sites are sharing a domain and route.
-             * This was removed because many blocks use the parameter name "SiteId" to specify the site the block should be using and not where the route should directed to (e.g. SiteDetails.ascx).
-             * It is believed this was put into place for debugging purposes where one domain name (localhost:6229) is the norm.
-            */
-
-            SiteCache site = null;
-
-            // First check to see if site was specified in querystring
-            int? siteId = routeHttpRequest.QueryString["SiteId"].AsIntegerOrNull();
-            if ( siteId.HasValue )
-            {
-                site = SiteCache.Get( siteId.Value );
-            }
-
-            // Then check to see if site can be determined by domain
-            if ( site == null )
-            {
-                site = SiteCache.GetSiteByDomain( host );
-            }
-
-            // Then check the last site
-            if ( site == null )
-            {
-                if ( siteCookie != null && siteCookie.Value != null )
-                {
-                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
-                }
-            }
-
-            return site;
-        }
-
+       
         /// <summary>
         /// Gets the site from the site cache in the following order:
         /// 1. Get the site using the domain of the current request

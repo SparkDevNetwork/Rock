@@ -88,6 +88,26 @@
     <Compile Include="Migrations\202210042013215_CodeGenerated_20221004.designer.cs">
       <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.cs" />
+    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.designer.cs">
+      <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210181655410_AddRemindersModels.cs" />
+    <Compile Include="Migrations\202210181655410_AddRemindersModels.designer.cs">
+      <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210182331163_Rollup_20221018.cs" />
+    <Compile Include="Migrations\202210182331163_Rollup_20221018.designer.cs">
+      <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.cs" />
+    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.designer.cs">
+      <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs" />
+    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.designer.cs">
+      <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1360,6 +1380,21 @@
     <EmbeddedResource Include="Migrations\202210042013215_CodeGenerated_20221004.resx">
       <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.resx">
+      <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210181655410_AddRemindersModels.resx">
+      <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210182331163_Rollup_20221018.resx">
+      <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210190005219_CodeGenerated_20221018.resx">
+      <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.resx">
+      <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
     </EmbeddedResource>
@@ -2496,6 +2531,10 @@
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
+      <Name>Rock.Enums</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

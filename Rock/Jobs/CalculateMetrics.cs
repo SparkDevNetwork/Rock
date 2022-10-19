@@ -22,7 +22,6 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,8 +44,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
-    public class CalculateMetrics : IJob
+    public class CalculateMetrics : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -67,14 +65,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
             var metricSourceValueTypeDataviewGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             var metricSourceValueTypeSqlGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
             var metricSourceValueTypeLavaGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid();
@@ -103,7 +97,7 @@ namespace Rock.Jobs
                 metricsCalculated++;
             }
 
-            context.Result = string.Format( "Calculated a total of {0} metric values for {1} metrics", metricValuesCalculated, metricsCalculated );
+            this.Result = string.Format( "Calculated a total of {0} metric values for {1} metrics", metricValuesCalculated, metricsCalculated );
             if ( metricExceptions.Any() )
             {
                 throw new AggregateException( "One or more metric calculations failed ", metricExceptions );

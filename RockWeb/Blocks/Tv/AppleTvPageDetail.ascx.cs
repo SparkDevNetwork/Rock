@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Tv
     [Rock.SystemGuid.BlockTypeGuid( "23CA8858-6D02-48A8-92C4-CE415DAB41B6" )]
     public partial class AppleTvPageDetail : Rock.Web.UI.RockBlock
     {
-
         #region Attribute Keys
 
         private static class AttributeKey
@@ -244,6 +243,9 @@ namespace RockWeb.Blocks.Tv
 
             page.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
 
+            avcAttributes.GetEditValues( page );
+            page.SaveAttributeValues();
+
             rockContext.SaveChanges();
         }
 
@@ -252,7 +254,6 @@ namespace RockWeb.Blocks.Tv
         /// </summary>
         private void ShowEdit()
         {
-            var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
             var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
 
             if ( pageId != 0 )
@@ -281,6 +282,9 @@ namespace RockWeb.Blocks.Tv
                     btnCopyToClipboard.Attributes["title"] = string.Format( "Copy the Guid {0} to the clipboard.", page.Guid.ToString() );
 
                     cbShowInMenu.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
+
+                    page.LoadAttributes();
+                    avcAttributes.AddEditControls( page, Rock.Security.Authorization.EDIT, CurrentPerson );
                 }
 
                 if ( page.CacheControlHeaderSettings != null )

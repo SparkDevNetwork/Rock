@@ -22,9 +22,10 @@ namespace Rock.Lava
     /// </summary>
     public interface ILavaTemplate
     {
-        /*
-         * This interface has no properties or methods.
-         * It is used to strong-type parameters for properties and methods in the Lava library.
-         */
+        /// <summary>
+        /// Returns a description of the template that can be used to identify it.
+        /// </summary>
+        /// <returns></returns>
+        string GetDescription();
     }
 }

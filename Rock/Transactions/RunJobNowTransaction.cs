@@ -63,7 +63,7 @@ namespace Rock.Transactions
                 ServiceJob job = jobService.Get( JobId );
                 if ( job != null )
                 {
-                    jobService.RunNow( job, out _ );
+                    jobService.RunNow( job );
                 }
             }
         }

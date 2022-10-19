@@ -1899,6 +1899,22 @@ namespace Rock.Data
         public DbSet<RelatedEntity> RelatedEntities { get; set; }
 
         /// <summary>
+        /// Gets or sets the reminders.
+        /// </summary>
+        /// <value>
+        /// The reminders.
+        /// </value>
+        public DbSet<Reminder> Reminders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder types.
+        /// </summary>
+        /// <value>
+        /// The reminder types.
+        /// </value>
+        public DbSet<ReminderType> ReminderTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the remote authentication sessions.
         /// </summary>
         /// <value>
@@ -2121,7 +2137,7 @@ namespace Rock.Data
         /// The system emails.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use SystemCommunications instead." )]
+        [Obsolete( "Use SystemCommunications instead.", true )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
 
         /// <summary>

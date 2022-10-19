@@ -500,7 +500,7 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; private set; }
 
@@ -520,7 +520,7 @@ namespace Rock.Web.Cache
         /// The schedule reminder communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; private set; }
 
@@ -964,10 +964,6 @@ namespace Rock.Web.Cache
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
             AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
             IsCapacityRequired = groupType.IsCapacityRequired;
-#pragma warning disable CS0618 // Type or member is obsolete
-            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
-            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

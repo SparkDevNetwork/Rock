@@ -322,6 +322,14 @@ namespace Rock.ViewModels.Entities
         public int? RecordTypeValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the reminder count associated with the Person.
+        /// </summary>
+        /// <value>
+        /// An System.Int32 representing the reminder count that is associated with the Person.
+        /// </value>
+        public int? ReminderCount { get; set; }
+
+        /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
         /// </summary>
         /// <value>

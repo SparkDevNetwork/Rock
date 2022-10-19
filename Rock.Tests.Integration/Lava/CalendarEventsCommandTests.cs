@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -422,7 +423,7 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
         private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
         private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
         private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-        private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
+        //private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
 
         private static void InitializeTestData()
         {
@@ -436,22 +437,8 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
         { 
             var rockContext = new RockContext();
 
-            // Add a new campus
-            var campusService = new CampusService( rockContext );
-
-            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
-
-            if ( campus2 == null )
-            {
-                campus2 = new Campus();
-
-                campusService.Add( campus2 );
-            }
-
-            campus2.Name = "Stepping Stone";
-            campus2.Guid = SecondaryCampusGuidString.AsGuid();
-
-            rockContext.SaveChanges();
+            // Get Campus 2.
+            var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
 
             // Get existing schedules.
             var scheduleService = new ScheduleService( rockContext );
@@ -474,7 +461,7 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
             }
 
             var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
-            var secondCampusId = CampusCache.GetId( SecondaryCampusGuidString.AsGuid() );
+            var secondCampusId = campus2.Id;
 
             financeEvent1.Location = "Meeting Room 1";
             financeEvent1.ForeignKey = TestDataForeignKey;

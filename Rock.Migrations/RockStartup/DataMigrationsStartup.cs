@@ -103,7 +103,7 @@ namespace Rock.Migrations.RockStartup
                      try
                      {
                          var job = jobService.Get( runOnceJobId );
-                         jobService.RunNow( job, out _ );
+                         jobService.RunNow( job );
                      }
                      catch ( Exception ex )
                      {

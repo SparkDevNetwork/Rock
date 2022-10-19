@@ -840,11 +840,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
+                lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
-                    lGraduation.Text =
-                        $@"<dt>{(Person.HasGraduated.Value ? "Graduated" : "Graduates")} {Person.GraduationYear.Value}</dt>
-                        <dd class=""d-none"">Graduation</dd>";
+                    lGraduation.Text = Person.HasGraduated.Value ? $@"<dt>Graduated {Person.GraduationYear.Value}</dt>" : $@"<dd>Graduates {Person.GraduationYear.Value}</dd>";
+                    lGraduation.Text += @"<dd class=""d-none"">Graduation</dd>";
                 }
             }
         }

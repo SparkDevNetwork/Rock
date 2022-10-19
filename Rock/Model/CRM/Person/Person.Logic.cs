@@ -492,7 +492,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the age.
+        /// Gets the age of the person in years. For infants under the age of 1, the value returned would be 0.
+        /// To print the age as a string use <see cref="FormatAge(bool)"/> 
         /// </summary>
         /// <param name="birthDate">The birth date.</param>
         /// <param name="deceasedDate">The deceased date.</param>
@@ -565,16 +566,17 @@ namespace Rock.Model
                 }
             }
 
-            var today = RockDateTime.Today;
+            // For infants less than an year old
+            var asOfDate = DeceasedDate.HasValue ? DeceasedDate.Value : RockDateTime.Today;
             if ( BirthYear != null && BirthMonth != null )
             {
-                int months = today.Month - BirthMonth.Value;
-                if ( BirthYear < today.Year )
+                int months = asOfDate.Month - BirthMonth.Value;
+                if ( BirthYear < asOfDate.Year )
                 {
                     months = months + 12;
                 }
 
-                if ( BirthDay > today.Day )
+                if ( BirthDay > asOfDate.Day )
                 {
                     months--;
                 }
@@ -587,7 +589,7 @@ namespace Rock.Model
 
             if ( BirthYear != null && BirthMonth != null && BirthDay != null )
             {
-                int days = today.Day - BirthDay.Value;
+                int days = asOfDate.Day - BirthDay.Value;
                 if ( days < 0 )
                 {
                     // Add the number of days in the birth month

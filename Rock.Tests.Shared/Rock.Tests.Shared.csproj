@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Constants\TestGuids.cs" />
+    <Compile Include="Rock\Core\Schedules\ScheduleTestHelper.cs" />
     <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />

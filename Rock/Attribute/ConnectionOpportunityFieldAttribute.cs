@@ -41,7 +41,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         [RockObsolete( "1.10" )]
-        [System.Obsolete( "Use the constructor with the 'includeInactive' parameter or the default constructor with object initializer syntax instead." )]
+        [System.Obsolete( "Use the constructor with the 'includeInactive' parameter or the default constructor with object initializer syntax instead.", true )]
         public ConnectionOpportunityFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName )
         {

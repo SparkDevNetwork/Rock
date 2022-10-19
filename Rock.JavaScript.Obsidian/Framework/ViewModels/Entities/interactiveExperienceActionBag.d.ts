@@ -43,6 +43,9 @@ export type InteractiveExperienceActionBag = {
     /** Gets or sets a value indicating if response anonymous. */
     isResponseAnonymous: boolean;
 
+    /** Gets or sets the sort order of this action. */
+    order: number;
+
     /** Gets or sets the EntityTypeId for the Rock.Model.EntityType of the response visual. */
     responseVisualEntityTypeId?: number | null;
 

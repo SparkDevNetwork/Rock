@@ -205,7 +205,7 @@ namespace Rock.Model
         /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
         /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
         /// <returns></returns>
-        [Obsolete( "The syncMatchingStreaks param is no longer used" )]
+        [Obsolete( "The syncMatchingStreaks param is no longer used", true )]
         [RockObsolete( "1.10" )]
         public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
                 int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
@@ -2583,7 +2583,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIds">A comma-delimited list of Person IDs.</param>
-        [Obsolete( "Use the method which accepts a List<int> parameter instead." )]
+        [Obsolete( "Use the method which accepts a List<int> parameter instead.", true )]
         [RockObsolete( "1.10.4" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {

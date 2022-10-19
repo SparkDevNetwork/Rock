@@ -16,8 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -33,13 +31,12 @@ namespace Rock.Jobs
     [DisplayName( "Index Rock Site" )]
     [Description( "This job indexes the specified site." )]
 
-    [DisallowConcurrentExecution]
 
     [SiteField( "Site", "The site that will be indexed", true, order: 0 )]
     [TextField( "Login Id", "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.", false, "", "", 1, "LoginId" )]
     [TextField( "Password", "The password associated with the Login Id.", false, "", "", 2, "Password", true )]
 
-    public class IndexRockSite : IJob
+    public class IndexRockSite : RockJob
     {
         private int _indexedPageCount = 0;
         private Site _site;
@@ -55,19 +52,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will run quick SQL queries on a schedule.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var siteId = dataMap.GetString( "Site" ).AsIntegerOrNull();
-            string loginId = dataMap.GetString( "LoginId" );
-            string password = dataMap.GetString( "Password" );
+            var siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
+            string loginId = GetAttributeValue( "LoginId" );
+            string password = GetAttributeValue( "Password" );
 
             Uri startingUri;
 
@@ -87,21 +77,21 @@ namespace Rock.Jobs
                         // release the crawler, like the kraken... but not...
                         var pages = new Crawler().CrawlSite( _site, loginId, password );
 
-                        context.Result = string.Format( "Crawler indexed {0} pages.", pages, _indexedPageCount );
+                        this.Result = string.Format( "Crawler indexed {0} pages.", pages, _indexedPageCount );
                     }
                     else
                     {
-                        context.Result = "An invalid starting URL was provided.";
+                        this.Result = "An invalid starting URL was provided.";
                     }
                 }
                 else
                 {
-                    context.Result = "Could not locate the site provided.";
+                    this.Result = "Could not locate the site provided.";
                 }
             }
             else
             {
-                context.Result = "An invalid site was provided.";
+                this.Result = "An invalid site was provided.";
             }
 
 

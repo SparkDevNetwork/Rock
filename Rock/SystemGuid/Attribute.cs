@@ -460,7 +460,7 @@ namespace Rock.SystemGuid
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used." )]
+        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used.", true )]
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
 
         #endregion

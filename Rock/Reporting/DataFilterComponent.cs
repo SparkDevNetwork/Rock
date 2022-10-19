@@ -309,7 +309,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No Longer Needed" )]
+        [Obsolete( "No Longer Needed", true )]
         public void RegisterFilterCompareChangeScript( FilterField filterControl )
         {
             // no longer needed since the required javascript is now bundled

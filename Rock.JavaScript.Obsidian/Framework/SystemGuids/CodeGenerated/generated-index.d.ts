@@ -58,7 +58,6 @@ import { Site } from "./site";
 import { StreakType } from "./streakType";
 import { SystemCommunication } from "./systemCommunication";
 import { SystemEmail } from "./systemEmail";
-import { SystemSetting } from "./systemSetting";
 import { WorkflowType } from "./workflowType";
 
 export {
@@ -99,6 +98,5 @@ export {
     StreakType,
     SystemCommunication,
     SystemEmail,
-    SystemSetting,
     WorkflowType,
 };

@@ -158,8 +158,19 @@ namespace Rock.Utility
         /// <returns><c>true</c> if [is ip address in range] [the specified request]; otherwise, <c>false</c>.</returns>
         public static bool IsIPAddressInRange( HttpRequestBase request, string beginningIPAddress, string endingIPAddress )
         {
-            var clientIPAddress = GetClientIpAddress( request );
+            return IsIPAddressInRange( GetClientIpAddress( request ), beginningIPAddress, endingIPAddress );
+        }
 
+        /// <summary>
+        /// Determines whether the Client's IP Address falls within a range.
+        /// Uses suggested method from https://stackoverflow.com/a/2138724.
+        /// </summary>
+        /// <param name="clientIPAddress">The IP address to check.</param>
+        /// <param name="beginningIPAddress">The beginning ip address.</param>
+        /// <param name="endingIPAddress">The ending ip address.</param>
+        /// <returns><c>true</c> if [is ip address in range] [the specified request]; otherwise, <c>false</c>.</returns>
+        internal static bool IsIPAddressInRange( string clientIPAddress, string beginningIPAddress, string endingIPAddress )
+        {
             // Using suggested method from https://stackoverflow.com/a/2138724
             if ( !IPAddress.TryParse( clientIPAddress, out var parsedClientIPAddress ) )
             {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -792,7 +792,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 WorkflowTypeGuid = workflowType.Guid,
                 WorkflowGuid = workflow.Guid,
                 HasActiveEntryForm = hasEntryForm,
-                Message = $"A '{workflowType.Name}' workflow was processed."
+                Message = $"A '{workflowType.Name}' workflow was started."
             };
         }
 

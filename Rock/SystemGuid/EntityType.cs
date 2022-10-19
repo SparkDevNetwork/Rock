@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -589,6 +589,16 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.RegistrationTemplate entity
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Reminder entity
+        /// </summary>
+        public const string REMINDER = "46CC0D74-BE46-4D5D-A6F1-0811645721AC";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ReminderType entity
+        /// </summary>
+        public const string REMINDER_TYPE = "B2B0B6F3-0E3B-40CF-BA93-FBB99D50788C";
 
         /// <summary>
         /// The LiquidSelect DataSelect field for Reporting
@@ -1739,5 +1749,10 @@ namespace Rock.SystemGuid
         /// The Test Redirection Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceOccurrence"/> 
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_OCCURRENCE = "2D1263A1-A3E7-4568-AA4B-C1234824188D";
     }
 }

@@ -46,16 +46,18 @@ namespace Rock.Lava
             {
                 qry = qry.Where( p => p.Id == e.Id );
             }
-            else if ( input is string s )
+            else
             {
-                var inputAsGuid = s.AsGuidOrNull();
+                // Process the input as a string, and attempt to parse as an entity reference.
+                var inputAsString = input.ToStringSafe();
+                var inputAsGuid = inputAsString.AsGuidOrNull();
                 if ( inputAsGuid != null )
                 {
                     qry = qry.Where( p => p.Guid == inputAsGuid );
                 }
                 else
                 {
-                    var inputAsInt = s.AsIntegerOrNull();
+                    var inputAsInt = inputAsString.AsIntegerOrNull();
                     if ( inputAsInt != null )
                     {
                         qry = qry.Where( p => p.Id == inputAsInt.Value );

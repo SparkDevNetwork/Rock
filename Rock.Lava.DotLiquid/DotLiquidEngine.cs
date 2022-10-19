@@ -541,7 +541,7 @@ namespace Rock.Lava.DotLiquid
             // Create a new DotLiquid template and wrap it in a proxy for use with the Lava engine.
             var dotLiquidTemplate = CreateNewDotLiquidTemplate( inputTemplate );
 
-            var lavaTemplate = new DotLiquidTemplateProxy( dotLiquidTemplate );
+            var lavaTemplate = new DotLiquidTemplateProxy( dotLiquidTemplate, inputTemplate );
 
             return lavaTemplate;
         }

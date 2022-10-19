@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
@@ -22,17 +23,18 @@ using System.Runtime.Serialization;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.ExceptionHandling;
-using System.Web.Http.OData.Builder;
-using System.Web.Http.OData.Extensions;
-using System.Web.Http.OData.Routing;
-using System.Web.Http.OData.Routing.Conventions;
 using System.Web.Http.ValueProviders;
 using System.Web.Routing;
+
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Routing;
+using Microsoft.AspNet.OData.Routing.Conventions;
+using Microsoft.OData.Edm;
 
 using Rock;
 using Rock.Rest.Utility;
 using Rock.Rest.Utility.ValueProviders;
-using Rock.Tasks;
 
 namespace Rock.Rest
 {
@@ -41,6 +43,11 @@ namespace Rock.Rest
     /// </summary>
     public static class WebApiConfig
     {
+        /// <summary>
+        /// Compiled Model that is used to create the OData Routes and Process Queries (see RockEnableQueryAttribute)
+        /// </summary>
+        public static IEdmModel EdmModel = null;
+
         /// <summary>
         /// Maps ODataService Route and registers routes for any controller actions that use a [Route] attribute
         /// </summary>
@@ -61,6 +68,11 @@ namespace Rock.Rest
             config.Services.Add( typeof( ValueProviderFactory ), new RockRouteDataValueProviderFactory() );
 
             config.Formatters.Insert( 0, new Utility.ApiPickerJsonMediaTypeFormatter() );
+
+            // Tell OData to support DateTime by letting it know which TimeZone we are in
+            // See https://learn.microsoft.com/en-us/odata/webapi/datetime-support#time-zone-configuration
+            TimeZoneInfo timeZoneInfo = RockDateTime.OrgTimeZoneInfo;
+            config.SetTimeZoneInfo( timeZoneInfo );
 
             // register Swagger and its routes first
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
@@ -312,7 +324,15 @@ namespace Rock.Rest
 
             foreach ( var entityType in entityTypeList )
             {
-                var entityTypeConfig = builder.AddEntity( entityType );
+                var entityTypeConfig = builder.AddEntityType( entityType );
+
+                // OData 4 convention is to treat all IDictionary<string, object> properties as special "Open Types", we don't want OData to do that!
+                // See https://docs.microsoft.com/en-us/aspnet/web-api/overview/odata-support-in-aspnet-web-api/odata-v4/use-open-types-in-odata-v4
+                var odataDynamicProperties = entityType.GetProperties().Where( p => typeof( IDictionary<string, object> ).IsAssignableFrom( p.PropertyType ) );
+                foreach ( var odataDynamicProperty in odataDynamicProperties )
+                {
+                    entityTypeConfig.RemoveProperty( odataDynamicProperty );
+                }
 
                 var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
                 string name;
@@ -329,11 +349,17 @@ namespace Rock.Rest
             }
 
             var defaultConventions = ODataRoutingConventions.CreateDefault();
+
             // Disable the api/$metadata route
             var conventions = defaultConventions.Except( defaultConventions.OfType<MetadataRoutingConvention>() );
 
-            config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
+            WebApiConfig.EdmModel = builder.GetEdmModel();
 
+            config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel, pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
+            config.EnableDependencyInjection();
+
+            // This enables the various features of OData (they are disabled by default)
+            config.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
 
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
         }

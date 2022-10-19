@@ -43,7 +43,7 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="WorkflowActionForm.NotificationSystemEmailId"/>
         [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead." )]
+        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? NotificationSystemEmailId { get; private set; }
 
@@ -386,9 +386,6 @@ namespace Rock.Web.Cache
             this.Header = workflowActionForm.Header;
             this.IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
             this.NotificationSystemCommunicationId = workflowActionForm.NotificationSystemCommunicationId;
-#pragma warning disable 612, 618
-            this.NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
-#pragma warning restore 612, 618
             this.PersonEntryAddressEntryOption = workflowActionForm.PersonEntryAddressEntryOption;
             this.PersonEntryGroupLocationTypeValueId = workflowActionForm.PersonEntryGroupLocationTypeValueId;
 

@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 
@@ -77,22 +78,6 @@ namespace Rock.Field.Types
             return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( 100 ).EncodeHtml()}</a>";
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            // For compatability reasons, condensed value is the plain URL text encoded for HTML.
-            return !condensed
-                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
-        }
-
         #endregion
 
         #region Filter Control
@@ -111,6 +96,28 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // For compatability reasons, condensed value is the plain URL text encoded for HTML.
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
+        }
+
+#endif
         #endregion
     }
 }

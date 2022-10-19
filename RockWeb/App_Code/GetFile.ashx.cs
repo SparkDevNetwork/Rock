@@ -83,7 +83,7 @@ namespace RockWeb
                     if ( requiresViewSecurity )
                     {
                         binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                        var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                        var currentUser = UserLoginService.GetCurrentUser();
                         Person currentPerson = currentUser != null ? currentUser.Person : null;
 
                         if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )

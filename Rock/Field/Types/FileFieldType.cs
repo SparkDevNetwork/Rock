@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,6 +38,11 @@ namespace Rock.Field.Types
     {
 
         #region Edit Control
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -110,7 +116,7 @@ namespace Rock.Field.Types
             }
         }
 
+#endif
         #endregion
-
     }
 }
