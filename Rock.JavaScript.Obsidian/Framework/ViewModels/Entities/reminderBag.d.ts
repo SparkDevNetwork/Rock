@@ -23,31 +23,34 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** InteractiveExperienceAction View Model */
-export type InteractiveExperienceActionBag = {
-    /** Gets or sets the EntityTypeId for the Rock.Model.EntityType of action. This property is required. */
-    actionEntityTypeId: number;
+/** Reminder View Model */
+export type ReminderBag = {
+    /** Gets or sets the entity identifier. */
+    entityId: number;
 
-    /** Gets or sets the action settings json. */
-    actionSettingsJson?: string | null;
+    /** Gets or sets a value indicating whether this reminder is complete. */
+    isComplete: boolean;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperience that this InteractiveExperienceAction is associated with. This property is required. */
-    interactiveExperienceId: number;
+    /** Gets or sets the note. */
+    note?: string | null;
 
-    /** Gets or sets a value indicating whether this instance is moderation required. */
-    isModerationRequired: boolean;
+    /** Gets or sets the person alias identifier. */
+    personAliasId: number;
 
-    /** Gets or sets a flag indicating if multiple submission allowed. */
-    isMultipleSubmissionAllowed: boolean;
+    /** Gets or sets the reminder date. */
+    reminderDate?: string | null;
 
-    /** Gets or sets a value indicating if response anonymous. */
-    isResponseAnonymous: boolean;
+    /** Gets or sets the reminder type identifier. */
+    reminderTypeId: number;
 
-    /** Gets or sets the sort order of this action. */
-    order: number;
+    /** Gets or sets renew current count. */
+    renewCurrentCount?: number | null;
 
-    /** Gets or sets the EntityTypeId for the Rock.Model.EntityType of the response visual. */
-    responseVisualEntityTypeId?: number | null;
+    /** Gets or sets the renew max count. */
+    renewMaxCount?: number | null;
+
+    /** Gets or sets the renew period days. */
+    renewPeriodDays?: number | null;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;

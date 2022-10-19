@@ -146,6 +146,9 @@ export type PersonBag = {
     /** Gets or sets the Id of the Person Record Type Rock.Model.DefinedValue representing what type of Person Record this is. */
     recordTypeValueId?: number | null;
 
+    /** Gets or sets the reminder count associated with the Person. */
+    reminderCount?: number | null;
+
     /** Gets or sets notes about why a person profile needs to be reviewed */
     reviewReasonNote?: string | null;
 

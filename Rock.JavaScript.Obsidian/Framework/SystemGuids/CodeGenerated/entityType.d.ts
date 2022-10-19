@@ -251,6 +251,10 @@ export const enum EntityType {
     Registration = "D2F294C6-E161-4A56-85C7-CD74D535F61A",
     /** The guid for the Rock.Model.RegistrationTemplate entity */
     RegistrationTemplate = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70",
+    /** The guid for the Rock.Model.Reminder entity */
+    Reminder = "46CC0D74-BE46-4D5D-A6F1-0811645721AC",
+    /** The guid for the Rock.Model.ReminderType entity */
+    ReminderType = "B2B0B6F3-0E3B-40CF-BA93-FBB99D50788C",
     /** The LiquidSelect DataSelect field for Reporting */
     ReportingDataselectLiquidselect = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D",
     /** The guid for the Rock.Model.Schedule entity */

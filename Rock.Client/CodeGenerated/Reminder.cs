@@ -27,18 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for InteractiveExperienceAction that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for Reminder that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class InteractiveExperienceActionEntity
+    public partial class ReminderEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int ActionEntityTypeId { get; set; }
-
-        /// <summary />
-        public string ActionSettingsJson { get; set; }
+        public int EntityId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,16 +44,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int InteractiveExperienceId { get; set; }
-
-        /// <summary />
-        public bool IsModerationRequired { get; set; }
-
-        /// <summary />
-        public bool IsMultipleSubmissionAllowed { get; set; }
-
-        /// <summary />
-        public bool IsResponseAnonymous { get; set; }
+        public bool IsComplete { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -64,10 +52,25 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public string Note { get; set; }
 
         /// <summary />
-        public int? ResponseVisualEntityTypeId { get; set; }
+        public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime ReminderDate { get; set; }
+
+        /// <summary />
+        public int ReminderTypeId { get; set; }
+
+        /// <summary />
+        public int? RenewCurrentCount { get; set; }
+
+        /// <summary />
+        public int? RenewMaxCount { get; set; }
+
+        /// <summary />
+        public int? RenewPeriodDays { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,23 +99,24 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source InteractiveExperienceAction object
+        /// Copies the base properties from a source Reminder object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( InteractiveExperienceAction source )
+        public void CopyPropertiesFrom( Reminder source )
         {
             this.Id = source.Id;
-            this.ActionEntityTypeId = source.ActionEntityTypeId;
-            this.ActionSettingsJson = source.ActionSettingsJson;
+            this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InteractiveExperienceId = source.InteractiveExperienceId;
-            this.IsModerationRequired = source.IsModerationRequired;
-            this.IsMultipleSubmissionAllowed = source.IsMultipleSubmissionAllowed;
-            this.IsResponseAnonymous = source.IsResponseAnonymous;
+            this.IsComplete = source.IsComplete;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Order = source.Order;
-            this.ResponseVisualEntityTypeId = source.ResponseVisualEntityTypeId;
+            this.Note = source.Note;
+            this.PersonAliasId = source.PersonAliasId;
+            this.ReminderDate = source.ReminderDate;
+            this.ReminderTypeId = source.ReminderTypeId;
+            this.RenewCurrentCount = source.RenewCurrentCount;
+            this.RenewMaxCount = source.RenewMaxCount;
+            this.RenewPeriodDays = source.RenewPeriodDays;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -124,18 +128,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for InteractiveExperienceAction that includes all the fields that are available for GETs. Use this for GETs (use InteractiveExperienceActionEntity for POST/PUTs)
+    /// Client model for Reminder that includes all the fields that are available for GETs. Use this for GETs (use ReminderEntity for POST/PUTs)
     /// </summary>
-    public partial class InteractiveExperienceAction : InteractiveExperienceActionEntity
+    public partial class Reminder : ReminderEntity
     {
         /// <summary />
-        public EntityType ActionEntityType { get; set; }
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
-        public InteractiveExperience InteractiveExperience { get; set; }
-
-        /// <summary />
-        public EntityType ResponseVisualEntityType { get; set; }
+        public ReminderType ReminderType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

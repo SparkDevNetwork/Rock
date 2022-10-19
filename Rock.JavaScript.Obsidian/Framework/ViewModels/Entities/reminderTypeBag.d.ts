@@ -23,31 +23,37 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** InteractiveExperienceAction View Model */
-export type InteractiveExperienceActionBag = {
-    /** Gets or sets the EntityTypeId for the Rock.Model.EntityType of action. This property is required. */
-    actionEntityTypeId: number;
+/** ReminderType View Model */
+export type ReminderTypeBag = {
+    /** Gets or sets the description. */
+    description?: string | null;
 
-    /** Gets or sets the action settings json. */
-    actionSettingsJson?: string | null;
+    /** Gets or sets the entity type identifier. */
+    entityTypeId: number;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperience that this InteractiveExperienceAction is associated with. This property is required. */
-    interactiveExperienceId: number;
+    /** Gets or sets the highlight color. */
+    highlightColor?: string | null;
 
-    /** Gets or sets a value indicating whether this instance is moderation required. */
-    isModerationRequired: boolean;
+    /** Gets or sets a value indicating whether this reminder type is active */
+    isActive: boolean;
 
-    /** Gets or sets a flag indicating if multiple submission allowed. */
-    isMultipleSubmissionAllowed: boolean;
+    /** Gets or sets the name. */
+    name?: string | null;
 
-    /** Gets or sets a value indicating if response anonymous. */
-    isResponseAnonymous: boolean;
+    /** Gets or sets the notification type. */
+    notificationType: number;
 
-    /** Gets or sets the sort order of this action. */
+    /** Gets of sets the notification workflow type id. */
+    notificationWorkflowTypeId?: number | null;
+
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the EntityTypeId for the Rock.Model.EntityType of the response visual. */
-    responseVisualEntityTypeId?: number | null;
+    /** Gets or sets a value indicating whether this reminder type should auto-complete when notified. */
+    shouldAutoCompleteWhenNotified: boolean;
+
+    /** Gets or sets a value indicating whether this reminder type should show the note. */
+    shouldShowNote: boolean;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;
