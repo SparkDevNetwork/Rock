@@ -58,7 +58,7 @@ namespace Rock.Jobs
         Order = 2 )]
 
     [DisallowConcurrentExecution]
-    public class ProcessReminders : IJob
+    public class ProcessReminders : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -80,18 +80,15 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var currentDate = RockDateTime.Now;
             RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job started at {currentDate}." );
 
-            var dataMap = context.JobDetail.JobDataMap;
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
-            var notificationSystemCommunicationGuid = dataMap.GetString( AttributeKey.ReminderNotification ).AsGuidOrNull();
+            //var dataMap = context.JobDetail.JobDataMap;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
+            var notificationSystemCommunicationGuid = GetAttributeValue( AttributeKey.ReminderNotification ).AsGuidOrNull();
             SystemCommunication notificationSystemCommunication = null;
 
             using ( var rockContext = new RockContext() )

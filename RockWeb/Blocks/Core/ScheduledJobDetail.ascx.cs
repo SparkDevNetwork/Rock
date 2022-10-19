@@ -306,7 +306,9 @@ namespace RockWeb.Blocks.Administration
             var rockJobs = Rock.Reflection.FindTypes( rockJobType ).Values;
 
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var obsoleteQuartzJobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values.Where( a => !rockJobType.IsAssignableFrom( a ) );
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var jobs = rockJobs.ToList();
             foreach(var obsoleteQuartzJob in obsoleteQuartzJobs)
