@@ -711,4 +711,8 @@ export const enum EntityType {
     InteractiveExperienceSchedule = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus  */
     InteractiveExperienceScheduleCampus = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The Test Redirection Gateway entity type */
+    FinancialGatewayTestRedirectionGateway = "AB3C5BF6-4D99-4289-84AF-3EF798849705",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceOccurrence  */
+    InteractiveExperienceOccurrence = "2D1263A1-A3E7-4568-AA4B-C1234824188D",
 }

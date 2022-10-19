@@ -56,7 +56,7 @@ namespace Rock.Client
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.ConnectionState ConnectionState { get; set; }
+        public int /* ConnectionState*/ ConnectionState { get; set; }
 
         /// <summary />
         public int ConnectionStatusId { get; set; }

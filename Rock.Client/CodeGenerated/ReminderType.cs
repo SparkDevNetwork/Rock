@@ -67,6 +67,9 @@ namespace Rock.Client
         public int? NotificationWorkflowTypeId { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public bool ShouldAutoCompleteWhenNotified { get; set; }
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.NotificationType = source.NotificationType;
             this.NotificationWorkflowTypeId = source.NotificationWorkflowTypeId;
+            this.Order = source.Order;
             this.ShouldAutoCompleteWhenNotified = source.ShouldAutoCompleteWhenNotified;
             this.ShouldShowNote = source.ShouldShowNote;
             this.CreatedDateTime = source.CreatedDateTime;

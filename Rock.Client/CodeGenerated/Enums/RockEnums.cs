@@ -271,16 +271,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum ConnectionState
-    {
-        Active = 0x0,
-        Inactive = 0x1,
-        FutureFollowUp = 0x2,
-        Connected = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum ConnectionTypeViewMode
     {
         List = 0x0,
