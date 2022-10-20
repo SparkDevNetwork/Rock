@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -83,6 +84,16 @@ namespace RockWeb.Blocks.Reminders
 
         #region Base Control Methods
 
+        /*
+            10/20/2022 - SMC
+
+            WARNING:  This block is loaded on every page of the internal site and any processing done in these
+            methods should have minimal impact on the page load!  Do not include database calls, here.
+
+            Database calls necessary to set up the page should be triggered only from interactive events from
+            specific controls.
+        */
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -121,31 +132,17 @@ namespace RockWeb.Blocks.Reminders
                     hfContextEntityTypeId.Value = "0";
 
                     var contextEntity = GetFirstContextEntity();
-                    var contextEntity2 = this.ContextEntity();
                     if ( contextEntity == null )
                     {
                         return;
                     }
 
                     hfContextEntityTypeId.Value = contextEntity.TypeId.ToString();
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        IEntity entity = new EntityTypeService( rockContext ).GetEntity( contextEntity.TypeId, contextEntity.Id );
-                        lEntity.Text = entity.ToString();
-
-                        var reminderTypeService = new ReminderTypeService( rockContext );
-                        var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, CurrentPerson );
-                        rddlReminderType.DataSource = reminderTypes;
-                        rddlReminderType.DataTextField = "Name";
-                        rddlReminderType.DataValueField = "Id";
-                        rddlReminderType.DataBind();
-                    }
                 }
             }
             else
             {
-                //ShowDialog();
+                ShowDialog();
             }
         }
 
@@ -154,7 +151,7 @@ namespace RockWeb.Blocks.Reminders
         #region Methods
 
         /// <summary>
-        /// Gets the first context entity for the page.
+        /// Gets the first context entity for the page (excluding context from cookies).
         /// </summary>
         /// <returns></returns>
         private IEntity GetFirstContextEntity()
@@ -163,14 +160,152 @@ namespace RockWeb.Blocks.Reminders
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
 
-                if ( contextEntity != null )
+                if ( contextEntity != null && !IsCookieContext( contextEntity ) )
                 {
+                    // If this context entity exists, and it did not come from a cookie,
+                    // then this is the one we will use for reminders.
                     return contextEntity;
                 }
             }
 
             return null;
         }
+
+        #region Cookie Context Handling
+
+        /// <summary>
+        /// Checks to see if a specificed context entity is the same as the context entity specified in a
+        /// cookie context (either the site-wide cookie context, or the page-specific cookie context).
+        /// </summary>
+        /// <param name="contextEntity">The context entity.</param>
+        /// <returns></returns>
+        private bool IsCookieContext( IEntity contextEntity )
+        {
+            var pageCookieContextEntity = GetPageSpecificCookieContextEntity();
+            if ( pageCookieContextEntity != null )
+            {
+                if ( pageCookieContextEntity.TypeId == contextEntity.TypeId && pageCookieContextEntity.Id == contextEntity.Id )
+                {
+                    return true;
+                }
+            }
+
+            var siteCookieContextEntity = GetSiteCookieContextEntity();
+            if ( siteCookieContextEntity != null )
+            {
+                if ( siteCookieContextEntity.TypeId == contextEntity.TypeId && siteCookieContextEntity.Id == contextEntity.Id )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Looks for a page-specific context entity stored set in a cooke and returns it if one exists.
+        /// </summary>
+        /// <returns></returns>
+        private IEntity GetPageSpecificCookieContextEntity()
+        {
+            string pageSpecificContextCookieName = "Rock_Context:" + RockPage.PageId.ToString();
+            var cookie = FindCookie( pageSpecificContextCookieName );
+            return GetContextEntityFromCookie( cookie );
+        }
+
+        /// <summary>
+        /// Looks for a site-wide context entity stored set in a cooke and returns it if one exists.
+        /// </summary>
+        /// <returns></returns>
+        private IEntity GetSiteCookieContextEntity()
+        {
+            string siteContextCookieName = "Rock_Context";
+            var cookie = FindCookie( siteContextCookieName );
+            return GetContextEntityFromCookie( cookie );
+        }
+
+        /// <summary>
+        /// Finds a cookie by name in the request or response collections.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        /// <returns></returns>
+        private HttpCookie FindCookie( string cookieName )
+        {
+            HttpCookie cookie = null;
+
+            if ( Response.Cookies.AllKeys.Contains( cookieName ) )
+            {
+                cookie = Response.Cookies[cookieName];
+            }
+            else if ( Request.Cookies.AllKeys.Contains( cookieName ) )
+            {
+                cookie = Request.Cookies[cookieName];
+            }
+
+            return cookie;
+        }
+
+        /// <summary>
+        /// Gets a context entity from a cookie, if it exists.
+        /// </summary>
+        /// <param name="cookie">The cookie</param>
+        /// <returns></returns>
+        private IEntity GetContextEntityFromCookie( HttpCookie cookie )
+        {
+            if ( cookie == null )
+            {
+                // No cookie context.
+                return null;
+            }
+
+            for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
+            {
+                string cookieValue = cookie.Values[valueIndex];
+                if ( string.IsNullOrWhiteSpace( cookieValue ) )
+                {
+                    continue; // Ignore the empty value and move on.
+                }
+
+                try
+                {
+                    string contextItem = Encryption.DecryptString( cookieValue );
+                    string[] parts = contextItem.Split( '|' );
+                    if ( parts.Length != 2 )
+                    {
+                        continue; // Not a valid context cookie, ignore this value and move on.
+                    }
+
+                    var entityTypeName = parts[0];
+                    var entityId = parts[1].AsInteger();
+                    if ( entityId == 0 )
+                    {
+                        continue; // Invalid entity id, ignore this cookie value and move on.
+                    }
+
+                    var entityType = EntityTypeCache.Get( entityTypeName );
+                    if ( entityType == null )
+                    {
+                        continue; // Invalid entity type name, move on.
+                    }
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        IEntity cookieEntity = new EntityTypeService( rockContext ).GetEntity( entityType.Id, entityId );
+                        return cookieEntity;
+                    }
+                }
+                catch
+                {
+                    // intentionally ignore exception in case cookie value is corrupt.
+                    continue;
+                }
+            }
+
+            // no (valid) cookie context found.
+            return null;
+        }
+
+        #endregion Cookie Context Handling
 
         /// <summary>
         /// Shows the dialog.
@@ -348,6 +483,36 @@ namespace RockWeb.Blocks.Reminders
             HideDialog();
         }
 
+        /// <summary>
+        /// Resets the add reminder form to prepare it for a new use.
+        /// </summary>
+        /// <param name="contextEntity">The context entity.</param>
+        private void ResetAddReminderForm( IEntity contextEntity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Load context entity from the database to get the name.
+                IEntity entity = new EntityTypeService( rockContext ).GetEntity( contextEntity.TypeId, contextEntity.Id );
+                lEntity.Text = entity.ToString();
+
+                // Load reminder types for this context entity.
+                var reminderTypeService = new ReminderTypeService( rockContext );
+                var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, CurrentPerson );
+                rddlReminderType.DataSource = reminderTypes;
+                rddlReminderType.DataTextField = "Name";
+                rddlReminderType.DataValueField = "Id";
+                rddlReminderType.DataBind();
+            }
+
+            // Reset form values.
+            rddlReminderType.SelectedIndex = 0;
+            rdpReminderDate.SelectedDate = null;
+            rtbNote.Text = string.Empty;
+            rppPerson.SetValue( CurrentPerson );
+            rnbRepeatDays.Text = string.Empty;
+            rnbRepeatTimes.Text = string.Empty;
+        }
+
         #endregion Methods
 
         #region Events
@@ -376,6 +541,7 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
+            ResetAddReminderForm( contextEntity );
             ShowExistingReminders( contextEntity );
             mdAddReminder.Title = $"Reminder For {contextEntity}";
             ShowDialog( "AddReminder" );
@@ -442,6 +608,11 @@ namespace RockWeb.Blocks.Reminders
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event for elements in the rptReminders control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rptReminders_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var hfReminderId = e.Item.FindControl( "hfReminderId" ) as HiddenField;
