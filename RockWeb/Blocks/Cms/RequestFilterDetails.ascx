@@ -142,24 +142,23 @@
                     </div>
                 </asp:Panel>
 
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
-            </div>
+                <span class="segment-and"><span class="text">And</span></span>
 
-            <span class="segment-and"><span class="text">And</span></span>
-
-             <%-- Environment --%>
+                <%-- Environment --%>
                 <asp:Panel ID="pnlEnvironment" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
                         <div class="panel-title">Environment</div>
                     </div>
                     <div class="panel-body">
-                       <Rock:SlidingDateRangePicker ID="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="DateRange" TimeUnit="Hour" />
-                       <Rock:TimePicker ID="tpTimeOfDay" runat="server" Label="Time of Day"  />
+                        <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week"  RepeatDirection="Horizontal" />
+                        <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="Time of Day" />
+                        <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" />
                     </div>
                 </asp:Panel>
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
             </div>
 
             <%-- Modal for Query String Filter --%>
@@ -313,7 +312,7 @@
 
         </asp:Panel>
 
-         <script>
+        <script>
             function populateRequestFilterKey() {
                 // if the request filter key hasn't been filled in yet, populate it with the segment name minus whitespace and special chars
                 var $keyControl = $('#<%=tbKey.ClientID%>');
@@ -339,6 +338,6 @@
                 }
             }
 
-         </script>
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
