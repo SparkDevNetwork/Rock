@@ -146,7 +146,9 @@ namespace Rock.Jobs
                 else
                 {
                     // Default to communication.
-                    var result = SendReminderCommunication( activeReminder, notificationSystemCommunication );
+                    var reminderEntity = new EntityTypeService( rockContext )
+                        .GetEntity( activeReminder.ReminderType.EntityTypeId, activeReminder.EntityId );
+                    var result = SendReminderCommunication( activeReminder, notificationSystemCommunication, reminderEntity );
                     notified = ( result.MessagesSent > 0 );
                 }
 
@@ -196,8 +198,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="reminder"></param>
         /// <param name="notificationSystemCommunication"></param>
+        /// <param name="reminderEntity"></param>
         /// <returns></returns>
-        private SendMessageResult SendReminderCommunication( Reminder reminder, SystemCommunication notificationSystemCommunication )
+        private SendMessageResult SendReminderCommunication( Reminder reminder, SystemCommunication notificationSystemCommunication, IEntity reminderEntity )
         {
             if ( notificationSystemCommunication == null )
             {
@@ -214,7 +217,7 @@ namespace Rock.Jobs
                 mergeFields.Add( "Reminder", reminder );
                 mergeFields.Add( "ReminderType", reminder.ReminderType );
                 mergeFields.Add( "Person", person );
-                mergeFields.Add( "EntityName", reminder.EntityId ); // BUG:  FIX THIS!
+                mergeFields.Add( "EntityName", reminderEntity.ToString() );
 
                 var mediumType = Model.Communication.DetermineMediumEntityTypeId(
                     ( int ) CommunicationType.Email,
