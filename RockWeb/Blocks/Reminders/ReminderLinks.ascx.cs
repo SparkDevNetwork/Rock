@@ -126,7 +126,8 @@ namespace RockWeb.Blocks.Reminders
                     int reminderCount = CurrentPerson?.ReminderCount ?? 0;
                     if ( reminderCount > 0 )
                     {
-                        lbReminders.CssClass = lbReminders.CssClass + " has-reminders badge-" + CurrentPerson.ReminderCount.Value.ToString();
+                        lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
+                        litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
                     }
 
                     hfContextEntityTypeId.Value = "0";

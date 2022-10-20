@@ -120,7 +120,7 @@
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark js-rock-reminders"
-    href="#" ><i class="fa fa-bell"></i></asp:LinkButton>
+    href="#" ><i class="fa fa-bell"></i><asp:Literal ID="litReminderCount" runat="server"></asp:Literal></asp:LinkButton>
 
 <asp:UpdatePanel ID="upnlReminders" UpdateMode="Conditional" runat="server">
     <ContentTemplate>
