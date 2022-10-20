@@ -21,42 +21,33 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-export type SignatureDocumentTemplateBag = {
-    /** Gets or sets the type of the Rock.Model.BinaryFile. */
-    binaryFileType?: ListItemBag | null;
-
-    /** The System Communication that will be used when sending the signature document completion email. */
-    completionSystemCommunication?: ListItemBag | null;
-
-    /** Gets or sets a user defined description or summary about the SignatureDocumentTemplate. */
-    description?: string | null;
-
-    /** The term used to simply describe the document (wavier, release form, etc.). */
-    documentTerm?: string | null;
-
-    /** Gets or sets a flag indicating if this item is active or not. */
+export type WebFarmSettingsBag = {
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** The Lava template that will be used to build the signature document. */
-    lavaTemplate?: string | null;
+    /** Gets or sets the web farm key. */
+    webFarmKey?: string | null;
 
-    /** Gets or sets the friendly Name of the SignatureDocumentTemplate. This property is required. */
-    name?: string | null;
+    /** Gets or sets the lower polling limit. */
+    lowerPollingLimit: number;
 
-    /** Gets or sets the type of the entity. */
-    providerEntityType?: ListItemBag | null;
+    /** Gets or sets the upper polling limit. */
+    upperPollingLimit: number;
 
-    /** Gets or sets the provider template key. */
-    providerTemplateKey?: string | null;
+    /** Gets or sets the maximum polling wait seconds. */
+    maxPollingWaitSeconds: number;
 
-    /** Gets or sets the type of the signature. */
-    signatureType?: string | null;
+    /** Gets or sets the minimun polling difference. */
+    minimumPollingDifference: number;
 
-    /** Gets or sets the signature input types. */
-    signatureInputTypes?: ListItemBag[] | null;
+    /** Gets or sets the nodes. */
+    nodes?: WebFarmNodeBag[] | null;
+
+    /** Gets or sets a value indicating whether this instance is in memory transport. */
+    isInMemoryTransport: boolean;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

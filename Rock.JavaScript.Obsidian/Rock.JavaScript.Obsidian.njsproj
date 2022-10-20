@@ -126,6 +126,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
@@ -521,8 +522,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmMetricBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\webFarmSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\webFarmSettingsDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionFilterSettingsBag.d.ts" />

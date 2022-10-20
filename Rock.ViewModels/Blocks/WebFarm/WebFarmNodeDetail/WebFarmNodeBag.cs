@@ -58,6 +58,14 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
         public DateTime LastSeenDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the human readable last seen.
+        /// </summary>
+        /// <value>
+        /// The human readable last seen.
+        /// </value>
+        public string HumanReadableLastSeen { get; set; }
+
+        /// <summary>
         /// Gets or sets a Node Name.
         /// </summary>
         public string NodeName { get; set; }

@@ -53,6 +53,9 @@
     <Content Include="src\Core\tagDetail.vue" />
     <Content Include="src\Core\TagDetail\editPanel.partial.vue" />
     <Content Include="src\Core\TagDetail\viewPanel.partial.vue" />
+    <Content Include="src\WebFarm\webFarmSettings.vue" />
+    <Content Include="src\WebFarm\WebFarmSettings\editPanel.partial.vue" />
+    <Content Include="src\WebFarm\WebFarmSettings\viewPanel.partial.vue" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +98,7 @@
     <Folder Include="src\Utility\" />
     <Folder Include="src\WebFarm\" />
     <Folder Include="src\WebFarm\WebFarmNodeDetail\" />
+    <Folder Include="src\WebFarm\WebFarmSettings\" />
     <Folder Include="src\WorkFlow\" />
     <Folder Include="src\WorkFlow\FormBuilder\" />
     <Folder Include="src\WorkFlow\FormBuilder\FormBuilderDetail\" />
@@ -211,6 +215,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmNodeDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\WebFarm\WebFarmSettings\types.d.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.partial.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\configurableZone.partial.ts" />

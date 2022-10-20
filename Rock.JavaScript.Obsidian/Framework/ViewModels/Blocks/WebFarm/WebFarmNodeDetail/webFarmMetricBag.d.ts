@@ -21,12 +21,11 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/** Identifies a WebFarm metric item. */
+export type WebFarmMetricBag = {
+    /** Gets or sets the metric value date time. */
+    metricValueDateTime?: string | null;
 
-export type SignatureDocumentTemplateDetailOptionsBag = {
-    /** Gets or sets the communication templates. */
-    communicationTemplates?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating whether [show legacy external providers]. */
-    showLegacyExternalProviders: boolean;
+    /** Gets or sets the metric value. */
+    metricValue: number;
 };

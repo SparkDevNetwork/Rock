@@ -21,12 +21,5 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-export type SignatureDocumentTemplateDetailOptionsBag = {
-    /** Gets or sets the communication templates. */
-    communicationTemplates?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating whether [show legacy external providers]. */
-    showLegacyExternalProviders: boolean;
+export type WebFarmSettingsDetailOptionsBag = {
 };
