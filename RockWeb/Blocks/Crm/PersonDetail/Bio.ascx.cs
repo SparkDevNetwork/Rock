@@ -805,6 +805,25 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 $@"<dt title=""Gender"">{Person.Gender}</dt>
                 <dd class=""d-none"">Gender</dd>";
 
+            var raceAndEthnicity = new List<string>();
+
+            if ( Person.RaceValue != null )
+            {
+                raceAndEthnicity.Add( Person.RaceValue.Value );
+            }
+
+            if ( Person.EthnicityValue != null )
+            {
+                raceAndEthnicity.Add( Person.EthnicityValue.Value );
+            }
+
+            if ( raceAndEthnicity.Count > 0 )
+            {
+                lRaceAndEthnicity.Text =
+                    $@"<dt title=""Race/Ethnicity"">{raceAndEthnicity.AsDelimited("/")}</dt>
+                    <dd class=""d-none"">Race/Ethnicity</dd>";
+            }
+
             if ( Person.BirthDate.HasValue )
             {
                 if ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year )
