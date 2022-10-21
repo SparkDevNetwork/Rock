@@ -81,20 +81,20 @@ namespace Rock.Tests.UnitTests.Rest
                 originalUrl = baseUrl + Uri.EscapeDataString( filterExpressionFilter );
             }
 
-            var warmup = RockEnableQueryAttribute.ParseUrl( originalUrl, filterExpressionFilter );
+            var warmup = RockEnableQueryAttribute.ParseRawFilterFromOriginalUrl( originalUrl, filterExpressionFilter );
 
             List<double> elaspedMS = new List<double>();
             Stopwatch stopwatch = Stopwatch.StartNew();
             for ( int i = 0; i < urlCount; i++ )
             {
                 stopwatch.Restart();
-                var updatedUrl = RockEnableQueryAttribute.ParseUrl( originalUrl, filterExpressionFilter );
+                var updatedUrl = RockEnableQueryAttribute.ParseRawFilterFromOriginalUrl( originalUrl, filterExpressionFilter );
                 stopwatch.Stop();
                 elaspedMS.Add( stopwatch.Elapsed.TotalMilliseconds );
             }
 
             var averageMS = elaspedMS.Average();
-            
+
             const double maxExpectedMS = 0.25;
 
             Assert.IsTrue( averageMS < maxExpectedMS );
@@ -134,7 +134,7 @@ namespace Rock.Tests.UnitTests.Rest
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747+09:00'",
             "ModifiedDateTime eq 2022-10-04T10:56:50.747+09:00" )]
-        public void DidParseCorrectlyTest( string originalFilter, string expectedResult )
+        public void FilterDidParseCorrectlyTest( string originalFilter, string expectedResult )
         {
             var tzDefault = RockDateTime.OrgTimeZoneInfo;
 
@@ -148,12 +148,12 @@ namespace Rock.Tests.UnitTests.Rest
                 RockDateTime.Initialize( tzTest );
 
                 string originalUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={originalFilter}" );
-                var actualResultUrlEncoded = RockEnableQueryAttribute.ParseUrl( originalUrlUrlEncoded, originalFilter );
+                var actualResultUrlEncoded = RockEnableQueryAttribute.ParseRawFilterFromOriginalUrl( originalUrlUrlEncoded, originalFilter );
                 string expectedUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={expectedResult}" );
                 Assert.AreEqual( actualResultUrlEncoded, expectedUrlUrlEncoded );
 
                 string originalUrlUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={originalFilter}" );
-                var actualResultUriEscapeUriString = RockEnableQueryAttribute.ParseUrl( originalUrlUriEscapeUriString, originalFilter );
+                var actualResultUriEscapeUriString = RockEnableQueryAttribute.ParseRawFilterFromOriginalUrl( originalUrlUriEscapeUriString, originalFilter );
                 string expectedUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={expectedResult}" );
                 Assert.AreEqual( actualResultUriEscapeUriString, expectedUriEscapeUriString );
             }
@@ -161,7 +161,18 @@ namespace Rock.Tests.UnitTests.Rest
             {
                 RockDateTime.Initialize( tzDefault );
             }
-            
+        }
+
+        [TestMethod]
+        [DataRow(
+            "PersonAlias/Person",
+            "PersonAlias($expand=Person)" )]
+        public void ExpandDidParseCorrectlyTest( string originalExpand, string expectedResult )
+        {
+            string originalUrl = $"api/PackageVersionRatings?$expand={originalExpand}";
+            var actualResultUrl = RockEnableQueryAttribute.ParseSelectExpandFromOriginalUrl( originalUrl, originalExpand, RockEnableQueryAttribute.SelectExpandType.Expand );
+            string expectedUrl = $"api/PackageVersionRatings?$expand={expectedResult}";
+            Assert.AreEqual( actualResultUrl, expectedUrl );
         }
     }
 }
