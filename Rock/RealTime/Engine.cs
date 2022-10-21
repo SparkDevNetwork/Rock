@@ -38,16 +38,6 @@ namespace Rock.RealTime
         private readonly Lazy<List<TopicConfiguration>> _registeredTopics;
 
         /// <summary>
-        /// The topics that each client connection has connected to.
-        /// </summary>
-        private readonly Dictionary<string, HashSet<string>> _clientTopics = new Dictionary<string, HashSet<string>>();
-
-        /// <summary>
-        /// The lock object for <see cref="_clientTopics"/>.
-        /// </summary>
-        private readonly object _clientTopicsLock = new object();
-
-        /// <summary>
         /// The various state holder dictionaries for connections. This
         /// are valid for the entire lifetime of the connection.
         /// </summary>
@@ -164,7 +154,6 @@ namespace Rock.RealTime
         /// <returns><c>true</c> if the topic was found and connected, <c>false</c> otherwise.</returns>
         public async Task<bool> ConnectToTopic( object realTimeHub, string topicIdentifier, string connectionIdentifier )
         {
-            bool isNewConnect = false;
             var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
 
             if ( topicInstance == null )
@@ -172,26 +161,22 @@ namespace Rock.RealTime
                 return false;
             }
 
-            // Testing shows that on average this operation, including the lock,
-            // takes about 0.005ms so it is safe to use lock in this case.
-            // A concurrent dictionary does not work because we have a mutable
-            // value which is not thread-safe.
-            lock ( _clientTopicsLock )
-            {
-                if ( _clientTopics.TryGetValue( connectionIdentifier, out var topicIdentifiers ) )
-                {
-                    isNewConnect = topicIdentifiers.Add( topicIdentifier );
-                }
-                else
-                {
-                    _clientTopics.Add( connectionIdentifier, new HashSet<string> { topicIdentifier } );
-                    isNewConnect = true;
-                }
-            }
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            var isNewConnect = state.ConnectedTopics.TryAdd( topicIdentifier, true );
 
             if ( isNewConnect )
             {
-                await topicInstance.OnConnectedAsync();
+                try
+                {
+                    await topicInstance.OnConnectedAsync();
+                }
+                catch ( Exception ex )
+                {
+                    state.ConnectedTopics.TryRemove( topicIdentifier, out _ );
+
+                    throw ex;
+                }
             }
 
             return true;
@@ -217,18 +202,14 @@ namespace Rock.RealTime
         /// <param name="connectionIdentifier">The identifier of the connection that has disconnected.</param>
         public virtual async Task ClientDisconnectedAsync( object realTimeHub, string connectionIdentifier )
         {
-            HashSet<string> topicIdentifiers;
             var exceptions = new List<Exception>();
 
-            lock ( _clientTopicsLock )
-            {
-                if ( !_clientTopics.TryGetValue( connectionIdentifier, out topicIdentifiers ) )
-                {
-                    return;
-                }
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-                _clientTopics.Remove( connectionIdentifier );
-            }
+            // This is multi-thread safe enough since a client shouldn't be able
+            // to send any messages once the Disconnected event has been triggered.
+            var topicIdentifiers = state.ConnectedTopics.Keys.ToList();
+            state.ConnectedTopics.Clear();
 
             foreach ( var topicIdentifier in topicIdentifiers )
             {

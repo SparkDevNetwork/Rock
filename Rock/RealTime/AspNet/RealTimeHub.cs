@@ -55,6 +55,13 @@ namespace Rock.RealTime.AspNet
         {
             object topicInstance;
 
+            var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( Context.ConnectionId );
+
+            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
+            {
+                throw new HubException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
+            }
+
             topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
 
             if ( topicInstance == null )

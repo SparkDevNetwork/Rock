@@ -963,6 +963,7 @@
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
     <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
+    <Compile Include="RealTime\EngineConnectionState.cs" />
     <Compile Include="RealTime\IContextExtensions.cs" />
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
