@@ -25,6 +25,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BinaryFile View Model */
 export type BinaryFileBag = {
+    /** Gets or sets additional information for the file. */
+    additionalInformation?: string | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
@@ -72,6 +75,12 @@ export type BinaryFileBag = {
 
     /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
+
+    /** Gets or sets the parent Entity ID to determine security access. */
+    parentEntityId?: number | null;
+
+    /** Gets or sets the Parent EntityType ID to determine security access. */
+    parentEntityTypeId?: number | null;
 
     /** Gets or sets a path to the file that is understandable by the storage provider. */
     path?: string | null;

@@ -104,6 +104,9 @@ export type WorkflowActionFormBag = {
     /** Gets or sets the person entry email entry option. */
     personEntryEmailEntryOption: number;
 
+    /** Gets or sets the person entry ethnicity entry option. */
+    personEntryEthnicityEntryOption: number;
+
     /** Gets or sets the person entry family attribute unique identifier. (The one used to set the Added/Edited Person's Family to) */
     personEntryFamilyAttributeGuid?: Guid | null;
 
@@ -130,6 +133,9 @@ export type WorkflowActionFormBag = {
 
     /** Gets or sets the person entry preHTML. */
     personEntryPreHtml?: string | null;
+
+    /** Gets or sets the person entry race entry option. */
+    personEntryRaceEntryOption: number;
 
     /** Gets or sets the person entry record status value identifier. */
     personEntryRecordStatusValueId?: number | null;
