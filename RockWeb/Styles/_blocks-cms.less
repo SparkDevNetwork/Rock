@@ -596,3 +596,39 @@
     margin-left: @grid-gutter-width;
   }
 }
+
+.requirement-item {
+  margin-bottom: @grid-gutter-width;
+}
+
+.alert-requirement {
+  height: 100%;
+  display: flex;
+  margin: 0;
+
+  .icon {
+    margin: 8px 12px 0 0;
+    font-size: 24px;
+  }
+
+  .requirement-title {
+    margin: 0 4px 0 0;
+  }
+
+  .requirement-summary,
+  .list-requirements {
+    font-size: 14px;
+  }
+
+  .requirement-message {
+    margin-bottom: 12px;
+  }
+
+  .list-requirements {
+    margin: 12px 0 0;
+    font-weight: 500;
+    a {
+      border-bottom: none;
+    }
+  } 
+}
