@@ -80,6 +80,9 @@ export type PersonBag = {
     /** Gets or sets the email preference. */
     emailPreference: number;
 
+    /** Gets or sets the Id of the Ethnicity Rock.Model.DefinedValue representing the ethnicity of this person */
+    ethnicityValueId?: number | null;
+
     /** Gets or sets the first name of the Person. */
     firstName?: string | null;
 
@@ -163,6 +166,9 @@ export type PersonBag = {
      * Note: This is computed on save, so any manual changes to this will be ignored.
      */
     primaryFamilyId?: number | null;
+
+    /** Gets or sets the Id of the Race Rock.Model.DefinedValue representing the race of this person */
+    raceValueId?: number | null;
 
     /** Gets or sets the record status last modified date time. */
     recordStatusLastModifiedDateTime?: string | null;

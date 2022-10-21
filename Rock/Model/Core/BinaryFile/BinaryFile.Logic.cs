@@ -127,6 +127,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Checks the parent entity to see if the user has view access.
+        /// </summary>
+        /// <returns><c>true</c> if allow, <c>false</c> if not allowed, <c>null</c> if there isn't a parent entity to check.</returns>
+        public bool? ParentEntityAllowsView( Person person )
+        {
+            if ( !this.ParentEntityTypeId.HasValue || !this.ParentEntityId.HasValue )
+            {
+                return null;
+            }
+
+            var entityType = Rock.Web.Cache.EntityTypeCache.Get( this.ParentEntityTypeId.Value )?.GetEntityType();
+            if ( entityType != null )
+            {
+                var parentEntity = Rock.Reflection.GetIEntityForEntityType( entityType, this.ParentEntityId.Value ) as Rock.Security.ISecured;
+                if ( parentEntity != null && !parentEntity.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the URL.
         /// </summary>
         /// <value>
