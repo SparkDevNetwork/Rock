@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,24 +107,38 @@ namespace Rock.RealTime.AspNet
                 throw new HubException( $"Incorrect parameters passed to message '{messageName}'." );
             }
 
-            var result = mi.Invoke( topicInstance, parms );
-
-            if ( result is Task resultTask )
+            try
             {
-                await resultTask;
+                var result = mi.Invoke( topicInstance, parms );
 
-                // Task<T> is not covariant, so we can't just cast to Task<object>.
-                if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                if ( result is Task resultTask )
                 {
-                    result = ( ( dynamic ) resultTask ).Result;
+                    await resultTask;
+
+                    // Task<T> is not covariant, so we can't just cast to Task<object>.
+                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                    {
+                        result = ( ( dynamic ) resultTask ).Result;
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
+
+                return result;
+            }
+            catch ( TargetInvocationException ex )
+            {
+                if ( ex.InnerException is RealTimeException )
+                {
+                    throw new HubException( ex.InnerException.Message );
                 }
                 else
                 {
-                    result = null;
+                    throw ex.InnerException;
                 }
             }
-
-            return result;
         }
 
         /// <summary>
