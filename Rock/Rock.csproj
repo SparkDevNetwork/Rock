@@ -910,9 +910,19 @@
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\ReminderType\NotificationType.cs" />
+    <Compile Include="Model\Core\ReminderType\ReminderType.cs" />
+    <Compile Include="Model\Core\ReminderType\ReminderTypeService.cs" />
+    <Compile Include="Model\Core\Reminder\Reminder.cs" />
+    <Compile Include="Model\Core\Reminder\Reminder.Logic.cs" />
+    <Compile Include="Model\Core\Reminder\Reminder.SaveHook.cs" />
+    <Compile Include="Model\Core\Reminder\ReminderDTO.cs" />
+    <Compile Include="Model\Core\Reminder\ReminderService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
     <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.cs" />
@@ -981,6 +991,7 @@
     <Compile Include="RealTime\AspNet\RealTimeHub.cs" />
     <Compile Include="RealTime\TopicProxyFactory.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
     <Compile Include="SystemGuid\EntityTypeGuidAttribute.cs" />

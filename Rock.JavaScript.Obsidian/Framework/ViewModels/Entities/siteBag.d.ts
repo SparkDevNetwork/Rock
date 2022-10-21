@@ -39,6 +39,12 @@ export type SiteBag = {
     /** Gets or sets a value indicating whether [allow indexing]. */
     allowIndexing: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the change password page identifier. */
     changePasswordPageId?: number | null;
 
@@ -56,6 +62,12 @@ export type SiteBag = {
 
     /** Gets or sets the configuration tablet binary file identifier. */
     configurationMobileTabletBinaryFileId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the Id of the Site's default Rock.Model.Page. */
     defaultPageId?: number | null;
@@ -105,6 +117,9 @@ export type SiteBag = {
     /** Gets or sets the Google analytics code. */
     googleAnalyticsCode?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the index starting location. */
     indexStartingLocation?: string | null;
 
@@ -131,6 +146,12 @@ export type SiteBag = {
 
     /** Gets or sets the mobile page identifier. */
     mobilePageId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the Site. This property is required. */
     name?: string | null;
@@ -170,25 +191,4 @@ export type SiteBag = {
 
     /** Gets or sets the thumbnail binary file identifier. */
     thumbnailBinaryFileId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

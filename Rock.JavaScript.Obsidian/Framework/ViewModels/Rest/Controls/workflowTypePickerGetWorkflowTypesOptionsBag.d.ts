@@ -29,42 +29,10 @@ import { Guid } from "@Obsidian/Types";
  */
 export type WorkflowTypePickerGetWorkflowTypesOptionsBag = {
     /**
-     * Gets or sets the parent unique identifier whose children are to
-     * be retrieved. If null then the root items are being requested.
-     */
-    parentGuid?: Guid | null;
-
-    /**
-     * Gets or sets a value indicating whether items should be loaded
-     * or only categories.
-     */
-    getCategorizedItems: boolean;
-
-    /**
-     * Gets or sets a value indicating whether entity items without a name
-     * should be included in the results. Only applies if
-     * Rock.ViewModels.Rest.Controls.WorkflowTypePickerGetWorkflowTypesOptionsBag.GetCategorizedItems is true.
-     */
-    includeUnnamedEntityItems: boolean;
-
-    /**
-     * Gets or sets a value indicating whether categories that have no
-     * child categories and no items should be included.
-     */
-    includeCategoriesWithoutChildren: boolean;
-
-    /**
      * Gets or sets the default icon CSS class to use for items that do not
      * specify their own IconCssClass value.
      */
     defaultIconCssClass?: string | null;
-
-    /**
-     * Gets or sets a value indicating whether inactive items should be
-     * included in the results. If the entity type does not support the
-     * IsActive property then this value will be ignored.
-     */
-    includeInactiveItems: boolean;
 
     /**
      * Gets or sets the item property value to compare against. This should
@@ -74,6 +42,32 @@ export type WorkflowTypePickerGetWorkflowTypesOptionsBag = {
     entityTypeGuidFilter?: Guid | null;
 
     /**
+     * Gets or sets a value indicating whether items should be loaded
+     * or only categories.
+     */
+    getCategorizedItems: boolean;
+
+    /**
+     * Gets or sets a value indicating whether categories that have no
+     * child categories and no items should be included.
+     */
+    includeCategoriesWithoutChildren: boolean;
+
+    /**
+     * Gets or sets a value indicating whether inactive items should be
+     * included in the results. If the entity type does not support the
+     * IsActive property then this value will be ignored.
+     */
+    includeInactiveItems: boolean;
+
+    /**
+     * Gets or sets a value indicating whether entity items without a name
+     * should be included in the results. Only applies if
+     * Rock.ViewModels.Rest.Controls.WorkflowTypePickerGetWorkflowTypesOptionsBag.GetCategorizedItems is true.
+     */
+    includeUnnamedEntityItems: boolean;
+
+    /**
      * Gets or sets a value indicating whether child categories and items
      * are loaded automatically. If true then all descendant categories
      * will be loaded along with the items if Rock.ViewModels.Rest.Controls.WorkflowTypePickerGetWorkflowTypesOptionsBag.GetCategorizedItems
@@ -81,6 +75,12 @@ export type WorkflowTypePickerGetWorkflowTypesOptionsBag = {
      * being null to indicate they must be loaded on demand.
      */
     lazyLoad: boolean;
+
+    /**
+     * Gets or sets the parent unique identifier whose children are to
+     * be retrieved. If null then the root items are being requested.
+     */
+    parentGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

@@ -31,17 +31,32 @@ export type AssessmentTypeBag = {
     /** Gets or sets the AssessmentResultsPath of the Rock.Model.Assessment or the Rock.Model.AssessmentType if no requestor required. */
     assessmentResultsPath?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the color of the badge. */
     badgeColor?: string | null;
 
     /** Gets or sets the badge summary lava. */
     badgeSummaryLava?: string | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Description of the Rock.Model.AssessmentType */
     description?: string | null;
 
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the IsActive flag for the Rock.Model.AssessmentType. */
     isActive: boolean;
@@ -51,6 +66,12 @@ export type AssessmentTypeBag = {
 
     /** Gets or sets the number of days given for the Rock.Model.AssessmentType. to be retaken. */
     minimumDaysToRetake: number;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the RequiresRequest flag for the Rock.Model.AssessmentType. */
     requiresRequest: boolean;
@@ -63,25 +84,4 @@ export type AssessmentTypeBag = {
      * How long (in days) is this assessment valid before it must be taken again.
      */
     validDuration: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

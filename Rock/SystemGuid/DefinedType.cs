@@ -454,6 +454,16 @@ namespace Rock.SystemGuid
         public const string APPLE_DEVICE_MODELS = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C";
 
         /// <summary>
+        /// A person's race
+        /// </summary>
+        public const string PERSON_RACE = "A6E2518F-8DBB-4C60-BA17-05768EC68EA5";
+
+        /// <summary>
+        /// A person's ethnicity
+        /// </summary>
+        public const string PERSON_ETHNICITY = "79C8AA9A-507C-454B-AFC8-7A9464298A6E";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

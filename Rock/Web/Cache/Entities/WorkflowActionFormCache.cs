@@ -125,6 +125,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRaceEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryRaceEntryOption { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryEthnicityEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryEthnicityEntryOption { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntrySpouseLabel"/>
         [DataMember]
         public string PersonEntrySpouseLabel { get; private set; }

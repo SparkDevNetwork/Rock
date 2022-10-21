@@ -28,6 +28,18 @@ export type UserLoginBag = {
     /** Gets or sets the API key associated with the UserLogin */
     apiKey?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType for the authentication service that this UserLogin user will use. */
     entityTypeId?: number | null;
 
@@ -36,6 +48,9 @@ export type UserLoginBag = {
 
     /** Gets or sets the failed password attempt window start date time. */
     failedPasswordAttemptWindowStartDateTime?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if the UserLogin has been confirmed. */
     isConfirmed?: boolean | null;
@@ -64,6 +79,12 @@ export type UserLoginBag = {
     /** Gets or sets the last time that user was notified about their password expiring. */
     lastPasswordExpirationWarningDateTime?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes */
     password?: string | null;
 
@@ -72,25 +93,4 @@ export type UserLoginBag = {
 
     /** Gets or sets the UserName that is associated with this UserLogin. This property is required. */
     userName?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

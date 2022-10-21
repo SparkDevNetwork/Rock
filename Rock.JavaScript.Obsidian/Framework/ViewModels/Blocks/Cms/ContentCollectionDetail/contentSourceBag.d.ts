@@ -30,28 +30,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  */
 export type ContentSourceBag = {
     /**
-     * Gets or sets the unique identifier of this content collection source
-     * record. This is not the unique identifier of the target entity.
+     * Gets or sets the attributes that are enabled for this content
+     * collection source.
      */
-    guid?: Guid | null;
-
-    /** Gets or sets the friendly name of this content collection source. */
-    name?: string | null;
-
-    /**
-     * Gets or sets the unique identifier of the entity type this source
-     * references.
-     */
-    entityTypeGuid?: Guid | null;
-
-    /** Gets or sets the unique identifier of the entity this source references. */
-    entityGuid?: Guid | null;
-
-    /**
-     * Gets or sets the CSS icon class to use when displaying this
-     * content collection source.
-     */
-    iconCssClass?: string | null;
+    attributes?: ListItemBag[] | null;
 
     /**
      * Gets or sets the CSS color to use when displaying this content
@@ -59,18 +41,36 @@ export type ContentSourceBag = {
      */
     color?: string | null;
 
+    /** Gets or sets the unique identifier of the entity this source references. */
+    entityGuid?: Guid | null;
+
     /**
-     * Gets or sets the attributes that are enabled for this content
-     * collection source.
+     * Gets or sets the unique identifier of the entity type this source
+     * references.
      */
-    attributes?: ListItemBag[] | null;
+    entityTypeGuid?: Guid | null;
+
+    /**
+     * Gets or sets the unique identifier of this content collection source
+     * record. This is not the unique identifier of the target entity.
+     */
+    guid?: Guid | null;
+
+    /**
+     * Gets or sets the CSS icon class to use when displaying this
+     * content collection source.
+     */
+    iconCssClass?: string | null;
+
+    /** Gets or sets the number of items that exist on this content collection source. */
+    itemCount: number;
+
+    /** Gets or sets the friendly name of this content collection source. */
+    name?: string | null;
 
     /**
      * Gets or sets the number of occurrences to include when indexing
      * this source.
      */
     occurrencesToShow: number;
-
-    /** Gets or sets the number of items that exist on this content collection source. */
-    itemCount: number;
 };

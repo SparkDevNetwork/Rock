@@ -41,6 +41,24 @@ export type AttributeBag = {
     /** The color to visually distinguish the attribute. For example, Rock.Model.Attribute.AttributeColor might be used to set the color for the Rock.Model.Attribute.IconCssClass of the icon. */
     attributeColor?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the category Guids. */
+    categoryGuids?: Guid[] | null;
+
+    /** Gets the configuration values that define the behavior of the attribute. */
+    configurationValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the default persisted condensed HTML value. */
     defaultPersistedCondensedHtmlValue?: string | null;
 
@@ -71,6 +89,9 @@ export type AttributeBag = {
     /** Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType. */
     entityTypeQualifierValue?: string | null;
 
+    /** Gets or sets the field type unique identifier. */
+    fieldTypeGuid?: Guid | null;
+
     /**
      * Gets or sets the FieldTypeId of the Rock.Model.FieldType that is used to select/set the Rock.Model.AttributeValue for this Attribute setting.
      * The FieldType can also be used to enforce formatting of the attribute setting. This property is required.
@@ -79,6 +100,9 @@ export type AttributeBag = {
 
     /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether this attribute is active. */
     isActive: boolean;
@@ -126,6 +150,12 @@ export type AttributeBag = {
     /** Gets sets the Key value  that is used to reference and call the Attribute. This property is required. */
     key?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Name of the Attribute. This property is required. */
     name?: string | null;
 
@@ -138,39 +168,9 @@ export type AttributeBag = {
     /** Gets or sets any HTML to be rendered before the attribute's edit control  */
     preHtml?: string | null;
 
-    /** Gets or sets a flag indicating if this attribute shows when doing a bulk entry form. */
-    showOnBulk: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the category Guids. */
-    categoryGuids?: Guid[] | null;
-
-    /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
-
-    /** Gets the configuration values that define the behavior of the attribute. */
-    configurationValues?: Record<string, string> | null;
-
     /** Gets the qualifier values. */
     qualifierValues?: Record<string, string> | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets a flag indicating if this attribute shows when doing a bulk entry form. */
+    showOnBulk: boolean;
 };

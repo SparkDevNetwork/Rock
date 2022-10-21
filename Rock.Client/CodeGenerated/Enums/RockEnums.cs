@@ -804,6 +804,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ReminderNotificationType
+    {
+        Communication = 0x0,
+        Workflow = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ReportFieldType
     {
         Property = 0x0,

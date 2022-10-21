@@ -677,6 +677,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\registrationTemplateFormFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\registrationTemplatePlacementBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\relatedEntityBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\reminderBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\reminderTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\remoteAuthenticationSessionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\reportBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\reportFieldBag.d.ts" />

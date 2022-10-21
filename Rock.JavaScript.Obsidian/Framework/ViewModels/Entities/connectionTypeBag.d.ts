@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionType View Model */
 export type ConnectionTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the connection request detail Rock.Model.Page identifier. */
     connectionRequestDetailPageId?: number | null;
 
     /** Gets or sets the connection request detail Rock.Model.PageRoute identifier. */
     connectionRequestDetailPageRouteId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the number of days until the request is considered idle. */
     daysUntilRequestIdle: number;
@@ -52,8 +64,17 @@ export type ConnectionTypeBag = {
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -72,25 +93,4 @@ export type ConnectionTypeBag = {
 
     /** Gets or sets a value indicating whether this connection type requires a placement group to connect. */
     requiresPlacementGroupToConnect: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

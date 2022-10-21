@@ -338,6 +338,89 @@ This can be due to multiple threads updating the same attribute at the same time
             return true;
         }
 
+        /// <summary>
+        /// Ensures the attributes from the component are configured for this
+        /// entity. This handles the situation where the attributes are defined
+        /// on a component but need to be applied to an entity that is using
+        /// that component.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// Helper.EnsureComponentInstanceAttributes( financialGateway, fg =&gt; fg.EntityTypeId, rockContext );
+        /// </code>
+        /// </example>
+        /// <param name="entity">The entity the component attributes should be setup for.</param>
+        /// <param name="navigationExpression">The expression to use to find the component entity type identifier.</param>
+        /// <param name="rockContext">The rock context to use when updating the database.</param>
+        internal static void EnsureComponentInstanceAttributes<TEntity>( TEntity entity, Expression<Func<TEntity, int?>> navigationExpression, RockContext rockContext )
+            where TEntity : IEntity
+        {
+            if ( !( navigationExpression.Body is MemberExpression memberExpression ) || !( memberExpression.Member is PropertyInfo ) )
+            {
+                throw new ArgumentException( "Expression must evaluate to a valid property.", nameof( navigationExpression ) );
+            }
+
+            var componentEntityTypeId = navigationExpression.Compile().Invoke( entity );
+
+            if ( !componentEntityTypeId.HasValue )
+            {
+                return;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+
+            if ( componentEntityType == null )
+            {
+                return;
+            }
+
+            UpdateAttributes(
+                componentEntityType.GetEntityType(),
+                entity.TypeId,
+                memberExpression.Member.Name,
+                componentEntityType.Id.ToString(),
+                rockContext );
+        }
+
+        /// <summary>
+        /// Ensures the attributes from the component are configured for this
+        /// entity. This handles the situation where the attributes are defined
+        /// on a component but need to be applied to an entity that is using
+        /// that component.
+        /// </summary>
+        /// <param name="entity">The entity the component attributes should be setup for.</param>
+        /// <param name="navigationExpression">The expression to use to find the component entity type identifier.</param>
+        /// <param name="rockContext">The rock context to use when updating the database.</param>
+        internal static void EnsureComponentInstanceAttributes<TEntity>( TEntity entity, Expression<Func<TEntity, int>> navigationExpression, RockContext rockContext )
+            where TEntity : IEntity
+        {
+            if ( !( navigationExpression.Body is MemberExpression memberExpression ) || !( memberExpression.Member is PropertyInfo ) )
+            {
+                throw new ArgumentException( "Expression must evaluate to a valid property.", nameof( navigationExpression ) );
+            }
+
+            var componentEntityTypeId = navigationExpression.Compile().Invoke( entity );
+
+            if ( componentEntityTypeId == 0 )
+            {
+                return;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( componentEntityTypeId );
+
+            if ( componentEntityType == null )
+            {
+                return;
+            }
+
+            UpdateAttributes(
+                componentEntityType.GetEntityType(),
+                entity.TypeId,
+                memberExpression.Member.Name,
+                componentEntityType.Id.ToString(),
+                rockContext );
+        }
+
         #region Load Attributes and Values
 
         /// <summary>

@@ -37,8 +37,20 @@ export type NoteBag = {
     /** Gets or sets the approved date. */
     approvedDateTime?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the caption */
     caption?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the person alias that last edited the note text. Use this instead of ModifiedByPersonAliasId to determine the last person to edit the note text */
     editedByPersonAliasId?: number | null;
@@ -49,6 +61,9 @@ export type NoteBag = {
     /** Gets or sets the Id of the entity that this note is related to. */
     entityId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this note is an alert. */
     isAlert?: boolean | null;
 
@@ -57,6 +72,12 @@ export type NoteBag = {
 
     /** Gets or sets a flag indicating if this note is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.NoteType. This property is required. */
     noteTypeId: number;
@@ -72,25 +93,4 @@ export type NoteBag = {
 
     /** Gets or sets the text/body of the note. */
     text?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

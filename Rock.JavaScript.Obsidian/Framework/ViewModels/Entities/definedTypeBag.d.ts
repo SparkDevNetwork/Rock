@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DefinedType View Model */
 export type DefinedTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a flag indicating if the Defined Values associated with this Defined Type can be grouped into categories. */
     categorizedValuesEnabled?: boolean | null;
 
     /** Gets or sets the category identifier. */
     categoryId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets a user defined description of the DefinedType. */
     description?: string | null;
@@ -47,36 +59,24 @@ export type DefinedTypeBag = {
     /** Gets or sets the help text for the defined type. */
     helpText?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this Defined Type is active. */
     isActive: boolean;
 
     /** Gets or sets a flag indicating if this DefinedType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Name of the DefinedType. */
     name?: string | null;
 
     /** Gets or sets the display order of this DefinedType.  The lower the number the higher the display priority.  This property is required. */
     order: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

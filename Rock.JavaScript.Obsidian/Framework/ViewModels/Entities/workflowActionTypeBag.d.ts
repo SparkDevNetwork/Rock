@@ -29,6 +29,18 @@ export type WorkflowActionTypeBag = {
     /** Gets or sets the ActivityTypeId of the Rock.Model.WorkflowActivityType that performs this Action Type. */
     activityTypeId: number;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the criteria attribute unique identifier. */
     criteriaAttributeGuid?: Guid | null;
 
@@ -41,11 +53,20 @@ export type WorkflowActionTypeBag = {
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that the action is operating against. */
     entityTypeId: number;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is action completed on success. */
     isActionCompletedOnSuccess: boolean;
 
     /** Gets or sets a value indicating whether this instance is activity completed on success. */
     isActivityCompletedOnSuccess: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the friendly name of the ActionType */
     name?: string | null;
@@ -55,25 +76,4 @@ export type WorkflowActionTypeBag = {
 
     /** Gets or sets the workflow form identifier. */
     workflowFormId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

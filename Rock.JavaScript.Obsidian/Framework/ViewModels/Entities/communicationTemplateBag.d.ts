@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationTemplate View Model */
 export type CommunicationTemplateBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the BCC emails. */
     bCCEmails?: string | null;
 
@@ -33,6 +39,12 @@ export type CommunicationTemplateBag = {
 
     /** Gets or sets the cc emails. */
     cCEmails?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets a value indicating whether [CSS inlining enabled]. */
     cssInliningEnabled: boolean;
@@ -45,6 +57,9 @@ export type CommunicationTemplateBag = {
 
     /** Gets or sets from name. */
     fromName?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the image file identifier for the Template Preview Image */
     imageFileId?: number | null;
@@ -66,6 +81,12 @@ export type CommunicationTemplateBag = {
 
     /** Gets or sets the message meta data. */
     messageMetaData?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the Communication Template */
     name?: string | null;
@@ -105,25 +126,4 @@ export type CommunicationTemplateBag = {
 
     /** Gets or sets the name of the Communication */
     subject?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

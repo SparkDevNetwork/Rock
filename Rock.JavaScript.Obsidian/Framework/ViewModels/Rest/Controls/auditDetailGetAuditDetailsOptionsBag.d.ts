@@ -28,14 +28,14 @@ import { Guid } from "@Obsidian/Types";
  * the AuditDetail control.
  */
 export type AuditDetailGetAuditDetailsOptionsBag = {
-    /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
-
     /**
      * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.AuditDetailGetAuditDetailsOptionsBag.EntityTypeGuid
      * to locate the entity.
      */
     entityKey?: string | null;
+
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

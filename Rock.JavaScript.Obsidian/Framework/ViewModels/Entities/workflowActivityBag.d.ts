@@ -40,33 +40,33 @@ export type WorkflowActivityBag = {
     /** Gets or sets the assigned person alias identifier. */
     assignedPersonAliasId?: number | null;
 
-    /** Gets or sets the date and time that this WorkflowActivity completed. */
-    completedDateTime?: string | null;
-
-    /** Gets or sets the date and time that this WorkflowActivity was last processed. */
-    lastProcessedDateTime?: string | null;
-
-    /** Gets or sets the WorkflowId of the Rock.Model.Workflow instance that is performing this WorkflowActivity. */
-    workflowId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the date and time that this WorkflowActivity completed. */
+    completedDateTime?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the date and time that this WorkflowActivity was last processed. */
+    lastProcessedDateTime?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
+    /** Gets or sets the WorkflowId of the Rock.Model.Workflow instance that is performing this WorkflowActivity. */
+    workflowId: number;
 };
