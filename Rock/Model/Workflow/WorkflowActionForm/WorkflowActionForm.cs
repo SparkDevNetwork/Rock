@@ -233,6 +233,24 @@ namespace Rock.Model
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
 
         /// <summary>
+        /// Gets or sets the person entry race entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryRaceEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
+        /// Gets or sets the person entry ethnicity entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryEthnicityEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
         /// Gets or sets the person entry spouse label.
         /// </summary>
         /// <value>
