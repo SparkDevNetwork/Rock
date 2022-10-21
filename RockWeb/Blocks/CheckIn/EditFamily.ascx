@@ -209,7 +209,12 @@
                                 <div class="col-md-6" style="min-height:auto;">
                                     <Rock:RockTextBox ID="tbAlternateID" runat="server" Label="Alternate ID" CssClass="js-alternate-id" ValidationGroup="vgEditPerson" />
                                 </div>
-
+                                <div class="col-md-6" style="min-height:auto;">
+                                    <Rock:RacePicker ID="rpRace" runat="server" />
+                                </div>
+                                <div class="col-md-6" style="min-height:auto;">
+                                    <Rock:EthnicityPicker ID="epEthnicity" runat="server" />
+                                </div>
                             </div>
 
                             <%-- Person Attributes editing an Adult --%>

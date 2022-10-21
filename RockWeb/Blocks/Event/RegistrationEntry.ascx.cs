@@ -3144,6 +3144,18 @@ namespace RockWeb.Blocks.Event
                                     History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                                     person.ConnectionStatusValueId = newConnectionStatusId;
                                     break;
+
+                                case RegistrationPersonFieldType.Race:
+                                    var raceValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( person.RaceValueId ), DefinedValueCache.GetName( raceValueId ) );
+                                    person.RaceValueId = raceValueId;
+                                    break;
+
+                                case RegistrationPersonFieldType.Ethnicity:
+                                    var ethnicityValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( person.EthnicityValueId ), DefinedValueCache.GetName( ethnicityValueId ) );
+                                    person.EthnicityValueId = ethnicityValueId;
+                                    break;
                             }
                         }
                     }

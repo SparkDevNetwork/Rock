@@ -96,6 +96,16 @@ namespace Rock.Model
         /// The anniversary date
         /// </summary>
         AnniversaryDate = 14,
+
+        /// <summary>
+        /// The race
+        /// </summary>
+        Race = 15,
+
+        /// <summary>
+        /// The ethnicity
+        /// </summary>
+        Ethnicity = 16,
     }
 
 

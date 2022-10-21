@@ -82,12 +82,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [CustomDropdownListField (
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 4 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 5 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-
         #region Attribute Keys and Values
 
         private static class AttributeKey
@@ -96,6 +113,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string HideAnniversaryDate = "HideAnniversaryDate";
             public const string SearchKeyTypes = "SearchKeyTypes";
             public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         private static class ListSource
@@ -119,6 +138,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         AND AV.[Id] IS NULL
         ORDER BY V.[Order]
 ";
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
         }
 
         #endregion Attribute Keys and Values
@@ -256,6 +276,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 ShowDetails();
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         /// <summary>
@@ -274,6 +296,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 bpBirthDay.RequireYear = false;
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         #region View State related stuff
@@ -454,6 +478,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+
+                        if ( rpRace.Visible )
+                        {
+                            person.RaceValueId = rpRace.SelectedValueAsId();
+                        }
+
+                        if ( epEthnicity.Visible )
+                        {
+                            person.EthnicityValueId = epEthnicity.SelectedValueAsId();
+                        }
 
                         var phoneNumberTypeIds = new List<int>();
 
@@ -873,6 +907,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
             lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
 
+            rpRace.SetValue( Person.RaceValueId );
+            epEthnicity.SetValue( Person.EthnicityValueId );
+
             ddlRecordStatus_SelectedIndexChanged( null, null );
             dvpReason_SelectedIndexChanged( null, null );
 
@@ -1175,6 +1212,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     args.IsValid = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows or hides the RacePicker and EthnicityPicker according to settings and business rules.
+        /// </summary>
+        protected void ShowOrHideEthnicityAndRace()
+        {
+            var raceOptionAttributeValue = GetAttributeValue( AttributeKey.RaceOption );
+            var ethnicityOptionAttributeValue = GetAttributeValue( AttributeKey.EthnicityOption );
+
+            rpRace.Visible = raceOptionAttributeValue != "Hide";
+            rpRace.Required = raceOptionAttributeValue == "Required";
+
+            epEthnicity.Visible = ethnicityOptionAttributeValue != "Hide";
+            epEthnicity.Required = ethnicityOptionAttributeValue == "Required";
         }
     }
 }

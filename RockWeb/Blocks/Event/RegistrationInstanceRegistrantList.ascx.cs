@@ -373,6 +373,24 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
+
+                            case RegistrationPersonFieldType.Race:
+                                var rpRaceFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_RACE_ID ) as RacePicker;
+                                if ( rpRaceFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Race, rpRaceFilter.SelectedValue );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Ethnicity:
+                                var epEthnicityFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ETHNICITY_ID ) as EthnicityPicker;
+                                if ( epEthnicityFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Ethnicity, epEthnicityFilter.SelectedValue );
+                                }
+
+                                break;
                         }
                     }
 
@@ -861,6 +879,34 @@ namespace RockWeb.Blocks.Event
                     {
                         workPhoneField.Text = workPhoneNumber.IsUnlisted ? "Unlisted" : workPhoneNumber.NumberFormatted;
                     }
+                }
+            }
+
+            // Set the registrant race
+            var lRace= e.Row.FindControl( "lRace" ) as Literal;
+            if ( lRace != null )
+            {
+                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
+                {
+                    lRace.Text = registrant.PersonAlias.Person.RaceValue?.Value;
+                }
+                else
+                {
+                    lRace.Text = string.Empty;
+                }
+            }
+
+            // Set the registrant ethnicity
+            var lEthnicity = e.Row.FindControl( "lEthnicity" ) as Literal;
+            if ( lEthnicity != null )
+            {
+                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
+                {
+                    lEthnicity.Text = registrant.PersonAlias.Person.EthnicityValue?.Value;
+                }
+                else
+                {
+                    lEthnicity.Text = string.Empty;
                 }
             }
         }
@@ -1570,6 +1616,36 @@ namespace RockWeb.Blocks.Event
                                             .Select( a => a.PersonId );
 
                                         qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Race:
+                                var rpRaceFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_RACE_ID ) as RacePicker;
+                                if ( rpRaceFilter != null )
+                                {
+                                    var raceValueId = rpRaceFilter.SelectedValue.AsIntegerOrNull();
+                                    if ( raceValueId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                           r.PersonAlias.Person.RaceValueId.HasValue &&
+                                           r.PersonAlias.Person.RaceValueId.Value == raceValueId.Value );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Ethnicity:
+                                var epEthnicityPicker = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ETHNICITY_ID ) as EthnicityPicker;
+                                if ( epEthnicityPicker != null )
+                                {
+                                    var ethnicityValueId = epEthnicityPicker.SelectedValue.AsIntegerOrNull();
+                                    if ( ethnicityValueId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                           r.PersonAlias.Person.EthnicityValueId.HasValue &&
+                                           r.PersonAlias.Person.EthnicityValueId.Value == ethnicityValueId.Value );
                                     }
                                 }
 

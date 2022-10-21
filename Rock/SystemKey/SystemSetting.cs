@@ -272,5 +272,20 @@ namespace Rock.SystemKey
         /// Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database.
         /// </summary>
         public const string PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES = "core_PersonalizationSegmentCookieAffinityDurationMinutes";
+
+        /// <summary>
+        /// Label text for the PersonRacePicker
+        /// </summary>
+        public const string PERSON_RACE_LABEL = "core_PersonRaceLabel";
+
+        /// <summary>
+        /// Label text for the PersonEthnicityPicker
+        /// </summary>
+        public const string PERSON_ETHNICITY_LABEL = "core_PersonEthnicityLabel";
+
+        /// <summary>
+        /// Label text for the PersonGenderPicker
+        /// </summary>
+        public const string PERSON_GENDER_LABEL = "core_GenderLabel";
     }
 }

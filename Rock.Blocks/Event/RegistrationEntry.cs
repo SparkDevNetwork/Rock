@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1815,6 +1815,26 @@ namespace Rock.Blocks.Event
 
                                 break;
                             }
+
+                        case RegistrationPersonFieldType.Race:
+                            {
+                                var newRaceValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newRaceValueId = newRaceValueGuid.HasValue ? DefinedValueCache.Get( newRaceValueGuid.Value )?.Id : null;
+                                var oldRaceValueId = person.RaceValueId;
+                                person.RaceValueId = newRaceValueId;
+                                History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( oldRaceValueId ), DefinedValueCache.GetName( person.RaceValueId ) );
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Ethnicity:
+                            {
+                                var newEthnicityValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newEthnicityValueId = newEthnicityValueGuid.HasValue ? DefinedValueCache.Get( newEthnicityValueGuid.Value )?.Id : null;
+                                var oldEthnicityValueId = person.ConnectionStatusValueId;
+                                person.EthnicityValueId = newEthnicityValueId;
+                                History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( oldEthnicityValueId ), DefinedValueCache.GetName( person.EthnicityValueId ) );
+                                break;
+                            }
                     }
                 }
             }
@@ -2596,6 +2616,24 @@ namespace Rock.Blocks.Event
                     {
                         Value = v.Guid.ToString(),
                         Text = v.GetAttributeValue( "Abbreviation" )
+                    } )
+                    .ToList(),
+                Races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList(),
+                Ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
                     } )
                     .ToList(),
 

@@ -1270,6 +1270,8 @@ namespace RockWeb.Blocks.CheckIn
                     groupMember.Person.FirstName = tbFirstName.Text;
                     groupMember.Person.LastName = tbLastName.Text;
                     groupMember.Person.SuffixValueId = dvpSuffix.SelectedValueAsId();
+                    groupMember.Person.RaceValueId = rpRace.SelectedValueAsId();
+                    groupMember.Person.EthnicityValueId = epEthnicity.SelectedValueAsId();
 
                     var role = group.GroupType.Roles.Where( r => r.Id == ( rblRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
                     if ( role != null )
@@ -1322,6 +1324,8 @@ namespace RockWeb.Blocks.CheckIn
                     person.LastName = tbLastName.Text;
                     person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                    person.RaceValueId = rpRace.SelectedValueAsId();
+                    person.EthnicityValueId = epEthnicity.SelectedValueAsId();
 
                     if ( pnlEmail.Visible )
                     {

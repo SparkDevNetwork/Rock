@@ -97,6 +97,16 @@
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
                                     </div>
                                 </div>
+
+                                <div class="form-row">
+                                    <div class="col-sm-3">
+                                        <Rock:RacePicker ID="rpRace" runat="server" />
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <Rock:EthnicityPicker ID="epEthnicity" runat="server" />
+                                    </div>
+                                </div>
+
                             </fieldset>
                         </div>
 

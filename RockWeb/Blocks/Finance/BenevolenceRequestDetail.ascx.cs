@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Finance
             Person person = persons?.FirstOrDefault();
             if ( person == null )
             {
-                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress };
+                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress, RaceValueId = rpRace.SelectedValueAsId(), EthnicityValueId = epEthnicity.SelectedValueAsId() };
                 var group = PersonService.SaveNewPerson( person, rockContext );
 
                 SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
@@ -507,6 +507,12 @@ namespace RockWeb.Blocks.Finance
                     dvpEditConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpEditConnectionStatus.Enabled = false;
 
+                    rpRace.SetValue( person.RaceValueId );
+                    rpRace.Enabled = false;
+
+                    epEthnicity.SetValue( person.EthnicityValueId );
+                    epEthnicity.Enabled = false;
+
                     var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     if ( homePhoneType != null )
                     {
@@ -567,6 +573,8 @@ namespace RockWeb.Blocks.Finance
                 ebEditEmail.Enabled = true;
                 lapEditAddress.Enabled = true;
                 lbEditCreatePerson.Visible = true;
+                rpRace.Enabled = true;
+                epEthnicity.Enabled = true;
             }
         }
 
