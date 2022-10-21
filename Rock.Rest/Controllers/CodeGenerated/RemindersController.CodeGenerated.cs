@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Reminders REST API
     /// </summary>
-    [RestControllerGuid( "8283D622-0FAC-43CE-B64D-71A7F030FC80" )]
+    [RestControllerGuid( "7AC0DBC2-C00C-41AB-9589-E6976E396369" )]
     public partial class RemindersController : Rock.Rest.ApiController<Rock.Model.Reminder>
     {
         /// <summary>

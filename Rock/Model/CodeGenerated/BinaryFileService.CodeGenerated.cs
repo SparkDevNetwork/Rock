@@ -268,6 +268,7 @@ namespace Rock.Model
             var viewModel = new BinaryFileBag
             {
                 IdKey = model.IdKey,
+                AdditionalInformation = model.AdditionalInformation,
                 BinaryFileTypeId = model.BinaryFileTypeId,
                 ContentLastModified = model.ContentLastModified,
                 Description = model.Description,
@@ -277,6 +278,8 @@ namespace Rock.Model
                 IsSystem = model.IsSystem,
                 IsTemporary = model.IsTemporary,
                 MimeType = model.MimeType,
+                ParentEntityId = model.ParentEntityId,
+                ParentEntityTypeId = model.ParentEntityTypeId,
                 Path = model.Path,
                 StorageEntitySettings = model.StorageEntitySettings,
                 Width = model.Width,
@@ -349,6 +352,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
         {
             target.Id = source.Id;
+            target.AdditionalInformation = source.AdditionalInformation;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
             target.ContentLastModified = source.ContentLastModified;
             target.Description = source.Description;
@@ -360,6 +364,8 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.IsTemporary = source.IsTemporary;
             target.MimeType = source.MimeType;
+            target.ParentEntityId = source.ParentEntityId;
+            target.ParentEntityTypeId = source.ParentEntityTypeId;
             target.Path = source.Path;
             target.StorageEntitySettings = source.StorageEntitySettings;
             target.Width = source.Width;

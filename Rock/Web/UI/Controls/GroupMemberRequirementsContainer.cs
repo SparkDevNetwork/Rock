@@ -89,6 +89,12 @@ namespace Rock.Web.UI.Controls
         #endregion ViewStateKeys
 
         /// <summary>
+        /// Have this control render as a div instead of a span
+        /// </summary>
+        /// <value>The tag key.</value>
+        protected override HtmlTextWriterTag TagKey => HtmlTextWriterTag.Div;
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -117,6 +123,8 @@ namespace Rock.Web.UI.Controls
             {
                 return;
             }
+            // set class of the parent control
+            this.AddCssClass( "group-member-requirements-container" );
 
             Controls.Clear();
 
@@ -153,18 +161,21 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var requirementCategory in requirementCategories )
             {
-                HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
-                categoryControl.AddCssClass( "row" );
                 var categoryName = requirementCategory.Name;
-
-                HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
-                columnControl.AddCssClass( "col-xs-12" );
+                var categoryId = requirementCategory.CategoryId;
+                HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
+                categoryControl.AddCssClass( "row d-flex flex-wrap requirement-category requirement-category-" + categoryId.ToString() );
+                
 
                 if ( Visible && categoryName.IsNotNullOrWhiteSpace() )
                 {
+                    HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
+                    columnControl.AddCssClass( "col-xs-12" );
+
                     HtmlGenericControl headerControl = new HtmlGenericControl( "h5" );
                     headerControl.InnerText = categoryName;
                     columnControl.Controls.Add( headerControl );
+                    categoryControl.Controls.Add( columnControl );
                 }
 
                 var currentPerson = this.RockBlock().CurrentPerson;
@@ -195,11 +206,11 @@ namespace Rock.Web.UI.Controls
                             IsInteractionDisabled = isInteractionDisabled
                         };
 
-                        columnControl.Controls.Add( card );
+                        categoryControl.Controls.Add( card );
                     }
                 }
 
-                categoryControl.Controls.Add( columnControl );
+                
                 this.Controls.Add( categoryControl );
             }
         }

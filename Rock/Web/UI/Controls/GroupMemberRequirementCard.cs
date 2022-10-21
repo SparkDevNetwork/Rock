@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
                     {
                         CausesValidation = false,
                         ID = "lbManualRequirement" + this.ClientID,
-                        Text = "<i class='fa fa-square-o fa-fw'></i>" + manualLabel,
+                        Text = "<i class='fa fa-square-o fa-fw'></i> " + manualLabel,
                     };
                     _lbManualRequirement.Click += lbManualRequirement_Click;
                     Controls.Add( _lbManualRequirement );
@@ -225,7 +225,7 @@ namespace Rock.Web.UI.Controls
                     {
                         CausesValidation = false,
                         ID = "lbMarkasMetPopup" + this.ClientID,
-                        Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
+                        Text = "<i class='fa fa-check-circle-o fa-fw'></i> Mark as Met",
                     };
                     _lbMarkAsMet.Click += lbMarkasMetPopup_Click;
                     Controls.Add( _lbMarkAsMet );
@@ -327,22 +327,16 @@ namespace Rock.Web.UI.Controls
             _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
             if ( this.Title.Trim() != string.Empty )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12 col-sm-6 col-md-4 requirement-item" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ml-1 mr-1 " + CardStatus( MeetsGroupRequirement ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, CardStatus( MeetsGroupRequirement ) + " alert-requirement" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                var cardContentColumnClass = "col-xs-12";
-
-                // If there is an icon, give it a col-2 to separate it from the text column.
                 if ( !string.IsNullOrWhiteSpace( TypeIconCssClass ) )
                 {
-                    cardContentColumnClass = "col-xs-10";
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-shrink-0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass + " fa-fw fa-2x" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass + " fa-fw icon" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
 
                     // End the I tag.
@@ -352,7 +346,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, cardContentColumnClass );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-fill" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( _modalDialog != null )
@@ -365,22 +359,23 @@ namespace Rock.Web.UI.Controls
                     _modalAlert.RenderControl( writer );
                 }
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Small );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "mr-1" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Strong );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-title h6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( this.Title.Trim() );
 
-                // End the Strong tag.
+                // End the Span tag.
                 writer.RenderEndTag();
 
                 // If the requirement is not met and there is a due date, add the short date in a "small" tag.
                 if ( MeetsGroupRequirement != MeetsGroupRequirement.Meets && GroupMemberRequirementDueDate.HasValue )
                 {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-due small" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     writer.Write( "Due: " + GroupMemberRequirementDueDate.Value.ToShortDateString() );
+                    // End the Span tag.
+                    writer.RenderEndTag();
                 }
-
-                // End the Small tag.
-                writer.RenderEndTag();
 
                 // If there is an overridden requirement, indicate it here.
                 if ( _groupMemberRequirement != null && _groupMemberRequirement.WasOverridden )
@@ -411,6 +406,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-message" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( CardMessage( MeetsGroupRequirement ) );
 
@@ -419,7 +415,8 @@ namespace Rock.Web.UI.Controls
 
                 if ( this._groupMemberRequirementType.Summary.IsNotNullOrWhiteSpace() && !IsSummaryHidden )
                 {
-                    writer.RenderBeginTag( HtmlTextWriterTag.Small );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-summary" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( this._groupMemberRequirementType.Summary );
 
                     // End the Small tag.
@@ -429,9 +426,7 @@ namespace Rock.Web.UI.Controls
                 // If any workflows, the requirement can be overridden, or a manual requirement, create the unordered list and list items.
                 if ( !IsInteractionDisabled && ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride || this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual ) )
                 {
-                    writer.AddStyleAttribute( "list-style-type", "none" );
-                    writer.AddStyleAttribute( "margin", "0" );
-                    writer.AddStyleAttribute( "padding", "0" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "list-unstyled list-requirements" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
                     if ( this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual && MeetsGroupRequirement != MeetsGroupRequirement.Meets )
@@ -482,8 +477,6 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                // End the Div "padding" tag.
-                writer.RenderEndTag();
 
                 // End the Div Col tag.
                 writer.RenderEndTag();

@@ -112,6 +112,10 @@
     <Compile Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.designer.cs">
       <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.cs" />
+    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.designer.cs">
+      <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1401,6 +1405,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.resx">
       <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210212133265_BinaryFileSecurity.resx">
+      <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
