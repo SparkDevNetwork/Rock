@@ -141,6 +141,14 @@ namespace Rock.ViewModels.Entities
         public int EmailPreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the Ethnicity Rock.Model.DefinedValue representing the ethnicity of this person
+        /// </summary>
+        /// <value>
+        /// A System.Int32 representing the Id of the Ethnicity Rock.Model.DefinedValue representing the ethnicity of this person.
+        /// </value>
+        public int? EthnicityValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the first name of the Person.
         /// </summary>
         /// <value>
@@ -288,6 +296,14 @@ namespace Rock.ViewModels.Entities
         /// The primary family id.
         /// </value>
         public int? PrimaryFamilyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Race Rock.Model.DefinedValue representing the race of this person
+        /// </summary>
+        /// <value>
+        /// A System.Int32 representing the Id of the Race Rock.Model.DefinedValue representing the race of this person.
+        /// </value>
+        public int? RaceValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the record status last modified date time.

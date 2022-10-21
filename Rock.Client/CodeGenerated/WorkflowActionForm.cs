@@ -102,6 +102,9 @@ namespace Rock.Client
         public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryEmailEntryOption { get; set; } = Rock.Client.Enums.WorkflowActionFormPersonEntryOption.Required;
 
         /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryEthnicityEntryOption { get; set; }
+
+        /// <summary />
         public Guid? PersonEntryFamilyAttributeGuid { get; set; }
 
         /// <summary />
@@ -127,6 +130,9 @@ namespace Rock.Client
 
         /// <summary />
         public string PersonEntryPreHtml { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryRaceEntryOption { get; set; }
 
         /// <summary />
         public int? PersonEntryRecordStatusValueId { get; set; }
@@ -205,6 +211,7 @@ namespace Rock.Client
             this.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             this.PersonEntryDescription = source.PersonEntryDescription;
             this.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
+            this.PersonEntryEthnicityEntryOption = source.PersonEntryEthnicityEntryOption;
             this.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
             this.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             this.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
@@ -214,6 +221,7 @@ namespace Rock.Client
             this.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = source.PersonEntryPostHtml;
             this.PersonEntryPreHtml = source.PersonEntryPreHtml;
+            this.PersonEntryRaceEntryOption = source.PersonEntryRaceEntryOption;
             this.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             this.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             this.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
