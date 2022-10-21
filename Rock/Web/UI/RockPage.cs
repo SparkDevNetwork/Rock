@@ -1066,41 +1066,9 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Checking for Context" );
                     try
                     {
-                        char[] delim = new char[1] { ',' };
-
-                        // Check to see if a context from query string should be saved to a cookie first
-                        foreach ( string param in PageParameter( "SetContext", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
-                        {
-                            string[] parts = param.Split( '|' );
-                            if ( parts.Length == 2 )
-                            {
-                                var contextModelEntityType = EntityTypeCache.Get( parts[0], false, rockContext );
-                                int? contextId = parts[1].AsIntegerOrNull();
-
-                                if ( contextModelEntityType != null && contextId.HasValue )
-                                {
-                                    var contextModelType = contextModelEntityType.GetEntityType();
-                                    var contextDbContext = Reflection.GetDbContextForEntityType( contextModelType );
-                                    if ( contextDbContext != null )
-                                    {
-                                        var contextService = Reflection.GetServiceForEntityType( contextModelType, contextDbContext );
-                                        if ( contextService != null )
-                                        {
-                                            MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                                            if ( getMethod != null )
-                                            {
-                                                var getResult = getMethod.Invoke( contextService, new object[] { contextId.Value } );
-                                                var contextEntity = getResult as IEntity;
-                                                if ( contextEntity != null )
-                                                {
-                                                    SetContextCookie( contextEntity, false, false );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        // Check to see if a context from the query string should be saved to a cookie before
+                        // building the model context for the page.
+                        SetCookieContextFromQueryString( rockContext );
 
                         if ( _showDebugTimings )
                         {
@@ -1109,56 +1077,8 @@ namespace Rock.Web.UI
                             stopwatchInitEvents.Restart();
                         }
 
-                        // first search the cookies for any saved context, but pageContext can replace it
-                        GetCookieContext( GetContextCookieName( false ) );      // Site
-                        GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
-
-                        // check to see if any of the ModelContext.Keys that got set from Cookies are on the URL. If so, the URL value overrides the Cookie value
-                        foreach ( var modelContextName in ModelContext.Keys.ToList() )
-                        {
-                            var type = Type.GetType( modelContextName, false, false );
-                            if ( type != null )
-                            {
-                                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
-                                if ( contextId.HasValue )
-                                {
-                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
-                                }
-
-                                Guid? contextGuid = PageParameter( type.Name + "Guid" ).AsGuidOrNull();
-                                if ( contextGuid.HasValue )
-                                {
-                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextGuid.Value ) );
-                                }
-                            }
-                        }
-
-                        // check for page context (that were explicitly set in Page Properties)
-                        foreach ( var pageContext in _pageCache.PageContexts )
-                        {
-                            int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
-                            if ( contextId.HasValue )
-                            {
-                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
-                            }
-
-                            Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
-                            if ( contextGuid.HasValue )
-                            {
-                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
-                            }
-                        }
-
-                        // check for any encrypted contextkeys specified in query string
-                        foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
-                        {
-                            string contextItem = Rock.Security.Encryption.DecryptString( param );
-                            string[] parts = contextItem.Split( '|' );
-                            if ( parts.Length == 2 )
-                            {
-                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
-                            }
-                        }
+                        // Build the model context, including all context objects (site-wide and page-specific).
+                        this.ModelContext = BuildPageContextData( ContextEntityScope.All );
 
                         if ( _showDebugTimings )
                         {
@@ -1166,7 +1086,6 @@ namespace Rock.Web.UI
                             _debugTimingViewModels.Add( GetDebugTimingOutput( "Check Page Contexts", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                             stopwatchInitEvents.Restart();
                         }
-
                     }
                     catch
                     {
@@ -1713,6 +1632,165 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     } );
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks to see if a context from query string should be saved to a cookie.  This is used during
+        /// OnInit to ensure the context is set in the page data.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        private void SetCookieContextFromQueryString( RockContext rockContext )
+        {
+            char[] delim = new char[1] { ',' };
+
+            foreach ( string param in PageParameter( "SetContext", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                string[] parts = param.Split( '|' );
+                if ( parts.Length != 2 )
+                {
+                    continue; // Cookie value is invalid (not delimited).
+                }
+
+                var contextModelEntityType = EntityTypeCache.Get( parts[0], false, rockContext );
+                if ( contextModelEntityType == null )
+                {
+                    continue; // Couldn't load EntityType.
+                }
+
+                int? contextId = parts[1].AsIntegerOrNull();
+                if ( contextId == null )
+                {
+                    continue;  // Invalid Entity Id.
+                }
+
+                var contextModelType = contextModelEntityType.GetEntityType();
+                var contextDbContext = Reflection.GetDbContextForEntityType( contextModelType );
+                if ( contextDbContext == null )
+                {
+                    continue;  // Failed to load DbContext.
+                }
+
+                var contextService = Reflection.GetServiceForEntityType( contextModelType, contextDbContext );
+                if ( contextService == null )
+                {
+                    continue; // Couldn't load Entity service.
+                }
+
+                MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                if ( getMethod != null )
+                {
+                    continue;  // Couldn't find method to fetch Entity.
+                }
+
+                var getResult = getMethod.Invoke( contextService, new object[] { contextId.Value } );
+                var contextEntity = getResult as IEntity;
+                if ( contextEntity == null )
+                {
+                    continue;  // Entity doesn't seem to exist.
+                }
+
+                // If all the checks up to this point have succeeded, we have a real entity and we can add it to the
+                // Cookie Context.  Note that this is being added as a site-wide context object.
+                SetContextCookie( contextEntity, false, false );
+            }
+        }
+
+        /// <summary>
+        /// Builds the <see cref="KeyEntity"/> dictionary for the page (this is used to set the
+        /// ModelContext property as well as by the GetScopedContextEntities() method).
+        /// </summary>
+        private Dictionary<string, Data.KeyEntity> BuildPageContextData( ContextEntityScope scope )
+        {
+            var keyEntityDictionary = new Dictionary<string, Data.KeyEntity>();
+
+            // The order things are added to the ModelContext collection is important.  Since we're using
+            // AddOrReplace, the last object of any given type will be the context object that ends up in
+            // the collection.
+
+            // Cookie context objects are checked first, according to scope.  If objects exist in
+            // pageContext, they will replace any objects added here (e.g., a context object set by the
+            // Group Detail block will take precedence over a Group that was set in a Cookie Context.
+
+            if ( scope == ContextEntityScope.All || scope == ContextEntityScope.Site )
+            {
+                // Load site-wide context objects from the cookie.
+                var siteCookieName = GetContextCookieName( false );
+                var siteCookie = FindCookie( siteCookieName );
+                keyEntityDictionary = AddCookieContextEntities( siteCookie, keyEntityDictionary );
+            }
+
+            // If we're only looking for the "Site" scope, then we're done, now, and we can skip the rest
+            // of this method.
+            if ( scope == ContextEntityScope.Site )
+            {
+                return keyEntityDictionary;
+            }
+
+            // Load any page-specific context objects from the cookie.  These will replace any
+            // site-wide values (if the scope is "All").
+            var cookieName = GetContextCookieName( true );
+            var cookie = FindCookie( cookieName );
+            keyEntityDictionary = AddCookieContextEntities( cookie, keyEntityDictionary );
+
+
+            // Check to see if any of the ModelContext.Keys that got set from Cookies included in the
+            // query string.  If so, the URL value overrides the Cookie value.
+            foreach ( var modelContextName in keyEntityDictionary.Keys.ToList() )
+            {
+                var type = Type.GetType( modelContextName, false, false );
+                if ( type == null )
+                {
+                    continue;
+                }
+
+                // Look for Id first.
+                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
+                if ( contextId.HasValue )
+                {
+                    keyEntityDictionary.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
+                }
+
+                // If Guid is present, it will override Id.
+                Guid? contextGuid = PageParameter( type.Name + "Guid" ).AsGuidOrNull();
+                if ( contextGuid.HasValue )
+                {
+                    keyEntityDictionary.AddOrReplace( modelContextName, new Data.KeyEntity( contextGuid.Value ) );
+                }
+            }
+
+            // Check for page context that were explicitly set in Page Properties.  These will
+            // override any values that were already set, either by cookies or the query string
+            // (meaning an explicitly set Page Context overrides the generic Id/Guid from the
+            // code block immediately preceeding this one).
+            foreach ( var pageContext in _pageCache.PageContexts )
+            {
+                int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
+                if ( contextId.HasValue )
+                {
+                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
+                }
+
+                Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
+                if ( contextGuid.HasValue )
+                {
+                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
+                }
+            }
+
+            // Check for any encrypted context keys specified in query string.  These take precedence
+            // over any previously set context values.
+            char[] delim = new char[1] { ',' };
+            foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                string contextItem = Rock.Security.Encryption.DecryptString( param );
+                string[] parts = contextItem.Split( '|' );
+                if ( parts.Length == 2 )
+                {
+                    keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                }
+            }
+
+            return keyEntityDictionary;
         }
 
         /// <summary>
@@ -2661,6 +2739,77 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Gets the context entities for the specified scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <returns></returns>
+        public Dictionary<string, IEntity> GetScopedContextEntities( ContextEntityScope scope )
+        {
+            var contextEntities = new Dictionary<string, IEntity>();
+
+            var keyEntityDictionary = BuildPageContextData( scope );
+            foreach ( var contextEntityTypeKey in keyEntityDictionary.Keys )
+            {
+                var entityType = EntityTypeCache.Get( contextEntityTypeKey );
+                if ( entityType == null )
+                {
+                    continue;
+                }
+
+                var contextEntity = GetCurrentContext( entityType, keyEntityDictionary );
+                if ( contextEntity == null )
+                {
+                    continue;
+                }
+
+                if ( !LavaHelper.IsLavaDataObject( contextEntity ) )
+                {
+                    continue;
+                }
+
+                var type = Type.GetType( entityType.AssemblyName ?? entityType.Name );
+                if ( type == null )
+                {
+                    continue;
+                }
+
+                contextEntities.Add( type.Name, contextEntity );
+            }
+
+            return contextEntities;
+        }
+
+        /// <summary>
+        /// Gets the context entity types for the specified scope.  This is useful for determining what context entity
+        /// types a page is dealing with without causing extra database hits.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <returns></returns>
+        public Dictionary<string, EntityTypeCache> GetScopedContextEntityTypes( ContextEntityScope scope )
+        {
+            var contextEntityTypes = new Dictionary<string, EntityTypeCache>();
+            var keyEntityDictionary = BuildPageContextData( scope );
+            foreach ( var contextEntityTypeKey in keyEntityDictionary.Keys )
+            {
+                var entityType = EntityTypeCache.Get( contextEntityTypeKey );
+                if ( entityType == null )
+                {
+                    continue;
+                }
+
+                var type = Type.GetType( entityType.AssemblyName ?? entityType.Name );
+                if ( type == null )
+                {
+                    continue;
+                }
+
+                contextEntityTypes.Add( type.Name, entityType );
+            }
+
+            return contextEntityTypes;
+        }
+
+        /// <summary>
         /// Gets the context entity types.
         /// </summary>
         /// <returns></returns>
@@ -2689,9 +2838,20 @@ Sys.Application.add_load(function () {
         /// <returns>An object that implements the <see cref="Rock.Data.IEntity"/> interface referencing the context object. </returns>
         public Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity )
         {
-            if ( this.ModelContext.ContainsKey( entity.Name ) )
+            return GetCurrentContext( entity, this.ModelContext );
+        }
+
+        /// <summary>
+        /// Gets the current context object for a given entity type.
+        /// </summary>
+        /// <param name="entity">The <see cref="EntityTypeCache"/> containing a reference to the entity.</param>
+        /// <param name="keyEntityDictionary">The <see cref="KeyEntity"/> dictionary containing a reference to the context object (typically the ModelContext property, unless attempting to access a context entity within a specific scope).</param>
+        /// <returns>An object that implements the <see cref="Rock.Data.IEntity"/> interface referencing the context object. </returns>
+        internal Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity, Dictionary<string, KeyEntity> keyEntityDictionary )
+        {
+            if ( keyEntityDictionary.ContainsKey( entity.Name ) )
             {
-                var keyModel = this.ModelContext[entity.Name];
+                var keyModel = keyEntityDictionary[entity.Name];
 
                 if ( keyModel.Entity == null )
                 {
@@ -2849,9 +3009,15 @@ Sys.Application.add_load(function () {
             }
         }
 
-        private void GetCookieContext( string cookieName )
+        /// <summary>
+        /// Finds a cookie by name in the request or response collections.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        /// <returns></returns>
+        private HttpCookie FindCookie( string cookieName )
         {
             HttpCookie cookie = null;
+
             if ( Response.Cookies.AllKeys.Contains( cookieName ) )
             {
                 cookie = Response.Cookies[cookieName];
@@ -2861,29 +3027,48 @@ Sys.Application.add_load(function () {
                 cookie = Request.Cookies[cookieName];
             }
 
-            if ( cookie != null )
+            return cookie;
+        }
+
+        /// <summary>
+        /// Adds context entities from a cookie to a provided <see cref="KeyEntity"/> dictionary.
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <param name="keyEntityDictionary"></param>
+        /// <returns></returns>
+        private Dictionary<string, Data.KeyEntity> AddCookieContextEntities( HttpCookie cookie, Dictionary<string, Data.KeyEntity> keyEntityDictionary )
+        {
+            if ( cookie == null )
             {
-                for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
+                return keyEntityDictionary; // nothing to do.
+            }
+
+            for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
+            {
+                string cookieValue = cookie.Values[valueIndex];
+                if ( string.IsNullOrWhiteSpace( cookieValue ) )
                 {
-                    string cookieValue = cookie.Values[valueIndex];
-                    if ( !string.IsNullOrWhiteSpace( cookieValue ) )
+                    continue;
+                }
+
+                try
+                {
+                    string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                    string[] parts = contextItem.Split( '|' );
+                    if ( parts.Length != 2 )
                     {
-                        try
-                        {
-                            string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                            string[] parts = contextItem.Split( '|' );
-                            if ( parts.Length == 2 )
-                            {
-                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
-                            }
-                        }
-                        catch
-                        {
-                            // intentionally ignore exception in case cookie is corrupt
-                        }
+                        continue;
                     }
+
+                    keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                }
+                catch
+                {
+                    // intentionally ignore exception in case cookie is corrupt
                 }
             }
+
+            return keyEntityDictionary;
         }
 
         private void HandleRockWiFiCookie( int? personAliasId )
@@ -4356,6 +4541,26 @@ Sys.Application.add_load(function () {
         }
     }
 
+    /// <summary>
+    /// The Context Entity Scope 
+    /// </summary>
+    public enum ContextEntityScope
+    {
+        /// <summary>
+        /// Context Entities scoped to the Page.
+        /// </summary>
+        Page,
+
+        /// <summary>
+        /// Context Entities scoped to the Site.
+        /// </summary>
+        Site,
+
+        /// <summary>
+        /// All Context Entities, in any scope.
+        /// </summary>
+        All
+    }
 
     #endregion
 
