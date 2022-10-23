@@ -284,6 +284,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     string ddlFieldsId = panelWidget.ID + "_ddlFields";
                     RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
+                    ddlFields.EnhanceForLongLists = true;
                     var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
                     if ( fieldTypeSelection != null )
                     {
