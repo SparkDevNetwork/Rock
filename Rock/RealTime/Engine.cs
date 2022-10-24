@@ -16,8 +16,10 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,14 +39,10 @@ namespace Rock.RealTime
         private readonly Lazy<List<TopicConfiguration>> _registeredTopics;
 
         /// <summary>
-        /// The topics that each client connection has connected to.
+        /// The various state holder dictionaries for connections. This
+        /// are valid for the entire lifetime of the connection.
         /// </summary>
-        private readonly Dictionary<string, HashSet<string>> _clientTopics = new Dictionary<string, HashSet<string>>();
-
-        /// <summary>
-        /// The lock object for <see cref="_clientTopics"/>.
-        /// </summary>
-        private readonly object _clientTopicsLock = new object();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, object>> _clientStates = new ConcurrentDictionary<string, ConcurrentDictionary<Type, object>>();
 
         #endregion
 
@@ -157,7 +155,6 @@ namespace Rock.RealTime
         /// <returns><c>true</c> if the topic was found and connected, <c>false</c> otherwise.</returns>
         public async Task<bool> ConnectToTopic( object realTimeHub, string topicIdentifier, string connectionIdentifier )
         {
-            bool isNewConnect = false;
             var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
 
             if ( topicInstance == null )
@@ -165,29 +162,36 @@ namespace Rock.RealTime
                 return false;
             }
 
-            // Testing shows that on average this operation, including the lock,
-            // takes about 0.005ms so it is safe to use lock in this case.
-            // A concurrent dictionary does not work because we have a mutable
-            // value which is not thread-safe.
-            lock ( _clientTopicsLock )
-            {
-                if ( _clientTopics.TryGetValue( connectionIdentifier, out var topicIdentifiers ) )
-                {
-                    isNewConnect = topicIdentifiers.Add( topicIdentifier );
-                }
-                else
-                {
-                    _clientTopics.Add( connectionIdentifier, new HashSet<string> { topicIdentifier } );
-                    isNewConnect = true;
-                }
-            }
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            var isNewConnect = state.ConnectedTopics.TryAdd( topicIdentifier, true );
 
             if ( isNewConnect )
             {
-                await topicInstance.OnConnectedAsync();
+                try
+                {
+                    await topicInstance.OnConnectedAsync();
+                }
+                catch ( Exception ex )
+                {
+                    state.ConnectedTopics.TryRemove( topicIdentifier, out _ );
+
+                    throw ex;
+                }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Notifies the engine that a client connection has connected. Handles
+        /// common setup of connection data.
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub.</param>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        public virtual Task ClientConnectedAsync( object realTimeHub, string connectionIdentifier )
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -197,20 +201,16 @@ namespace Rock.RealTime
         /// </summary>
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="connectionIdentifier">The identifier of the connection that has disconnected.</param>
-        public async Task ClientDisconnected( object realTimeHub, string connectionIdentifier )
+        public virtual async Task ClientDisconnectedAsync( object realTimeHub, string connectionIdentifier )
         {
-            HashSet<string> topicIdentifiers;
             var exceptions = new List<Exception>();
 
-            lock ( _clientTopicsLock )
-            {
-                if ( !_clientTopics.TryGetValue( connectionIdentifier, out topicIdentifiers ) )
-                {
-                    return;
-                }
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-                _clientTopics.Remove( connectionIdentifier );
-            }
+            // This is multi-thread safe enough since a client shouldn't be able
+            // to send any messages once the Disconnected event has been triggered.
+            var topicIdentifiers = state.ConnectedTopics.Keys.ToList();
+            state.ConnectedTopics.Clear();
 
             foreach ( var topicIdentifier in topicIdentifiers )
             {
@@ -229,9 +229,128 @@ namespace Rock.RealTime
                 }
             }
 
+            // Clean up the connection state data so we don't leak memory.
+            _clientStates.TryRemove( connectionIdentifier, out _ );
+
             if ( exceptions.Any() )
             {
                 throw new AggregateException( "One or more topics threw exceptions while disconnecting.", exceptions );
+            }
+        }
+
+        /// <summary>
+        /// Gets a state tracking object for this connection. This object is
+        /// unique to each connection. Meaning a single person with two
+        /// connections will have two different state objects. The state object
+        /// is valid until the client disconnects.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier that the state object should be attached to.</param>
+        /// <typeparam name="TState">The type of state object.</typeparam>
+        /// <returns>An instance of the <typeparamref name="TState"/> object.</returns>
+        public TState GetConnectionState<TState>( string connectionIdentifier )
+            where TState : class, new()
+        {
+            return ( TState ) _clientStates.GetOrAdd( connectionIdentifier, _ => new ConcurrentDictionary<Type, object>() )
+                .GetOrAdd( typeof( TState ), _ => new TState() );
+        }
+
+        /// <summary>
+        /// Execute a message on a topic. 
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub that will be used to initialize the topic.</param>
+        /// <param name="connectionId">The identifier of the connection that sent the message.</param>
+        /// <param name="topicIdentifier">The topic identifier the message was sent to.</param>
+        /// <param name="messageName">The name of the message.</param>
+        /// <param name="messageParameters">The message parameters.</param>
+        /// <param name="convertParameter">A function to convert the parameters into the specified type.</param>
+        /// <returns>A <see cref="Task{TResult}"/> that contains the result of the method invocation.</returns>
+        internal static async Task<object> ExecuteTopicMessageAsync( object realTimeHub, string connectionId, string topicIdentifier, string messageName, object[] messageParameters, Func<object, Type, object> convertParameter )
+        {
+            object topicInstance;
+
+            // Ensure the connection has joined the topic.
+            var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( connectionId );
+
+            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
+            {
+                throw new RealTimeException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
+            }
+
+            // Initialize the topic instance.
+            topicInstance = RealTimeHelper.GetTopicInstance( realTimeHub, topicIdentifier );
+
+            if ( topicInstance == null )
+            {
+                throw new RealTimeException( $"RealTime topic '{topicIdentifier}' was not found." );
+            }
+
+            // Find all method that match the message name. Case does not matter.
+            var matchingMethods = topicInstance.GetType()
+                .GetMethods( BindingFlags.Public | BindingFlags.Instance )
+                .Where( m => m.Name.Equals( messageName, StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            if ( matchingMethods.Count <= 0 )
+            {
+                throw new RealTimeException( $"Message '{messageName}' was not found on topic '{topicIdentifier}'." );
+            }
+            else if ( matchingMethods.Count > 1 )
+            {
+                throw new RealTimeException( $"Message '{messageName}' matched multiple methods on topic '{topicIdentifier}'." );
+            }
+
+            // Get the details of the method invocation.
+            var mi = matchingMethods[0];
+            var methodParameters = mi.GetParameters();
+            var parms = new object[methodParameters.Length];
+
+            // Convert all the message parameters into method parameters.
+            try
+            {
+                for ( int i = 0; i < methodParameters.Length; i++ )
+                {
+                    if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
+                    {
+                        parms[i] = CancellationToken.None;
+                    }
+                    else
+                    {
+                        parms[i] = convertParameter( messageParameters[i], methodParameters[i].ParameterType );
+                    }
+                }
+            }
+            catch
+            {
+                throw new RealTimeException( $"Incorrect parameters passed to message '{messageName}'." );
+            }
+
+            // Try to invoke the method. If we get an exception then unwrap it and
+            // throw the original exception.
+            try
+            {
+                var result = mi.Invoke( topicInstance, parms );
+
+                if ( result is Task resultTask )
+                {
+                    await resultTask;
+
+                    // Task<T> is not covariant, so we can't just cast to Task<object>.
+                    if ( resultTask.GetType().IsGenericType )
+                    {
+                        var piResult = resultTask.GetType().GetProperty( "Result" );
+                        result = piResult.GetValue( resultTask );
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
+
+                return result;
+            }
+            catch ( TargetInvocationException ex )
+            {
+                throw ex.InnerException;
             }
         }
 

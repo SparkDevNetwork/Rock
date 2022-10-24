@@ -957,6 +957,11 @@
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
     <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
+    <Compile Include="RealTime\EngineConnectionState.cs" />
+    <Compile Include="RealTime\IContextExtensions.cs" />
+    <Compile Include="RealTime\IContextInternal.cs" />
+    <Compile Include="RealTime\ITopicExtensions.cs" />
+    <Compile Include="RealTime\RealTimeException.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />

@@ -23,6 +23,12 @@ namespace Rock.RealTime
     internal interface ITopicContextInternal
     {
         /// <summary>
+        /// Gets or sets the engine that this topic belongs to.
+        /// </summary>
+        /// <value>The engine that this topic belongs to.</value>
+        Engine Engine { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel manager that will provide functionality
         /// to add and remove client connections from various channels.
         /// </summary>

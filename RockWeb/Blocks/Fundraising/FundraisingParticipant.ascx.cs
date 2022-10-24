@@ -764,7 +764,8 @@ namespace RockWeb.Blocks.Fundraising
 
             gmrcRequirements.RequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
             gmrcRequirements.SelectedGroupRoleId = groupMember.GroupRoleId;
-            var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id );
+            var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
+                groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
             gmrcRequirements.CreateRequirementStatusControls( groupMember.Id, currentPersonIsLeaderOfCurrentGroup, false );
         }
 

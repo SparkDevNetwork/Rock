@@ -36,15 +36,9 @@ namespace Rock.RealTime
     ///     </para>
     /// </remarks>
     [RockInternal]
-    public interface ITopicContext<T>
+    public interface ITopicContext<T> : ITopic
         where T : class
     {
-        /// <summary>
-        /// Gets the channel manager that will provide functionality to add and
-        /// remove client connections from various channels.
-        /// </summary>
-        ITopicChannelManager Channels { get; }
-
         /// <summary>
         /// Gets a helper object to access client connections by various
         /// filtering options.

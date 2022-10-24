@@ -33,6 +33,15 @@ namespace Rock.RealTime
     public abstract class Topic<T> : ITopicInternal, ITopic<T>
         where T : class
     {
+        #region Fields
+
+        /// <summary>
+        /// The engine that this topic is owned by.
+        /// </summary>
+        private Engine _engine;
+
+        #endregion
+
         #region Properties
 
         /// <inheritdoc/>
@@ -49,14 +58,21 @@ namespace Rock.RealTime
         #region ITopicInternal
 
         /// <inheritdoc/>
-        ITopicChannelManager ITopicInternal.Channels
+        Engine ITopicContextInternal.Engine
+        {
+            get => _engine;
+            set => _engine = value;
+        }
+
+        /// <inheritdoc/>
+        ITopicChannelManager ITopicContextInternal.Channels
         {
             get => Channels;
             set => Channels = value;
         }
 
         /// <inheritdoc/>
-        object ITopicInternal.Clients
+        object ITopicContextInternal.Clients
         {
             get => Clients;
             set => Clients = ( ITopicCallerClients<T> ) value;
