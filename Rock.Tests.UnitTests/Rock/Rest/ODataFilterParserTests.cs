@@ -57,7 +57,6 @@ namespace Rock.Tests.UnitTests.Rest
             string baseUrl = $"https://localhost:44329/api/People?$filter=";
             List<string> filterExpressionList = new List<string>();
 
-
             for ( int i = 0; i < filterCount; i++ )
             {
                 if ( i % 2 == 0 )
@@ -167,10 +166,19 @@ namespace Rock.Tests.UnitTests.Rest
         [DataRow(
             "PersonAlias/Person",
             "PersonAlias($expand=Person)" )]
+        [DataRow(
+            "PersonAlias/Person,GroupMember,PhoneNumbers/Guid",
+            "PersonAlias($expand=Person),GroupMember,PhoneNumbers($expand=Guid)" )]
+        [DataRow(
+            "PersonAlias/Person/Users,GroupMember/Group/Person,PhoneNumbers/Guid,SomeOtherNavigationProperty",
+            "PersonAlias($expand=Person($expand=Users)),GroupMember($expand=Group($expand=Person)),PhoneNumbers($expand=Guid),SomeOtherNavigationProperty" )]
+        [DataRow(
+            "",
+            "" )]
         public void ExpandDidParseCorrectlyTest( string originalExpand, string expectedResult )
         {
             string originalUrl = $"api/PackageVersionRatings?$expand={originalExpand}";
-            var actualResultUrl = RockEnableQueryAttribute.ParseSelectExpandFromOriginalUrl( originalUrl, originalExpand, RockEnableQueryAttribute.SelectExpandType.Expand );
+            var actualResultUrl = RockEnableQueryAttribute.ParseExpandClauseFromOriginalUrl( originalUrl, originalExpand);
             string expectedUrl = $"api/PackageVersionRatings?$expand={expectedResult}";
             Assert.AreEqual( actualResultUrl, expectedUrl );
         }
