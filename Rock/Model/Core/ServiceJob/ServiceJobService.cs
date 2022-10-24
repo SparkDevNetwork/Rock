@@ -27,6 +27,7 @@ using Quartz.Impl.Matchers;
 
 using Rock.Data;
 using Rock.Jobs;
+using CronExpressionDescriptor;
 
 namespace Rock.Model
 {
@@ -78,7 +79,7 @@ namespace Rock.Model
         {
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
-            //errorMessage = string.Empty;
+
             try
             {
                 // create a scheduler specific for the job
@@ -89,13 +90,11 @@ namespace Rock.Model
                 var runNowSchedulerName = ( "RunNow:" + job.Guid.ToString( "N" ) ).Truncate( 40 );
                 scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
                 var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
-                //var sched = await new StdSchedulerFactory( scheduleConfig ).GetScheduler();
                 var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
 
                 if ( sched.IsStarted )
                 {
                     // the job is currently running as a RunNow job
-              //      errorMessage = "Job already running as a RunNow job";
                     return false;
                 }
 
@@ -222,8 +221,9 @@ namespace Rock.Model
 
             UpdateAttributesIfNeeded( type );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             JobDataMap map = new JobDataMap();
-           // map.LoadFromJobAttributeValues( job );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
@@ -290,8 +290,7 @@ namespace Rock.Model
             {
                 try
                 {
-                    return null;
-                    // return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
+                    return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
                 }
                 catch
                 {
@@ -330,7 +329,6 @@ namespace Rock.Model
         public static void StartQuartzScheduler()
         {
             QuartzScheduler?.Start();
-            //Task.Run( async () => await QuartzScheduler?.Start() );
         }
 
         /// <summary>
@@ -339,8 +337,6 @@ namespace Rock.Model
         public static void ShutdownQuartzScheduler()
         {
             QuartzScheduler?.Shutdown();
-            //var task = Task.Run( async () => await QuartzScheduler?.Shutdown() );
-            //task?.Wait();
         }
 
         /// <summary>
@@ -355,7 +351,6 @@ namespace Rock.Model
             {
                 // create scheduler
                 ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-                //QuartzScheduler = Task.Run( async () => await schedulerFactory.GetScheduler() ).Result;
                 QuartzScheduler = schedulerFactory.GetScheduler();
 
                 // get list of active jobs

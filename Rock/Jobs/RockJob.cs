@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 using Quartz;
 
@@ -30,16 +29,10 @@ namespace Rock.Jobs
     /// Implements the <see cref="RockJob" />
     /// </summary>
     /// <seealso cref="RockJob" />
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
     public abstract class RockJob : Quartz.IJob
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
     {
-        /// <summary>
-        /// Gets the attribute values.
-        /// </summary>
-        /// <value>The attribute values.</value>
-        public Dictionary<string, AttributeValueCache> AttributeValues { get; internal set; }
-
         /// <summary>
         /// Gets the job identifier.
         /// </summary>
@@ -145,14 +138,22 @@ namespace Rock.Jobs
             ExecuteInternal( context );
         }
 
-        /*
-
-        Task IJob.Execute( IJobExecutionContext context )
+        internal void ExecuteAsIntegrationTest( Quartz.IJobExecutionContext context, Dictionary<string, string> testAttributeValues )
         {
-            ExecuteInternal(context);
-            return Task.CompletedTask;
-        }
+            InitializeFromJobContext( context );
+            if ( this.ServiceJob == null )
+            {
+                ServiceJob = new ServiceJob();
+                ServiceJob.LoadAttributes();
+            }
 
-        */
+            foreach ( var attributeValue in testAttributeValues )
+            {
+                var existingValue = this.ServiceJob.AttributeValues.GetValueOrNull( attributeValue.Key ) ?? new AttributeValueCache();
+                existingValue.Value = attributeValue.Value;
+            }
+
+            Execute();
+        }
     }
 }

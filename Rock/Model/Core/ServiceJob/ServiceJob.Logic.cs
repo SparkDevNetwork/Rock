@@ -40,12 +40,11 @@ namespace Rock.Model
 
                 if ( type == null )
                 {
-#pragma warning disable CS0612 // Type or member is obsolete
-
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
                     // if this isn't a RockJob, it could be from a pre-v15 plugin that implements Quartz.IJob directly
                     type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
 
-#pragma warning restore CS0612 // Type or member is obsolete
                 }
 
                 if ( type == null )

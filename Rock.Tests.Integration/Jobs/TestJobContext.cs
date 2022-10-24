@@ -16,7 +16,7 @@ namespace Rock.Tests.Integration.Jobs
         /// <value>
         /// The scheduler.
         /// </value>
-        public IScheduler Scheduler => throw new NotImplementedException();
+        public IScheduler Scheduler => null;
 
         /// <summary>
         /// Gets the trigger.

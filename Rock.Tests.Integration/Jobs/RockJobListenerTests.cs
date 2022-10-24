@@ -53,10 +53,11 @@ namespace Rock.Tests.Integration.Jobs
         public void RockJobListnerShouldHandleExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Exception Message";
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ) );
+            RunJob( jobDataMapDictionary );
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Exception", actualJob.LastStatus );
@@ -153,10 +154,11 @@ namespace Rock.Tests.Integration.Jobs
         public void RockJobListnerShouldHandleMultipleAggregateExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Multiple Aggregate Exception Message";
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.MultipleAggregateException, expectedExceptionMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.MultipleAggregateException, expectedExceptionMessage ) );
+            RunJob( jobDataMapDictionary );
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( $"One or more exceptions occurred. First Exception: {expectedExceptionMessage} 1", actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Exception", actualJob.LastStatus );
@@ -169,10 +171,10 @@ namespace Rock.Tests.Integration.Jobs
         public void RockJobListnerShouldHandleSingleAggregateExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Single Aggregate Exception Message";
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.SingleAggregateException, expectedExceptionMessage );
+            RunJob( jobDataMapDictionary );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.SingleAggregateException, expectedExceptionMessage ) );
-
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Exception", actualJob.LastStatus );
@@ -186,10 +188,11 @@ namespace Rock.Tests.Integration.Jobs
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
             var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Warning, expectedResultMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedResultMessage ) );
+            RunJob( jobDataMapDictionary );
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Warning", actualJob.LastStatus );
@@ -202,10 +205,11 @@ namespace Rock.Tests.Integration.Jobs
         public void RockJobListnerShouldHandleWarningWithMultipleAggregateException()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.WarningWithMultipleAggregateException, expectedResultMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.WarningWithMultipleAggregateException, expectedResultMessage ) );
+            RunJob( jobDataMapDictionary );
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Warning", actualJob.LastStatus );
@@ -218,10 +222,11 @@ namespace Rock.Tests.Integration.Jobs
         public void RockJobListnerShouldHandleWarningWithSingleAggregateException()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.WarningWithSingleAggregateException, expectedResultMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.WarningWithSingleAggregateException, expectedResultMessage ) );
+            RunJob( jobDataMapDictionary );
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Warning", actualJob.LastStatus );
@@ -235,12 +240,13 @@ namespace Rock.Tests.Integration.Jobs
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Success!";
             var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Success, expectedResultMessage );
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedResultMessage ) );
+            RunJob( jobDataMapDictionary );
 
             var actualExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
 
-            var actualJob = GetAddTestJob();
+            var actualJob = GetAddTestJob( jobDataMapDictionary );
 
             Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Success", actualJob.LastStatus );
@@ -250,7 +256,7 @@ namespace Rock.Tests.Integration.Jobs
 
         public void RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
         {
-            var job = GetAddTestJob( jobNotificationStatus );
+            var job = GetAddTestJob( jobDataMapDictionary, jobNotificationStatus );
 
             using ( var rockContext = new RockContext() )
             {
@@ -292,14 +298,6 @@ namespace Rock.Tests.Integration.Jobs
                     // create the quartz job and trigger
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
 
-                    if ( jobDataMapDictionary != null )
-                    {
-                        // Force the <string, string> dictionary so that within Jobs, it is always okay to use
-                        // JobDataMap.GetString(). This mimics Rock attributes always being stored as strings.
-                        // If we allow non-strings, like integers, then JobDataMap.GetString() throws an exception.
-                        jobDetail.JobDataMap.PutAll( jobDataMapDictionary.ToDictionary( kvp => kvp.Key, kvp => ( object ) kvp.Value ) );
-                    }
-
                     var jobTrigger = TriggerBuilder.Create()
                         .WithIdentity( job.Guid.ToString(), job.Name )
                         .StartNow()
@@ -333,7 +331,7 @@ namespace Rock.Tests.Integration.Jobs
             };
         }
 
-        public ServiceJob GetAddTestJob( JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
+        public ServiceJob GetAddTestJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
         {
             var testJob = new ServiceJob
             {
@@ -348,6 +346,12 @@ namespace Rock.Tests.Integration.Jobs
                 NotificationEmails = "jobtest@spark.org"
             };
 
+            testJob.LoadAttributes();
+            foreach ( var kv in jobDataMapDictionary )
+            {
+                testJob.SetAttributeValue( kv.Key, kv.Value );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var serviceJobService = new ServiceJobService( rockContext );
@@ -361,6 +365,7 @@ namespace Rock.Tests.Integration.Jobs
 
                 serviceJobService.Add( testJob );
                 rockContext.SaveChanges();
+                testJob.SaveAttributeValues();
             }
 
             testJobId = testJob.Id;

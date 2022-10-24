@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Jobs;
@@ -131,13 +132,14 @@ namespace Rock.Tests.Integration.Jobs
                 followingService.Add( following );
                 rockContext.SaveChanges();
             }
-
+            
             var job = new SendFollowingEvents();
             var jobContext = new TestJobContext();
             var followingEventSystemEmailGuid = "CA7576CD-0A10-4ADA-A068-62EE598178F5".AsGuid();
-            jobContext.JobDetail.JobDataMap.Add( "EligibleFollowers", rsrStaffWorkersGroupGuid.ToString() );
-            jobContext.JobDetail.JobDataMap.Add( "EmailTemplate", followingEventSystemEmailGuid.ToString());
-            job.Execute( jobContext );
+            var testAttributeValues = new Dictionary<string, string>();
+            testAttributeValues.AddOrReplace( "EligibleFollowers", rsrStaffWorkersGroupGuid.ToString() );
+            testAttributeValues.AddOrReplace( "EmailTemplate", followingEventSystemEmailGuid.ToString());
+            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
         }
 
         #endregion Tests
