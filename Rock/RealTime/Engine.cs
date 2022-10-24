@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -45,6 +46,12 @@ namespace Rock.RealTime
         /// The lock object for <see cref="_clientTopics"/>.
         /// </summary>
         private readonly object _clientTopicsLock = new object();
+
+        /// <summary>
+        /// The various state holder dictionaries for connections. This
+        /// are valid for the entire lifetime of the connection.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, object>> _clientStates = new ConcurrentDictionary<string, ConcurrentDictionary<Type, object>>();
 
         #endregion
 
@@ -191,13 +198,24 @@ namespace Rock.RealTime
         }
 
         /// <summary>
+        /// Notifies the engine that a client connection has connected. Handles
+        /// common setup of connection data.
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub.</param>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        public virtual Task ClientConnectedAsync( object realTimeHub, string connectionIdentifier )
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Notifies the engine that a client connection has disconnected. Handles
         /// cleanup such as calling the <see cref="Topic{T}.OnDisconnectedAsync"/>
         /// method on each topic the client has connected to.
         /// </summary>
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="connectionIdentifier">The identifier of the connection that has disconnected.</param>
-        public async Task ClientDisconnected( object realTimeHub, string connectionIdentifier )
+        public virtual async Task ClientDisconnectedAsync( object realTimeHub, string connectionIdentifier )
         {
             HashSet<string> topicIdentifiers;
             var exceptions = new List<Exception>();
@@ -229,10 +247,29 @@ namespace Rock.RealTime
                 }
             }
 
+            // Clean up the connection state data so we don't leak memory.
+            _clientStates.TryRemove( connectionIdentifier, out _ );
+
             if ( exceptions.Any() )
             {
                 throw new AggregateException( "One or more topics threw exceptions while disconnecting.", exceptions );
             }
+        }
+
+        /// <summary>
+        /// Gets a state tracking object for this connection. This object is
+        /// unique to each connection. Meaning a single person with two
+        /// connections will have two different state objects. The state object
+        /// is valid until the client disconnects.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier that the state object should be attached to.</param>
+        /// <typeparam name="TState">The type of state object.</typeparam>
+        /// <returns>An instance of the <typeparamref name="TState"/> object.</returns>
+        public TState GetConnectionState<TState>( string connectionIdentifier )
+            where TState : class, new()
+        {
+            return ( TState ) _clientStates.GetOrAdd( connectionIdentifier, _ => new ConcurrentDictionary<Type, object>() )
+                .GetOrAdd( typeof( TState ), _ => new TState() );
         }
 
         /// <summary>

@@ -28,6 +28,15 @@ namespace Rock.RealTime
     internal class DefaultTopicContext<T> : ITopicContext<T>, ITopicContextInternal
         where T : class
     {
+        #region Fields
+
+        /// <summary>
+        /// The engine that this topic is owned by.
+        /// </summary>
+        private Engine _engine;
+
+        #endregion
+
         #region Properties
 
         /// <inheritdoc/>
@@ -39,6 +48,13 @@ namespace Rock.RealTime
         #endregion
 
         #region ITopicContextInternal
+
+        /// <inheritdoc/>
+        Engine ITopicContextInternal.Engine
+        {
+            get => _engine;
+            set => _engine = value;
+        }
 
         /// <inheritdoc/>
         ITopicChannelManager ITopicContextInternal.Channels

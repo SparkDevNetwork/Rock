@@ -73,7 +73,11 @@ namespace Rock.RealTime
         /// <inheritdoc/>
         protected override TopicConfiguration GetTopicConfiguration( Type topicType )
         {
-            return new TopicConfigurationAspNet( _rockHubContext, topicType, _proxyFactory );
+            var topicConfiguration = new TopicConfigurationAspNet( _rockHubContext, topicType, _proxyFactory );
+
+            topicConfiguration.TopicContext.Engine = this;
+
+            return topicConfiguration;
         }
 
         /// <inheritdoc/>
@@ -86,7 +90,8 @@ namespace Rock.RealTime
 
             topicInstance.Channels = new TopicChannelManager( hub.Groups, topicConfiguration.TopicIdentifier );
             topicInstance.Clients = Activator.CreateInstance( topicConfiguration.CallerClientsType, hub.Clients, topicConfiguration.TopicIdentifier, _proxyFactory );
-            topicInstance.Context = new Context( hub.Context.ConnectionId, hub.Context.User );
+            topicInstance.Context = new Context( hub.Context.ConnectionId, hub.Context.User, this );
+            topicInstance.Engine = this;
         }
 
         /// <inheritdoc/>

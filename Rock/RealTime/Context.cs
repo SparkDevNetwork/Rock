@@ -26,8 +26,17 @@ namespace Rock.RealTime
     /// <summary>
     /// Default implementation of <see cref="IContext"/>.
     /// </summary>
-    internal class Context : IContext
+    internal class Context : IContext, IContextInternal
     {
+        #region Fields
+
+        /// <summary>
+        /// The engine that created this connection context.
+        /// </summary>
+        private readonly Engine _engine;
+
+        #endregion
+
         #region Properties
 
         /// <inheritdoc/>
@@ -48,8 +57,10 @@ namespace Rock.RealTime
         /// </summary>
         /// <param name="connectionId">The connection identifier.</param>
         /// <param name="userPrincipal">The principal that identifies the current in person for the request.</param>
-        internal Context( string connectionId, IPrincipal userPrincipal )
+        /// <param name="engine">The engine that created this connection context.</param>
+        internal Context( string connectionId, IPrincipal userPrincipal, Engine engine )
         {
+            _engine = engine;
             ConnectionId = connectionId;
 
             if ( userPrincipal is ClaimsPrincipal claimsPrincipal )
@@ -69,6 +80,13 @@ namespace Rock.RealTime
                 }
             }
         }
+
+        #endregion
+
+        #region IContextInternal
+
+        /// <inheritdoc/>
+        Engine IContextInternal.Engine => _engine;
 
         #endregion
     }

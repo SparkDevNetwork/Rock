@@ -129,7 +129,7 @@ namespace Rock.RealTime.AspNet
         }
 
         /// <inheritdoc/>
-        public override Task OnConnected()
+        public override async Task OnConnected()
         {
             if ( Context.User is ClaimsPrincipal claimsPrincipal )
             {
@@ -143,7 +143,7 @@ namespace Rock.RealTime.AspNet
 
                     if ( personId.HasValue )
                     {
-                        Groups.Add( Context.ConnectionId, $"rock:person:{personId}" );
+                        await Groups.Add( Context.ConnectionId, $"rock:person:{personId}" );
                     }
                 }
 
@@ -157,18 +157,18 @@ namespace Rock.RealTime.AspNet
 
                     if ( visitorId.HasValue )
                     {
-                        Groups.Add( Context.ConnectionId, $"rock:visitor:{visitorId}" );
+                        await Groups.Add( Context.ConnectionId, $"rock:visitor:{visitorId}" );
                     }
                 }
             }
 
-            return Task.CompletedTask;
+            await RealTimeHelper.Engine.ClientConnectedAsync( this, Context.ConnectionId );
         }
 
         /// <inheritdoc/>
         public override async Task OnDisconnected( bool stopCalled )
         {
-            await RealTimeHelper.Engine.ClientDisconnected( this, Context.ConnectionId );
+            await RealTimeHelper.Engine.ClientDisconnectedAsync( this, Context.ConnectionId );
         }
     }
 }

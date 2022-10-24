@@ -23,22 +23,8 @@ namespace Rock.RealTime
     /// Defines the structure of a RealTime topic area that will facilitate
     /// communication between the server and remote devices.
     /// </summary>
-    internal interface ITopicInternal
+    internal interface ITopicInternal : ITopicContextInternal
     {
-        /// <summary>
-        /// Gets or sets the channel manager that will provide functionality
-        /// to add and remove client connections from various channels.
-        /// </summary>
-        /// <value>The channel manager that can subscribe or unsubscribe clients.</value>
-        ITopicChannelManager Channels { get; set; }
-
-        /// <summary>
-        /// Gets or sets a helper object to access client connections by various
-        /// filtering options.
-        /// </summary>
-        /// <value>A helper object to access client connections.</value>
-        object Clients { get; set; }
-
         /// <summary>
         /// Gets or sets the context that describes the current request.
         /// </summary>
