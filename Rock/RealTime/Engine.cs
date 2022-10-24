@@ -335,9 +335,10 @@ namespace Rock.RealTime
                     await resultTask;
 
                     // Task<T> is not covariant, so we can't just cast to Task<object>.
-                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                    if ( resultTask.GetType().IsGenericType )
                     {
-                        result = ( ( dynamic ) resultTask ).Result;
+                        var piResult = resultTask.GetType().GetProperty( "Result" );
+                        result = piResult.GetValue( resultTask );
                     }
                     else
                     {

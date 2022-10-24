@@ -57,7 +57,13 @@ namespace Rock.RealTime.AspNet
             }
             catch ( RealTimeException ex )
             {
+                Rock.Model.ExceptionLogService.LogException( ex );
                 throw new HubException( ex.Message );
+            }
+            catch ( Exception ex )
+            {
+                Rock.Model.ExceptionLogService.LogException( ex );
+                throw;
             }
         }
 
@@ -67,43 +73,48 @@ namespace Rock.RealTime.AspNet
         /// <param name="topicIdentifier">The identifier of the topic to be connected to.</param>
         public async Task ConnectToTopic( string topicIdentifier )
         {
-            await RealTimeHelper.Engine.ConnectToTopic( this, topicIdentifier, Context.ConnectionId );
+            var joined = await RealTimeHelper.Engine.ConnectToTopic( this, topicIdentifier, Context.ConnectionId );
+
+            if ( joined )
+            {
+                await Groups.Add( Context.ConnectionId, topicIdentifier );
+
+                if ( Context.User is ClaimsPrincipal claimsPrincipal )
+                {
+                    var personClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:person" );
+
+                    // If we have a claim that specifies the logged in PersonId then
+                    // add this connection to a special group to track people by their Id.
+                    if ( personClaim != null )
+                    {
+                        var personId = personClaim.Value.AsIntegerOrNull();
+
+                        if ( personId.HasValue )
+                        {
+                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:person:{personId}" );
+                        }
+                    }
+
+                    var visitorClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:visitor" );
+
+                    // If we have a claim that specifies a known visitor then add
+                    // this connection to a special group to track visitors by their Id.
+                    if ( visitorClaim != null )
+                    {
+                        var visitorId = Rock.Utility.IdHasher.Instance.GetId( visitorClaim.Value );
+
+                        if ( visitorId.HasValue )
+                        {
+                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:visitor:{visitorId}" );
+                        }
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>
         public override async Task OnConnected()
         {
-            if ( Context.User is ClaimsPrincipal claimsPrincipal )
-            {
-                var personClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:person" );
-
-                // If we have a claim that specifies the logged in PersonId then
-                // add this connection to a special group to track people by their Id.
-                if ( personClaim != null )
-                {
-                    var personId = personClaim.Value.AsIntegerOrNull();
-
-                    if ( personId.HasValue )
-                    {
-                        await Groups.Add( Context.ConnectionId, $"rock:person:{personId}" );
-                    }
-                }
-
-                var visitorClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:visitor" );
-
-                // If we have a claim that specifies a known visitor then add
-                // this connection to a special group to track visitors by their Id.
-                if ( visitorClaim != null )
-                {
-                    var visitorId = Rock.Utility.IdHasher.Instance.GetId( visitorClaim.Value );
-
-                    if ( visitorId.HasValue )
-                    {
-                        await Groups.Add( Context.ConnectionId, $"rock:visitor:{visitorId}" );
-                    }
-                }
-            }
-
             await RealTimeHelper.Engine.ClientConnectedAsync( this, Context.ConnectionId );
         }
 
