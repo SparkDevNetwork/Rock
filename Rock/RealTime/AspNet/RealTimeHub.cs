@@ -16,11 +16,8 @@
 //
 
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Reflection;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNet.SignalR;
@@ -54,90 +51,13 @@ namespace Rock.RealTime.AspNet
         /// <returns>The value returned by the message handler.</returns>
         public async Task<object> PostMessage( string topicIdentifier, string messageName, Newtonsoft.Json.Linq.JToken[] parameters )
         {
-            object topicInstance;
-
-            var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( Context.ConnectionId );
-
-            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
-            {
-                throw new HubException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
-            }
-
-            topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
-
-            if ( topicInstance == null )
-            {
-                throw new HubException( $"RealTime topic '{topicIdentifier}' was not found." );
-            }
-
-            var matchingMethods = topicInstance.GetType()
-                .GetMethods( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance )
-                .Where( m => m.Name.Equals( messageName, StringComparison.OrdinalIgnoreCase ) )
-                .ToList();
-
-            if ( matchingMethods.Count <= 0 )
-            {
-                throw new HubException( $"Message '{messageName}' was not found on topic '{topicIdentifier}'." );
-            }
-            else if ( matchingMethods.Count > 1 )
-            {
-                throw new HubException( $"Message '{messageName}' matched multiple methods on topic '{topicIdentifier}'." );
-            }
-
-            var mi = matchingMethods[0];
-            var methodParameters = mi.GetParameters();
-            var parms = new object[methodParameters.Length];
-
             try
             {
-                for ( int i = 0; i < methodParameters.Length; i++ )
-                {
-                    if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
-                    {
-                        parms[i] = CancellationToken.None;
-                    }
-                    else
-                    {
-                        parms[i] = parameters[i].ToObject( methodParameters[i].ParameterType );
-                    }
-                }
+                return await Engine.ExecuteTopicMessageAsync( this, Context.ConnectionId, topicIdentifier, messageName, parameters, ConvertParameterToken );
             }
-            catch
+            catch ( RealTimeException ex )
             {
-                throw new HubException( $"Incorrect parameters passed to message '{messageName}'." );
-            }
-
-            try
-            {
-                var result = mi.Invoke( topicInstance, parms );
-
-                if ( result is Task resultTask )
-                {
-                    await resultTask;
-
-                    // Task<T> is not covariant, so we can't just cast to Task<object>.
-                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
-                    {
-                        result = ( ( dynamic ) resultTask ).Result;
-                    }
-                    else
-                    {
-                        result = null;
-                    }
-                }
-
-                return result;
-            }
-            catch ( TargetInvocationException ex )
-            {
-                if ( ex.InnerException is RealTimeException )
-                {
-                    throw new HubException( ex.InnerException.Message );
-                }
-                else
-                {
-                    throw ex.InnerException;
-                }
+                throw new HubException( ex.Message );
             }
         }
 
@@ -191,6 +111,17 @@ namespace Rock.RealTime.AspNet
         public override async Task OnDisconnected( bool stopCalled )
         {
             await RealTimeHelper.Engine.ClientDisconnectedAsync( this, Context.ConnectionId );
+        }
+
+        /// <summary>
+        /// Converts the JSON token into the target type requested by the engine.
+        /// </summary>
+        /// <param name="token">The token parameter that should be converted.</param>
+        /// <param name="targetType">The type the token should be converted into.</param>
+        /// <returns>An object of type <paramref name="targetType"/>.</returns>
+        private static object ConvertParameterToken( object token, Type targetType )
+        {
+            return ( token as Newtonsoft.Json.Linq.JToken ).ToObject( targetType );
         }
     }
 }

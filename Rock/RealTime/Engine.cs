@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -251,6 +252,105 @@ namespace Rock.RealTime
         {
             return ( TState ) _clientStates.GetOrAdd( connectionIdentifier, _ => new ConcurrentDictionary<Type, object>() )
                 .GetOrAdd( typeof( TState ), _ => new TState() );
+        }
+
+        /// <summary>
+        /// Execute a message on a topic. 
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub that will be used to initialize the topic.</param>
+        /// <param name="connectionId">The identifier of the connection that sent the message.</param>
+        /// <param name="topicIdentifier">The topic identifier the message was sent to.</param>
+        /// <param name="messageName">The name of the message.</param>
+        /// <param name="messageParameters">The message parameters.</param>
+        /// <param name="convertParameter">A function to convert the parameters into the specified type.</param>
+        /// <returns>A <see cref="Task{TResult}"/> that contains the result of the method invocation.</returns>
+        internal static async Task<object> ExecuteTopicMessageAsync( object realTimeHub, string connectionId, string topicIdentifier, string messageName, object[] messageParameters, Func<object, Type, object> convertParameter )
+        {
+            object topicInstance;
+
+            // Ensure the connection has joined the topic.
+            var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( connectionId );
+
+            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
+            {
+                throw new RealTimeException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
+            }
+
+            // Initialize the topic instance.
+            topicInstance = RealTimeHelper.GetTopicInstance( realTimeHub, topicIdentifier );
+
+            if ( topicInstance == null )
+            {
+                throw new RealTimeException( $"RealTime topic '{topicIdentifier}' was not found." );
+            }
+
+            // Find all method that match the message name. Case does not matter.
+            var matchingMethods = topicInstance.GetType()
+                .GetMethods( BindingFlags.Public | BindingFlags.Instance )
+                .Where( m => m.Name.Equals( messageName, StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            if ( matchingMethods.Count <= 0 )
+            {
+                throw new RealTimeException( $"Message '{messageName}' was not found on topic '{topicIdentifier}'." );
+            }
+            else if ( matchingMethods.Count > 1 )
+            {
+                throw new RealTimeException( $"Message '{messageName}' matched multiple methods on topic '{topicIdentifier}'." );
+            }
+
+            // Get the details of the method invocation.
+            var mi = matchingMethods[0];
+            var methodParameters = mi.GetParameters();
+            var parms = new object[methodParameters.Length];
+
+            // Convert all the message parameters into method parameters.
+            try
+            {
+                for ( int i = 0; i < methodParameters.Length; i++ )
+                {
+                    if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
+                    {
+                        parms[i] = CancellationToken.None;
+                    }
+                    else
+                    {
+                        parms[i] = convertParameter( messageParameters[i], methodParameters[i].ParameterType );
+                    }
+                }
+            }
+            catch
+            {
+                throw new RealTimeException( $"Incorrect parameters passed to message '{messageName}'." );
+            }
+
+            // Try to invoke the method. If we get an exception then unwrap it and
+            // throw the original exception.
+            try
+            {
+                var result = mi.Invoke( topicInstance, parms );
+
+                if ( result is Task resultTask )
+                {
+                    await resultTask;
+
+                    // Task<T> is not covariant, so we can't just cast to Task<object>.
+                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                    {
+                        result = ( ( dynamic ) resultTask ).Result;
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
+
+                return result;
+            }
+            catch ( TargetInvocationException ex )
+            {
+                throw ex.InnerException;
+            }
         }
 
         /// <summary>
