@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -201,7 +202,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
             }
 
             return bag;
@@ -224,7 +225,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
             }
 
             return bag;
@@ -258,7 +259,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
             return true;
@@ -356,6 +357,17 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines if the attribute should be included in the block.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute should be included, <c>false</c> otherwise.</returns>
+        private bool IsAttributeIncluded( AttributeCache attribute )
+        {
+            // Don't include the special attributes "Order" and "Active".
+            return attribute.Key != "Order" && attribute.Key != "Active";
         }
 
         #endregion
