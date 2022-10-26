@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2046,7 +2046,9 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 tokenResponse = null;
             }
 
-            if ( tokenResponse?.IsSuccessStatus() != true )
+            bool successful = tokenResponse?.IsSuccessStatus() ?? false;
+
+            if ( !successful )
             {
                 if ( tokenResponse?.HasValidationError() == true )
                 {
@@ -2055,11 +2057,13 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                 errorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
                 referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
+                referencePaymentInfo.InitialCurrencyTypeValue = nmiHostedPaymentControl.CurrencyTypeValue;
                 errorMessage = FriendlyMessageHelper.GetFriendlyMessage( errorMessage );
             }
             else
             {
                 referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
+                referencePaymentInfo.InitialCurrencyTypeValue = nmiHostedPaymentControl.CurrencyTypeValue;
             }
         }
 
