@@ -41,6 +41,9 @@
     <Content Include="src\Core\serviceJobDetail.vue" />
     <Content Include="src\Core\ServiceJobDetail\editPanel.partial.vue" />
     <Content Include="src\Core\ServiceJobDetail\viewPanel.partial.vue" />
+    <Content Include="src\Security\restkeyDetail.vue" />
+    <Content Include="src\Security\RestKeyDetail\editPanel.partial.vue" />
+    <Content Include="src\Security\RestKeyDetail\viewPanel.partial.vue" />
     <Content Include="src\Reporting\mergeTemplateDetail.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\editPanel.partial.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
@@ -84,6 +87,7 @@
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
     <Folder Include="src\Crm\PersonDetail\" />
+    <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
     <Folder Include="src\Engagement\Steps\" />
     <Folder Include="src\Engagement\Steps\StepFlow\" />
@@ -181,6 +185,7 @@
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Security\RestKeyDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.partial.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />

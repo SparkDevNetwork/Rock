@@ -80,6 +80,7 @@
     <Compile Include="Core\TagDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Security\RestKeyDetail.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
@@ -135,7 +136,6 @@
   <ItemGroup>
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
-    <Folder Include="Security\" />
     <Folder Include="Utility\" />
   </ItemGroup>
   <ItemGroup>
