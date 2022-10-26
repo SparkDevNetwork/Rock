@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -495,7 +495,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Security.Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Rock.Security.Encryption.EncryptString( unencryptedSecurityToken );
 
                 return ActionOk( new RegistrationEntrySignatureDocument
                 {
@@ -542,7 +542,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Rock.Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -563,7 +563,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Security.Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Rock.Security.Encryption.EncryptString( signedData.ToJson() ) );
             }
         }
 
@@ -2106,7 +2106,7 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                var signedData = Rock.Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
                 var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);

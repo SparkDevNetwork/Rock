@@ -153,8 +153,8 @@ Obsidian.onReady(() => {{
 
             if ( this is IHasCustomActions customActionsBlock )
             {
-                var canEdit = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
-                var canAdministrate = BlockCache.IsAuthorized( Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+                var canEdit = BlockCache.IsAuthorized(  Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }

@@ -126,8 +126,8 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
             entity.LoadAttributes( rockContext );
@@ -350,7 +350,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${AssetStorageProvider.FriendlyTypeName}." );
                 return false;

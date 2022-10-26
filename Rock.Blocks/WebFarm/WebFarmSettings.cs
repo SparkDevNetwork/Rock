@@ -154,8 +154,8 @@ namespace Rock.Blocks.WebFarm
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box, RockContext rockContext )
         {
-            var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized(  Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             // Existing entity was found, prepare for view mode by default.
             if ( isViewable )

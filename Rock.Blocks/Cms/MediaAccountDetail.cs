@@ -123,8 +123,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -350,7 +350,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${MediaAccount.FriendlyTypeName}." );
                 return false;
