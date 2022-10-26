@@ -91,15 +91,15 @@ export default defineComponent({
                 return valueBuilder.build();
             }
 
-            if (props.modelValue.parentLocation) {
+            if (props.modelValue.parentLocation?.text){
                 valueBuilder.addTextValue("Parent Location", props.modelValue.parentLocation.text ?? "");
             }
 
-            if (props.modelValue.locationTypeValue) {
+            if (props.modelValue.locationTypeValue?.text) {
                 valueBuilder.addTextValue("Location Type", props.modelValue.locationTypeValue.text ?? "");
             }
 
-            if (props.modelValue.printerDevice) {
+            if (props.modelValue.printerDevice?.text) {
                 valueBuilder.addTextValue("Printer", props.modelValue.printerDevice.text ?? "");
             }
 

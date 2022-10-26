@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Core
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
-                Location Location = ( new LocationService( new RockContext() ) ).Get( _LocationId, true );
+                Location Location = ( new LocationService( new RockContext() ) ).Get( _LocationId, !RockPage.Site.DisablePredictableIds );
 
                 lbAddLocationChild.Enabled = Location != null && canEditBlock;
 

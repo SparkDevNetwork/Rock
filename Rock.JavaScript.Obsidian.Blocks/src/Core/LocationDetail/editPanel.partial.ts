@@ -31,7 +31,7 @@ import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/bl
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
 import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
-import { DefinedType } from "../../../../Rock.JavaScript.Obsidian/Framework/SystemGuids";
+import { DefinedType } from "@Obsidian/SystemGuids";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
 
@@ -129,6 +129,19 @@ export default defineComponent({
 
         // #region Event Handlers
 
+        /**
+         * Event handler for when the individual clicks the Standardize/VerifyLocation button.
+         */
+        const onStandardizeClick = async (): Promise<void> => {
+            const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", { addressFields: addressFields.value });
+
+            if (result.isSuccess && result.data) {
+                updateRefValue(addressFields, result.data.addressFields ?? {});
+                standardizeAttemptedResult.value = result.data.standardizeAttemptedResult ?? "";
+                geocodeAttemptedResult.value = result.data.geocodeAttemptedResult ?? "";
+            }
+        };
+
         // #endregion
 
         // Watch for parental changes in our model value and update all our values.
@@ -176,19 +189,6 @@ export default defineComponent({
         // Watch for any changes to props that represent properties and then
         // automatically emit which property changed.
         watchPropertyChanges(propRefs, emit);
-
-        /**
-         * Event handler for when the individual clicks the Standardize/VerifyLocation button.
-         */
-        const onStandardizeClick = async (): Promise<void> => {
-            const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", { addressFields: addressFields.value });
-
-            if (result.isSuccess && result.data) {
-                updateRefValue(addressFields, result.data.addressFields ?? {});
-                standardizeAttemptedResult.value = result.data.standardizeAttemptedResult ?? "";
-                geocodeAttemptedResult.value = result.data.geocodeAttemptedResult ?? "";
-            }
-        };
 
         return {
             addressFields,

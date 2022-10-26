@@ -239,6 +239,11 @@ namespace Rock.Blocks.Core
             };
         }
 
+        /// <summary>
+        /// Gets the geo point and geo fence image HTML.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <returns>System.ValueTuple&lt;System.String, System.String&gt;.</returns>
         private (string GeoPointImageHtml, string GeoFenceImageHtml) GetGeoPointAndGeoFenceImageHtml( Location location )
         {
             var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ) );
@@ -481,6 +486,12 @@ namespace Rock.Blocks.Core
 
         #region Block Actions
 
+        /// <summary>
+        /// Performs Address Verification on the specified addressFields and returns a <see cref="AddressStandardizationResultBag"/> with standardized
+        /// address values for the addressFields.
+        /// </summary>
+        /// <param name="addressFields">The address fields.</param>
+        /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult StandardizeLocation( AddressControlBag addressFields )
         {

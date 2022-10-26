@@ -117,7 +117,7 @@ export default defineComponent({
                 });
             }
 
-            if (locationViewBag.value?.locationTypeValue) {
+            if (locationViewBag.value?.locationTypeValue?.text) {
                 labels.push({
                     iconCssClass: "",
                     title: locationViewBag.value?.locationTypeValue?.text ?? "",
