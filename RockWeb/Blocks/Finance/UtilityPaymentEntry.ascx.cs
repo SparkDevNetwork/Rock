@@ -2734,7 +2734,6 @@ namespace RockWeb.Blocks.Finance
 
             tdTotalConfirm.Description = paymentInfo.Amount.FormatAsCurrency();
 
-            // TODO
             tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue?.Description;
 
             tdAccountNumberConfirm.Description = paymentInfo.MaskedNumber;
