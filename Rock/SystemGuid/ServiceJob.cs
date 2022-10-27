@@ -99,6 +99,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS = "53A6804F-5895-4E19-907D-916B5CF175AB";
 
         /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";
