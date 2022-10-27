@@ -396,8 +396,6 @@ export default defineComponent({
 
 <div v-if="!blockError" class="collectionsearch">
     <div v-if="showFullTextSearch" class="collectionsearch-fulltext">
-        <h3 class="title">Search</h3>
-
         <div ref="searchContainerElement" class="content">
             <div class="search-fulltext">
                 <TextBox v-model="query">
@@ -414,8 +412,14 @@ export default defineComponent({
     <FiltersContainer v-if="showFiltersPanel" :filters="filters" v-model:filterValues="filterValues" />
 
     <div class="collectionsearch-results">
-        <div class="results-order">
-            <DropDownList v-if="showSort" v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
+        <div class="results-header">
+            <!-- <div class="results-count">
+                Results <span class="results-count-number">(#)</span>
+            </div> -->
+        
+            <div v-if="showSort" class="results-order">
+                <DropDownList v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
+            </div>
         </div>
 
         <div ref="searchResultContainerElement">
