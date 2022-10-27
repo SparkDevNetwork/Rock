@@ -15,29 +15,27 @@
 // </copyright>
 //
 
-using Quartz;
+using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using System.ComponentModel;
-using System.Diagnostics;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Run once job for v14 to update current sessions
+    /// Run once job for v14.1 to update current sessions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.1 - Update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime." )]
     [Description( "This job will update the current sessions to have the duration of the session as well as the interaction count." )]
 
     [IntegerField(
     "Command Timeout",
     AttributeKey.CommandTimeout,
-    Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
+    Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of interactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 240 * 60 )]
-    public class PostV141DataMigrationsUpdateCurrentSessions1900 : IJob
+    public class PostV141DataMigrationsUpdateCurrentSessions1900 : RockJob
     {
         private static class AttributeKey
         {
@@ -45,16 +43,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Executes the specified context.
+        /// Executes this instance.
         /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 240 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
-            Stopwatch stopwatch= Stopwatch.StartNew();
+            var commandTimeout = this.GetAttributeValue(AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
@@ -91,7 +85,7 @@ INNER JOIN (
 " );
             }
 
-            DeleteJob( context.GetJobId() );
+            DeleteJob( this.GetJobId() );
         }
 
         /// <summary>
