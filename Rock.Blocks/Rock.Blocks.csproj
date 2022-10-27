@@ -79,6 +79,7 @@
     <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />
     <Compile Include="Core\TagDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
+    <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />

@@ -98,6 +98,8 @@
     <Compile Include="Blocks\Core\TagDetail\TagDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\BadgeDetail\BadgeBag.cs" />
+    <Compile Include="Blocks\Crm\BadgeDetail\BadgeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\Security\RestKeyDetail\RestKeyBag.cs" />
     <Compile Include="Blocks\Security\RestKeyDetail\RestKeyDetailOptionsBag.cs" />

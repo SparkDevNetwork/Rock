@@ -41,6 +41,9 @@
     <Content Include="src\Core\serviceJobDetail.vue" />
     <Content Include="src\Core\ServiceJobDetail\editPanel.partial.vue" />
     <Content Include="src\Core\ServiceJobDetail\viewPanel.partial.vue" />
+    <Content Include="src\Crm\badgeDetail.vue" />
+    <Content Include="src\Crm\BadgeDetail\editPanel.partial.vue" />
+    <Content Include="src\Crm\BadgeDetail\viewPanel.partial.vue" />
     <Content Include="src\Security\restkeyDetail.vue" />
     <Content Include="src\Security\RestKeyDetail\editPanel.partial.vue" />
     <Content Include="src\Security\RestKeyDetail\viewPanel.partial.vue" />
@@ -86,6 +89,7 @@
     <Folder Include="src\Core\TagDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
+    <Folder Include="src\Crm\BadgeDetail\" />
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
@@ -178,6 +182,7 @@
     <TypeScriptCompile Include="src\Core\SignatureDocumentTemplateDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\TagDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\Crm\BadgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\editPanel.partial.ts" />
