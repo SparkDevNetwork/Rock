@@ -29,6 +29,7 @@ namespace Rock.Jobs
     /// Implements the <see cref="RockJob" />
     /// </summary>
     /// <seealso cref="RockJob" />
+    [DisallowConcurrentExecution]
 #pragma warning disable CS0612, CS0618 // Type or member is obsolete
     public abstract class RockJob : Quartz.IJob
 #pragma warning restore CS0612, CS0618 // Type or member is obsolete
