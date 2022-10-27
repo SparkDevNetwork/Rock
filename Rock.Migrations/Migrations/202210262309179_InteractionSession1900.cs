@@ -16,10 +16,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    using System.Diagnostics;
-
     /// <summary>
     ///
     /// </summary>
@@ -32,7 +28,6 @@ namespace Rock.Migrations
         {
             // If the InteractionSession table somehow has a default of '1900-01-01' for the DurationLastCalculatedDateTime column, this will
             // remove that so that it defaults to null instead.
-            Stopwatch stopwatch = Stopwatch.StartNew();
             Sql( @"
 /* From https://stackoverflow.com/a/10758357/1755417 */
 DECLARE @tableName VARCHAR(MAX) = 'InteractionSession'
@@ -52,7 +47,7 @@ IF @ConstraintName IS NOT NULL BEGIN
 END
 " );
 
-
+            // Add a job that will clear out the 1900-01-01's and then recalculate sessions.
             Sql( $@"
             IF NOT EXISTS (
                 SELECT 1
@@ -81,10 +76,6 @@ END
                     , '{Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900}'
                 );
             END" );
-
-
-            Debug.WriteLine( "InteractionSession1900: " + stopwatch.Elapsed.TotalMilliseconds );
-
         }
 
         /// <summary>

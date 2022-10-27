@@ -52,8 +52,6 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            Debug.WriteLine( $"Start - PostV141DataMigrationsUpdateCurrentSessions1900" );
-
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             Stopwatch stopwatch= Stopwatch.StartNew();
@@ -92,8 +90,6 @@ INNER JOIN (
 ) AS sq ON sq.[SessionId] = xs.[Id]
 " );
             }
-
-            Debug.WriteLine( $"{stopwatch.Elapsed.TotalMilliseconds} ms - PostV141DataMigrationsUpdateCurrentSessions1900" );
 
             DeleteJob( context.GetJobId() );
         }
