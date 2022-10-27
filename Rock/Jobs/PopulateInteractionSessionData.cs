@@ -378,7 +378,7 @@ namespace Rock.Jobs
 
             if ( provider == null )
             {
-                return $"<i class='fa fa-circle text-info'>No IP Address lookup service active.</i> ";
+                return $"<i class='fa fa-circle text-info'></i> No IP Address lookup service active.";
             }
 
             // This collection will be used to store IP address that need to be processed using the lookup provider
