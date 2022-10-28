@@ -81,7 +81,7 @@
 
                                             <span class="person-name js-registrant-name"></span>
 
-                                            <div class="details-container small js-registrant-details hide-transit">
+                                            <div class="details-container small js-registrant-details hide-dragging">
                                                 <div class="registration-instance-name-container js-registration-instance-name-container">
                                                     <dl>
                                                         <dt>Instance</dt>
@@ -143,7 +143,7 @@
                                             <a class="js-person-id-anchor person-id-anchor"></a>
                                             <div class="person-container">
                                                 <span class="person-name js-groupmember-name"></span>
-                                                <div class="dropdown js-groupmember-actions hide-transit">
+                                                <div class="dropdown js-groupmember-actions hide-dragging">
                                                     <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="js-edit-group-member">Edit</a></li>
@@ -152,7 +152,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="details-container js-groupmember-details hide-transit">
+                                            <div class="details-container js-groupmember-details hide-dragging">
                                                 <div class="groupmember-attributes-container js-groupmember-attributes-container">
                                                 </div>
                                                 <div class="registrant-attributes-container js-registrant-attributes-container">
@@ -181,13 +181,13 @@
                                                         </h1>
 
                                                         <div class="panel-labels">
-                                                            <div class="dropdown js-group-actions hide-transit pull-right">
+                                                            <div class="dropdown js-group-actions hide-dragging pull-right">
                                                                 <div class="btn btn-square btn-overflow btn-xs" data-toggle="dropdown">
                                                                     <i class="fa fa-ellipsis-v"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li><a class="js-edit-group">Edit</a></li>
-                                                                    <li><a id="detachPlacementGroup" runat="server" class="js-detach-placement-group ">Detach</a></li>
+                                                                    <li><a id="detachPlacementGroup" runat="server" class="js-detach-placement-group">Detach</a></li>
                                                                     <li id="actionSeparator" runat="server" role="separator" class="divider"></li>
                                                                     <li><a id="deleteGroup" runat="server" class="dropdown-item-danger js-delete-group">Delete</a></li>
                                                                 </ul>
