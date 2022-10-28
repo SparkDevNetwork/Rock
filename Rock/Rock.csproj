@@ -874,6 +874,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />

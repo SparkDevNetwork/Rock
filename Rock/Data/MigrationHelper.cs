@@ -8115,6 +8115,20 @@ END
         }
 
         /// <summary>
+        /// Creates the index if it doesn't exist.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The indexed columns.</param>
+        /// <param name="includes">The non-indexed columns to include ( the INCLUDE clause ).</param>
+        /// <param name="isUnique">if set to <c>true</c> [is unique].</param>
+        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes, bool isUnique )
+        {
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, isUnique );
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
         /// Drops the index if it exists.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
