@@ -3014,6 +3014,11 @@ mission. We are so grateful for your commitment.</p>
             SetPaymentComment( paymentInfo, commentTransactionAccountDetails, tbCommentEntry.Text );
 
             paymentInfo.Amount = commentTransactionAccountDetails.Sum( a => a.Amount );
+            var totalFeeCoverageAmounts = commentTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
+            if ( totalFeeCoverageAmounts.Any() )
+            {
+                paymentInfo.FeeCoverageAmount = totalFeeCoverageAmounts.Sum();
+            }
 
             var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             paymentInfo.TransactionTypeValueId = transactionType.Id;
