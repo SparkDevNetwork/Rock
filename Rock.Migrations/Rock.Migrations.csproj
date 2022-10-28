@@ -120,6 +120,10 @@
     <Compile Include="Migrations\202210262309179_InteractionSession1900.designer.cs">
       <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202210281944003_AddMissingIndexes.cs" />
+    <Compile Include="Migrations\202210281944003_AddMissingIndexes.designer.cs">
+      <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1415,6 +1419,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202210262309179_InteractionSession1900.resx">
       <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210281944003_AddMissingIndexes.resx">
+      <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>

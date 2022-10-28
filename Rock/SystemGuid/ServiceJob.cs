@@ -104,6 +104,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E";
 
         /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to add some missing indexes
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_ADD_MISSING_INDEXES = "B1970CD1-1DDD-46FC-B259-6D151D53374D";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";
