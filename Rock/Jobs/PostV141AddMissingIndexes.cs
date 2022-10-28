@@ -16,8 +16,6 @@
 //
 using System.ComponentModel;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,7 +35,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV141AddMissingIndexes : IJob
+    public class PostV141AddMissingIndexes : RockJob
     {
         #region Keys
 
@@ -68,11 +66,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
             // get the configured timeout, or default to 3600 minutes if it is blank
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = this.GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             var jobMigration = new JobMigration( commandTimeout );
             var migrationHelper = new MigrationHelper( jobMigration );
@@ -105,10 +102,10 @@ ORDER BY TABLE_NAME
 
             */
 
-            AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "Attendance" );
-            AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "AuditDetail" );
-            AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "History" );
-            AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "PersonDuplicate" );
+            AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "Attendance" );
+            AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "AuditDetail" );
+            AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "History" );
+            AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "PersonDuplicate" );
 
             /* 10-28-2022 MDP
 
@@ -163,13 +160,13 @@ PersonDuplicate	        ModifiedByPersonAliasId
             // PageShortLink GetByToken( string token, int siteId ) quite a bit.
             migrationHelper.CreateIndexIfNotExists( "PageShortLink", new string[1] { "Token " }, new string[0] );
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( this.GetJobId() );
         }
 
-        private void AddMissingUniqueGuidIndexOnTableIfNotExists( IJobExecutionContext context, JobMigration jobMigration, MigrationHelper migrationHelper, string tableName )
+        private void AddMissingUniqueGuidIndexOnTableIfNotExists( JobMigration jobMigration, MigrationHelper migrationHelper, string tableName )
         {
             // fix up any duplicate Guids in the specific table
-            context.UpdateLastStatusMessage( $"Ensuring {tableName} Guids are unique..." );
+            this.UpdateLastStatusMessage( $"Ensuring {tableName} Guids are unique..." );
             jobMigration.Sql( $@"UPDATE [{tableName}]
 SET [Guid] = newid()
 WHERE [Guid] IN (
@@ -183,11 +180,8 @@ WHERE [Guid] IN (
         WHERE [DuplicateCount] > 1
         )" );
 
-            context.UpdateLastStatusMessage( $"Creating {tableName} IX_GUID index" );
+            this.UpdateLastStatusMessage( $"Creating {tableName} IX_GUID index" );
             migrationHelper.CreateIndexIfNotExists( tableName, "IX_Guid", new string[1] { "Guid" }, new string[0], true );
         }
-
-        
-        
     }
 }
