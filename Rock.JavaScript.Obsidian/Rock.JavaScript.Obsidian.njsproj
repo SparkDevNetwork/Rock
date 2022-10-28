@@ -92,6 +92,7 @@
     <Folder Include="Build\" />
     <Folder Include="Framework\ViewModels\" />
     <Folder Include="Framework\ViewModels\Blocks\" />
+    <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
@@ -458,6 +459,8 @@
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\filterExpressionType.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />

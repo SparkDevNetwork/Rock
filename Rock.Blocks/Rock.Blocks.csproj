@@ -81,6 +81,7 @@
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Bus\QueueDetail.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
