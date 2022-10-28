@@ -232,16 +232,15 @@ namespace RockWeb.Blocks.Fundraising
                 var rockContext = new RockContext();
                 var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
 
-                // Set the requirements values only if there are requirements for this group / group type.
-                if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
-                {
-                    gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
-                    gmrcRequirements.Visible = true;
-                    SetRequirementStatuses( rockContext );
-                }
-
                 if ( groupMember != null )
                 {
+                    // Set the requirements values only if there are requirements for this group / group type.
+                    if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+                    {
+                        gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                        gmrcRequirements.Visible = true;
+                        SetRequirementStatuses( rockContext );
+                    }
                     CreateDynamicControls( groupMember );
                 }
             }

@@ -107,7 +107,6 @@ ORDER BY TABLE_NAME
 
             AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "Attendance" );
             AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "AuditDetail" );
-            AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "CommunicationRecipientActivity" );
             AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "History" );
             AddMissingUniqueGuidIndexOnTableIfNotExists( context, jobMigration, migrationHelper, "PersonDuplicate" );
 
