@@ -15,12 +15,13 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using System.ComponentModel;
-using System.Diagnostics;
 
 namespace Rock.Jobs
 {
@@ -36,12 +37,18 @@ namespace Rock.Jobs
     AttributeKey.CommandTimeout,
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
-    DefaultIntegerValue = 240 * 60 )]
+    DefaultIntegerValue = AttributeDefault.CommandTimeout )]
     public class PostV141DataMigrationsUpdateCurrentSessions1900 : IJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
+        }
+
+        private static class AttributeDefault
+        {
+            // Set Default to 4 hours, just in case
+            public const int CommandTimeout = 14400;
         }
 
         /// <summary>
@@ -53,8 +60,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // get the configured timeout, or default to 240 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
-            Stopwatch stopwatch= Stopwatch.StartNew();
+            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefault.CommandTimeout;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
