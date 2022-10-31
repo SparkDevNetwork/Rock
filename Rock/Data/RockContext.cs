@@ -2091,6 +2091,18 @@ namespace Rock.Data
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
+        /// Gets or sets the Reminders
+        /// </summary>
+        /// <value>The reminders.</value>
+        public DbSet<Reminder> Reminders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ReminderTypes
+        /// </summary>
+        /// <value>The reminder types.</value>
+        public DbSet<ReminderType> ReminderTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Streaks.
         /// </summary>
         /// <value>
