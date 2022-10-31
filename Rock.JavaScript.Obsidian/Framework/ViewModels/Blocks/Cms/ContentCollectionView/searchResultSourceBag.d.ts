@@ -48,4 +48,7 @@ export type SearchResultSourceBag = {
      * results container.
      */
     template?: string | null;
+
+    /** Gets or sets the total number of matching results found in the index. */
+    totalResultCount: number;
 };

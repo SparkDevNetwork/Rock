@@ -619,6 +619,8 @@ namespace Rock.Blocks.Cms
                 }
             }
 
+            resultBag.TotalResultCount = resultBag.ResultSources.Sum( rs => rs.TotalResultCount );
+
             return resultBag;
         }
 
@@ -960,6 +962,7 @@ namespace Rock.Blocks.Cms
                 var results = await activeComponent.SearchAsync( searchQuery, searchOptions );
 
                 resultBag.HasMore = results.TotalResultsAvailable > ( maxResults + offset );
+                resultBag.TotalResultCount = results.TotalResultsAvailable;
 
                 // Merge the results with the Lava template.
                 var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
