@@ -247,6 +247,7 @@ export default defineComponent({
         const filterValues = ref<Record<string, string>>(getQueryStringFilterValues(filters.map(f => f.label ?? "")));
         const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.Relevance.toString());
         const sortOrderItems = getSortOrderItems(config.enabledSortOrders ?? [], config.trendingTerm ?? "Trending");
+        const totalResultsCount = ref(config.initialResults?.totalResultCount ?? 0);
 
         // #endregion
 
@@ -282,6 +283,7 @@ export default defineComponent({
             const result = await invokeBlockAction<SearchResultBag>("Search", data);
 
             if (result.isSuccess && result.data != null) {
+                totalResultsCount.value = result.data.totalResultCount;
                 processResults(result.data, !offset, sourceGuid);
             }
             else {
@@ -402,7 +404,8 @@ export default defineComponent({
             showFiltersPanel: config.showFiltersPanel,
             showFullTextSearch: config.showFullTextSearch,
             sortOrder,
-            sortOrderItems
+            sortOrderItems,
+            totalResultsCount
         };
     },
 
@@ -413,7 +416,7 @@ export default defineComponent({
     <div v-if="showFullTextSearch" class="collectionsearch-fulltext">
         <div ref="searchContainerElement" class="content">
             <div class="search-fulltext">
-                <TextBox v-model="query">
+                <TextBox v-model="query" placeholder="What can we help you find?">
                     <template #prepend>
                         <div class="input-group-addon">
                             <i class="fa fa-search"></i>
@@ -433,9 +436,9 @@ export default defineComponent({
 
     <div class="collectionsearch-results">
         <div class="results-header">
-            <!-- <div class="results-count">
-                Results <span class="results-count-number">(#)</span>
-            </div> -->
+            <div class="results-count">
+                Results <span class="results-count-number">{{ totalResultsCount }}</span>
+            </div>
 
             <div v-if="showSort" class="results-order">
                 <DropDownList v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
