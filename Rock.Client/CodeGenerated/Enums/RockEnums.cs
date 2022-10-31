@@ -797,6 +797,8 @@ namespace Rock.Client.Enums
         ConnectionStatus = 0xc,
         MiddleName = 0xd,
         AnniversaryDate = 0xe,
+        Race = 0xf,
+        Ethnicity = 0x10,
     }
 
     /// <summary>
