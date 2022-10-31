@@ -2213,6 +2213,11 @@ namespace Rock.Rest.v2
             var page = PageCache.Get( options.PageGuid );
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+            if ( page == null )
+            {
+                return NotFound();
+            }
+
             var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
 
             if ( !isAuthorized )

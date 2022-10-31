@@ -69,6 +69,7 @@
     <Compile Include="Cms\PageRouteDetail.cs" />
     <Compile Include="Cms\PersistedDatasetDetail.cs" />
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
+    <Compile Include="Cms\SiteDetail.cs" />
     <Compile Include="Core\AssetStorageProviderDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
