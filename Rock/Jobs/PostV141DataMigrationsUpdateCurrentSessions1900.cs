@@ -34,7 +34,7 @@ namespace Rock.Jobs
     AttributeKey.CommandTimeout,
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of interactions, this could take several minutes or more.",
     IsRequired = false,
-    DefaultIntegerValue = 240 * 60 )]
+    DefaultIntegerValue = AttributeDefault.CommandTimeout )]
     public class PostV141DataMigrationsUpdateCurrentSessions1900 : RockJob
     {
         private static class AttributeKey
@@ -42,13 +42,18 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
         }
 
+        private static class AttributeDefault
+        {
+            // Set Default to 4 hours, just in case
+            public const int CommandTimeout = 14400;
+        }
+
         /// <summary>
         /// Executes this instance.
         /// </summary>
         public override void Execute()
         {
-            // get the configured timeout, or default to 240 minutes if it is blank
-            var commandTimeout = this.GetAttributeValue(AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+            var commandTimeout = this.GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefault.CommandTimeout;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
