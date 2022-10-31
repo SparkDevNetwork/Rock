@@ -1269,6 +1269,15 @@ namespace Rock.SystemGuid
         public const string LOGGING_DOMAIN_PRAYER = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781";
 
         /// <summary>
+        /// The logging domain mobile
+        /// </summary>
+        public const string LOGGING_DOMAIN_MOBILE = "77148fef-bc4f-4b16-9d4e-e1de28149751";
+
+        /// <summary>
+        /// The logging domain apple tv
+        /// </summary>
+        public const string LOGGING_DOMAIN_APPLE_TV = "41a3cbf1-769a-4d15-a13c-56d48b2009b8";
+        /// <summary>
         /// The logging domain other
         /// </summary>
         public const string LOGGING_DOMAIN_OTHER = "83CFDA4F-5867-4D4B-853F-D9B535EC5131";

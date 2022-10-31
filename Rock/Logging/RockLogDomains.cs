@@ -86,8 +86,16 @@ namespace Rock.Logging
         /// </summary>
         public const string Lava = "LAVA";
         /// <summary>
-        /// Bus evtns
+        /// Bus events
         /// </summary>
         public const string Bus = "BUS";
+        /// <summary>
+        /// The mobile events.
+        /// </summary>
+        public const string Mobile = "MOBILE";
+        /// <summary>
+        /// The Apple TV events.
+        /// </summary>
+        public const string AppleTv = "APPLETV";
     }
 }
