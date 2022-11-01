@@ -552,7 +552,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 return false;
                             }
                         }
-                        
+
                         person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
                         person.IsLockedAsChild = cbLockAsChild.Checked;
 
@@ -643,7 +643,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         DateTime? deceasedDate = null;
                         if ( newRecordStatusReasonId.HasValue && newRecordStatusReasonId.Value == reasonDeceasedId )
                         {
-                            deceasedDate = dpDeceasedDate.SelectedDate;
+                            // sanity check to ensure that the deceased date is not before the birthday
+                            if ( dpDeceasedDate.SelectedDate < bpBirthDay.SelectedDate )
+                            {
+                                nbDeceasedDateError.Visible = true;
+                                nbDeceasedDateError.Text = "Select a date older than the Birth Day.";
+                                return false;
+                            }
+                            else
+                            {
+                                deceasedDate = dpDeceasedDate.SelectedDate;
+                            }
                         }
                         person.DeceasedDate = deceasedDate;
 
@@ -753,7 +763,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         return true;
                     } );
 
-                    if (wrapTransactionResult)
+                    if ( wrapTransactionResult )
                     {
                         Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                     }
