@@ -94,8 +94,7 @@ namespace RockWeb.Blocks.Reminders
         {
             public const string CompletionFilter = "CompletionFilter";
             public const string ActiveFilter = "ActiveFilter";
-            public const string StartDate = "StartDate";
-            public const string EndDate = "EndDate";
+            public const string CustomDateRange = "CustomDateRange";
         }
 
         #endregion Keys
@@ -158,7 +157,15 @@ namespace RockWeb.Blocks.Reminders
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                reminderService.RecalculateReminderCount( CurrentPersonId.Value );
+                var currentReminderCount = CurrentPerson.ReminderCount ?? 0;
+                int updatedReminderCount = reminderService.RecalculateReminderCount( CurrentPersonId.Value );
+
+                if ( updatedReminderCount != currentReminderCount )
+                {
+                    // The RecalculateReminderCount() service method has already updated the database record, if required, but since
+                    // CurrentPerson may be cached by the RockPage, we need to be sure we display the correct Reminder count when the page loads.
+                    CurrentPerson.ReminderCount = updatedReminderCount;
+                }
             }
         }
 
@@ -171,8 +178,39 @@ namespace RockWeb.Blocks.Reminders
             var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
             var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
 
-            BindEntityTypeList();
+            var entityTypes = new List<EntityType>();
+            var reminderTypes = new List<ReminderType>();
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+
+                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value ).ToList();
+                rptEntityTypeList.DataSource = entityTypes;
+                rptEntityTypeList.DataBind();
+
+                reminderTypes = reminderService.GetReminderTypesByPerson( selectedEntityTypeId, CurrentPerson );
+                rptReminderType.DataSource = reminderTypes;
+                rptReminderType.DataBind();
+            }
+
+            if ( entityTypes.Count == 0 )
+            {
+                // This user doesn't have any reminders.  We can stop here.
+                pnlNoReminders.Visible = true;
+                pnlView.Visible = false;
+                return;
+            }
+            else if ( entityTypes.Count == 1 )
+            {
+                // This user only has a reminder for a single entity type, so hide that dropdown.
+                lSelectedEntityType.Text = entityTypes[0].FriendlyName;
+                pnlEntityTypeSelection.CssClass = string.Empty;
+                pnlEntityTypeSelection.Attributes.Remove( "data-toggle" );
+            }
+
+            BindEntityTypeList( entityTypes );
             BindReminderList( selectedEntityTypeId, selectedEntityId, selectedReminderTypeId );
+            SetReminderTypeFilter( reminderTypes, selectedReminderTypeId );
 
             if ( !selectedEntityTypeId.HasValue )
             {
@@ -213,15 +251,10 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private void BindEntityTypeList()
+        private void BindEntityTypeList( List<EntityType> entityTypes )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var reminderService = new ReminderService( rockContext );
-                var entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value ).ToList();
-                rptEntityTypeList.DataSource = entityTypes;
-                rptEntityTypeList.DataBind();
-            }
+            rptEntityTypeList.DataSource = entityTypes;
+            rptEntityTypeList.DataBind();
         }
 
         /// <summary>
@@ -232,7 +265,8 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderTypeId">The reminder type identifier.</param>
         private void BindReminderList( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
-            rptReminders.DataSource = GetReminders( entityTypeId, entityId, reminderTypeId );
+            var reminders = GetReminders( entityTypeId, entityId, reminderTypeId );
+            rptReminders.DataSource = reminders;
             rptReminders.DataBind();
         }
 
@@ -247,10 +281,18 @@ namespace RockWeb.Blocks.Reminders
         {
             var reminderDTOs = new List<ReminderDTO>();
 
-            // ToDo:  Get these from dropdowns.
-
             var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
             var activeFilter = GetBlockUserPreference( UserPreferenceKey.ActiveFilter );
+
+            if ( completionFilter.IsNullOrWhiteSpace() )
+            {
+                completionFilter = "Incomplete";
+            }
+
+            if ( activeFilter.IsNullOrWhiteSpace() )
+            {
+                activeFilter = "Active";
+            }
 
             using ( var rockContext = new RockContext() )
             {
@@ -259,6 +301,7 @@ namespace RockWeb.Blocks.Reminders
                 var reminders = reminderService.GetReminders( CurrentPersonId.Value, entityTypeId, entityId, reminderTypeId );
 
                 // Filter for completion status.
+                lCompletionFilter.Text = completionFilter;
                 if ( completionFilter == "Incomplete" )
                 {
                     reminders = reminders.Where( r => !r.IsComplete );
@@ -269,6 +312,8 @@ namespace RockWeb.Blocks.Reminders
                 }
 
                 // Filter for active status.
+                lActiveFilter.Text = activeFilter;
+                hfActiveFilterSetting.Value = activeFilter;
                 if ( activeFilter == "Active" )
                 {
                     var currentDate = RockDateTime.Now;
@@ -276,22 +321,31 @@ namespace RockWeb.Blocks.Reminders
                 }
                 else if ( activeFilter == "Active This Week" )
                 {
-                    // Check with DSD - Rock setting for start of week?
-                    var nextWeekStartDate = RockDateTime.Now.EndOfWeek( DayOfWeek.Sunday ).AddDays( 1 );
-                    reminders = reminders.Where( r => r.ReminderDate < nextWeekStartDate );
+                    var nextWeekStartDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 1 );
+                    var startOfWeek = nextWeekStartDate.AddDays( -7 );
+                    reminders = reminders.Where( r => r.ReminderDate >= startOfWeek && r.ReminderDate < nextWeekStartDate );
                 }
                 else if ( activeFilter == "Active This Month" )
                 {
+                    var startOfMonth = RockDateTime.Now.StartOfMonth();
                     var nextMonthDate = RockDateTime.Now.AddMonths( 1 );
                     var nextMonthStartDate = new DateTime( nextMonthDate.Year, nextMonthDate.Month, 1 );
-                    reminders = reminders.Where( r => r.ReminderDate < nextMonthStartDate );
+                    reminders = reminders.Where( r => r.ReminderDate >= startOfMonth && r.ReminderDate < nextMonthStartDate );
                 }
                 else
                 {
                     // Custom date range.
-                    var startDate = GetBlockUserPreference( UserPreferenceKey.StartDate ).AsDateTime() ?? RockDateTime.Now.Date;
-                    var endDate = GetBlockUserPreference( UserPreferenceKey.EndDate ).AsDateTime() ?? RockDateTime.Now.Date.AddDays( 14 );
-                    reminders = reminders.Where( r => r.ReminderDate >= startDate && r.ReminderDate < endDate );
+                    var selectedDateRange = GetBlockUserPreference( UserPreferenceKey.CustomDateRange );
+                    if ( selectedDateRange.IsNotNullOrWhiteSpace() )
+                    {
+                        drpCustomDate.DelimitedValues = selectedDateRange;
+                        lActiveFilter.Text = "Custom Date Range";
+                        hfActiveFilterSetting.Value = "Custom Date Range";
+                        var dateRange = new TimePeriod( selectedDateRange ).GetDateRange();
+                        var startDate = dateRange.Start;
+                        var endDate = dateRange.End;
+                        reminders = reminders.Where( r => r.ReminderDate >= startDate && r.ReminderDate < endDate );
+                    }
                 }
 
                 foreach ( var reminder in reminders.ToList() )
@@ -302,6 +356,52 @@ namespace RockWeb.Blocks.Reminders
             }
 
             return reminderDTOs;
+        }
+
+        /// <summary>
+        /// Sets the reminder type filter display.
+        /// </summary>
+        /// <param name="reminderTypes">The available Reminder Types.</param>
+        /// <param name="selectedReminderType">The selected reminder type identifier.</param>
+        private void SetReminderTypeFilter( List<ReminderType> reminderTypes, int? selectedReminderType )
+        {
+            if ( !selectedReminderType.HasValue )
+            {
+                return;
+            }
+
+            foreach ( var reminderType in reminderTypes )
+            {
+                if ( reminderType.Id == selectedReminderType )
+                {
+                    lReminderType.Text = reminderType.Name;
+                    return;
+                }
+            }
+
+            lReminderType.Text = "All";
+        }
+
+        /// <summary>
+        /// Reload the page with appropriate page parameters.  This is useful when the filter values are updated.
+        /// </summary>
+        private void RefreshPage()
+        {
+            var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
+            var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+            var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
+            RefreshPage( selectedEntityTypeId, selectedEntityId, selectedReminderTypeId );
+        }
+
+        /// <summary>
+        /// Reload the page with appropriate page parameters.  This is useful when the reminder type filter is updated.
+        /// </summary>
+        /// <param name="reminderTypeId">The reminder type identifier.</param>
+        private void RefreshPage( int? reminderTypeId )
+        {
+            var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
+            var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+            RefreshPage( selectedEntityTypeId, selectedEntityId, reminderTypeId );
         }
 
         /// <summary>
@@ -386,6 +486,19 @@ namespace RockWeb.Blocks.Reminders
             var entityType = ( EntityType ) e.Item.DataItem;
             btnEntityType.Text = entityType.FriendlyName;
             btnEntityType.CommandArgument = entityType.Id.ToString();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptReminderType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptReminderType_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var btnEntityType = e.Item.FindControl( "btnEntityType" ) as LinkButton;
+            var reminderType = ( ReminderType ) e.Item.DataItem;
+            btnEntityType.Text = reminderType.Name;
+            btnEntityType.CommandArgument = reminderType.Id.ToString();
         }
 
         /// <summary>
@@ -504,6 +617,62 @@ namespace RockWeb.Blocks.Reminders
             DeleteReminder( reminderId.Value );
 
             NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCompletion controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCompletion_Click( object sender, EventArgs e )
+        {
+            var btnCompletion = sender as LinkButton;
+            SetBlockUserPreference( UserPreferenceKey.CompletionFilter, btnCompletion.CommandArgument );
+            RefreshPage();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnReminderType controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnReminderType_Click( object sender, EventArgs e )
+        {
+            var btnReminderType = sender as LinkButton;
+
+            int? reminderTypeId = null;
+            if ( btnReminderType.CommandArgument != "All" )
+            {
+                reminderTypeId = int.Parse( btnReminderType.CommandArgument );
+            }
+            RefreshPage( reminderTypeId );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnActive controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnActive_Click( object sender, EventArgs e )
+        {
+            var btnActive = sender as LinkButton;
+            SetBlockUserPreference( UserPreferenceKey.ActiveFilter, btnActive.CommandArgument );
+            RefreshPage();
+        }
+
+        /// <summary>
+        /// Handles the SelectedDateRangeChanged event of the drpCustomDate controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void drpCustomDate_SelectedDateRangeChanged( object sender, EventArgs e )
+        {
+            if ( Page.IsPostBack )
+            {
+                SetBlockUserPreference( UserPreferenceKey.ActiveFilter, "Custom Date Range" );
+                SetBlockUserPreference( UserPreferenceKey.CustomDateRange, drpCustomDate.DelimitedValues );
+                RefreshPage();
+            }
         }
 
         #endregion Events

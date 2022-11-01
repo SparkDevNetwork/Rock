@@ -25,7 +25,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 
 using Rock.Web.UI;
@@ -89,8 +88,8 @@ namespace RockWeb.Blocks.Reminders
             WARNING:  This block is loaded on every page of the internal site and any processing done in these
             methods should have minimal impact on the page load!  Do not include database calls, here.
 
-            Database calls necessary to set up the page should be triggered only from interactive events from
-            specific controls.
+            Database calls necessary to set up the page should be triggered only from interactive events (e.g.,
+            on click) from specific controls.
         */
 
         /// <summary>
@@ -116,21 +115,24 @@ namespace RockWeb.Blocks.Reminders
 
             if ( !Page.IsPostBack )
             {
-                if ( CurrentPersonAliasId.HasValue )
+                if ( !CurrentPersonAliasId.HasValue )
                 {
-                    lbReminders.Visible = true;
-
-                    rppPerson.SetValue( CurrentPerson );
-
-                    int reminderCount = CurrentPerson?.ReminderCount ?? 0;
-                    if ( reminderCount > 0 )
-                    {
-                        lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
-                        litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
-                    }
-
-                    SetContextEntityType();
+                    // If user is not logged in, do nothing.
+                    return;
                 }
+
+                lbReminders.Visible = true;
+                rppPerson.SetValue( CurrentPerson );
+
+                int reminderCount = CurrentPerson?.ReminderCount ?? 0;
+                if ( reminderCount > 0 )
+                {
+                    // Show reminder count on icon.
+                    lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
+                    litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
+                }
+
+                SetContextEntityType();
             }
             else
             {
@@ -278,8 +280,11 @@ namespace RockWeb.Blocks.Reminders
 
                 foreach ( var reminder in reminders.ToList() )
                 {
-                    var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                    reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    if ( reminder.IsActive )
+                    {
+                        var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
+                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    }
                 }
             }
 
@@ -300,7 +305,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
         }
 
         /// <summary>
@@ -317,7 +322,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
         }
 
         /// <summary>
@@ -348,7 +353,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
         }
 
         /// <summary>
@@ -379,6 +384,21 @@ namespace RockWeb.Blocks.Reminders
             rppPerson.SetValue( CurrentPerson );
             rnbRepeatDays.Text = string.Empty;
             rnbRepeatTimes.Text = string.Empty;
+        }
+
+        /// <summary>
+        /// Updates the existing reminder panel of the "add reminders" modal dialog.
+        /// </summary>
+        private void UpdateExistingReminders()
+        {
+            var contextEntity = GetFirstContextEntity();
+            if ( contextEntity == null )
+            {
+                // This shouldn't be possible, since the button is only visible when the page has a context entity.
+                NavigateToCurrentPageReference();
+            }
+
+            ShowExistingReminders( contextEntity );
         }
 
         #endregion Methods
@@ -473,7 +493,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>

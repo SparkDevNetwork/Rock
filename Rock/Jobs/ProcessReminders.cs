@@ -17,27 +17,23 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
-
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using Rock.Model;
 using Rock.Lava;
 using Rock.Logging;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to calculate metric values for metrics that are based on a schedule and have a database or sql datasource type
-    /// Only Metrics that need to be populated (based on their Schedule) will be processed
+    /// A job which processes reminders, including creating appropriate notifications and updating the reminder count value
+    /// for people with active reminders.
     /// </summary>
     [DisplayName( "Process Reminders" )]
-    [Description( "A job processes reminders, including creating appropriate notifications and updating the reminder count value for people with active reminders." )]
+    [Description( "A job which processes reminders, including creating appropriate notifications and updating the reminder count value for people with active reminders." )]
 
     [IntegerField(
         "Command Timeout",
@@ -65,7 +61,14 @@ namespace Rock.Jobs
         /// </summary>
         private static class AttributeKey
         {
+            /// <summary>
+            /// The SQL command timeout.
+            /// </summary>
             public const string CommandTimeout = "CommandTimeout";
+
+            /// <summary>
+            /// The reminder notification.
+            /// </summary>
             public const string ReminderNotification = "ReminderNotification";
         }
 
@@ -130,8 +133,7 @@ namespace Rock.Jobs
             {
                 RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Processing Reminder {activeReminder.Id} for notifications." );
 
-                bool notified = false;
-
+                bool notificationSent;
                 if ( activeReminder.ReminderType.NotificationType == ReminderNotificationType.Workflow )
                 {
                     // Create a notification workflow.
@@ -141,7 +143,7 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    notified = InitiateNotificationWorkflow( activeReminder );
+                    notificationSent = InitiateNotificationWorkflow( activeReminder );
                 }
                 else
                 {
@@ -149,10 +151,10 @@ namespace Rock.Jobs
                     var reminderEntity = new EntityTypeService( rockContext )
                         .GetEntity( activeReminder.ReminderType.EntityTypeId, activeReminder.EntityId );
                     var result = SendReminderCommunication( activeReminder, notificationSystemCommunication, reminderEntity );
-                    notified = ( result.MessagesSent > 0 );
+                    notificationSent = ( result.MessagesSent > 0 );
                 }
 
-                if ( notified && activeReminder.ReminderType.ShouldAutoCompleteWhenNotified )
+                if ( notificationSent && activeReminder.ReminderType.ShouldAutoCompleteWhenNotified )
                 {
                     // Mark the reminder as complete.
                     activeReminder.CompleteReminder();
@@ -258,12 +260,12 @@ namespace Rock.Jobs
                             && !activeReminders.Select( r => r.PersonAlias.PersonId ).Contains( p.Id ) );
 
             int zeroedCount = peopleWithNoReminders.Count();
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Resetting {zeroedCount} reminder counts to 0." );
+            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Resetting reminder counts to 0 for {zeroedCount} people." );
 
             rockContext.BulkUpdate( peopleWithNoReminders, p => new Person { ReminderCount = 0 } );
             rockContext.SaveChanges();
 
-            // Update individual reminder accounts with correct values.
+            // Update individual reminder counts with correct values.
             var reminderCounts = activeReminders.GroupBy( r => r.PersonAlias.PersonId )
                 .ToDictionary( a => a.Key, a => a.Count() );
 
@@ -279,7 +281,7 @@ namespace Rock.Jobs
                 }
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Updated {updatedCount} reminder counts." );
+            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Updated reminder counts for {updatedCount} people." );
         }
     }
 }

@@ -22,6 +22,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -32,7 +33,8 @@ namespace Rock.Rest.Controllers
     public partial class ReminderTypesController
     {
         /// <summary>
-        /// GET a specific Tag
+        /// Checks to see if there are reminder types available for a specified entity type with
+        /// View authorization for authenticated user.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         [Authenticate, Secured]
@@ -42,11 +44,13 @@ namespace Rock.Rest.Controllers
         public bool ReminderTypesExistForEntityType( int entityTypeId )
         {
             var reminderTypeService = ( ReminderTypeService ) Service;
-            var reminderTypeCount = reminderTypeService.Queryable()
+            var authorizedReminderTypeCount = reminderTypeService.Queryable()
                 .Where( t => t.IsActive && t.EntityTypeId == entityTypeId )
+                .ToList() // Execute EF query so LINQ can use IsAuthorized().
+                .Where( t => t.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 .Count();
 
-            return ( reminderTypeCount > 0 );
+            return ( authorizedReminderTypeCount > 0 );
         }
     }
 }
