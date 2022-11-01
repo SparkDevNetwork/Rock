@@ -150,7 +150,7 @@ namespace Rock.Lava.Shortcodes
             string enabledSecurityCommands = string.Empty;
             if ( context.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
+                enabledSecurityCommands = context.Registers["EnabledCommands"].ToStringSafe();
             }
 
             var shortcode = LavaShortcodeCache.Get( _shortcodeId );
