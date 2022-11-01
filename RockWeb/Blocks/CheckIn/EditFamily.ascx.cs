@@ -941,6 +941,9 @@ namespace RockWeb.Blocks.CheckIn
                 gpGradePicker.SelectedValue = null;
             }
 
+            rpRace.SetValue( familyPersonState.RaceValueId );
+            epEthnicity.SetValue( familyPersonState.EthnicityValueId );
+
             CreateDynamicPersonControls( familyPersonState );
 
             ShowPersonView( familyPersonState );

@@ -366,6 +366,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         public void SetValue( int? value )
         {
+            EnsureChildControls();
+
             switch ( CurrentPickerMode )
             {
                 case RacePickerMode.DropdownList:
@@ -386,6 +388,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         public void SetValue( string value )
         {
+            EnsureChildControls();
+
             int? intValue = value.AsIntegerOrNull();
             SetValue( intValue );
         }
@@ -397,6 +401,8 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public int? SelectedValueAsId()
         {
+            EnsureChildControls();
+
             switch ( CurrentPickerMode )
             {
                 case RacePickerMode.DropdownList:

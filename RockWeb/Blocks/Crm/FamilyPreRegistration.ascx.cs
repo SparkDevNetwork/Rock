@@ -913,16 +913,16 @@ usernameTextbox.blur(function () {{
 
             required = $('#{16}').val() == 'True';
             if (required) {{
-                $('#{17}').closest('.form-group').addClass('required');
+                $('#{17}').find('.form-group:first').addClass('required');
             }} else {{
-                $('#{17}').closest('.form-group').removeClass('required');
+                $('#{17}').find('.form-group:first').removeClass('required');
             }}
 
             required = $('#{18}').val() == 'True';
             if (required) {{
-                $('#{19}').closest('.form-group').addClass('required');
+                $('#{19}').find('.form-group:first').addClass('required');
             }} else {{
-                $('#{19}').closest('.form-group').removeClass('required');
+                $('#{19}').find('.form-group:first').removeClass('required');
             }}
 
         }} else {{
@@ -933,8 +933,8 @@ usernameTextbox.blur(function () {{
             $('#{11}').closest('.form-group').removeClass('required');
             $('#{13}').closest('.form-group').removeClass('required');
             $('#{15}').closest('.form-group').removeClass('required');
-            $('#{17}').closest('.form-group').removeClass('required');
-            $('#{19}').closest('.form-group').removeClass('required');
+            $('#{17}').find('.form-group:first').removeClass('required');
+            $('#{19}').find('.form-group:first').removeClass('required');
         }}
     }}
 ",

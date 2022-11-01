@@ -49,27 +49,32 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Key = AttributeKey.CaseWorkerRole,
         Order = 1 )]
+
     [BooleanField(
         "Display Country Code",
         Key = AttributeKey.DisplayCountryCode,
         Description = "When enabled prepends the country code to all phone numbers.",
         DefaultBooleanValue = false,
         Order = 2 )]
+
     [BooleanField( "Display Government Id",
         Key = AttributeKey.DisplayGovernmentId,
         Description = "Display the government identifier.",
         DefaultBooleanValue = true,
         Order = 3 )]
+
     [BooleanField( "Display Middle Name",
         Key = AttributeKey.DisplayMiddleName,
         Description = "Display the middle name of the person.",
         DefaultBooleanValue = false,
         Order = 4 )]
+
     [LinkedPage( "Benevolence Request Statement Page",
         Description = "The page which summarizes a benevolence request for printing",
         IsRequired = true,
         Key = AttributeKey.BenevolenceRequestStatementPage,
         Order = 5 )]
+
     [LinkedPage(
         "Workflow Detail Page",
         Description = "Page used to display details about a workflow.",
@@ -83,6 +88,26 @@ namespace RockWeb.Blocks.Finance
         Order = 7,
         Key = AttributeKey.WorkflowEntryPage,
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 8 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 9 )]
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
@@ -109,9 +134,19 @@ namespace RockWeb.Blocks.Finance
             public const string BenevolenceRequestStatementPage = "BenevolenceRequestStatementPage";
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         #endregion Attribute Keys
+
+        #region List Source
+        private static class ListSource
+        {
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        }
+
+        #endregion
 
         #region Page PageParameterKeys
         private static class PageParameterKey
@@ -880,6 +915,15 @@ namespace RockWeb.Blocks.Finance
             pnlEditDetail.Visible = false;
         }
 
+        private void ConfigureRaceAndEthnicityControls()
+        {
+            rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            rpRace.Required = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+
+            epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+        }
+
         /// <summary>
         /// Loads the edit details.
         /// </summary>
@@ -1619,6 +1663,7 @@ namespace RockWeb.Blocks.Finance
 
             divViewRelatedDocs.Visible = documentList.Any();
 
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>

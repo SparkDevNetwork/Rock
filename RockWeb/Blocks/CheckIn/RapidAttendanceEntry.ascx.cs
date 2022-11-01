@@ -135,6 +135,7 @@ namespace RockWeb.Blocks.CheckIn
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 1,
         IsRequired = true )]
+
     [DefinedValueField(
         "Adult Phone Types",
         Key = AttributeKey.AdultPhoneTypes,
@@ -144,6 +145,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 2,
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
+
     [AttributeField(
         "Adult Person Attributes",
         Key = AttributeKey.AdultPersonAttributes,
@@ -153,6 +155,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 3,
         AllowMultiple = true,
         IsRequired = false )]
+
     [BooleanField(
         "Show Communication Preference(Adults)",
         Key = AttributeKey.ShowCommunicationPreference,
@@ -161,6 +164,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         IsRequired = false,
         Order = 4 )]
+
     [DefinedValueField(
         "Child Phone Types",
         AllowMultiple = true,
@@ -170,6 +174,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 5,
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
+
     [AttributeField(
         "Child Person Attributes",
         Key = AttributeKey.ChildPersonAttributes,
@@ -179,6 +184,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         AllowMultiple = true,
         Order = 6 )]
+
     [BooleanField(
         "Child Allow Email Edit",
         Key = AttributeKey.ChildAllowEmailEdit,
@@ -187,6 +193,26 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         IsRequired = false,
         Order = 7 )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 8 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 9 )]
     #endregion Individual Block Attribute Settings
 
     #region Prayer Block Attribute Settings
@@ -417,9 +443,18 @@ namespace RockWeb.Blocks.CheckIn
             public const string DisplayToPublic = "DisplayToPublic";
             public const string DefaultAllowComments = "DefaultAllowComments";
             public const string EnableCategorySelection = "CategorySelection";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         #endregion Attribute Keys
+
+        #region List Source
+        private static class ListSource
+        {
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        }
+        #endregion
 
         #region Properties
 
@@ -2301,6 +2336,8 @@ namespace RockWeb.Blocks.CheckIn
                     dvpSuffix.SetValue( person.SuffixValueId );
                     bpBirthDay.SelectedDate = person.BirthDate;
                     rblGender.SelectedValue = person.Gender.ConvertToString();
+                    rpRace.SetValue( person.RaceValueId );
+                    epEthnicity.SetValue( person.EthnicityValueId );
                 }
 
                 BindPersonDetailByRole( person, !isChild );
@@ -2396,6 +2433,14 @@ namespace RockWeb.Blocks.CheckIn
                     cbIsEmailActive.Checked = person.IsEmailActive;
                 }
             }
+
+            rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            rpRace.Required = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+            rpRace.SetValue( person.RaceValueId );
+
+            epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+            epEthnicity.SetValue( person.EthnicityValueId );
 
             BindPhoneNumbers( isAdult, person );
             var attributeList = GetPersonAttributeGuids( isAdult );
