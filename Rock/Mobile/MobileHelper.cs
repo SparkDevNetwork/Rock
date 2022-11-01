@@ -391,6 +391,8 @@ namespace Rock.Mobile
             // Setup the appearance settings.
             //
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
+            package.AppearanceSettings.EnableNavbarTransparency = additionalSettings.EnableBarTransparency;
+            package.AppearanceSettings.NavbarBlurStyle = additionalSettings.IOSBlurStyle;
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;

@@ -117,6 +117,14 @@
                                     </div>
                                 </Rock:RockControlWrapper>
 
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="(iOS only) Please note, your bar background color must have an opacity <100% for this to work. Enable to view different blurring options." />
+                                        <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="(iOS only) Select between the four different blur styles of the navigation bar." />
+                                    </div>
+                                </div>
+
                                 <hr />
 
                                 <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">

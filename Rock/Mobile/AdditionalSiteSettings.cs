@@ -182,6 +182,18 @@ namespace Rock.Mobile
         public string BarBackgroundColor { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable bar transparency.
+        /// </summary>
+        /// <value><c>true</c> if enable bar transparency; otherwise, <c>false</c>.</value>
+        public bool EnableBarTransparency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IOS blur style.
+        /// </summary>
+        /// <value>The IOS blur style.</value>
+        public IOSBlurStyle IOSBlurStyle { get; set; }
+
+        /// <summary>
         /// Gets or sets the color of the menu button.
         /// </summary>
         /// <value>

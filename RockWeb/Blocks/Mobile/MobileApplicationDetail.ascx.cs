@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
+using Rock.DownhillCss.Utility;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -539,7 +540,33 @@ namespace RockWeb.Blocks.Mobile
                     return;
                 }
 
-                cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
+                var barBackgroundColor = additionalSettings.BarBackgroundColor;
+
+                var barBackgroundOpacity = GetAlphaFromHex( barBackgroundColor );
+
+                // If our bar background color has opacity, we need to reformat our color picker to have the
+                // rgba(r, g, b, a) format.
+                if ( barBackgroundOpacity != null )
+                {
+                    // Let's get the hex color as the last 6 characters of the string.
+                    // #5FFFFFF or #75FFFFFF would still return #FFFFFF this way.
+                    var barBackgroundColorHex = barBackgroundColor.Substring( barBackgroundColor.Length - 6 ).Insert(0, "#");
+
+                    // Convert to RGBA using RockColor utility class.
+                    barBackgroundColor = new RockColor( barBackgroundColorHex )
+                    {
+                        Alpha = barBackgroundOpacity.Value
+                    }.ToRGBA();
+                }
+
+                ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
+                
+
+                cbNavbarTransclucent.Checked = additionalSettings.EnableBarTransparency;
+                ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
+                ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBlurStyle);
+
+                cpEditBarBackgroundColor.Value = barBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
                 cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
@@ -565,6 +592,11 @@ namespace RockWeb.Blocks.Mobile
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
             }
+        }
+
+        public void CbNavbarTransclucent_CheckedChanged( object sender, EventArgs e )
+        {
+            ddlNavbarBlurStyle.Visible = ( sender as CheckBox ).Checked;
         }
 
         /// <summary>
@@ -658,7 +690,9 @@ namespace RockWeb.Blocks.Mobile
                 int red = match.Groups[1].Value.AsInteger();
                 int green = match.Groups[2].Value.AsInteger();
                 int blue = match.Groups[3].Value.AsInteger();
-                return string.Format( "#{0:x2}{1:x2}{2:x2}", red, green, blue );
+                var alphaValue = match.Groups[4].Value;
+                var alpha = alphaValue.Contains('.') ? alphaValue.Split( '.' )[1] : alphaValue;
+                return string.Format( "#{0}{1:x2}{2:x2}{3:x2}", alpha, red, green, blue );
             }
 
             //
@@ -671,6 +705,37 @@ namespace RockWeb.Blocks.Mobile
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the alpha from a hex value, for example, #50FFFFFF would return 0.50.
+        /// Returns null if it is unable to get a value (the hex value is malformed or doesn't have an alpha).
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private double? GetAlphaFromHex( string color )
+        {
+            double? alpha = null;
+
+            if(color.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            if(color.StartsWith("#"))
+            {
+                string strippedColor = color.Substring(1);
+                if ( strippedColor.Length == 8 )
+                {
+                    alpha = strippedColor.Substring( 0, 2 ).AsDoubleOrNull();
+                }
+                else if ( strippedColor.Length == 7 )
+                {
+                    alpha = strippedColor.Substring( 0, 1 ).AsDoubleOrNull();
+                }
+            }
+
+            return alpha != null ? alpha / 100 : null;
         }
 
         /// <summary>
@@ -1044,6 +1109,8 @@ namespace RockWeb.Blocks.Mobile
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
                 additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
+                additionalSettings.EnableBarTransparency = cbNavbarTransclucent.Checked;
+                additionalSettings.IOSBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
                 additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
                 additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
                 additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
