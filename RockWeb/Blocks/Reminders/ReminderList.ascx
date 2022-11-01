@@ -12,9 +12,6 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll panel-groupscheduler">
             <script type="text/javascript">
-                function showCustomDateRange() {
-                    $('#reminders_custom_date_range').removeClass('d-none');
-                }
                 $(document).ready(function () {
                     var activeFilterSetting = $('#<%=hfActiveFilterSetting.ClientID %>').val();
                     if (activeFilterSetting == 'Custom Date Range') {
