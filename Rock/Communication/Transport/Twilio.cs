@@ -540,6 +540,11 @@ namespace Rock.Communication.Transport
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         phoneNumber.IsMessagingEnabled = false;
+
+                        // Add this to the Person Activity history
+                        var historyChanges = new History.HistoryChangeList();
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} with number {phoneNumber.NumberFormatted} due to error an received from Twilio. Reason: https://www.twilio.com/docs/api/errors/{ex.Code}" );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
                     }
                 }
                 catch ( Exception ex )
