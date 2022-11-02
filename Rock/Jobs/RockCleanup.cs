@@ -2133,93 +2133,45 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
 
-            var interactionService = new InteractionService( rockContext );
-            var pageService = new PageService( rockContext );
-            var serviceJobService = new ServiceJobService( rockContext );
-
-            // Get the last successful job run date
-            var serviceJob = serviceJobService.Get( SystemGuid.ServiceJob.ROCK_CLEANUP.AsGuid() );
-            var minDate = serviceJob?.LastSuccessfulRunDateTime ?? DateTime.MinValue;
-
-            /* 2020-04-21 MDP
+            /* 2022-11-01 CWR
              *
-             * NOTE: When testing this, set the minDate to DateTime.MinValue to make sure it can still perform even when the job hasn't run before, or in a long time
+             * Replaced the previous LINQ queries with a SQL-only query that compiles the page statistics using SQL Window Functions
+             * and then updates the Page records directly.  This executes quicker, as well as more efficiently.
+             * The new update query builds the statistics based on the last 100 days of interactions, rather than the last 100 interactions for the page.
              *
-             * Querying the Interaction table (which can be very large) can easily take a very long time out. So some optimizations might be needed.
-             * In this case, the query was timing out in a way that was hard to avoid, so we broke it into several simplier individual queries
-             * This results in more roundtrips, but easy roundtrip should be pretty fast, so the net time to do the task ends up taking much less time.
-             *
-             * 2020-04-27 ETD
-             * Also for the same reason as above this job will process all of the page IDs. Trying to query them from recent interactions has a high
-             * likelyhood of getting a SQL command timeout exception. The overall job takes longer but no single transaction is long enough to timeout.
              */
 
-            // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
-            ////minDate = DateTime.MinValue;
+            var updateQuery = $@"
+DECLARE @PageStatistics TABLE
+( 
+    PageId int
+    , MedianPageLoadTime float
+)
 
-            var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
-            var updateCount = 0;
+INSERT INTO @PageStatistics
+SELECT
+    DISTINCT 
+    ic.[EntityId]
+    , ROUND( PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY i.[InteractionTimeToServe]) OVER (PARTITION BY ic.[Id]), 2 ) AS [MedianTimeToServe]
+FROM
+    [Interaction] i
+    INNER JOIN [InteractionComponent] ic ON ic.[Id] = i.[InteractionComponentId]
+    INNER JOIN [InteractionChannel] ich ON ich.[Id] = ic.[InteractionChannelId]
+    INNER JOIN [DefinedValue] dv ON dv.[Id] = ich.[ChannelTypeMediumValueId]
+WHERE 
+    dv.[Guid] = '{SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE}'
+    AND i.[InteractionDateTime] >= DATEADD( day, -100, GETDATE() )
+    AND i.[InteractionTimeToServe] IS NOT NULL
 
-            // Get interaction components to page map - this eliminates some joins for the query within the loop
-            var pageIdToComponentIdMap = InteractionComponentCache.All()
-                .Where( ic => ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
-                .Where( ic => ic.EntityId.HasValue )
-                .GroupBy( ic => ic.EntityId.Value )
-                .ToDictionary( g => g.Key, g => g.Select( ic => ic.Id ).ToList() );
+UPDATE p
+    SET p.[MedianPageLoadTimeDurationSeconds] = ps.MedianPageLoadTime
+FROM [Page] p 
+INNER JOIN @PageStatistics ps ON ps.[PageId] = p.[Id]
 
-            // The pages we can calculate load time for are those that have interaction components
-            var uniquePageIds = pageIdToComponentIdMap.Keys.ToList();
+SELECT @@ROWCOUNT
+";
 
-            foreach ( var pageId in uniquePageIds )
-            {
-                // Get the components for this page
-                var componentIds = pageIdToComponentIdMap.GetValueOrNull( pageId );
-
-                // Get the page (sometimes it doesn't exist if the page was deleted)
-                var page = pageService.Get( pageId );
-
-                if ( componentIds == null || !componentIds.Any() || page == null )
-                {
-                    continue;
-                }
-
-                // Query to check if this page has had any views since the last time the job ran. This is very fast and much cheaper
-                // than one big query to get all pages, which was timing out.
-                var hasViewsSinceMinDate = interactionService.Queryable().AsNoTracking().Any( i =>
-                    componentIds.Contains( i.InteractionComponentId ) &&
-                    i.InteractionDateTime >= minDate );
-
-                if ( !hasViewsSinceMinDate )
-                {
-                    continue;
-                }
-
-                // We want the last 100 interactions included in the median calculation **(reguardless of the minDate)**
-                var recentTimesToServe = interactionService.Queryable().AsNoTracking()
-                    .Where( i => componentIds.Contains( i.InteractionComponentId ) )
-                    .OrderByDescending( i => i.InteractionDateTime )
-                    .Take( 100 )
-                    .Select( i => i.InteractionTimeToServe )
-                    .ToList()
-                    .Where( i => i.HasValue )
-                    .Select( i => i.Value )
-                    .OrderBy( i => i )
-                    .ToList();
-
-                var count = recentTimesToServe.Count;
-                if ( count < 1 )
-                {
-                    continue;
-                }
-
-                var firstMiddleValue = recentTimesToServe.ElementAt( ( count - 1 ) / 2 );
-                var secondMiddleValue = recentTimesToServe.ElementAt( count / 2 );
-                var median = ( firstMiddleValue + secondMiddleValue ) / 2;
-                page.MedianPageLoadTimeDurationSeconds = median;
-
-                rockContext.SaveChanges();
-                updateCount++;
-            }
+            var updateCount = rockContext.Database.ExecuteSqlCommand( updateQuery );
 
             return updateCount;
         }
