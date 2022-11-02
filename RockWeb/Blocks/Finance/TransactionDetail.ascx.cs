@@ -1022,7 +1022,6 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BindAccounts();
-                hfIsZeroTransaction.Value = IsZeroTransaction().ToString();
             }
 
             HideDialog();
@@ -2080,6 +2079,7 @@ namespace RockWeb.Blocks.Finance
                 gAccountsEdit.DataBind();
                 feeColumn.Visible = hasFeeInfo;
                 feeCoverageColumn.Visible = hasFeeCoverageInfo;
+                hfIsZeroTransaction.Value = IsZeroTransaction().ToString();
             }
         }
 
