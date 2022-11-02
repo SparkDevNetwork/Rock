@@ -120,8 +120,8 @@
                                 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="(iOS only) Please note, your bar background color must have an opacity <100% for this to work. Enable to view different blurring options." />
-                                        <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="(iOS only) Select between the four different blur styles of the navigation bar." />
+                                        <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="Please note, your bar background color must have an opacity less than 100% for this to work. Enable to view different blurring options. (iOS Only)" />
+                                        <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="Select between the different blur styles of the navigation bar. (iOS Only)" />
                                     </div>
                                 </div>
 
