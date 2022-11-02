@@ -530,24 +530,6 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                bool hasValidAmount;
-                if ( UseSimpleAccountMode )
-                {
-                    var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M;
-                    var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
-                    hasValidAmount = accountAmountMinusFeeCoverageAmount != 0.0M || ( accountAmountFeeCoverageAmount.HasValue && accountAmountFeeCoverageAmount.Value != 0.0M );
-                }
-                else
-                {
-                    hasValidAmount = TransactionDetailsState.Any( d => d.Amount != 0.0M || ( d.FeeCoverageAmount.HasValue && d.FeeCoverageAmount.Value != 0.0M ) );
-                }
-
-                if ( !hasValidAmount )
-                {
-                    nbTransactionDetailValidationMessage.Visible = true;
-                    return;
-                }
-
                 rockContext.WrapTransaction( () =>
                 {
                     // Save the transaction
@@ -691,6 +673,23 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        private bool IsZeroTransaction()
+        {
+            bool hasValidAmount;
+            if ( UseSimpleAccountMode )
+            {
+                var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M;
+                var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
+                hasValidAmount = accountAmountMinusFeeCoverageAmount != 0.0M || ( accountAmountFeeCoverageAmount.HasValue && accountAmountFeeCoverageAmount.Value != 0.0M );
+            }
+            else
+            {
+                hasValidAmount = TransactionDetailsState.Any( d => d.Amount != 0.0M || ( d.FeeCoverageAmount.HasValue && d.FeeCoverageAmount.Value != 0.0M ) );
+            }
+
+            return !hasValidAmount;
+        }
+
         /// <summary>
         /// Handles the Click event of the btnSaveThenAdd control.
         /// </summary>
@@ -824,6 +823,16 @@ namespace RockWeb.Blocks.Finance
             SetCreditCardVisibility();
             SetNonCashAssetTypeVisibility();
             _focusControl = dvpCurrencyType;
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbSingleAccountAmountMinusFeeCoverageAmount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tbSingleAccountAmountMinusFeeCoverageAmount_TextChanged( object sender, EventArgs e )
+        {
+            hfIsZeroTransaction.Value = IsZeroTransaction().ToString();
         }
 
         /// <summary>
@@ -1013,13 +1022,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BindAccounts();
-
-                if ( nbTransactionDetailValidationMessage.Visible )
-                {
-                    // If a message about no amounts is showing, hide it now that they have added one.
-                    // It'll get re-checked when saved.
-                    nbTransactionDetailValidationMessage.Visible = false;
-                }
+                hfIsZeroTransaction.Value = IsZeroTransaction().ToString();
             }
 
             HideDialog();
@@ -2392,7 +2395,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="tbAccountAmount">The tb account amount.</param>
         /// <param name="transactionDetail">The transaction detail.</param>
-        private static void SetAccountAmountMinusFeeCoverageTextboxText( CurrencyBox tbAccountAmountMinusFeeCoverageAmount, FinancialTransactionDetail transactionDetail )
+        private void SetAccountAmountMinusFeeCoverageTextboxText( CurrencyBox tbAccountAmountMinusFeeCoverageAmount, FinancialTransactionDetail transactionDetail )
         {
             /* 2021-01-28 MDP
 
@@ -2409,14 +2412,18 @@ namespace RockWeb.Blocks.Finance
 
             var feeCoverageAmount = transactionDetail.FeeCoverageAmount;
             var accountAmount = transactionDetail.Amount;
+            decimal value = 0;
             if ( feeCoverageAmount.HasValue )
             {
-                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount - feeCoverageAmount.Value;
+                value = accountAmount - feeCoverageAmount.Value;
             }
             else
             {
-                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount;
+                value = accountAmount;
             }
+
+            tbAccountAmountMinusFeeCoverageAmount.Value = value;
+            hfIsZeroTransaction.Value = IsZeroTransaction().ToString();
         }
 
         /// </summary>
