@@ -170,7 +170,7 @@
             return result.data;
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete user login.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete REST Key.";
 
             return false;
         }
@@ -227,7 +227,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save user login.";
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Rest Key.";
 
         return false;
     }
@@ -241,7 +241,7 @@
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
-        blockError.value = "The specified user login could not be viewed.";
+        blockError.value = "The specified Rest Key could not be viewed.";
     }
     else if (!config.entity.idKey) {
         restKeyEditBag.value = config.entity;

@@ -9,13 +9,13 @@
             </div>
             <div class="col-md-6">
                 <CheckBox v-model="isActive"
-                          help="Set this to false to have the PersistedDataset lava filter return null for this dataset, and to exclude this dataset when rebuilding."
                           label="Active" />
             </div>
         </div>
         <TextBox v-model="description"
                  label="Description"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 help="Add a description for this REST API User" />
         <div class="row">
             <div class="col-md-6">
                 <div class="d-flex align-items-end">

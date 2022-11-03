@@ -144,7 +144,7 @@ namespace Rock.Blocks.Security
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity );
+                    box.Entity = GetEntityBagForView( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -157,7 +157,7 @@ namespace Rock.Blocks.Security
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -171,10 +171,11 @@ namespace Rock.Blocks.Security
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="rockContext">The rock Context.</param>
         /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetCommonEntityBag( UserLogin entity )
+        private RestKeyBag GetCommonEntityBag( UserLogin entity, RockContext rockContext )
         {
-            if ( entity == null )
+            if ( entity == null || rockContext == null )
             {
                 return null;
             }
@@ -194,7 +195,7 @@ namespace Rock.Blocks.Security
             {
                 restKeyBag.Name = entity.Person.LastName;
                 restKeyBag.IsActive = entity.Person.RecordStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                var noteService = new NoteService( new RockContext() );
+                var noteService = new NoteService( rockContext );
                 var description = noteService.Queryable().Where( a => a.EntityId == entity.Person.Id ).FirstOrDefault();
                 if ( description != null )
                 {
@@ -210,15 +211,16 @@ namespace Rock.Blocks.Security
         /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
+        /// <param name="rockContext">The rock Context.</param>
         /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetEntityBagForView( UserLogin entity )
+        private RestKeyBag GetEntityBagForView( UserLogin entity, RockContext rockContext )
         {
-            if ( entity == null )
+            if ( entity == null || rockContext == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity, rockContext );
 
             return bag;
         }
@@ -227,15 +229,16 @@ namespace Rock.Blocks.Security
         /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
+        /// <param name="rockContext">The rock Context.</param>
         /// <returns>A <see cref="RestKeyBag"/> that represents the entity.</returns>
-        private RestKeyBag GetEntityBagForEdit( UserLogin entity )
+        private RestKeyBag GetEntityBagForEdit( UserLogin entity, RockContext rockContext )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity, rockContext );
 
             return bag;
         }
@@ -390,7 +393,7 @@ namespace Rock.Blocks.Security
 
                 var box = new DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -506,7 +509,7 @@ namespace Rock.Blocks.Security
                 // Ensure navigation properties will work now.
                 entity = entityService.Get( entity.Id );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionOk( GetEntityBagForView( entity, rockContext ) );
             }
         }
 
