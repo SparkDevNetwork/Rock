@@ -13,6 +13,7 @@
 
             <asp:HiddenField ID="hfTransactionId" runat="server" />
             <asp:HiddenField ID="hfBatchId" runat="server" />
+            <Rock:HiddenFieldWithClass ID="hfIsZeroTransaction" CssClass="is-zero-transaction" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -40,10 +41,9 @@
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbTransactionDetailValidationMessage" runat="server" NotificationBoxType="Validation" Text="An amount for at least one account is required." Visible="false" />
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
-                                    <Rock:CurrencyBox ID="tbSingleAccountAmountMinusFeeCoverageAmount" Label="Amount" runat="server" CssClass="input-width-lg" />
+                                    <Rock:CurrencyBox ID="tbSingleAccountAmountMinusFeeCoverageAmount" Label="Amount" runat="server" CssClass="input-width-lg" AutoPostBack="true" OnTextChanged="tbSingleAccountAmountMinusFeeCoverageAmount_TextChanged" />
                                     <Rock:CurrencyBox ID="tbSingleAccountForeignCurrencyAmount" Label="Foreign Currency Amount" runat="server" CssClass="input-width-lg" />
                                     <Rock:CurrencyBox ID="tbSingleAccountFeeAmount" Label="Processing Fees" runat="server" CssClass="input-width-lg" Help="The fee amount associated with the processing of the transaction." />
                                     <Rock:CurrencyBox ID="tbSingleAccountFeeCoverageAmount" runat="server" Label="Covered Fee" Required="false" ValidationGroup="Account" Help="The fee amount that the person elected to cover." />
@@ -106,9 +106,9 @@
                         SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+a" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
-                        <asp:LinkButton ID="btnSaveThenViewBatch" runat="server" Text="Save Then View Batch" CssClass="btn btn-link" OnClick="btnSaveThenViewBatch_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary btn-transaction-save" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+a" Text="Save Then Add" CssClass="btn btn-link btn-transaction-save" OnClick="btnSaveThenAdd_Click" />
+                        <asp:LinkButton ID="btnSaveThenViewBatch" runat="server" Text="Save Then View Batch" CssClass="btn btn-link btn-transaction-save" OnClick="btnSaveThenViewBatch_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
@@ -233,6 +233,29 @@
         <Rock:ModalAlert ID="modalAlert" runat="server" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <script>
+
+            Sys.Application.add_load(function () {
+                // delete/archive prompt
+                $('.btn-transaction-save').on('click', function (e) {
+                    var isZeroTransaction = $('.is-zero-transaction').val();
+
+                    if (isZeroTransaction !== 'True') {
+                        return true;
+                    }
+
+                    e.preventDefault();
+                    Rock.dialogs.confirm('This will create a financial transaction without an amount. Do you want to continue?', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                });
+
+            });
+
+        </script>
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
