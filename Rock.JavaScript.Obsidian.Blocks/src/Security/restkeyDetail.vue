@@ -14,7 +14,7 @@
                  entityTypeName="UserLogin"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="true"
                  :isSecurityHidden="true"
