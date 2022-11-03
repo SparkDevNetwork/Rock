@@ -21,11 +21,12 @@
 // </copyright>
 //
 
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-
 export type QueueBag = {
+    /** Gets the name. Each instance of Rock shares this name for this queue. */
+    name?: string | null;
+
     /** Gets or sets the time to live in seconds. */
-    timeToLiveSeconds: number | null;
+    timeToLiveSeconds?: number | null;
 
     /**
      * Gets the messages consumed last minute.
@@ -44,13 +45,4 @@ export type QueueBag = {
      * Specific to one Rock instance.
      */
     messagesConsumedLastDay?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

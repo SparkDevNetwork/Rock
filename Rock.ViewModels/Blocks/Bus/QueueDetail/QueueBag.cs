@@ -19,8 +19,13 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Bus.QueueDetail
 {
-    public class QueueBag : EntityBagBase
+    public class QueueBag
     {
+        /// <summary>
+        /// Gets the name. Each instance of Rock shares this name for this queue.
+        /// </summary>
+        public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the time to live in seconds.
         /// </summary>

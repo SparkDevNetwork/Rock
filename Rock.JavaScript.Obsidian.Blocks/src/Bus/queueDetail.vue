@@ -73,14 +73,14 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return config.entity?.idKey ?? "Queue Detail";
+        return config.entity?.name ?? "Queue Detail";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return queueViewBag.value?.idKey ?? "";
+        return queueViewBag.value?.name ?? "";
     });
 
     /**
@@ -119,7 +119,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!queueEditBag.value?.idKey) {
+        if (!queueEditBag.value?.name) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -140,7 +140,7 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: queueViewBag.value?.idKey
+            key: queueViewBag.value?.name
         });
 
         if (result.isSuccess && result.data) {
@@ -161,7 +161,7 @@
      */
     async function onEdit(): Promise<boolean> {
         const result = await invokeBlockAction<DetailBlockBox<QueueBag, QueueDetailOptionsBag>>("Edit", {
-            key: queueViewBag.value?.idKey
+            key: queueViewBag.value?.name
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
@@ -220,7 +220,7 @@
     else if (!config.entity) {
         blockError.value = "The specified achievement type could not be viewed.";
     }
-    else if (!config.entity.idKey) {
+    else if (!config.entity.name) {
         queueEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }

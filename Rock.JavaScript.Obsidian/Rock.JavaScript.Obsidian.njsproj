@@ -93,6 +93,7 @@
     <Folder Include="Framework\ViewModels\" />
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
+    <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />

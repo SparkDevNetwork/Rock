@@ -152,7 +152,7 @@ namespace Rock.Blocks.Bus
 
             return new QueueBag
             {
-                IdKey = rockQueue.Name,
+                Name = rockQueue.Name,
                 TimeToLiveSeconds = rockQueue.TimeToLiveSeconds
             };
         }
@@ -292,22 +292,15 @@ namespace Rock.Blocks.Bus
         /// <returns></returns>
         private IRockQueue GetQueue()
         {
-            if ( _rockQueue == null )
+            var queueKey = PageParameter( PageParameterKey.QueueKey );
+
+            if ( queueKey.IsNullOrWhiteSpace() )
             {
-                var queueKey = PageParameter( PageParameterKey.QueueKey );
-
-                if ( queueKey.IsNullOrWhiteSpace() )
-                {
-                    return null;
-                }
-
-                _rockQueue = Rock.Bus.Queue.RockQueue.Get( queueKey );
+                return null;
             }
 
-            return _rockQueue;
+            return Rock.Bus.Queue.RockQueue.Get( queueKey );
         }
-
-        private IRockQueue _rockQueue = null;
 
 
         #endregion
@@ -344,7 +337,7 @@ namespace Rock.Blocks.Bus
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<QueueBag, QueueDetailOptionsBag> box )
         {
-            if ( !TryGetQueueForEditAction( box.Entity.IdKey, out var rockQueue, out var actionError ) )
+            if ( !TryGetQueueForEditAction( box.Entity.Name, out var rockQueue, out var actionError ) )
             {
                 return actionError;
             }
