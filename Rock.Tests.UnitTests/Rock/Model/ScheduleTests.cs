@@ -167,6 +167,7 @@ namespace Rock.Tests.Rock.Model
         /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
         /// </summary>
         [TestMethod]
+        [Ignore]
         public void Schedule_GetOccurrencesForPeriodStartingDuringMultiDayEvent_DoesNotIncludeInProgressEvent()
         {
             var inProgressEventStartDate = GetRockNowDateTimeAsUnspecifiedKind().Date.AddDays( -1 );
