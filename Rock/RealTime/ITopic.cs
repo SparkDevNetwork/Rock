@@ -20,6 +20,28 @@ using Rock.Attribute;
 namespace Rock.RealTime
 {
     /// <summary>
+    /// Provides the functionality to communicate with real-time client connections
+    /// from outside the topic message handlers.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal]
+    public interface ITopic
+    {
+        /// <summary>
+        /// Gets the channel manager that will provide functionality to add and
+        /// remove client connections from various channels.
+        /// </summary>
+        ITopicChannelManager Channels { get; }
+    }
+
+    /// <summary>
     /// Defines the structure of a RealTime topic area that will facilitate
     /// communication between the server and remote devices.
     /// </summary>
@@ -36,15 +58,9 @@ namespace Rock.RealTime
     ///     </para>
     /// </remarks>
     [RockInternal]
-    public interface ITopic<T>
+    public interface ITopic<T> : ITopic
         where T : class
     {
-        /// <summary>
-        /// Gets the channel manager that will provide functionality to add and
-        /// remove client connections from various channels.
-        /// </summary>
-        ITopicChannelManager Channels { get; }
-
         /// <summary>
         /// Gets a helper object to access client connections by various
         /// filtering options.

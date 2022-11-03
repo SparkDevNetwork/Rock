@@ -949,7 +949,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Synchronizes the request's edit mode for Future Follow-Up date picker.
         /// </summary>
-        private void SyncRequestEditModeFutureFollowUp()
+        private void SyncRequestEditModeFutureFollowUp( DateTime? followupDate = null )
         {
             var isFutureFollowUp = !rblState.SelectedValue.IsNullOrWhiteSpace() &&
                 rblState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp;
@@ -958,6 +958,10 @@ namespace RockWeb.Blocks.Connection
             {
                 dpFollowUp.Visible = true;
                 dpFollowUp.Required = true;
+                if ( followupDate.HasValue )
+                {
+                    dpFollowUp.SelectedDate = followupDate.Value;
+                }
             }
             else
             {
@@ -2326,7 +2330,7 @@ namespace RockWeb.Blocks.Connection
             rblState.SetValue( connectionRequest.ConnectionState.ConvertToInt().ToString() );
 
             // Controls whether the date picker for Future Follow-Up is displayed.
-            SyncRequestEditModeFutureFollowUp();
+            SyncRequestEditModeFutureFollowUp( connectionRequest.FollowupDate );
 
             tbComments.Text = connectionRequest.Comments;
 

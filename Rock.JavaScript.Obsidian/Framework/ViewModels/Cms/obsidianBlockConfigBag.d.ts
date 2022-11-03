@@ -33,12 +33,6 @@ export type ObsidianBlockConfigBag = {
     blockFileUrl?: string | null;
 
     /**
-     * Gets or sets the HTML element identifier that the block will be
-     * mounted on as its root.
-     */
-    rootElementId?: string | null;
-
-    /**
      * Gets or sets the unique identifier of the block that is being
      * represented by this configuration.
      */
@@ -55,4 +49,10 @@ export type ObsidianBlockConfigBag = {
      * to the block's configuration bar.
      */
     customConfigurationActions?: BlockCustomActionBag[] | null;
+
+    /**
+     * Gets or sets the HTML element identifier that the block will be
+     * mounted on as its root.
+     */
+    rootElementId?: string | null;
 };

@@ -31,6 +31,12 @@ export type StepTypeBag = {
     /** Gets or sets a flag indicating if this step type allows multiple step records per person. */
     allowMultiple: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the Id of the Rock.Model.DataView associated with this step type. The data view reveals the people that are allowed to be
      * considered for this step type.
@@ -46,6 +52,12 @@ export type StepTypeBag = {
     /** Gets or sets the lava template used to render custom card details. */
     cardLavaTemplate?: string | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets a description of the step type. */
     description?: string | null;
 
@@ -57,6 +69,9 @@ export type StepTypeBag = {
 
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
@@ -73,6 +88,12 @@ export type StepTypeBag = {
      */
     mergeTemplateId?: number | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the name of the step type. This property is required. */
     name?: string | null;
 
@@ -84,25 +105,4 @@ export type StepTypeBag = {
 
     /** Gets or sets the Id of the Rock.Model.StepProgram to which this step type belongs. This property is required. */
     stepProgramId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -250,6 +250,24 @@ namespace RockWeb.Blocks.Cms
         DefaultBooleanValue = true,
         Order = 27 )]
 
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 28 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 29 )]
+
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
         Description = "The lava template to use to format the view details.",
@@ -258,7 +276,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 28 )]
+        Order = 30 )]
 
     #endregion
 
@@ -295,6 +313,8 @@ namespace RockWeb.Blocks.Cms
             public const string CampusSelectorLabel = "CampusSelectorLabel";
             public const string RequireGender = "RequireGender";
             public const string ViewTemplate = "ViewTemplate";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         private static class MergeFieldKey
@@ -402,6 +422,11 @@ namespace RockWeb.Blocks.Cms
             public const string AddGroupMember = "AddGroupMember";
         }
 
+        private static class ListSource
+        {
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        }
+
         #region Fields
 
         private List<Guid> _requiredPhoneNumberGuids = new List<Guid>();
@@ -423,13 +448,12 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
+
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
-            dvpTitle.Visible = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
 
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
-            dvpSuffix.Visible = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
 
-            tbNickName.Visible = GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean();
+            SetElementVisibility();
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
@@ -440,6 +464,7 @@ namespace RockWeb.Blocks.Cms
             this.AddConfigurationUpdateTrigger( upContent );
 
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
+
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ) )
             {
@@ -491,6 +516,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void PublicProfileEdit_BlockUpdated( object sender, EventArgs e )
         {
+            SetElementVisibility();
             ShowViewDetail();
         }
 
@@ -711,6 +737,22 @@ namespace RockWeb.Blocks.Cms
             return group.Members.Where( gm => gm.PersonId == person.Id ).Any();
         }
 
+        /// <summary>
+        /// Displays or hides the selected elements based on the business rules
+        /// </summary>
+        private void SetElementVisibility()
+        {
+            dvpTitle.Visible = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+            dvpSuffix.Visible = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+            tbNickName.Visible = GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean();
+
+            rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            rpRace.Required  = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+
+            epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+        }
+
         #endregion
 
         #region Events
@@ -904,6 +946,8 @@ namespace RockWeb.Blocks.Cms
                     person.NickName = tbNickName.Text;
                     person.LastName = tbLastName.Text;
                     person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
+                    person.RaceValueId = rpRace.SelectedValueAsId();
+                    person.EthnicityValueId = epEthnicity.SelectedValueAsId();
 
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
@@ -1357,6 +1401,8 @@ namespace RockWeb.Blocks.Cms
             tbLastName.Text = person.LastName;
             dvpSuffix.SetValue( person.SuffixValueId );
             bpBirthDay.SelectedDate = person.BirthDate;
+            rpRace.SetValue( person.RaceValueId );
+            epEthnicity.SetValue( person.EthnicityValueId );
 
             // Setup the gender radio button list according to the required field
             var genderRequired = GetAttributeValue( AttributeKey.RequireGender ).AsBooleanOrNull() ?? true;

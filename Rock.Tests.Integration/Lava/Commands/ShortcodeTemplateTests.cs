@@ -449,7 +449,6 @@ var options = {
 var data = {
     labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
     datasets: [      {
-          label: '',
           fill: false, 
           backgroundColor: 'rgba(5,155,255,.6)',
           borderColor: '#059BFF',
@@ -846,6 +845,61 @@ $( document ).ready(function() {
         }
 
         #endregion
+
+
+        #region KPI
+
+        [TestMethod]
+        public void KpiShortcode_DocumentationExample_EmitsCorrectHtml()
+        {
+            var input = @"
+{[kpis]}
+  [[ kpi icon:'fa-highlighter' value:'4' label:'Highlighters' color:'yellow-700']][[ endkpi ]]
+  [[ kpi icon:'fa-pen-fancy' value:'8' label:'Pens' color:'indigo-700']][[ endkpi ]]
+  [[ kpi icon:'fa-pencil-alt' value:'15' label:'Pencils' color:'green-600']][[ endkpi ]]
+{[endkpis]}
+";
+
+            var expectedOutput = @"
+<div class=``kpi - container``>
+    <div class=``kpi  kpi-card has-icon-bg text-yellow-700 border-yellow-500``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-highlighter``></i></div>
+        </div>
+        <div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>4</span>
+            <span class=``kpi-label``>Highlighters</span>
+        </div>
+    </div>
+    <div class=``kpi  kpi-card has-icon-bg text-indigo-700 border-indigo-500``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-pen-fancy``></i></div>
+        </div><div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>8</span>
+            <span class=``kpi-label``>Pens</span>
+        </div>
+    </div>
+    <div class=``kpi  kpi-card has-icon-bg text-green-600 border-green-400``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-pencil-alt``></i></div>
+        </div><div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>15</span>
+            <span class=``kpi-label``>Pencils</span>
+        </div>
+    </div>
+</div>
+";
+
+            expectedOutput = expectedOutput.Replace( "``", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        #endregion
+
 
         #region Panel
 

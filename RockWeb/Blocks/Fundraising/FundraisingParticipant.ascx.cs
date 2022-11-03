@@ -232,16 +232,15 @@ namespace RockWeb.Blocks.Fundraising
                 var rockContext = new RockContext();
                 var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
 
-                // Set the requirements values only if there are requirements for this group / group type.
-                if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
-                {
-                    gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
-                    gmrcRequirements.Visible = true;
-                    SetRequirementStatuses( rockContext );
-                }
-
                 if ( groupMember != null )
                 {
+                    // Set the requirements values only if there are requirements for this group / group type.
+                    if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+                    {
+                        gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                        gmrcRequirements.Visible = true;
+                        SetRequirementStatuses( rockContext );
+                    }
                     CreateDynamicControls( groupMember );
                 }
             }
@@ -764,7 +763,8 @@ namespace RockWeb.Blocks.Fundraising
 
             gmrcRequirements.RequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
             gmrcRequirements.SelectedGroupRoleId = groupMember.GroupRoleId;
-            var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id );
+            var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
+                groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
             gmrcRequirements.CreateRequirementStatusControls( groupMember.Id, currentPersonIsLeaderOfCurrentGroup, false );
         }
 

@@ -2209,7 +2209,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // Get any recent alerts for these people
             var recentAlertsByGivingId = financialTransactionAlertService.Queryable()
                 .AsNoTracking()
-                .Where( a => a.AlertTypeId == lateGiftAlertType.Id && a.AlertDateTime > oneYearAgo )
+                .Where( a => a.AlertTypeId == lateGiftAlertType.Id && a.AlertDateTime > oneYearAgo && a.GivingId != null )
                 .Select( a => new
                 {
                     a.GivingId,

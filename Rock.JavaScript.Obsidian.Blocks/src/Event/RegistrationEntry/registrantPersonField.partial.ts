@@ -99,6 +99,12 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.MobilePhone:
                     return PhoneNumberBox;
+
+                case RegistrationPersonFieldType.Race:
+                    return DropDownList;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    return DropDownList;
             }
         });
 
@@ -170,6 +176,16 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.MobilePhone:
                     componentProps.label = "Mobile Phone";
+                    break;
+
+                case RegistrationPersonFieldType.Race:
+                    componentProps.label = "Race";
+                    componentProps.items = [...registrationEntryState.viewModel.races];
+                    break;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    componentProps.label = "Ethnicity";
+                    componentProps.items = [...registrationEntryState.viewModel.ethnicities];
                     break;
             }
 

@@ -31,6 +31,18 @@
                     </div>
                 </Rock:PanelWidget>
 
+                <Rock:PanelWidget ID="pwUiSettings" runat="server" Title="UI Settings" Expanded="false">
+                    <Rock:NotificationBox ID="nbUiSettings" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
+
+                    <Rock:RockTextBox ID="rtbPersonRaceLabel" runat="server" Label="Race Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Race field is used."></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="rtbPersonEthnicityLabel" runat="server" Label="Ethnicity Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Ethnicity field is used."></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="rtbPersonGenderLabel" runat="server" Label="Gender Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Gender field is used."></Rock:RockTextBox>
+
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="btnUiSettingSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnUiSettingSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="UISettings"></Rock:BootstrapButton>
+                    </div>
+                </Rock:PanelWidget>
+
                 <Rock:PanelWidget ID="pwExperimentalSettings" runat="server" Title="Experimental Settings" TitleIconCssClass="fa fa-flask" Expanded="false">
                     <Rock:DayOfWeekPicker ID="dowpStartingDayOfWeek" runat="server" Label="Starting Day of Week" DefaultDayOfWeek="Monday" Help="Set this to change how Rock calculates 'Sunday Date'. This setting is retro-active to any data that is stored with SundayDate." />
                     <Rock:NotificationBox ID="nbStartDayOfWeekSaveMessage" runat="server" NotificationBoxType="Warning" Text="This is an experimental setting. Changing this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'." />

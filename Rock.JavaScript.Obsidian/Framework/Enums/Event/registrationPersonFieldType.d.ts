@@ -65,5 +65,11 @@ export const enum RegistrationPersonFieldType {
     MiddleName = 13,
 
     /** The anniversary date */
-    AnniversaryDate = 14
+    AnniversaryDate = 14,
+
+    /** The race */
+    Race = 15,
+
+    /** The ethnicity */
+    Ethnicity = 16
 }

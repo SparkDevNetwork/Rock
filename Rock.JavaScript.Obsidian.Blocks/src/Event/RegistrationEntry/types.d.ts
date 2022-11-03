@@ -38,7 +38,9 @@ export const enum RegistrationPersonFieldType {
     Grade = 11,
     ConnectionStatus = 12,
     MiddleName = 13,
-    AnniversaryDate = 14
+    AnniversaryDate = 14,
+    Race = 15,
+    Ethnicity = 16
 }
 
 export const enum RegistrationFieldSource {
@@ -110,6 +112,8 @@ export type RegistrationEntryBlockViewModel = {
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItemBag[] | null;
     registrationInstanceNotFoundMessage: string | null;
+    races: ListItemBag[];
+    ethnicities: ListItemBag[];
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;

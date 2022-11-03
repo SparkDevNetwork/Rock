@@ -120,5 +120,17 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// indicate that the following controls are for the spouse.
         /// </summary>
         public string SpouseLabel { get; set; }
+
+        /// <summary>
+        /// Determines if the race control should be hidden, optional or
+        /// required when displaying the person entry form.
+        /// </summary>
+        public FormFieldVisibility RaceEntry { get; set; }
+
+        /// <summary>
+        /// Determines if the ethnicity control should be hidden, optional or
+        /// required when displaying the person entry form.
+        /// </summary>
+        public FormFieldVisibility EthnicityEntry { get; set; }
     }
 }

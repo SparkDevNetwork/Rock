@@ -31,14 +31,29 @@ export type WorkflowActionFormAttributeBag = {
     /** Gets or sets the attribute identifier. */
     attributeId: number;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the size of the column. */
     columnSize?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets the field visibility rules json. */
     fieldVisibilityRulesJSON?: string | null;
 
     /** Gets or sets a value indicating whether [hide label]. */
     hideLabel: boolean;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether [is read only]. */
     isReadOnly: boolean;
@@ -48,6 +63,12 @@ export type WorkflowActionFormAttributeBag = {
 
     /** Gets or sets a value indicating whether [is visible]. */
     isVisible: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the order. */
     order: number;
@@ -60,25 +81,4 @@ export type WorkflowActionFormAttributeBag = {
 
     /** Gets or sets the header. */
     workflowActionFormId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

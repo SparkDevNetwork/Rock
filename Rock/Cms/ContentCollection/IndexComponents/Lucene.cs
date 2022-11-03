@@ -577,9 +577,12 @@ namespace Rock.Cms.ContentCollection.IndexComponents
             }
             else if ( sortOrder == SearchSortOrder.Trending )
             {
+                // The TrendingRank property has a value of 1 meaning highest rank,
+                // 2 meaning second highest, and so on. So we actually invert the
+                // isDescending value on it.
                 return new Sort(
                     new SortField( nameof( IndexDocumentBase.IsTrending ), SortFieldType.STRING, true ),
-                    new SortField( nameof( IndexDocumentBase.TrendingRank ), SortFieldType.INT32, isDescending ),
+                    new SortField( nameof( IndexDocumentBase.TrendingRank ), SortFieldType.INT32, !isDescending ),
                     new SortField( null, SortFieldType.SCORE, isDescending )
                 );
             }

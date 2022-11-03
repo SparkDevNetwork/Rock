@@ -465,6 +465,10 @@ export const enum DefinedValue {
     LoggingDomainCrm = "5D737243-E7E0-4981-87A5-0787E52631C6",
     /** The logging domain prayer */
     LoggingDomainPrayer = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781",
+    /** The logging domain mobile */
+    LoggingDomainMobile = "77148fef-bc4f-4b16-9d4e-e1de28149751",
+    /** The logging domain apple tv */
+    LoggingDomainAppleTv = "41a3cbf1-769a-4d15-a13c-56d48b2009b8",
     /** The logging domain other */
     LoggingDomainOther = "83CFDA4F-5867-4D4B-853F-D9B535EC5131",
     /** The check in attendance type physical */
@@ -485,4 +489,20 @@ export const enum DefinedValue {
     LanguageEnglish = "DF0A29A7-A61E-E4A7-4F3D-58CFDD3D3871",
     /** Translation Languages - Spanish */
     LanguageSpanish = "C93CB430-8554-E599-4F49-D7F3CED2B2C7",
+    /** Person Race - White */
+    PersonRaceWhite = "52E12EBE-1FCE-4B95-A677-AEEEDE9B1745",
+    /** Person Race - Black or African American */
+    PersonRaceBlackOrAfricanAmerican = "3760BA55-3D68-4F55-AEEF-0AC9F39D1730",
+    /** Person Race - American Indian or Alaska Native */
+    PersonRaceAmericanIndianOrAlaskanNative = "C734961E-43A7-4FB9-999E-B60D694268B4",
+    /** Person Race - Asian */
+    PersonRaceAsian = "FCDC15DF-B298-4067-AE8A-431E42DA6F7E",
+    /** Person Race - Native Hawaiian or Pacific Islander */
+    PersonRaceNativeHawaiianOrPacificIslander = "B46F3250-34A1-46E5-8171-9C8ED4FA0845",
+    /** Person Race - Other */
+    PersonRaceOther = "E364D2DE-81A0-4F9C-8ECF-96CC68009251",
+    /** Person Ethnicity - Hispanic or Latino */
+    PersonEthnicityHispanicOrLatino = "05762BE9-32D4-4C30-9CF1-E1513C5C8360",
+    /** Person Ethnicity - Not Hispanic or Latino */
+    PersonEthnicityNotHispanicOrLatino = "2D1EF4CF-19E5-46BC-B4B1-591CFF57E0D8",
 }

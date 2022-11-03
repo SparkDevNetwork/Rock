@@ -125,6 +125,8 @@ namespace RockWeb.Blocks.Administration
             BindExperimentalSettings();
 
             BindSystemDiagnosticsSettings();
+
+            BindUiSettings();
         }
 
         #endregion
@@ -218,6 +220,30 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
         }
+
+        /// <summary>
+        /// Handles saving the UI settings configuration
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnUiSettingSave_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            nbUiSettings.Visible = true;
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_RACE_LABEL, rtbPersonRaceLabel.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_ETHNICITY_LABEL, rtbPersonEthnicityLabel.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_GENDER_LABEL, rtbPersonGenderLabel.Text );
+
+            nbUiSettings.NotificationBoxType = NotificationBoxType.Success;
+            nbUiSettings.Title = string.Empty;
+            nbUiSettings.Text = "Setting saved successfully.";
+        }
+
         #endregion
 
         #region Methods
@@ -405,6 +431,16 @@ namespace RockWeb.Blocks.Administration
             dowpStartingDayOfWeek.SelectedDayOfWeek = RockDateTime.FirstDayOfWeek;
 
             nbSecurityGrantTokenDuration.IntegerValue = Math.Max( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION )?.AsIntegerOrNull() ?? 4320, 60 );
+        }
+
+        /// <summary>
+        /// Binds the UI settings
+        /// </summary>
+        private void BindUiSettings()
+        {
+            rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL, "Race" );
+            rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
+            rtbPersonGenderLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_GENDER_LABEL, "Gender" );
         }
 
         #endregion

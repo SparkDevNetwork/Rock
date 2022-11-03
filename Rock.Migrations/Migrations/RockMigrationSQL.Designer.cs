@@ -1097,11 +1097,25 @@ namespace Rock.Migrations.Migrations {
         ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
         ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
-        ///    creating a chart. The first ‘simple’ mode creates a [rest of string was truncated]&quot;;.
+        ///    creating a chart. The first ‘simple’ mode create [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202209291606147_Rollup_20220929_AddChartGridlinecolorProperty {
             get {
                 return ResourceManager.GetString("_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode {
+            get {
+                return ResourceManager.GetString("_202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode", resourceCulture);
             }
         }
     }

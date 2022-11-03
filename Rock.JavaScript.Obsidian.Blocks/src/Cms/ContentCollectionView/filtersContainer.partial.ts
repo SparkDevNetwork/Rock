@@ -213,7 +213,7 @@ export default defineComponent({
 
     template: `
 <div class="collectionsearch-filters">
-    <h3 class="title">Filters</h3>
+    <h4 class="title">Filter By</h4>
 
     <Filter v-for="item in filters"
         :key="item.sourceKey"

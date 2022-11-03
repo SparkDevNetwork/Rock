@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Groups
             btnShowMoveDialog.Visible = showMoveToOtherGroup;
 
             bool enableCommunications = this.GetAttributeValue( AttributeKey.EnableCommunications ).AsBooleanOrNull() ?? true;
-            btnShowCommunicationDialog.Visible = enableCommunications;
+            btnShowCommunicationDialog.Visible = PageParameter( PageParameterKey.GroupMemberId ).AsInteger() != 0 && enableCommunications;
 
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
             gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
@@ -809,9 +809,10 @@ namespace RockWeb.Blocks.Groups
 
             // Determine whether the current person is a leader of the chosen group.
             var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupMemberId.ValueAsInt() );
-            var currentPersonIsLeaderOfCurrentGroup = groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id );
+            var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
+                groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 
-            gmrcRequirements.CreateRequirementStatusControls( groupMemberId, currentPersonIsLeaderOfCurrentGroup, IsCardInteractionDisabled( rockContext, groupMemberId, group.Id) );
+            gmrcRequirements.CreateRequirementStatusControls( groupMemberId, currentPersonIsLeaderOfCurrentGroup, IsCardInteractionDisabled( rockContext, groupMemberId, group.Id ) );
         }
 
         private bool IsCardInteractionDisabled( RockContext rockContext, int groupMemberId, int groupId )
@@ -823,7 +824,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-                return ( groupMember.IsNewOrChangedGroupMember( rockContext) );
+                return ( groupMember.IsNewOrChangedGroupMember( rockContext ) );
             }
         }
 

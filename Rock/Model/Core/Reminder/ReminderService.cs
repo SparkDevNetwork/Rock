@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
@@ -30,13 +31,24 @@ namespace Rock.Model
         /// Recalculate the reminder count for a person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
-        public void RecalculateReminderCount( int personId )
+        /// <returns>The updated reminder count.</returns>
+        public int RecalculateReminderCount( int personId )
         {
             var rockContext = this.Context as RockContext;
             var person = new PersonService( rockContext ).Get( personId );
-            int reminderCount = GetByPerson( person.Id ).Count();
-            person.ReminderCount = reminderCount;
-            rockContext.SaveChanges();
+            var currentReminderCount = person.ReminderCount ?? 0;
+            int updatedReminderCount = GetByPerson( person.Id )
+                .ToList()
+                .Where( r => r.IsActive )
+                .Count();
+
+            if ( updatedReminderCount != currentReminderCount )
+            {
+                person.ReminderCount = updatedReminderCount;
+                rockContext.SaveChanges();
+            }
+
+            return updatedReminderCount;
         }
 
         /// <summary>
@@ -67,6 +79,10 @@ namespace Rock.Model
                 }
 
                 return GetByEntityTypeAndPerson( entityTypeId.Value, personId );
+            }
+            else if ( reminderTypeId.HasValue )
+            {
+                return GetByReminderTypeAndPerson( reminderTypeId.Value, personId );
             }
 
             return GetByPerson( personId );
@@ -112,12 +128,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets reminders by reminder type, entity type and person.
+        /// Gets reminders by reminder type and person.
         /// </summary>
         /// <param name="reminderTypeId">The entity type identifier.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
+        public IQueryable<Reminder> GetByReminderTypeAndPerson( int reminderTypeId, int personId )
+        {
+            return this.Queryable()
+                .Where( r => r.ReminderTypeId == reminderTypeId
+                    && r.PersonAlias.PersonId == personId );
+        }
+
+        /// <summary>
+                 /// Gets reminders by reminder type, entity type and person.
+                 /// </summary>
+                 /// <param name="reminderTypeId">The entity type identifier.</param>
+                 /// <param name="entityTypeId">The entity type identifier.</param>
+                 /// <param name="personId">The person identifier.</param>
+                 /// <returns></returns>
         public IQueryable<Reminder> GetByReminderTypeEntityTypeAndPerson( int reminderTypeId, int entityTypeId, int personId )
         {
             return this.Queryable()
@@ -144,7 +173,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets reminders by person.
+        /// Gets entity types associated with reminders by person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
@@ -164,7 +193,7 @@ namespace Rock.Model
         public IQueryable<Reminder> GetActiveReminders( DateTime currentDate )
         {
             var activeReminders = this
-                .Queryable().AsNoTracking()                 // Get reminders that:
+                .Queryable()                                // Get reminders that:
                 .Where( r => r.ReminderType.IsActive        //   have active reminder types;
                         && !r.IsComplete                    //   are not complete; and
                         && r.ReminderDate <= currentDate )  //   are active (i.e., reminder date has passed).
@@ -172,6 +201,30 @@ namespace Rock.Model
                 .Include( r => r.PersonAlias.Person );      // and Person.
 
             return activeReminders;
+        }
+
+        /// <summary>
+        /// Gets reminder types by person.
+        /// </summary>
+        /// <param name="entityTypeId">The optional entity type identifier.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public List<ReminderType> GetReminderTypesByPerson( int? entityTypeId, Person person )
+        {
+            var reminderTypeService = new ReminderTypeService( this.Context as RockContext );
+
+            var reminderTypesQuery = reminderTypeService.Queryable().Where( t => t.IsActive );
+            if ( entityTypeId.HasValue )
+            {
+                reminderTypesQuery = reminderTypesQuery.Where( t => t.EntityTypeId == entityTypeId );
+            }
+
+            var authorizedReminderTypes = reminderTypesQuery
+                .ToList() // Execute EF query so LINQ can use IsAuthorized().
+                .Where( t => t.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                .ToList();
+
+            return authorizedReminderTypes;
         }
     }
 }

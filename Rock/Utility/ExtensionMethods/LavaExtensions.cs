@@ -723,7 +723,10 @@ namespace Rock
 
             if ( string.IsNullOrWhiteSpace( enabledLavaCommands ) )
             {
-                renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"] );
+                if ( template.Registers.ContainsKey( "EnabledCommands" ) )
+                {
+                    renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"].ToStringSafe() );
+                }
             }
             else
             {

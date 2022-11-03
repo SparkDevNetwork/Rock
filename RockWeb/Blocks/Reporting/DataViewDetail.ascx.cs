@@ -1286,6 +1286,7 @@ $(document).ready(function() {
                 {
                     var filterControl = new FilterField();
                     filterControl.ValidationGroup = this.BlockValidationGroup;
+                    filterControl.IsFilterTypeEnhancedForLongLists = true;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );

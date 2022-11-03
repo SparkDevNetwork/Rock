@@ -26,6 +26,9 @@
  * previously setup that can be used again.
  */
 export type SavedFinancialAccountListItemBag = {
+    /** Gets or sets the category for this item. */
+    category?: string | null;
+
     /**
      * Gets or sets the description of the card to help identify it to the
      * individual.
@@ -35,12 +38,9 @@ export type SavedFinancialAccountListItemBag = {
     /** Gets or sets the image to be displayed to help identify the card. */
     image?: string | null;
 
-    /** Gets or sets the value. */
-    value?: string | null;
-
     /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** Gets or sets the value. */
+    value?: string | null;
 };

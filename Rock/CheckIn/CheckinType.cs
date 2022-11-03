@@ -635,6 +635,62 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
+            /// Gets the display race on children attribute.
+            /// </summary>
+            /// <value>
+            /// The display grade on children attribute.
+            /// </value>
+            public string DisplayRaceOnChildren
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN );
+                }
+            }
+
+            /// <summary>
+            /// Gets the display ethnicity on children attribute.
+            /// </summary>
+            /// <value>
+            /// The display grade on children attribute.
+            /// </value>
+            public string DisplayEthnicityOnChildren
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN );
+                }
+            }
+
+            /// <summary>
+            /// Gets the display race on adults attribute.
+            /// </summary>
+            /// <value>
+            /// The display grade on children attribute.
+            /// </value>
+            public string DisplayRaceOnAdults
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS );
+                }
+            }
+
+            /// <summary>
+            /// Gets the display ethnicity on adults attribute.
+            /// </summary>
+            /// <value>
+            /// The display grade on children attribute.
+            /// </value>
+            public string DisplayEthnicityOnAdults
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS );
+                }
+            }
+
+            /// <summary>
             /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that are defined for Registration (where 0 means Child/Adult in Family)
             /// </summary>
             /// <value>

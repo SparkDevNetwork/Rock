@@ -300,7 +300,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="app.ConnectionStrings.config" />
     <None Include="packages.config" />
     <None Include="settings\lava-dotliquid-engine.runsettings" />
     <None Include="settings\lava-fluid-engine.runsettings" />
@@ -310,6 +309,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="app.ConnectionStrings.config.example" />
+    <None Include="app.ConnectionStrings.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

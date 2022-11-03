@@ -567,7 +567,7 @@ function doPostBack() {{
             }
 
             var extraParams = new System.Text.StringBuilder();
-            extraParams.Append( '/' ).Append( activeOnly ).Append( '/' ).Append( this.DisplayPublicName ).Append( "?countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
+            extraParams.Append( "?activeOnly=" ).Append( activeOnly ).Append( "&displayPublicName=" ).Append( this.DisplayPublicName ).Append( "&countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
             ItemRestUrlExtraParams = extraParams.ToString();
         }
         #endregion Methods

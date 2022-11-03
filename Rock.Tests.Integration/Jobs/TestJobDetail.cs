@@ -42,7 +42,9 @@ namespace Rock.Tests.Integration.Jobs
         /// <value>
         /// The job data map.
         /// </value>
+#pragma warning disable CS0618 // Type or member is obsolete
         public JobDataMap JobDataMap { get; set; } = new JobDataMap();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="TestJobDetail"/> is durable.

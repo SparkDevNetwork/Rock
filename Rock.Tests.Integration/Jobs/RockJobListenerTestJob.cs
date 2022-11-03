@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Jobs;
 
@@ -29,6 +31,12 @@ namespace Rock.Tests.Integration.Jobs
         public const string ExecutionMessage = "ExecutionMessage";
     }
 
+    [TextField(
+        TestJobAttributeKey.ExecutionResult,
+        Key = TestJobAttributeKey.ExecutionResult )]
+    [TextField(
+        TestJobAttributeKey.ExecutionMessage,
+        Key = TestJobAttributeKey.ExecutionMessage )]
     public class RockJobListenerTestJob : RockJob
     {
         #region Attribute Keys
@@ -61,7 +69,7 @@ namespace Rock.Tests.Integration.Jobs
                     throw new RockJobWarningException( exceptionMessage, new AggregateException( WarningSingleException ) );
 
                 default:
-                    this.Result = exceptionMessage;
+                    this.UpdateLastStatusMessage( exceptionMessage );
                     break;
             }
 

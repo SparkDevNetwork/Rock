@@ -16,10 +16,8 @@
 //
 
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNet.SignalR;
@@ -53,70 +51,20 @@ namespace Rock.RealTime.AspNet
         /// <returns>The value returned by the message handler.</returns>
         public async Task<object> PostMessage( string topicIdentifier, string messageName, Newtonsoft.Json.Linq.JToken[] parameters )
         {
-            object topicInstance;
-
-            topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
-
-            if ( topicInstance == null )
-            {
-                throw new HubException( $"RealTime topic '{topicIdentifier}' was not found." );
-            }
-
-            var matchingMethods = topicInstance.GetType()
-                .GetMethods( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance )
-                .Where( m => m.Name.Equals( messageName, StringComparison.OrdinalIgnoreCase ) )
-                .ToList();
-
-            if ( matchingMethods.Count <= 0 )
-            {
-                throw new HubException( $"Message '{messageName}' was not found on topic '{topicIdentifier}'." );
-            }
-            else if ( matchingMethods.Count > 1 )
-            {
-                throw new HubException( $"Message '{messageName}' matched multiple methods on topic '{topicIdentifier}'." );
-            }
-
-            var mi = matchingMethods[0];
-            var methodParameters = mi.GetParameters();
-            var parms = new object[methodParameters.Length];
-
             try
             {
-                for ( int i = 0; i < methodParameters.Length; i++ )
-                {
-                    if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
-                    {
-                        parms[i] = CancellationToken.None;
-                    }
-                    else
-                    {
-                        parms[i] = parameters[i].ToObject( methodParameters[i].ParameterType );
-                    }
-                }
+                return await Engine.ExecuteTopicMessageAsync( this, Context.ConnectionId, topicIdentifier, messageName, parameters, ConvertParameterToken );
             }
-            catch
+            catch ( RealTimeException ex )
             {
-                throw new HubException( $"Incorrect parameters passed to message '{messageName}'." );
+                Rock.Model.ExceptionLogService.LogException( ex );
+                throw new HubException( ex.Message );
             }
-
-            var result = mi.Invoke( topicInstance, parms );
-
-            if ( result is Task resultTask )
+            catch ( Exception ex )
             {
-                await resultTask;
-
-                // Task<T> is not covariant, so we can't just cast to Task<object>.
-                if ( resultTask.GetType().GetProperty( "Result" ) != null )
-                {
-                    result = ( ( dynamic ) resultTask ).Result;
-                }
-                else
-                {
-                    result = null;
-                }
+                Rock.Model.ExceptionLogService.LogException( ex );
+                throw;
             }
-
-            return result;
         }
 
         /// <summary>
@@ -125,50 +73,66 @@ namespace Rock.RealTime.AspNet
         /// <param name="topicIdentifier">The identifier of the topic to be connected to.</param>
         public async Task ConnectToTopic( string topicIdentifier )
         {
-            await RealTimeHelper.Engine.ConnectToTopic( this, topicIdentifier, Context.ConnectionId );
-        }
+            var joined = await RealTimeHelper.Engine.ConnectToTopic( this, topicIdentifier, Context.ConnectionId );
 
-        /// <inheritdoc/>
-        public override Task OnConnected()
-        {
-            if ( Context.User is ClaimsPrincipal claimsPrincipal )
+            if ( joined )
             {
-                var personClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:person" );
+                await Groups.Add( Context.ConnectionId, topicIdentifier );
 
-                // If we have a claim that specifies the logged in PersonId then
-                // add this connection to a special group to track people by their Id.
-                if ( personClaim != null )
+                if ( Context.User is ClaimsPrincipal claimsPrincipal )
                 {
-                    var personId = personClaim.Value.AsIntegerOrNull();
+                    var personClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:person" );
 
-                    if ( personId.HasValue )
+                    // If we have a claim that specifies the logged in PersonId then
+                    // add this connection to a special group to track people by their Id.
+                    if ( personClaim != null )
                     {
-                        Groups.Add( Context.ConnectionId, $"rock:person:{personId}" );
+                        var personId = personClaim.Value.AsIntegerOrNull();
+
+                        if ( personId.HasValue )
+                        {
+                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:person:{personId}" );
+                        }
                     }
-                }
 
-                var visitorClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:visitor" );
+                    var visitorClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:visitor" );
 
-                // If we have a claim that specifies a known visitor then add
-                // this connection to a special group to track visitors by their Id.
-                if ( visitorClaim != null )
-                {
-                    var visitorId = Rock.Utility.IdHasher.Instance.GetId( visitorClaim.Value );
-
-                    if ( visitorId.HasValue )
+                    // If we have a claim that specifies a known visitor then add
+                    // this connection to a special group to track visitors by their Id.
+                    if ( visitorClaim != null )
                     {
-                        Groups.Add( Context.ConnectionId, $"rock:visitor:{visitorId}" );
+                        var visitorId = Rock.Utility.IdHasher.Instance.GetId( visitorClaim.Value );
+
+                        if ( visitorId.HasValue )
+                        {
+                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:visitor:{visitorId}" );
+                        }
                     }
                 }
             }
+        }
 
-            return Task.CompletedTask;
+        /// <inheritdoc/>
+        public override async Task OnConnected()
+        {
+            await RealTimeHelper.Engine.ClientConnectedAsync( this, Context.ConnectionId );
         }
 
         /// <inheritdoc/>
         public override async Task OnDisconnected( bool stopCalled )
         {
-            await RealTimeHelper.Engine.ClientDisconnected( this, Context.ConnectionId );
+            await RealTimeHelper.Engine.ClientDisconnectedAsync( this, Context.ConnectionId );
+        }
+
+        /// <summary>
+        /// Converts the JSON token into the target type requested by the engine.
+        /// </summary>
+        /// <param name="token">The token parameter that should be converted.</param>
+        /// <param name="targetType">The type the token should be converted into.</param>
+        /// <returns>An object of type <paramref name="targetType"/>.</returns>
+        private static object ConvertParameterToken( object token, Type targetType )
+        {
+            return ( token as Newtonsoft.Json.Linq.JToken ).ToObject( targetType );
         }
     }
 }

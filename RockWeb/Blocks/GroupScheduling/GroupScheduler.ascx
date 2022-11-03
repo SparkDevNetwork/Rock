@@ -273,15 +273,15 @@
                                                         <div class="js-resource-name-meta">
                                                             <span class="resource-member-role js-resource-member-role"></span>
                                                         </div>
-                                                        <div class="dropdown js-resource-actions hide-transit">
+                                                        <div class="dropdown js-resource-actions hide-dragging">
                                                             <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                                                         </div>
                                                     </div>
 
-                                                    <div class="resource-preferences js-resource-preferences hide-transit small text-muted">
+                                                    <div class="resource-preferences js-resource-preferences hide-dragging small text-muted">
                                                     </div>
 
-                                                    <div class="resource-scheduled js-resource-scheduled hide-transit small text-muted">
+                                                    <div class="resource-scheduled js-resource-scheduled hide-dragging small text-muted">
                                                     </div>
 
                                                     <div class="resource-meta">
@@ -332,7 +332,7 @@
                                                 <div class="resource-meta">
                                                     <div class="js-resource-meta text-right"></div>
                                                 </div>
-                                                <div class="dropdown js-resource-actions hide-transit">
+                                                <div class="dropdown js-resource-actions hide-dragging">
                                                     <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-right">
                                                         <li>

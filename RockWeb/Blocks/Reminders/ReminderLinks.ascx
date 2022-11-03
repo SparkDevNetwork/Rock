@@ -103,8 +103,7 @@
         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(pageReloaded);
     });
 
-
-    /// Executed when all page content is refreshed, full page or async postback: https://msdn.microsoft.com/en-us/library/bb397523.aspx
+    // Executed when all page content is refreshed, full page or async postback: https://msdn.microsoft.com/en-us/library/bb397523.aspx
     function pageReloaded(sender, args) {
         var isPostBack = sender.get_isInAsyncPostBack();
         if (isPostBack) {
@@ -121,7 +120,7 @@
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark js-rock-reminders"
-    href="#" ><i class="fa fa-bell"></i></asp:LinkButton>
+    href="#" ><i class="fa fa-bell"></i><asp:Literal ID="litReminderCount" runat="server"></asp:Literal></asp:LinkButton>
 
 <asp:UpdatePanel ID="upnlReminders" UpdateMode="Conditional" runat="server">
     <ContentTemplate>
@@ -145,7 +144,7 @@
         </div>
 
         <Rock:ModalDialog ID="mdAddReminder" runat="server" ValidationGroup="AddReminder"
-            CancelLinkVisible="true" OnCancelScript="clearActiveDialog();"
+            CancelLinkVisible="true" OnCancelScript="clearActiveReminderDialog();"
             SaveButtonText="Save" OnSaveClick="mdAddReminder_SaveClick">
             <Content>
                 <asp:UpdatePanel ID="UpdatePanel1" runat="server">

@@ -346,7 +346,7 @@
 
             const interactions = document.createElement("span");
             if (item.InteractionsCount > 0) {
-                interactions.setAttribute("class", "badge-circle badge-info ml-1");
+                interactions.setAttribute("class", "badge-circle badge-info flex-shrink-0 ml-1");
                 interactions.setAttribute("title", "Interactions");
                 interactions.textContent = item.InteractionsCount;
             }
@@ -354,20 +354,25 @@
             const personInfo = document.createElement("div");
             personInfo.setAttribute("class", "individual-play-person-info");
 
+            const personDetail = document.createElement("span");
+            personDetail.setAttribute("class", "individual-play-person-detail");
+
             const photo = document.createElement("div");
             const url = item.PhotoUrl + (item.PhotoUrl.indexOf("?") === -1 ? "?w=50" : "&w=50");
-            photo.setAttribute("class", "photo-icon photo-round photo-round-xs pull-left margin-r-sm");
+            photo.setAttribute("class", "photo-icon photo-round photo-round-xs flex-shrink-0 margin-r-sm");
             photo.setAttribute("style", "background-image: url('" + url + "'); background-size: cover; background-repeat: no-repeat;");
 
             const name = document.createElement("span");
+            name.setAttribute("class", "text-truncate");
             name.textContent = item.FullName;
 
             const location = document.createElement("span");
             location.setAttribute("class", "individual-play-person-location");
             location.textContent = item.Location;
 
-            personInfo.appendChild(photo);
-            personInfo.appendChild(name);
+            personInfo.appendChild(personDetail);
+            personDetail.appendChild(photo);
+            personDetail.appendChild(name);
             personInfo.appendChild(location);
 
 

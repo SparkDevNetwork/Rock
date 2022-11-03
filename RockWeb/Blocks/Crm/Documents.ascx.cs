@@ -237,6 +237,8 @@ namespace RockWeb.Blocks.Crm
             pnlList.Visible = true;
             hfDocumentId.Value = string.Empty;
             fuUploader.BinaryFileId = null;
+            fuUploader.ParentEntityTypeId = null;
+            fuUploader.ParentEntityId = null;
         }
 
         /// <summary>
@@ -464,6 +466,8 @@ namespace RockWeb.Blocks.Crm
                 tbDocumentName.Text = document.Name;
                 tbDescription.Text = document.Description;
                 fuUploader.BinaryFileId = document.BinaryFile.Id;
+                fuUploader.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT.AsGuid() );
+                fuUploader.ParentEntityId = document.Id;
             }
 
             pnlAddEdit.Visible = true;
@@ -546,6 +550,13 @@ namespace RockWeb.Blocks.Crm
                 document.Name = tbDocumentName.Text;
                 document.Description = tbDescription.Text;
                 document.SetBinaryFile( fuUploader.BinaryFileId.Value, rockContext );
+
+                rockContext.SaveChanges();
+
+                // Make sure the associated BinaryFile is using the Document Entity for security.
+                var binaryFile = new BinaryFileService( rockContext ).Get( fuUploader.BinaryFileId.Value );
+                binaryFile.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT );
+                binaryFile.ParentEntityId = document.Id;
 
                 rockContext.SaveChanges();
             }

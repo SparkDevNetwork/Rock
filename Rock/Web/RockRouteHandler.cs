@@ -24,6 +24,7 @@ using System.Web.Compilation;
 using System.Web.Routing;
 
 using Rock.Bus.Message;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.Utility;
@@ -318,9 +319,11 @@ namespace Rock.Web
                         layout = "FullWidth";
                     }
 
-                    layoutPath = PageCache.FormatPath( theme, layout );
+                    var defaultLayoutPath = PageCache.FormatPath( theme, layout );
 
-                    return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
+                    RockLogger.Log.Error( RockLogDomains.Cms, $"Page Layout \"{ layoutPath }\" is invalid. Reverting to default layout \"{ defaultLayoutPath }\"..." );
+
+                    return CreateRockPage( page, defaultLayoutPath, routeId, parms, routeHttpRequest );
                 }
             }
             catch ( Exception ex )

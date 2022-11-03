@@ -25,7 +25,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 
 using Rock.Web.UI;
@@ -83,6 +82,16 @@ namespace RockWeb.Blocks.Reminders
 
         #region Base Control Methods
 
+        /*
+            10/20/2022 - SMC
+
+            WARNING:  This block is loaded on every page of the internal site and any processing done in these
+            methods should have minimal impact on the page load!  Do not include database calls, here.
+
+            Database calls necessary to set up the page should be triggered only from interactive events (e.g.,
+            on click) from specific controls.
+        */
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -106,46 +115,28 @@ namespace RockWeb.Blocks.Reminders
 
             if ( !Page.IsPostBack )
             {
-                if ( CurrentPersonAliasId.HasValue )
+                if ( !CurrentPersonAliasId.HasValue )
                 {
-                    lbReminders.Visible = true;
-
-                    rppPerson.SetValue( CurrentPerson );
-
-                    int reminderCount = CurrentPerson?.ReminderCount ?? 0;
-                    if ( reminderCount > 0 )
-                    {
-                        lbReminders.CssClass = lbReminders.CssClass + " has-reminders badge-" + CurrentPerson.ReminderCount.Value.ToString();
-                    }
-
-                    hfContextEntityTypeId.Value = "0";
-
-                    var contextEntity = GetFirstContextEntity();
-                    var contextEntity2 = this.ContextEntity();
-                    if ( contextEntity == null )
-                    {
-                        return;
-                    }
-
-                    hfContextEntityTypeId.Value = contextEntity.TypeId.ToString();
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        IEntity entity = new EntityTypeService( rockContext ).GetEntity( contextEntity.TypeId, contextEntity.Id );
-                        lEntity.Text = entity.ToString();
-
-                        var reminderTypeService = new ReminderTypeService( rockContext );
-                        var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, CurrentPerson );
-                        rddlReminderType.DataSource = reminderTypes;
-                        rddlReminderType.DataTextField = "Name";
-                        rddlReminderType.DataValueField = "Id";
-                        rddlReminderType.DataBind();
-                    }
+                    // If user is not logged in, do nothing.
+                    return;
                 }
+
+                lbReminders.Visible = true;
+                rppPerson.SetValue( CurrentPerson );
+
+                int reminderCount = CurrentPerson?.ReminderCount ?? 0;
+                if ( reminderCount > 0 )
+                {
+                    // Show reminder count on icon.
+                    lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
+                    litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
+                }
+
+                SetContextEntityType();
             }
             else
             {
-                //ShowDialog();
+                ShowDialog();
             }
         }
 
@@ -154,19 +145,33 @@ namespace RockWeb.Blocks.Reminders
         #region Methods
 
         /// <summary>
-        /// Gets the first context entity for the page.
+        /// Sets the context entity type hidden field value so that the AJAX call from the front end
+        /// can determine if the user has reminder types available for the entity type.
+        /// </summary>
+        private void SetContextEntityType()
+        {
+            hfContextEntityTypeId.Value = "0";
+
+            var contextTypes = RockPage.GetScopedContextEntityTypes( ContextEntityScope.Page );
+            if ( contextTypes.Any() )
+            {
+                var firstKey = contextTypes.Keys.First();
+                var contextType = contextTypes[firstKey];
+                hfContextEntityTypeId.Value = contextType.Id.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets the first context entity for the page (excluding context from cookies).
         /// </summary>
         /// <returns></returns>
         private IEntity GetFirstContextEntity()
         {
-            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            var contextEntities = RockPage.GetScopedContextEntities( ContextEntityScope.Page );
+            if ( contextEntities.Any() )
             {
-                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-
-                if ( contextEntity != null )
-                {
-                    return contextEntity;
-                }
+                var firstKey = contextEntities.Keys.First();
+                return contextEntities[firstKey];
             }
 
             return null;
@@ -275,8 +280,11 @@ namespace RockWeb.Blocks.Reminders
 
                 foreach ( var reminder in reminders.ToList() )
                 {
-                    var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                    reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    if ( reminder.IsActive )
+                    {
+                        var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
+                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    }
                 }
             }
 
@@ -297,7 +305,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
         }
 
         /// <summary>
@@ -314,7 +322,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
         }
 
         /// <summary>
@@ -345,7 +353,52 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            UpdateExistingReminders();
+        }
+
+        /// <summary>
+        /// Resets the add reminder form to prepare it for a new use.
+        /// </summary>
+        /// <param name="contextEntity">The context entity.</param>
+        private void ResetAddReminderForm( IEntity contextEntity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Load context entity from the database to get the name.
+                IEntity entity = new EntityTypeService( rockContext ).GetEntity( contextEntity.TypeId, contextEntity.Id );
+                lEntity.Text = entity.ToString();
+
+                // Load reminder types for this context entity.
+                var reminderTypeService = new ReminderTypeService( rockContext );
+                var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, CurrentPerson );
+                rddlReminderType.DataSource = reminderTypes;
+                rddlReminderType.DataTextField = "Name";
+                rddlReminderType.DataValueField = "Id";
+                rddlReminderType.DataBind();
+            }
+
+            // Reset form values.
+            rddlReminderType.SelectedIndex = 0;
+            rdpReminderDate.SelectedDate = null;
+            rtbNote.Text = string.Empty;
+            rppPerson.SetValue( CurrentPerson );
+            rnbRepeatDays.Text = string.Empty;
+            rnbRepeatTimes.Text = string.Empty;
+        }
+
+        /// <summary>
+        /// Updates the existing reminder panel of the "add reminders" modal dialog.
+        /// </summary>
+        private void UpdateExistingReminders()
+        {
+            var contextEntity = GetFirstContextEntity();
+            if ( contextEntity == null )
+            {
+                // This shouldn't be possible, since the button is only visible when the page has a context entity.
+                NavigateToCurrentPageReference();
+            }
+
+            ShowExistingReminders( contextEntity );
         }
 
         #endregion Methods
@@ -376,6 +429,7 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
+            ResetAddReminderForm( contextEntity );
             ShowExistingReminders( contextEntity );
             mdAddReminder.Title = $"Reminder For {contextEntity}";
             ShowDialog( "AddReminder" );
@@ -439,9 +493,14 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            HideDialog();
+            NavigateToCurrentPageReference();
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event for elements in the rptReminders control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rptReminders_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var hfReminderId = e.Item.FindControl( "hfReminderId" ) as HiddenField;

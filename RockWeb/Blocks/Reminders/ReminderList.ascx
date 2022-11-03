@@ -6,7 +6,19 @@
             Please log in to use Reminders.
         </asp:Panel>
 
+        <asp:Panel ID="pnlNoReminders" runat="server" Visible="false">
+            You do not have any reminders.
+        </asp:Panel>
+
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll panel-groupscheduler">
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    var activeFilterSetting = $('#<%=hfActiveFilterSetting.ClientID %>').val();
+                    if (activeFilterSetting == 'Custom Date Range') {
+                        $('#reminders_custom_date_range').removeClass('d-none');
+                    }
+                });
+            </script>
             <%-- Panel Header --%>
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
@@ -20,40 +32,99 @@
                 <div class="row row-eq-height no-gutters">
                     <div class="col-lg-3 col-md-4">
                         <%-- Entity Type - Filter Options (Header) --%>
-                        <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options align-items-center">
-                            <asp:Panel ID="pnlEntityType" runat="server">
-                                <div class="btn-group">
-                                    <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                        <asp:Literal ID="lSelectedEntityType" runat="server" Text="Entity Type" />
-                                    </div>
+                        <asp:Panel ID="pnlEntityType" runat="server" CssClass="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options align-items-center">
+                            <div class="btn-group">
+                                <asp:Panel ID="pnlEntityTypeSelection" runat="server" CssClass="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                    <asp:Literal ID="lSelectedEntityType" runat="server" Text="Entity Type" />
+                                </asp:Panel>
 
-                                    <ul class="dropdown-menu" role="menu">
-                                        <asp:Repeater ID="rptEntityTypeList" runat="server" OnItemDataBound="rptEntityTypeList_ItemDataBound">
-                                            <ItemTemplate>
-                                                <li>
-                                                    <asp:LinkButton ID="btnEntityType" runat="server" Text="-" CommandArgument="-" OnClick="btnEntityType_Click" />
-                                                </li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </div>
-                            </asp:Panel>
-                        </div>
+                                <ul class="dropdown-menu" role="menu">
+                                    <asp:Repeater ID="rptEntityTypeList" runat="server" OnItemDataBound="rptEntityTypeList_ItemDataBound">
+                                        <ItemTemplate>
+                                            <li>
+                                                <asp:LinkButton ID="btnEntityType" runat="server" Text="-" CommandArgument="-" OnClick="btnEntityType_Click" />
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                            </div>
+                        </asp:Panel>
                     </div>
 
                     <div class="col-lg-9 col-md-8">
-                        <%-- Group - Filter Options (Header) --%>
-                        <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
+                        <%-- Group/Person - Filter Options (Header) --%>
                         <div class="panel-toolbar">
                             <!-- Filter for Groups/ChildGroups -->
                             <asp:Panel ID="pnlGroupPicker" runat="server" Visible="false" CssClass="d-flex">
                                 <Rock:GroupPicker ID="gpSelectedGroup" runat="server" Label="" CssClass="occurrences-groups-picker" OnValueChanged="gpSelectedGroup_ValueChanged" />
                             </asp:Panel>
 
-                            <!-- Filter for Groups/ChildGroups -->
+                            <!-- Filter for Person -->
                             <asp:Panel ID="pnlPersonPicker" runat="server" Visible="false" CssClass="d-flex">
                                 <Rock:PersonPicker ID="ppSelectedPerson" runat="server" Label="" CssClass="occurrences-groups-picker" OnValueChanged="ppSelectedPerson_ValueChanged" />
                             </asp:Panel>
+                        </div>
+
+                        <div class="panel-toolbar">
+
+                            <div class="btn-group">
+                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                    <asp:Literal ID="lCompletionFilter" runat="server" Text="Incomplete" />
+                                </div>
+
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <asp:LinkButton ID="btnCompletion1" runat="server" Text="Incomplete" CommandArgument="Incomplete" OnClick="btnCompletion_Click" />
+                                        <asp:LinkButton ID="btnCompletion2" runat="server" Text="Complete" CommandArgument="Complete" OnClick="btnCompletion_Click" />
+                                        <asp:LinkButton ID="btnCompletion3" runat="server" Text="All" CommandArgument="All" OnClick="btnCompletion_Click" />
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="btn-group">
+                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                    <asp:Literal ID="lActiveFilter" runat="server" Text="Active" />'
+                                </div>
+
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <asp:LinkButton ID="btnActive1" runat="server" Text="Active" CommandArgument="Active" OnClick="btnActive_Click" />
+                                        <asp:LinkButton ID="btnActive2" runat="server" Text="Active This Week" CommandArgument="Active This Week" OnClick="btnActive_Click" />
+                                        <asp:LinkButton ID="btnActive3" runat="server" Text="Active This Month" CommandArgument="Active This Month" OnClick="btnActive_Click" />
+                                        <asp:LinkButton ID="btnActive4" runat="server" Text="Custom Date Range" CommandArgument="Custom Date Range" OnClick="btnActive_Click" />
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div id="reminders_custom_date_range" class="d-none">
+                                <asp:HiddenField ID="hfActiveFilterSetting" runat="server" Value="Active" />
+                                <Rock:SlidingDateRangePicker ID="drpCustomDate" runat="server"
+                                    OnSelectedDateRangeChanged="drpCustomDate_SelectedDateRangeChanged"
+                                    EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                    EnabledSlidingDateRangeUnits="Week, Month, Year, Day, Hour"
+                                    SlidingDateRangeMode="Current"
+                                    TimeUnit="Year"
+                                    Label="" />
+                            </div>
+
+                            <div class="btn-group">
+                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                    <asp:Literal ID="lReminderType" runat="server" Text="All" />'
+                                </div>
+
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <asp:LinkButton ID="btnReminderType1" runat="server" Text="All" CommandArgument="All" OnClick="btnReminderType_Click" />
+                                        <asp:Repeater ID="rptReminderType" runat="server" OnItemDataBound="rptReminderType_ItemDataBound">
+                                            <ItemTemplate>
+                                                <li>
+                                                    <asp:LinkButton ID="btnEntityType" runat="server" Text="-" CommandArgument="-" OnClick="btnReminderType_Click" />
+                                                </li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>

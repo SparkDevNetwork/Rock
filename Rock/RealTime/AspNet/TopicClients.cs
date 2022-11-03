@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.ServiceModel.Channels;
 
 using Microsoft.AspNet.SignalR.Hubs;
 
@@ -107,12 +108,12 @@ namespace Rock.RealTime.AspNet
         #region ITopicClients
 
         /// <inheritdoc/>
-        public T All => GetProxy( _context.All );
+        public T All => GetProxy( _context.Group( TopicIdentifier ) );
 
         /// <inheritdoc/>
         public T AllExcept( IReadOnlyList<string> excludedConnectionIds )
         {
-            return GetProxy( _context.AllExcept( excludedConnectionIds.ToArray() ) );
+            return GetProxy( _context.Group( TopicIdentifier, excludedConnectionIds.ToArray() ) );
         }
 
         /// <inheritdoc/>
@@ -130,37 +131,37 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public T Channel( string channelName )
         {
-            return GetProxy( _context.Group( channelName ) );
+            return GetProxy( _context.Group( $"{TopicIdentifier}-{channelName}" ) );
         }
 
         /// <inheritdoc/>
         public T ChannelExcept( string channelName, IReadOnlyList<string> excludedConnectionIds )
         {
-            return GetProxy( _context.Groups( new[] { channelName }, excludedConnectionIds.ToArray() ) );
+            return GetProxy( _context.Groups( new[] { $"{TopicIdentifier}-{channelName}" }, excludedConnectionIds.ToArray() ) );
         }
 
         /// <inheritdoc/>
-        public T Channels( IReadOnlyList<string> groupNames )
+        public T Channels( IReadOnlyList<string> channelNames )
         {
-            return GetProxy( _context.Groups( groupNames.ToArray() ) );
+            return GetProxy( _context.Groups( channelNames.Select( cn => $"{TopicIdentifier}-{cn}" ).ToArray() ) );
         }
 
         /// <inheritdoc/>
         public T Person( int personId )
         {
-            return GetProxy( _context.Group( $"rock:person:{personId}" ) );
+            return GetProxy( _context.Group( $"{TopicIdentifier}-rock:person:{personId}" ) );
         }
 
         /// <inheritdoc/>
         public T People( IReadOnlyList<int> personIds )
         {
-            return GetProxy( _context.Groups( personIds.Select( id => $"rock:person:{id}" ).ToArray() ) );
+            return GetProxy( _context.Groups( personIds.Select( id => $"{TopicIdentifier}-rock:person:{id}" ).ToArray() ) );
         }
 
         /// <inheritdoc/>
         public T Visitor( int visitorAliasId )
         {
-            return GetProxy( _context.Group( $"rock:visitor:{visitorAliasId}" ) );
+            return GetProxy( _context.Group( $"{TopicIdentifier}-rock:visitor:{visitorAliasId}" ) );
         }
 
         #endregion

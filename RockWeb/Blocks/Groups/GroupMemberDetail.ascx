@@ -97,12 +97,8 @@
                     </div>
 
                     <asp:Panel ID="pnlRequirements" runat="server">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="true" ></Rock:GroupMemberRequirementsContainer>
-                                <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
-                            </div>
-                        </div>
+                        <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="true" />
+                        <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                     </asp:Panel>
                     <Rock:NotificationBox runat="server" ID="nbCommunicationSuccess" NotificationBoxType="Success" Dismissable="true" Text="Communication was sent." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />

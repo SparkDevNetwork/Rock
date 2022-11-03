@@ -158,7 +158,7 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
-                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + "?lazyLoad=true",
+                        restParams: '?activeOnly=' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "&displayPublicName=" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + "&lazyLoad=true",
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
@@ -207,8 +207,8 @@
 
                  var searchKeyword = $searchInputControl.val();
                  if (searchKeyword && searchKeyword.length > 0) {
-                     var restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildrenBySearchTerm/")%>'
-                    var restUrlParams = ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + '/' + searchKeyword;
+                     var restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildrenBySearchTerm")%>'
+                     var restUrlParams = ("?activeOnly=" + $('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "&displayPublicName=" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + '&searchTerm=' + searchKeyword;
 
                     restUrl = restUrl + restUrlParams;
 

@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -37,9 +35,19 @@ namespace Rock.Financial
         public Dictionary<string, string> AdditionalParameters { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount.
+        /// Gets or sets the total amount. Note that if there is
+        /// a <seealso cref="FeeCoverageAmount"/>, it already added to this amount.
         /// </summary>
         public decimal Amount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount that the user choose to cover the fee of the transaction.
+        /// This is just informational only, the <see cref="Amount"/> already includes any FeeCoverageAmount.
+        /// </summary>
+        /// <value>
+        /// The amount that the user choose to cover the fee of the transaction.
+        /// </value>
+        public decimal? FeeCoverageAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> indicating
@@ -127,7 +135,6 @@ namespace Rock.Financial
         /// Returns True if the payment info includes Address Data (Street1 or Street2).
         /// For example, if updating a scheduled transaction, the address data could be null since the gateway would already know this.
         /// </summary>
-        /// <returns></returns>
         public bool IncludesAddressData()
         {
             return this.Street1.IsNotNullOrWhiteSpace() || this.Street2.IsNotNullOrWhiteSpace();
@@ -198,7 +205,6 @@ namespace Rock.Financial
                 };
 
                 return tempLocation.GetFullStreetAddress();
-                
             }
         }
 
@@ -223,6 +229,5 @@ namespace Rock.Financial
         {
             AdditionalParameters = new Dictionary<string, string>();
         }
-
     }
 }

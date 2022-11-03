@@ -271,6 +271,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplatePlacement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RelatedEntity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Reminder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ReminderType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RemoteAuthenticationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Report.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ReportField.cs" />
