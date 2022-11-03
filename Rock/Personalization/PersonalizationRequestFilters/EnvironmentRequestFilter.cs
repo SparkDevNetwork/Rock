@@ -45,6 +45,7 @@ namespace Rock.Personalization
         /// </summary>
         /// <value>The beginning time of the day..</value>
         public TimeSpan? BeginningTimeOfDay { get; set; }
+
         /// <summary>
         /// Gets or sets the ending time of the day.
         /// </summary>
@@ -66,16 +67,15 @@ namespace Rock.Personalization
         }
 
         /// <summary>
-        /// Determines whether the specified cookie meets the criteria of this filter.
+        /// Determines whether the request meets the criteria of this filter.
         /// </summary>
-        /// <returns><c>true</c> if the specified cookie is a match; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified request is a match; otherwise, <c>false</c>.</returns>
         private bool IsMatch()
         {
             var requestDateTime = RockDateTime.Now;
             if ( !DaysOfWeek.Any() || !BeginningTimeOfDay.HasValue )
             {
                 // If nothing is selected, return true.
-                // If both are selected, we can also return true because a previous activity can only be New or Returning.
                 return true;
             }
 
