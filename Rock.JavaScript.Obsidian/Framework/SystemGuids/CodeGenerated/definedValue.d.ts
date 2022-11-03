@@ -465,6 +465,10 @@ export const enum DefinedValue {
     LoggingDomainCrm = "5D737243-E7E0-4981-87A5-0787E52631C6",
     /** The logging domain prayer */
     LoggingDomainPrayer = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781",
+    /** The logging domain mobile */
+    LoggingDomainMobile = "77148fef-bc4f-4b16-9d4e-e1de28149751",
+    /** The logging domain apple tv */
+    LoggingDomainAppleTv = "41a3cbf1-769a-4d15-a13c-56d48b2009b8",
     /** The logging domain other */
     LoggingDomainOther = "83CFDA4F-5867-4D4B-853F-D9B535EC5131",
     /** The check in attendance type physical */

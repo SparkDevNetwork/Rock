@@ -28,14 +28,14 @@ import { Guid } from "@Obsidian/Types";
  * the RegistrationTemplatePicker control.
  */
 export type SchedulePickerGetChildrenOptionsBag = {
+    /** Whether to include schedules marked as inactive in the results. */
+    includeInactiveItems: boolean;
+
     /**
      * The parent unique identifier whose children are to
      * be retrieved. If null then the root items are being requested.
      */
     parentGuid?: Guid | null;
-
-    /** Whether to include schedules marked as inactive in the results. */
-    includeInactiveItems: boolean;
 
     /**
      * Gets or sets the security grant token to use when performing
