@@ -124,6 +124,14 @@
     <Compile Include="Migrations\202210281944003_AddMissingIndexes.designer.cs">
       <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211031956456_Rollup_20221103.cs" />
+    <Compile Include="Migrations\202211031956456_Rollup_20221103.designer.cs">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.cs" />
+    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.designer.cs">
+      <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1423,6 +1431,12 @@
     <EmbeddedResource Include="Migrations\202210281944003_AddMissingIndexes.resx">
       <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211031956456_Rollup_20221103.resx">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211032103215_CodeGenerated_20221103.resx">
+      <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
     </EmbeddedResource>
@@ -2379,6 +2393,9 @@
     </Content>
     <Content Include="Migrations\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
