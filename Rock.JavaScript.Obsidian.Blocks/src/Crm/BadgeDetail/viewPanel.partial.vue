@@ -60,14 +60,6 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
-        if (props.modelValue.entityType?.text) {
-            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType.text);
-        }
-
-        if (props.modelValue.badgeComponentEntityType?.text) {
-            valueBuilder.addTextValue("Badge Component Entity Type", props.modelValue.badgeComponentEntityType.text);
-        }
-
         return valueBuilder.build();
     });
 
@@ -79,6 +71,10 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType.text);
+        }
+
         return valueBuilder.build();
     });
 
@@ -88,6 +84,10 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+        if (props.modelValue.badgeComponentEntityType?.text) {
+            valueBuilder.addTextValue("Badge Component Entity Type", props.modelValue.badgeComponentEntityType.text);
         }
 
         return valueBuilder.build();
