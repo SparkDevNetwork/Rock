@@ -153,10 +153,17 @@ namespace Rock.Tests.UnitTests.Lava
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
-                // Set to Japan Standard Time (UTC+09:00)
-                tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
+                // Set to Tokyo Standard Time aka Japan Standard Time (UTC+09:00)
+                try
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Tokyo Standard Time" );
+                }
+                catch ( TimeZoneNotFoundException )
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
+                }
 
-                Assert.That.IsNotNull( tz, "Timezone 'JST' is not available in this environment." );
+                Assert.That.IsNotNull( tz, "Timezone 'Tokyo Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
@@ -182,8 +189,8 @@ namespace Rock.Tests.UnitTests.Lava
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 // Set to UCT-07:00.
-                tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaii Standard Time" );
-                Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+                tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaiian Standard Time" );
+                Assert.That.IsNotNull( tz, "Timezone 'Hawaiian Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
