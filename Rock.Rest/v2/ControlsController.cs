@@ -1577,6 +1577,68 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Geo Picker
+
+        /// <summary>
+        /// Retrieve the Google API key for Google Maps.
+        /// </summary>
+        /// <returns>The Google API key as a string</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "GeoPickerGetGoogleMapSettings" )]
+        [Rock.SystemGuid.RestActionGuid( "a3e0af9b-36d3-4ec8-a983-0087488c553d" )]
+        public IHttpActionResult GeoPickerGetGoogleMapSettings( [FromBody] GeoPickerGetGoogleMapSettingsOptionsBag options )
+        {
+            // Map Styles
+            Guid MapStyleValueGuid = options.MapStyleValueGuid == null || options.MapStyleValueGuid.IsEmpty() ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : options.MapStyleValueGuid;
+            string mapStyle = "null";
+            string markerColor = "";
+
+            try
+            {
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Get( MapStyleValueGuid );
+                if ( dvcMapStyle != null )
+                {
+                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    if ( colors.Any() )
+                    {
+                        markerColor = colors.First().Replace( "#", "" );
+                    }
+                }
+            }
+            catch { } // oh well...
+
+            // Google API Key
+            string googleApiKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
+
+            // Default map location
+            double? centerLatitude = null;
+            double? centerLongitude = null;
+            Guid guid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuid();
+
+            if ( !guid.Equals( Guid.Empty ) )
+            {
+                var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                if ( location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
+                {
+                    centerLatitude = location.GeoPoint.Latitude;
+                    centerLongitude = location.GeoPoint.Longitude;
+                }
+            }
+
+            return Ok( new GeoPickerGoogleMapSettingsBag
+            {
+                MapStyle = mapStyle,
+                MarkerColor = markerColor,
+                GoogleApiKey = googleApiKey,
+                CenterLatitude = centerLatitude,
+                CenterLongitude = centerLongitude
+            } );
+        }
+
+        #endregion
+
         #region Grade Picker
 
         /// <summary>

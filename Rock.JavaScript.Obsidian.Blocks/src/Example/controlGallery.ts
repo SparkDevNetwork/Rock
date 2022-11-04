@@ -25,6 +25,7 @@
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
+ * - geoPickerMap
  * - grid
  * - gridColumn
  * - gridProfileLInkColumn
@@ -181,6 +182,8 @@ import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability
 import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
+import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
+import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
 
 // #region Gallery Support
 
@@ -2395,8 +2398,7 @@ const definedValuePickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         DefinedValuePicker,
-        TextBox,
-        RockForm
+        TextBox
     },
     setup() {
 
@@ -2427,7 +2429,7 @@ const definedValuePickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
+    <DefinedValuePicker rules="required" label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
 
     <template #settings>
         <div class="row">
@@ -6049,6 +6051,164 @@ const intervalPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Geo Picker */
+const geoPickerGallery = defineComponent({
+    name: "GeoPickerGallery",
+    components: {
+        GalleryAndResult,
+        GeoPicker,
+        DropDownList,
+        CheckBox,
+        TextBox,
+        Toggle
+    },
+    setup() {
+        const toggleValue = ref(false);
+        const drawingMode = computed(() => toggleValue.value ? "Point" : "Polygon");
+
+        return {
+            value: ref("POLYGON((35.1945 31.813, 35.2345 31.813, 35.2345 31.783, 35.2745 31.783, 35.2745 31.753, 35.2345 31.753, 35.2345 31.693, 35.1945 31.693, 35.1945 31.753, 35.1545 31.753, 35.1545 31.783, 35.1945 31.783, 35.1945 31.813))"),
+            toggleValue,
+            drawingMode,
+            importCode: getSfcControlImportPath("geoPicker"),
+            exampleCode: `<GeoPicker :drawingMode="drawingMode" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" />
+
+    <template #settings>
+        <div class="row">
+            <Toggle formGroupClasses="col-md-3" v-model="toggleValue" label="Drawing Mode" trueText="Point" falseText="Polygon" help="This will not update while the picker is open. Re-open picker to see change. You may also need to clear the value" />
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Content Drop Down Picker */
+const contentDropDownPickerGallery = defineComponent({
+    name: "ContentDropDownPickerGallery",
+    components: {
+        GalleryAndResult,
+        ContentDropDownPicker,
+        InlineCheckBox,
+        TextBox
+    },
+    setup() {
+        const value = ref<string>("");
+        const innerLabel = computed<string>(() => value.value || "<i>No Value Selected</i>");
+        const showPopup = ref(false);
+        const isFullscreen = ref(false);
+
+        function onSelect(): void {
+            value.value = "A Value";
+        }
+        function onClear(): void {
+            value.value = "";
+        }
+
+        watch(showPopup, () => {
+            if (showPopup.value) {
+                isFullscreen.value = true;
+            }
+        });
+
+        watch(isFullscreen, () => {
+            if (!isFullscreen.value) {
+                showPopup.value = false;
+            }
+        });
+
+        return {
+            value,
+            innerLabel,
+            onSelect,
+            onClear,
+            primaryButtonLabel: ref("<i class='fa fa-save'></i> Save"),
+            secondaryButtonLabel: ref("Close"),
+            showPopup,
+            isFullscreen,
+            showClearButton: ref(false),
+            importCode: getSfcControlImportPath("contentDropDownPicker"),
+            exampleCode: `<ContentDropDownPicker
+    label="Your Custom Picker"
+    @primaryButtonClicked="selectValue"
+    @clearButtonClicked="clear"
+    :innerLabel="innerLabel"
+    :showClear="!!value"
+    iconCssClass="fa fa-cross" >
+    You can place anything you want in here. Click the Save button to select a value or Cancel to close this box.
+</ContentDropDownPicker>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <ContentDropDownPicker
+        label="Your Custom Picker"
+        @primaryButtonClicked="onSelect"
+        @clearButtonClicked="onClear"
+        v-model:showPopup="showPopup"
+        v-model:isFullscreen="isFullscreen"
+        :innerLabel="innerLabel"
+        :showClear="showClearButton"
+        pickerContentBoxHeight="auto"
+        disablePickerContentBoxScroll
+        iconCssClass="fa fa-cross"
+        rules="required"
+         >
+
+        <p>You can place anything you want in here. Click the Save button to select a value or Cancel to close this box.
+        The actions are completely customizable via event handlers (though they always close the popup), or you can
+        completely override them via the <code>mainPickerActions</code> slot. You can also add additional custom buttons
+        to the right via the <code>customPickerActions</code> slot.</p>
+
+        <p><strong>Note</strong>: you are in control of:</p>
+
+        <ul>
+            <li>Selecting a value when the primary button is clicked. This control does not touch actual values at all
+            except to pass them to <code>&lt;RockFormField&gt;</code> for validation.</li>
+            <li>Determining the text inside the select box via the <code>innerLabel</code> prop, since this control does
+            not look at the values or know how to format them</li>
+            <li>Determining when the clear button should show up via the <code>showClear</code> prop, once again because
+            this control doesn't mess with selected values.</li>
+        </ul>
+
+        <template #primaryButtonLabel><span v-html="primaryButtonLabel"></span></template>
+
+        <template #secondaryButtonLabel><span v-html="secondaryButtonLabel"></span></template>
+
+
+        <template #customPickerActions>
+            Custom Actions Here
+        </template>
+    </ContentDropDownPicker>
+
+    <template #settings>
+        <div class="row">
+            <TextBox formGroupClasses="col-md-3" label="Primary Button Label" v-model="primaryButtonLabel" />
+            <TextBox formGroupClasses="col-md-3" label="Secondary Button Label" v-model="secondaryButtonLabel" />
+            <div class="col-md-3"><InlineCheckBox label="Show Popup" v-model="showPopup" /></div>
+            <div class="col-md-3"><InlineCheckBox label="Show Clear Button" v-model="showClearButton" /></div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6165,6 +6325,8 @@ const controlGalleryComponents: Record<string, Component> = [
     cacheabilityPickerGallery,
     buttonGroupGallery,
     intervalPickerGallery,
+    geoPickerGallery,
+    contentDropDownPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

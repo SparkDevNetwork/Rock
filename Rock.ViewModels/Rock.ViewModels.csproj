@@ -369,6 +369,10 @@
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerSaveNewValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGetSettingsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerSettingsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGoogleMapSettingsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGetGoogleMapSettingsOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowActionTypePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />

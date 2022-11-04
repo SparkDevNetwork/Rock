@@ -113,7 +113,8 @@
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
 				},
-				"isBackground": true
+				"isBackground": true,
+				"problemMatcher": []
 			},
 			{
 				"label": "Watch All Obsidian",

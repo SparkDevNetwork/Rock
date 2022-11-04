@@ -1,0 +1,541 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="gm-container" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
+        <!-- Our custom clear button that we add to the map for deleting polygons. -->
+        <button type="button" ref="clearButton" v-show="isClearButtonEnabled" @click.prevent="deleteSelectedShape()" class="gm-clear-button" title="Delete selected shape" aria-label="Delete selected shape"><i class="fa fa-times"></i></button>
+        <!-- This is where the Google Map (with Drawing Tools) will go. -->
+        <Loading :isLoading="!isReady" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
+            <div ref="mapContainer" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'" class="gm-map"></div>
+        </Loading>
+    </div>
+</template>
+
+<script setup lang="ts">
+    /* global google */
+    import { computed, nextTick, onBeforeMount, onMounted, PropType, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import { DrawingMode, Coordinate } from "@Obsidian/Types/Controls/geo";
+    import { toCoordinate, wellKnownToCoordinates, coordinatesToWellKnown, loadMapResources, createLatLng } from "@Obsidian/Utility/geo";
+    import { DefinedValue } from "@Obsidian/SystemGuids";
+    import Loading from "@Obsidian/Controls/loading";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+
+    /**
+     * The types of shapes Google Maps uses internally
+     */
+    type Shape = google.maps.Polygon | google.maps.Marker;
+
+    const props = defineProps({
+        /**
+         * Point or polygon coordinate string in the Well Known Text format:
+         * "POINT(longitude latitude)" or "POLYGON((longitude latitude, longitude latitude, ...))"
+         */
+        modelValue: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * What are we drawing? Point or Polygon? This prop is not reactive.
+         */
+        drawingMode: {
+            type: String as PropType<DrawingMode>,
+            required: true
+        },
+
+        /**
+         * GUID of a DefinedValue of the Map Styles DefinedType. Determines the way the map looks.
+         */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid>,
+            default: DefinedValue.MapStyleRock
+        },
+
+        /**
+         * Latitude coordinate to center map on if not initialized with a shape. This prop is not reactive.
+         */
+        centerLatitude: {
+            type: Number as PropType<number>,
+            default: null
+        },
+
+        /**
+         * Longitude coordinate to center map on if not initialized with a shape. This prop is not reactive.
+         */
+        centerLongitude: {
+            type: Number as PropType<number>,
+            default: null
+        },
+
+        /**
+         * Whether to use the normal static size or have the map fill its container
+         */
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+        (e: "update:valueLabel", value: string): void
+    }>();
+
+    // #region Values
+
+    // References to DOM elements
+    const clearButton = ref<HTMLButtonElement | null>(null);
+    const mapContainer = ref<HTMLDivElement | null>(null);
+
+    // variables used to determine when everything is ready so we can initialize the map
+    const isGoogleLoaded = ref(false);
+    const isMounted = ref(false);
+    const isReady = computed(() => isGoogleLoaded.value && isMounted.value);
+
+    const isClearButtonEnabled = ref(false);
+
+    let drawingMode = props.drawingMode;
+    let drawingModes: google.maps.drawing.OverlayType[] = [];
+    let drawingManager: google.maps.drawing.DrawingManager | null = null;
+    let map: google.maps.Map | null = null;
+    let centerLatitude = props.centerLatitude; // Get from prop on init; we aren't reacting to it
+    let centerLongitude = props.centerLongitude; // Get from prop on init; we aren't reacting to it
+    let minLat: number | null = null;
+    let minLng: number | null = null;
+    let maxLat: number | null = null;
+    let maxLng: number | null = null;
+    let fillColor = "0088cc";
+    let strokeColor = "0088cc";
+    let styles: google.maps.MapTypeStyle[] = [];
+    let shape: Shape | null = null;
+    let marker: google.maps.Symbol | null = null;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // The main value.
+    // Internally we use an array of Coordinates
+    // Externally we give a point or polygon in the Well Know Text format (for DB compatibility)
+    const internalValue = computed({
+        // Prop is in DB format; convert for use internally
+        get(): Coordinate[] {
+            return wellKnownToCoordinates(props.modelValue, drawingMode);
+        },
+        // Convert the value to Well Known Text for emitting
+        set(newValue: Coordinate[]): void {
+            emit("update:modelValue", coordinatesToWellKnown(newValue, drawingMode));
+        }
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    // We can initialize the map now that everything is ready
+    watch([isReady], initialize);
+
+    // When we resize, let Google Maps know
+    watch(() => props.isExpanded, async () => {
+        if (isReady.value) {
+            await nextTick(); // Wait until rerender before telling G to resize
+            google.maps.event.trigger(map as google.maps.Map, "resize");
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initialize the map
+     */
+    async function initialize(isReady): Promise<void> {
+        if (!isReady) return;
+
+        marker = {
+            path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+            fillColor: "#FE7569",
+            fillOpacity: 1,
+            strokeColor: "#000",
+            strokeWeight: 1,
+            scale: 1,
+            labelOrigin: new google.maps.Point(0, -28)
+        };
+
+        // Make sure the map's DIV will be rendered so we have a reference to it
+        await nextTick();
+
+        drawingModes = [drawingMode == "Polygon" ? google.maps.drawing.OverlayType.POLYGON : google.maps.drawing.OverlayType.MARKER];
+
+        // Create a new StyledMapType object, passing it the array of styles,
+        // as well as the name to be displayed on the map type control.
+        var styledMap = new google.maps.StyledMapType(styles, { name: "Styled Map" });
+
+        // WARNING: I though about removing the "center:" from the options here but then the
+        // map's controls were different and then our delete button was out of alignment.
+        var mapOptions = {
+            center: new google.maps.LatLng(centerLatitude, centerLongitude),
+            zoom: 16,
+            streetViewControl: false,
+            fullscreenControl: false,
+            mapTypeControlOptions: {
+                mapTypeIds: [google.maps.MapTypeId.ROADMAP, "map_style"],
+            }
+        };
+
+        map = new google.maps.Map(mapContainer.value as HTMLElement, mapOptions);
+
+        // Add our clear button to the Google Map control flow so we don't need to position it
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton.value as HTMLElement);
+
+        //Associate the styled map with the MapTypeId and set it to display.
+        map.mapTypes.set("map_style", styledMap);
+        map.setMapTypeId("map_style");
+
+        // Set up the Drawing Manager for creating polygons, circles, etc.
+        drawingManager = new google.maps.drawing.DrawingManager({
+            drawingControl: true,
+            drawingControlOptions: {
+                drawingModes: drawingModes
+            },
+            polygonOptions: {
+                editable: true,
+                strokeColor: strokeColor,
+                fillColor: fillColor,
+                strokeWeight: 2
+            },
+            markerOptions: {
+                icon: marker
+            },
+            map
+        });
+
+        // Create the shape overlay if we already have a value for it
+        if (internalValue.value && internalValue.value.length > 0) {
+            let shape;
+            if (drawingMode == "Polygon") {
+                shape = new google.maps.Polygon({
+                    paths: internalValue.value.map((c: Coordinate) => createLatLng(...c)),
+                    clickable: true,
+                    editable: true,
+                    strokeColor: strokeColor,
+                    fillColor: fillColor,
+                    strokeWeight: 2,
+                    map
+                });
+            }
+            else {
+                shape = new google.maps.Marker({
+                    position: new google.maps.LatLng(...internalValue.value[0]),
+                    map: map,
+                    clickable: true,
+                    icon: marker
+                });
+            }
+
+            setCurrentShape(shape);
+            fitBounds(map);
+        }
+
+        // Handle when the polygon shape drawing is "complete"
+        google.maps.event.addListener(drawingManager, "overlaycomplete", function (e) {
+            setCurrentShape(e.overlay as Shape);
+        });
+
+        // Clear the current selection when the drawing mode is changed, or when the
+        // map is clicked.
+        google.maps.event.addListener(drawingManager, "drawingmode_changed", deselect);
+        google.maps.event.addListener(map, "click", deselect);
+    }
+
+    /**
+     * Create a new shape, add it to the map, and add listeners for updates to it
+     */
+    function setCurrentShape(newShape: Shape): void {
+        disableDrawing();
+        select(newShape);
+
+        if (drawingMode == "Polygon") {
+            shape = newShape as google.maps.Polygon;
+            setEditable(true);
+
+            internalValue.value = pathToCoordinates(shape.getPath());
+
+            // add listener for moving polygon points.
+            google.maps.event.addListener(shape.getPath(), "set_at", () => {
+                updateShape(shape as google.maps.Polygon);
+            });
+
+            // add listener for adding new points.
+            google.maps.event.addListener(shape.getPath(), "insert_at", () => {
+                updateShape(shape as google.maps.Polygon);
+            });
+
+            // Add an event listener to implement right-click to delete node
+            google.maps.event.addListener(shape, "rightclick", (ev) => {
+                if (ev.vertex != null) {
+                    (shape as google.maps.Polygon).getPath().removeAt(ev.vertex);
+                }
+
+                updateShape(shape as google.maps.Polygon);
+            });
+
+            // add listener for selecting the polygon
+            google.maps.event.addListener(shape, "click", () => {
+                select(shape);
+            });
+        }
+        else if (drawingMode == "Point") {
+            shape = newShape as google.maps.Marker;
+            let position = shape.getPosition();
+
+            if (!position) {
+                internalValue.value = [];
+            }
+            else {
+                internalValue.value = [toCoordinate(position)];
+            }
+
+            // add listener for selecting the polygon
+            google.maps.event.addListener(shape, "click", () => {
+                select(shape);
+            });
+        }
+    }
+
+    /**
+     * When nodes are added/moved/deleted from a polygon, this makes sure the component's value is up-to-date
+     */
+    function updateShape(updatedShape: google.maps.Polygon): void {
+        shape = updatedShape as google.maps.Polygon;
+
+        let path = shape.getPath();
+
+        // if the last vertex has been removed, there's no more shape, so delete it and let us draw a new one.
+        if (path.getLength() == 0) {
+            deleteSelectedShape(true);
+            return;
+        }
+
+        const coordinates: Coordinate[] = pathToCoordinates(path);
+
+        internalValue.value = coordinates;
+    }
+
+    /**
+     * Select the shape for editing/deleting
+     */
+    function select(shape: Shape | null): void {
+        if (shape == null) return;
+
+        setEditable(true);
+        isClearButtonEnabled.value = true;
+    }
+
+    /**
+     * Unselects the selected shape (if selected) and disables the delete button.
+     */
+    function deselect(): void {
+        setEditable(false);
+        isClearButtonEnabled.value = false;
+    }
+
+    /**
+     * If the current shape is a polygon, make it editable
+     */
+    function setEditable(isEditable: boolean): void {
+        if (shape && drawingMode == "Polygon") {
+            (shape as google.maps.Polygon).setEditable(isEditable);
+        }
+    }
+
+    /**
+     * Finds the point/polygon boundary and sets the map viewport to fit
+     */
+    function fitBounds(map: google.maps.Map): void {
+        if (!internalValue.value) {
+            // if no path, then set the center using the options
+            const newLatLng = new google.maps.LatLng(
+                centerLatitude,
+                centerLongitude
+            );
+
+            map.setCenter(newLatLng);
+            return;
+        }
+
+        const coords = internalValue.value;
+
+        if (drawingMode == "Point") {
+            map.setCenter(new google.maps.LatLng(...coords[0]));
+            return;
+        }
+
+        // find the most southWest and northEast points of the path.
+        for (let i = 0; i < coords.length; i++) {
+            const [lat, lng] = coords[i];
+
+            if (minLat == null || lat < minLat) {
+                minLat = lat;
+            }
+            if (maxLat == null || lat > maxLat) {
+                maxLat = lat;
+            }
+            if (minLng == null || lng < minLng) {
+                minLng = lng;
+            }
+            if (maxLng == null || lng > maxLng) {
+                maxLng = lng;
+            }
+        }
+
+        // Set the viewport to contain the given bounds.
+        const southWest = new google.maps.LatLng(minLat ?? 0, minLng);
+        const northEast = new google.maps.LatLng(maxLat ?? 0, maxLng);
+        const bounds = new google.maps.LatLngBounds(southWest, northEast);
+        map.fitBounds(bounds);
+    }
+
+    /**
+     * Disables the drawing manager so they cannot add anything to the map.
+     */
+    function disableDrawing(): void {
+        if (!drawingManager) {
+            return;
+        }
+
+        drawingManager.setDrawingMode(null);
+
+        // disable the drawing controls so we only get one polygon
+        // and we'll add it back on deleting the existing polygon.
+        drawingManager.setOptions({
+            drawingControlOptions: { drawingModes: [] }
+        });
+    }
+
+    /**
+     * Disables the drawing manager so they cannot add anything to the map.
+     */
+    function enableDrawing(): void {
+        // TODO
+        if (!drawingManager) {
+            return;
+        }
+
+        drawingManager?.setOptions({
+            drawingControlOptions: { drawingModes: drawingModes }
+        });
+    }
+
+    /**
+     * Delete the selected shape and enable the drawing controls
+     * if they were deleted.  Also removes the polygon from the hidden variable.
+     */
+    async function deleteSelectedShape(confirmed: boolean = false): Promise<void> {
+        if (shape && (confirmed || await confirm("Delete selected shape?"))) {
+            deselect();
+            shape.setMap(null);
+            shape = null;
+
+            internalValue.value = [];
+            enableDrawing();
+        }
+    }
+
+    /**
+     * Takes a Google Polygon path and converts it into a Coordinate array
+     */
+    function pathToCoordinates(path: google.maps.MVCArray<google.maps.LatLng>): Coordinate[] {
+        const coordinates: Coordinate[] = [];
+
+        // Iterate over the vertices of the shape's path
+        for (let i = 0; i < path.getLength(); i++) {
+            const xy = path.getAt(i);
+            coordinates[i] = toCoordinate(xy);
+        }
+
+        return coordinates;
+    }
+
+    // #endregion
+
+    // #region Life Cycle
+
+    /*
+     * Load Google Maps and grab data needed from the server
+     */
+    onBeforeMount(async (): Promise<void> => {
+        const googleMapSettings = await loadMapResources({ mapStyleValueGuid: props.mapStyleValueGuid });
+
+        centerLatitude = centerLatitude ?? googleMapSettings.centerLatitude ?? 33.590795;
+        centerLongitude = centerLongitude ?? googleMapSettings.centerLongitude ?? -112.126459;
+
+        try {
+            styles = JSON.parse(googleMapSettings.mapStyle ?? "");
+        }
+        catch { /* empty */ }
+
+        fillColor = strokeColor = googleMapSettings.markerColor ? "#" + googleMapSettings.markerColor : "#0088cc";
+
+        isGoogleLoaded.value = true;
+    });
+
+    // Mark the component as mounted so we can know when we're ready to initialize
+    onMounted((): void => {
+        isMounted.value = true;
+    });
+
+    // #endregion
+</script>
+
+<style>
+.gm-container {
+    position: relative;
+}
+
+.gm-map {
+    overflow: hidden;
+}
+
+.gm-clear-button {
+    z-index: 10;
+    position: absolute;
+    /* right: 0px; */
+    margin-top: 5px;
+    line-height: 0;
+    overflow: hidden;
+    text-align: center;
+    color: #8c4b4b;
+    background: white;
+    padding: 4px;
+    border-radius: 2px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    border: 0;
+    text-align: left;
+}
+
+.gm-clear-button:hover {
+    background: whitesmoke;
+}
+
+.gm-clear-button:disabled {
+    color: #aaa;
+    background: white;
+}
+
+.gm-clear-button i.fa {
+    font-size: 16px;
+    padding: 0 2.5px;
+}
+
+.static-map-size {
+    height: 300px;
+    width: 500px;
+}
+
+.expanded-map-size {
+    height: 100%;
+    width: 100%;
+}
+</style>
