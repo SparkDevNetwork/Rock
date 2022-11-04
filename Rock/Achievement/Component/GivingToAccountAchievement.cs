@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -245,8 +245,9 @@ namespace Rock.Achievement.Component
                 return updatedAttempts;
             }
 
-            // If the achievement type is not active (or null) then there is nothing to do
-            if ( achievementTypeCache?.IsActive != true )
+            // If the achievement type is not active (or null) OR if there is no person associated to the financial transaction
+            // then there is nothing to do
+            if ( achievementTypeCache?.IsActive != true || financialTransaction.AuthorizedPersonAliasId == null )
             {
                 return updatedAttempts;
             }

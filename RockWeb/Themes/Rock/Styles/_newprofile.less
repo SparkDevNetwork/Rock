@@ -659,6 +659,39 @@
     }
   }
 
+  .note-editor-attributes {
+    .note-text {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-color: transparent;
+      border-bottom-color: @input-border;
+
+      &:focus {
+        border-color: @input-border-focus;
+      }
+    }
+
+    .note-editor-text {
+      margin: 0;
+
+      .control-label {
+        display: none;
+      }
+    }
+    
+    .noteentry-control {
+      padding: 0;
+    }
+
+    fieldset {
+      padding: 12px 24px 0;
+    }
+
+    .settings {
+      padding: 3px 24px 6px;
+    }
+  }
+
   .noteentry-control textarea {
     height: auto;
     resize: none;
