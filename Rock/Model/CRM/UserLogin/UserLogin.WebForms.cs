@@ -68,14 +68,20 @@ namespace Rock.Model
             }
 
             IPrincipal currentPrincipal = Thread.CurrentPrincipal;
-            if ( currentPrincipal == null || currentPrincipal.Identity == null )
+            if ( currentPrincipal?.Identity == null )
             {
                 return string.Empty;
             }
-            else if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
+
+            if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
             {
-                var currentUserLogin = UserLoginService.GetCurrentUser( true );
-                return currentUserLogin?.UserName ?? currentPrincipal.Identity.Name;
+                var personToken = new PersonTokenService( new Rock.Data.RockContext() ).GetByImpersonationToken( currentPrincipal.Identity.Name.Substring( 8 ) );
+                if ( personToken?.PersonAlias?.Person != null )
+                {
+                    return personToken.PersonAlias.Person.GetImpersonatedUser()?.UserName ?? currentPrincipal.Identity.Name;
+                }
+
+                return currentPrincipal.Identity.Name;
             }
             else
             {
