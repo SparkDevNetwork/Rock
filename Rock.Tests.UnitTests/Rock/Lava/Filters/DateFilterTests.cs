@@ -1798,8 +1798,10 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void SundayDate_WithDateTimeStringAsInput_YieldsNextSundayDate()
         {
-            TestHelper.AssertTemplateOutput( "2021-10-17",
-                "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17", "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            } );
         }
 
         /// <summary>
@@ -1813,8 +1815,11 @@ namespace Rock.Tests.UnitTests.Lava
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "2021-10-17",
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17",
                 "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", mergeValues );
+            } );
         }
 
         #endregion
