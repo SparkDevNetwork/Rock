@@ -626,6 +626,27 @@ namespace Rock.Field.Types
             return AddQuotes( formattedValue );
         }
 
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                // NOTE: this is for backwards compatibility for filters that
+                // were saved when Boolean DataFilters didn't have a Compare Option.
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.EqualTo,
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
+        }
+
         /// <summary>
         /// Gets a filter expression for an entity property value.
         /// </summary>
