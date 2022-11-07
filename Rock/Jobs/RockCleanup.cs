@@ -980,7 +980,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var toBeMarkedCompletedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.MaxWorkflowAgeDays.HasValue && w.ActivatedDateTime.HasValue && !w.CompletedDateTime.HasValue && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.MaxWorkflowAgeDays ) )
+                .Where( w => w.WorkflowType.MaxWorkflowAgeDays.HasValue && w.ActivatedDateTime.HasValue && !w.CompletedDateTime.HasValue && RockDateTime.Now > DbFunctions.AddDays( w.ActivatedDateTime, w.WorkflowType.MaxWorkflowAgeDays ) )
                 .Take( batchAmount )
                 .ToList();
 
