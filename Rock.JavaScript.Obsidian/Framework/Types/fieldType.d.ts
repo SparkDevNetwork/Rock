@@ -42,7 +42,7 @@ export interface IFieldType {
      * Get the HTML representation of the attribute value. This will be used
      * as literal HTML so if you are returning plain text it must be encoded
      * for HTML entities first.
-     * 
+     *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
      *
@@ -54,7 +54,7 @@ export interface IFieldType {
      * Get the condensed plain text representation of the attribute value.
      * The text should probably be no more than 100 characters, though you
      * can also alter the format entirely.
-     * 
+     *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
      *
@@ -67,7 +67,7 @@ export interface IFieldType {
      * be used as literal HTML so if you are returning plain text it must be
      * encoded for HTML entities first. This should be a more concise
      * representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
-     * 
+     *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
      *
@@ -77,14 +77,14 @@ export interface IFieldType {
 
     /**
      * Get the component that will be used to display the formatted value.
-     * 
+     *
      * @returns A component that is already configured to show the value.
      */
     getFormattedComponent(): Component;
 
     /**
      * Get the component that will be used to display the condensed formatted value.
-     * 
+     *
      * @returns A component that is already configured to show the condensed value.
      */
     getCondensedFormattedComponent(): Component;
@@ -92,7 +92,7 @@ export interface IFieldType {
     /**
      * Get the component that will be used to edit the value. It will receive
      * the modelValue property which contains the {@link PublicAttributeValueViewModel.value}.
-     * 
+     *
      * @returns A component that is already configured to edit the value.
      */
     getEditComponent(): Component;
@@ -102,7 +102,7 @@ export interface IFieldType {
      * the modelValue property which contains a Record<string, string> object
      * with the configuration values. It will also receive a configurationProperties
      * value of type Record<string, string>.
-     * 
+     *
      * @returns A component that is already configured to edit the value.
      */
     getConfigurationComponent(): Component;
@@ -145,7 +145,7 @@ export interface IFieldType {
     /**
      * Get a human friendly description of the configured filter value. Such as
      * "equal to 3". It should not include the name of the attribute.
-     * 
+     *
      * @param value The comparison value to be formatted.
      * @param configurationValues The configuration of the field type to use when formatting the value.
      */
@@ -154,9 +154,20 @@ export interface IFieldType {
     /**
      * Gets a human friendly string of text that represents the comparison
      * value. This should not include the comparison type.
-     * 
+     *
      * @param value The comparison value to be formatted.
      * @param configurationValues The configuration of the field type to use when formatting the value.
      */
     getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string;
+
+    /**
+     * Determines if the value matches the filter value for this field type.
+     *
+     * @param value The value to be compared with this filter value.
+     * @param filterValue The comparison value specified by the filter.
+     * @param configurationValues The configuration of the field type to use when formatting the value.
+     *
+     * @returns True if the value matches the comparison value; otherwise false.
+     */
+    doesValueMatchFilter(value: string, filterValue: ComparisonValue, configurationValues: Record<string, string>): boolean;
 }

@@ -21,9 +21,12 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -97,21 +100,30 @@ namespace Rock.Jobs
 
             CreateIndex( commandTimeout );
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             updatedCount += ForceRebuildAttributesAndValues( rebuildPercentage, commandTimeout, out var forcedRebuildErrorMessages );
+            LogTimedMessage( $"Force Rebuild Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
+            sw.Restart();
             updatedCount += UpdateVolatileAttributesAndValues( commandTimeout, out var volatileErrorMessages );
+            LogTimedMessage( $"Force Volatile Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
-            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout );
+            sw.Restart();
+            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout, out var dirtyErrorMessages );
+            LogTimedMessage( $"Force Dirty Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
             var errorMessages = new List<string>();
             errorMessages.AddRange( forcedRebuildErrorMessages );
             errorMessages.AddRange( volatileErrorMessages );
+            errorMessages.AddRange( dirtyErrorMessages );
 
             var message = $"Updated {updatedCount:N0} persisted values.";
 
-            if ( forcedRebuildErrorMessages.Any() )
+            message += $"\nServer: {GetLocalIPAddress()}";
+
+            if ( errorMessages.Any() )
             {
-                message += $"\nEncounted errors:\n{string.Join( "\n", forcedRebuildErrorMessages )}";
+                message += $"\nEncounted errors:\n{string.Join( "\n", errorMessages )}";
             }
 
             this.Result = message;
@@ -180,6 +192,7 @@ namespace Rock.Jobs
             int updatedCount = 0;
             var configurationValues = new Dictionary<string, string>();
             Rock.Field.IFieldType field;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             using ( var rockContext = new RockContext() )
             {
@@ -230,24 +243,20 @@ namespace Rock.Jobs
 
                     if ( field.IsPersistedValueSupported( configurationValues ) )
                     {
-                        persistedValues = field.GetPersistedValues( value, configurationValues );
+                        persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, configurationValues );
                     }
                     else
                     {
-                        var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
-
-                        persistedValues = new Field.PersistedValues
-                        {
-                            TextValue = placeholderValue,
-                            CondensedTextValue = placeholderValue,
-                            HtmlValue = placeholderValue,
-                            CondensedHtmlValue = placeholderValue
-                        };
+                        persistedValues = Helper.GetPersistedValuePlaceholderOrDefault( field, configurationValues );
                     }
+
+                    Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
 
                     updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                 }
             }
+
+            LogTimedMessage( $"Force rebuild of attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
 
             // Check if this field type references other entities.
             if ( !( field is Rock.Field.IEntityReferenceFieldType referencedField ) )
@@ -256,6 +265,7 @@ namespace Rock.Jobs
             }
 
             Dictionary<string, List<int>> attributeValueList;
+            sw.Restart();
 
             // Get a list of all the attribute value identifiers that we
             // need to update the references for.
@@ -301,6 +311,8 @@ namespace Rock.Jobs
                     }
                 }
             }
+
+            LogTimedMessage( $"Rebuild of entity references for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
 
             return updatedCount;
         }
@@ -406,13 +418,15 @@ namespace Rock.Jobs
         /// Updates all attributes and values that are currently marked dirty.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
+        /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int UpdateDirtyAttributesAndValues( int commandTimeout )
+        private int UpdateDirtyAttributesAndValues( int commandTimeout, out List<string> errorMessages )
         {
             var updatedCount = 0;
             var attributeIds = GetDirtyAttributeIds( commandTimeout );
 
-            this.UpdateLastStatusMessage( "Updating dirty attributes." );
+            errorMessages = new List<string>();
+            UpdateLastStatusMessage( "Updating dirty attributes." );
 
             using ( var rockContext = new RockContext() )
             {
@@ -425,31 +439,49 @@ namespace Rock.Jobs
 
                 foreach ( var attribute in attributes )
                 {
-                    Helper.UpdateAttributeDefaultPersistedValues( attribute );
-                    Helper.UpdateAttributeEntityReferences( attribute, rockContext );
+                    try
+                    {
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-                    updatedCount++;
+                        Helper.UpdateAttributeDefaultPersistedValues( attribute );
+                        Helper.UpdateAttributeEntityReferences( attribute, rockContext );
+
+                        LogTimedMessage( $"Rebuild of dirty attribute #{attribute.Id}.", sw.Elapsed.TotalMilliseconds );
+
+                        updatedCount++;
+                    }
+                    catch ( Exception ex )
+                    {
+                        errorMessages.Add( $"Error updating dirty attribute #{attribute.Id}: {ex.Message}" );
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
 
                 rockContext.SaveChanges();
             }
 
-            updatedCount += UpdateDirtyAttributeValues( commandTimeout );
+            updatedCount += UpdateDirtyAttributeValues( commandTimeout, out var valueErrorMessages );
+
+            errorMessages.AddRange( valueErrorMessages );
 
             return updatedCount;
         }
 
         /// <summary>
         /// Updates all the dirty attribute values that are currently marked dirty.
-        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int)"/>.
+        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int, out List{string})"/>.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
         /// <returns>The number of attribute values that were updated.</returns>
-        private int UpdateDirtyAttributeValues( int commandTimeout )
+        /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
+        /// <returns>The number of attribute values that were updated.</returns>
+        private int UpdateDirtyAttributeValues( int commandTimeout, out List<string> errorMessages )
         {
             var updatedCount = 0;
             var attributeIndex = 0;
             var dirtyDictionary = GetDirtyAttributeValues( commandTimeout );
+
+            errorMessages = new List<string>();
 
             foreach ( var kvpDirty in dirtyDictionary )
             {
@@ -467,42 +499,49 @@ namespace Rock.Jobs
                     continue;
                 }
 
-                var valueGroups = attributeValues.GroupBy( v => v.Value );
-
-                foreach ( var valueGroup in valueGroups )
+                try
                 {
-                    var value = valueGroup.Key;
-                    var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
-                    Field.PersistedValues persistedValues;
+                    var valueGroups = attributeValues.GroupBy( v => v.Value );
 
-                    if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                    foreach ( var valueGroup in valueGroups )
                     {
-                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
-                    }
-                    else
-                    {
-                        var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
+                        var value = valueGroup.Key;
+                        var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
+                        Field.PersistedValues persistedValues;
 
-                        persistedValues = new Field.PersistedValues
+                        if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                         {
-                            TextValue = placeholderValue,
-                            CondensedTextValue = placeholderValue,
-                            HtmlValue = placeholderValue,
-                            CondensedHtmlValue = placeholderValue
-                        };
-                    }
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        rockContext.Database.CommandTimeout = commandTimeout;
-
-                        updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
-
-                        if ( attributeCache.IsReferencedEntityFieldType )
+                            persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues );
+                        }
+                        else
                         {
-                            UpdateDirtyAttributeValueReferences( attributeId, value, attributeValueIds, rockContext );
+                            persistedValues = Helper.GetPersistedValuePlaceholderOrDefault( field, attributeCache.ConfigurationValues );
+                        }
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            rockContext.Database.CommandTimeout = commandTimeout;
+
+                            Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext  );
+
+                            updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+
+                            LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+
+                            if ( attributeCache.IsReferencedEntityFieldType )
+                            {
+                                sw.Restart();
+                                UpdateDirtyAttributeValueReferences( attributeId, value, attributeValueIds, rockContext );
+                                LogTimedMessage( $"Rebuild of entity references on {attributeValueIds.Count:N0} values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+                            }
                         }
                     }
+                }
+                catch ( Exception ex )
+                {
+                    errorMessages.Add( $"Error updating dirty attribute values for attribute #{attributeId}: {ex.Message}" );
+                    ExceptionLogService.LogException( ex );
                 }
             }
 
@@ -574,6 +613,68 @@ namespace Rock.Jobs
                     .Select( a => a.Id )
                     .ToList();
             }
+        }
+
+        /// <summary>
+        /// Logs a message to either the information channel or debug channel
+        /// depending on how long it took.
+        /// </summary>
+        /// <param name="message">The message to be logged.</param>
+        /// <param name="milliseconds">The duration of the operation.</param>
+        private void LogTimedMessage( string message, double milliseconds )
+        {
+            if ( milliseconds > 1_000 )
+            {
+                LogInformation( $"[{milliseconds:N0}ms] {message}" );
+            }
+            else
+            {
+                LogDebug( $"[{milliseconds:N0}ms] {message}" );
+            }
+        }
+
+        /// <summary>
+        /// Logs the message to the information logger.
+        /// </summary>
+        /// <param name="message">The message to be logged.</param>
+        private void LogInformation( string message )
+        {
+            RockLogger.Log.Information( RockLogDomains.Jobs, $"Update Persisted Attribute Values - {message}" );
+        }
+
+        /// <summary>
+        /// Logs the message to the debug logger.
+        /// </summary>
+        /// <param name="message">The message to be logged.</param>
+        private void LogDebug( string message )
+        {
+            RockLogger.Log.Debug( RockLogDomains.Jobs, $"Update Persisted Attribute Values - {message}" );
+        }
+
+        /// <summary>
+        /// Gets the local IP address as best can be determined.
+        /// </summary>
+        /// <returns>The IP address for this server.</returns>
+        private static string GetLocalIPAddress()
+        {
+            try
+            {
+                var host = Dns.GetHostEntry( Dns.GetHostName() );
+
+                foreach ( var ip in host.AddressList )
+                {
+                    if ( ip.AddressFamily == AddressFamily.InterNetwork && !ip.IsIPv6LinkLocal && !ip.IsIPv6Multicast && !ip.IsIPv6SiteLocal )
+                    {
+                        return ip.ToString();
+                    }
+                }
+            }
+            catch
+            {
+                // Intentionally ignored.
+            }
+
+            return "127.0.0.1";
         }
     }
 }
