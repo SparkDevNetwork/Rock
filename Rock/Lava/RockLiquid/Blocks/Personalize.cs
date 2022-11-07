@@ -301,19 +301,9 @@ namespace Rock.Lava.RockLiquid.Blocks
                     }
                 }
 
-                List<int> personSegmentIdList;
-                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-                if ( person != null )
-                {
-                    personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForRequest( person,
-                        rockContext,
-                        System.Web.HttpContext.Current?.Request );
-                }
-                else
-                {
-                    personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPerson( person,
-                        rockContext );
-                }
+                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForContext( context,
+                    System.Web.HttpContext.Current,
+                    person );
 
                 var requiredSegmentIdList = PersonalizationSegmentCache.GetByKeys( segmentParameterString )
                     .Select( ps => ps.Id )
