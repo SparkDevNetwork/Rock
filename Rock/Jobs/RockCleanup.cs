@@ -259,9 +259,6 @@ namespace Rock.Jobs
             // Search for locations with no country and assign USA or Canada if it match any of the country's states
             RunCleanupTask( "location", () => LocationCleanup( dataMap ) );
 
-            // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
-            RunCleanupTask( "attribute value", () => CleanupAttributeValues( dataMap ) );
-
             RunCleanupTask( "merge streak data", () => MergeStreaks() );
 
             RunCleanupTask( "refresh streak data", () => RefreshStreaksDenormalizedData() );
@@ -1664,48 +1661,6 @@ namespace Rock.Jobs
             }
 
             return totalRowsDeleted;
-        }
-
-        /// <summary>
-        /// Does cleanup of Attribute Values
-        /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupAttributeValues( JobDataMap dataMap )
-        {
-            AttributeValueCleanup( commandTimeout );
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Does cleanup of Attribute Values
-        /// </summary>
-        /// <param name="commandTimeout">The command timeout.</param>
-        internal static void AttributeValueCleanup( int commandTimeout )
-        {
-            using ( var rockContext = new Rock.Data.RockContext() )
-            {
-                // Ensure AttributeValue.ValueAsNumeric is in sync with AttributeValue.Value, just in case Value got updated without also updating ValueAsNumeric
-                rockContext.Database.CommandTimeout = commandTimeout;
-                rockContext.Database.ExecuteSqlCommand( @"
-UPDATE AttributeValue
-SET ValueAsNumeric = CASE
-		WHEN LEN([value]) < (100)
-			THEN CASE
-					WHEN ISNUMERIC([value]) = (1)
-						AND NOT [value] LIKE '%[^-0-9.]%'
-						THEN TRY_CAST([value] AS [decimal](18, 2))
-					END
-		END
-where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
-			THEN CASE
-					WHEN ISNUMERIC([value]) = (1)
-						AND NOT [value] LIKE '%[^-0-9.]%'
-						THEN TRY_CAST([value] AS [decimal](18, 2))
-					END
-		END), 0)
-" );
-            }
         }
 
         /// <summary>
