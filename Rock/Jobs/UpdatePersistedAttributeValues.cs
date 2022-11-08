@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net;
@@ -105,18 +104,21 @@ namespace Rock.Jobs
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsInteger();
             var updatedCount = 0;
 
+            // Update the last status message at most every 2.5 seconds.
+            var statusMessage = new ThrottleLogger( 2500, msg => context.UpdateLastStatusMessage( msg ) );
+
             CreateIndex( commandTimeout );
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            updatedCount += ForceRebuildAttributesAndValues( rebuildPercentage, commandTimeout, context, out var forcedRebuildErrorMessages );
+            updatedCount += ForceRebuildAttributesAndValues( rebuildPercentage, commandTimeout, statusMessage, out var forcedRebuildErrorMessages );
             LogTimedMessage( $"Force Rebuild Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
             sw.Restart();
-            updatedCount += UpdateVolatileAttributesAndValues( commandTimeout, context, out var volatileErrorMessages );
+            updatedCount += UpdateVolatileAttributesAndValues( commandTimeout, statusMessage, out var volatileErrorMessages );
             LogTimedMessage( $"Force Volatile Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
             sw.Restart();
-            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout, context, out var dirtyErrorMessages );
+            updatedCount += UpdateDirtyAttributesAndValues( commandTimeout, statusMessage, out var dirtyErrorMessages );
             LogTimedMessage( $"Force Dirty Attributes and Values.", sw.Elapsed.TotalMilliseconds );
 
             var errorMessages = new List<string>();
@@ -155,10 +157,10 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="rebuildPercentage">The percentage (0-100) of the attributes to rebuild.</param>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
+        /// <param name="statusMessage">The object to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int ForceRebuildAttributesAndValues( int rebuildPercentage, int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int ForceRebuildAttributesAndValues( int rebuildPercentage, int commandTimeout, ThrottleLogger statusMessage, out List<string> errorMessages )
         {
             int? lastAttributeId = null;
             var updatedCount = 0;
@@ -173,7 +175,7 @@ namespace Rock.Jobs
 
                 try
                 {
-                    context.UpdateLastStatusMessage( $"Rebuilding attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
+                    statusMessage.Write( $"Rebuilding attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
                     updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
                     lastAttributeId = attributeId;
                 }
@@ -245,22 +247,29 @@ namespace Rock.Jobs
                     .Distinct()
                     .ToList();
 
-                foreach ( var value in distinctValues )
+                if ( field.IsPersistedValueSupported( configurationValues ) )
                 {
-                    Field.PersistedValues persistedValues;
+                    var cache = new Dictionary<string, object>();
 
-                    if ( field.IsPersistedValueSupported( configurationValues ) )
+                    foreach ( var value in distinctValues )
                     {
-                        persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, configurationValues );
+                        var persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
+
+                        Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
+
+                        updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                     }
-                    else
+                }
+                else
+                {
+                    var placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, configurationValues );
+
+                    foreach ( var value in distinctValues )
                     {
-                        persistedValues = Helper.GetPersistedValuePlaceholderOrDefault( field, configurationValues );
+                        Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
+
+                        updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, placeholderValues, rockContext );
                     }
-
-                    Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
-
-                    updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                 }
             }
 
@@ -390,17 +399,14 @@ namespace Rock.Jobs
         /// by outside influence to get their values back in sync.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
+        /// <param name="statusMessage">The object to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int UpdateVolatileAttributesAndValues( int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int UpdateVolatileAttributesAndValues( int commandTimeout, ThrottleLogger statusMessage, out List<string> errorMessages )
         {
             var updatedCount = 0;
 
-            var attributeIds = AttributeCache.All()
-                .Where( a => a.FieldType.Field != null && a.FieldType.Field.IsPersistedValueVolatile( a.ConfigurationValues ) )
-                .Select( a => a.Id )
-                .ToList();
+            var attributeIds = GetVolatileAttributeIds();
 
             errorMessages = new List<string>();
 
@@ -410,7 +416,7 @@ namespace Rock.Jobs
 
                 try
                 {
-                    context.UpdateLastStatusMessage( $"Rebuilding volatile attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
+                    statusMessage.Write( $"Rebuilding volatile attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
                     updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
                 }
                 catch ( Exception ex )
@@ -427,16 +433,16 @@ namespace Rock.Jobs
         /// Updates all attributes and values that are currently marked dirty.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
+        /// <param name="statusMessage">The object to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attributes and values that were updated.</returns>
-        private int UpdateDirtyAttributesAndValues( int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int UpdateDirtyAttributesAndValues( int commandTimeout, ThrottleLogger statusMessage, out List<string> errorMessages )
         {
             var updatedCount = 0;
             var attributeIds = GetDirtyAttributeIds( commandTimeout );
 
             errorMessages = new List<string>();
-            context.UpdateLastStatusMessage( "Updating dirty attributes." );
+            statusMessage.Write( "Updating dirty attributes.", true );
 
             using ( var rockContext = new RockContext() )
             {
@@ -470,7 +476,7 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
             }
 
-            updatedCount += UpdateDirtyAttributeValues( commandTimeout, context, out var valueErrorMessages );
+            updatedCount += UpdateDirtyAttributeValues( commandTimeout, statusMessage, out var valueErrorMessages );
 
             errorMessages.AddRange( valueErrorMessages );
 
@@ -479,13 +485,13 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Updates all the dirty attribute values that are currently marked dirty.
-        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int, IJobExecutionContext, out List{string})"/>.
+        /// This is automatically called by <see cref="UpdateDirtyAttributesAndValues(int, ThrottleLogger, out List{string})"/>.
         /// </summary>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
-        /// <param name="context">The job context to use when updating the current status.</param>
+        /// <param name="statusMessage">The object to use when updating the current status.</param>
         /// <param name="errorMessages">On return will contain a list of errors that were encountered while processing.</param>
         /// <returns>The number of attribute values that were updated.</returns>
-        private int UpdateDirtyAttributeValues( int commandTimeout, IJobExecutionContext context, out List<string> errorMessages )
+        private int UpdateDirtyAttributeValues( int commandTimeout, ThrottleLogger statusMessage, out List<string> errorMessages )
         {
             var updatedCount = 0;
             var attributeIndex = 0;
@@ -500,14 +506,18 @@ namespace Rock.Jobs
                 var attributeValues = kvpDirty.Value;
                 var attributeCache = AttributeCache.Get( attributeId );
                 var field = attributeCache.FieldType.Field;
-
-                context.UpdateLastStatusMessage( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
+                var cache = new Dictionary<string, object>();
 
                 // Make sure this isn't a bad field type.
                 if ( field == null )
                 {
                     continue;
                 }
+
+                statusMessage.Write( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
+
+                Field.PersistedValues placeholderValues = null;
+                var persistedValueSupported = field.IsPersistedValueSupported( attributeCache.ConfigurationValues );
 
                 try
                 {
@@ -520,13 +530,18 @@ namespace Rock.Jobs
                         var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
                         Field.PersistedValues persistedValues;
 
-                        if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                        if ( persistedValueSupported )
                         {
-                            persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues );
+                            persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
                         }
                         else
                         {
-                            persistedValues = Helper.GetPersistedValuePlaceholderOrDefault( field, attributeCache.ConfigurationValues );
+                            if ( placeholderValues == null )
+                            {
+                                placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, attributeCache.ConfigurationValues );
+                            }
+
+                            persistedValues = placeholderValues;
                         }
 
                         using ( var rockContext = new RockContext() )
@@ -626,6 +641,37 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Gets all the attribute identifiers that are marked as volatile.
+        /// </summary>
+        /// <returns>A list of attribute identifiers that have been determined to be volatile.</returns>
+        private List<int> GetVolatileAttributeIds()
+        {
+            var attributeIds = new List<int>( 1000 );
+
+            foreach ( var attribute in AttributeCache.All().Where( a => a.Id == 7434 ) )
+            {
+                try
+                {
+                    if ( attribute.FieldType.Field == null )
+                    {
+                        continue;
+                    }
+
+                    if ( attribute.FieldType.Field.IsPersistedValueVolatile( attribute.ConfigurationValues ) )
+                    {
+                        attributeIds.Add( attribute.Id );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            return attributeIds;
+        }
+
+        /// <summary>
         /// Logs a message to either the information channel or debug channel
         /// depending on how long it took.
         /// </summary>
@@ -685,6 +731,37 @@ namespace Rock.Jobs
             }
 
             return "127.0.0.1";
+        }
+
+        /// <summary>
+        /// Quick and dirty class to throttle logging. Whenever we update
+        /// the status message it writes to the database. We don't need that
+        /// so just update every so often?
+        /// </summary>
+        private class ThrottleLogger
+        {
+            private readonly int _milliseconds;
+
+            private readonly Action<string> _logAction;
+
+            private readonly System.Diagnostics.Stopwatch _stopwatch;
+
+            public ThrottleLogger( int milliseconds, Action<string> logAction )
+            {
+                _milliseconds = milliseconds;
+                _logAction = logAction;
+                _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            }
+
+            public void Write( string message, bool force = false )
+            {
+                if ( force || _stopwatch.ElapsedMilliseconds > _milliseconds )
+                {
+                    _logAction( message );
+
+                    _stopwatch.Restart();
+                }
+            }
         }
     }
 }

@@ -147,11 +147,9 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var opportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( guid.Value );
-                    if ( opportunity != null )
-                    {
-                        return opportunity.Name;
-                    }
+                    var opportunityName = new ConnectionOpportunityService( rockContext ).GetSelect( guid.Value, o => o.Name );
+
+                    return opportunityName ?? string.Empty;
                 }
             }
 
@@ -322,6 +320,36 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = string.Empty,
+                    CondensedTextValue = string.Empty,
+                    HtmlValue = string.Empty,
+                    CondensedHtmlValue = string.Empty
+                };
+            }
+
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+            var condensedTextValue = textValue.Truncate( 100 );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue,
+                CondensedHtmlValue = condensedTextValue
+            };
         }
 
         #endregion

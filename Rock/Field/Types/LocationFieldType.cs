@@ -406,7 +406,7 @@ namespace Rock.Field.Types
         #region Persistence
 
         /// <inheritdoc/>
-        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
             var textValue = string.Empty;
 

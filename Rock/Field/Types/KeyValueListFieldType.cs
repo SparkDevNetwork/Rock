@@ -80,7 +80,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            var options = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            var options = GetCustomValues( privateConfigurationValues )
                 .Select( kvp => new
                 {
                     value = kvp.Key,
@@ -255,9 +255,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
-        private Dictionary<string, string> GetCustomValues( Dictionary<string, ConfigurationValue> configurationValues )
+        private Dictionary<string, string> GetCustomValues( Dictionary<string, string> configurationValues )
         {
-            var definedTypeId = configurationValues.GetConfigurationValueAsString( "definedtype" ).AsIntegerOrNull();
+            var definedTypeId = configurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull();
 
             if ( definedTypeId.HasValue )
             {
@@ -277,17 +277,21 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        /// <summary>
+        /// Gets the text value from the configured values.
+        /// </summary>
+        /// <param name="privateValue">The private (database) value.</param>
+        /// <param name="isDefinedType">Determines if this field is configured to use a defined type or the <paramref name="configuredValues"/>.</param>
+        /// <param name="configuredValues">The key-value pairs that describe which values can be displayed.</param>
+        /// <returns>A plain string of text.</returns>
+        private string GetTextValueFromConfiguredValues( string privateValue, bool isDefinedType, Dictionary<string, string> configuredValues )
         {
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].AsIntegerOrNull().HasValue;
-
             var values = new List<string>();
-            string[] nameValues = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+            var nameValues = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
 
             foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                var nameAndValue = nameValue.Split( new char[] { '^' } );
 
                 // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
                 nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
@@ -302,13 +306,9 @@ namespace Rock.Field.Types
                             nameAndValue[1] = definedValue.Value;
                         }
                     }
-                    else
+                    else if ( configuredValues.ContainsKey( nameAndValue[1] ) )
                     {
-                        var customValues = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
-                        if ( customValues.ContainsKey( nameAndValue[1] ) )
-                        {
-                            nameAndValue[1] = customValues[nameAndValue[1]];
-                        }
+                        nameAndValue[1] = configuredValues[nameAndValue[1]];
                     }
 
                     values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
@@ -320,6 +320,15 @@ namespace Rock.Field.Types
             }
 
             return values.AsDelimited( ", " );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].AsIntegerOrNull().HasValue;
+            var configuredValues = !isDefinedType ? GetCustomValues( configurationValues ) : null;
+
+            return GetTextValueFromConfiguredValues( value, isDefinedType, configuredValues );
         }
 
         /// <summary>
@@ -366,7 +375,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            var customValues = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+            var customValues = GetCustomValues( privateConfigurationValues );
 
             // If there are any custom values, then ensure that all values we
             // got from the public device are valid. If not, ignore them.
@@ -537,6 +546,20 @@ namespace Rock.Field.Types
         #region Persistence
 
         /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedType = privateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var values = privateConfigurationValues.GetValueOrNull( "customvalues" ) ?? string.Empty;
+
+            if ( definedType.AsIntegerOrNull().HasValue )
+            {
+                return true;
+            }
+
+            return !values.IsStrictLavaTemplate();
+        }
+
+        /// <inheritdoc/>
         public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
         {
             var oldDefinedType = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
@@ -555,6 +578,47 @@ namespace Rock.Field.Types
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = string.Empty,
+                    CondensedTextValue = string.Empty,
+                    HtmlValue = string.Empty,
+                    CondensedHtmlValue = string.Empty
+                };
+            }
+
+            bool isDefinedType = privateConfigurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull().HasValue;
+            Dictionary<string, string> configuredValues = null;
+
+            if ( !isDefinedType )
+            {
+                configuredValues = cache?.GetValueOrNull( "configuredValues" ) as Dictionary<string, string>;
+
+                if ( configuredValues == null )
+                {
+                    configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+                    cache?.AddOrReplace( "configuredValues", configuredValues );
+                }
+            }
+
+            var textValue = GetTextValueFromConfiguredValues( privateValue, isDefinedType, configuredValues ) ?? string.Empty;
+            var condensedTextValue = textValue.Truncate( 100 );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue,
+                CondensedHtmlValue = condensedTextValue
+            };
         }
 
         #endregion
