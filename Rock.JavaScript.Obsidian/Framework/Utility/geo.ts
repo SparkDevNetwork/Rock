@@ -21,8 +21,8 @@ import { DrawingMode, Coordinate, ILatLng, ILatLngLiteral } from "@Obsidian/Type
 import { GeoPickerSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerSettingsBag";
 import { GeoPickerGetSettingsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGetSettingsOptionsBag";
 import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
-import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
-import { post } from "@Obsidian/Utility/http";
+import { loadJavaScriptAsync } from "./page";
+import { post } from "./http";
 
 /**
  * Converts a LatLng object, "lat,lng" coordinate string, or WellKnown "lng lat" coordinate string to a Coordinate array
