@@ -80,6 +80,22 @@ namespace Rock.Model
         /// <param name="currencyTypeIds">The currency type ids.</param>
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        public DataSet GetGivingAnalyticsAccountTotalsDataSet( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds, false, false );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics account totals.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <param name="allowOnlyActive">Should only active transactions be returned.</param>
         /// <param name="allowOnlyTaxDeductible">Should only tax deductible transactions be returned.</param>
         /// <returns></returns>
@@ -87,6 +103,22 @@ namespace Rock.Model
         {
             var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds, allowOnlyActive, allowOnlyTaxDeductible );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics transaction data.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        public DataSet GetGivingAnalyticsTransactionDataSet( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds)
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds, false, false );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -115,6 +147,25 @@ namespace Rock.Model
         {
             var parameters = new Dictionary<string, object>();
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_FirstLastEverDates", System.Data.CommandType.StoredProcedure, parameters );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics person summary.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmount">The minimum amount.</param>
+        /// <param name="maxAmount">The maximum amount.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        public DataSet GetGivingAnalyticsPersonSummaryDataSet( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds)
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds, false, false );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_PersonSummary", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
