@@ -1137,7 +1137,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
             return new PersistedValues
             {

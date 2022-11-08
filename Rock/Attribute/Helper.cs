@@ -1946,12 +1946,13 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
         /// <param name="field">The field type to use when formatting the values.</param>
         /// <param name="rawValue">The raw value to be formatted.</param>
         /// <param name="configuration">The configuration of the field type.</param>
+        /// <param name="cache">A cache dictionary that can be used by the field type to store and retrieve data that would otherwise need a database hit.</param>
         /// <returns>An instance of <see cref="Field.PersistedValues"/> that specifies all the values to be persisted.</returns>
-        internal static Field.PersistedValues GetPersistedValuesOrPlaceholder( Field.IFieldType field, string rawValue, Dictionary<string, string> configuration )
+        internal static Field.PersistedValues GetPersistedValuesOrPlaceholder( Field.IFieldType field, string rawValue, Dictionary<string, string> configuration, IDictionary<string, object> cache )
         {
             try
             {
-                return field.GetPersistedValues( rawValue, configuration );
+                return field.GetPersistedValues( rawValue, configuration, cache );
             }
             catch ( Exception ex )
             {
@@ -2011,7 +2012,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
 
             if ( field != null && field.IsPersistedValueSupported( configuration ) )
             {
-                var persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, configuration );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, configuration, null );
 
                 attribute.DefaultPersistedTextValue = persistedValues.TextValue;
                 attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
@@ -2074,25 +2075,19 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
                         .Distinct()
                         .ToList();
 
+                    var cache = new Dictionary<string, object>();
+
                     foreach ( var value in distinctValues )
                     {
                         if ( field.IsPersistedValueSupported( configurationValues ) )
                         {
-                            var persistedValues = GetPersistedValuesOrPlaceholder( field, value, configurationValues );
+                            var persistedValues = GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
                         else
                         {
-                            var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
-
-                            var persistedValues = new Field.PersistedValues
-                            {
-                                TextValue = placeholderValue,
-                                CondensedTextValue = placeholderValue,
-                                HtmlValue = placeholderValue,
-                                CondensedHtmlValue = placeholderValue
-                            };
+                            var persistedValues = GetPersistedValuePlaceholderOrDefault( field, configurationValues );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
@@ -2440,7 +2435,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
             if ( attribute.IsPersistedValueSupported && field != null )
             {
-                var persistedValues = GetPersistedValuesOrPlaceholder( field, attributeValue.Value, attribute.ConfigurationValues );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attributeValue.Value, attribute.ConfigurationValues, null );
 
                 attributeValue.PersistedTextValue = persistedValues.TextValue;
                 attributeValue.PersistedHtmlValue = persistedValues.HtmlValue;
@@ -2493,7 +2488,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                 if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                 {
-                    persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, attributeCache.ConfigurationValues );
+                    persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, attributeCache.ConfigurationValues, null );
                 }
                 else
                 {
@@ -2556,18 +2551,19 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             {
                 var attributeId = attributeGroup.Key;
                 var valueGroups = attributeGroup.GroupBy( ag => ag.Value );
+                var attributeCache = AttributeCache.Get( attributeId );
+                var field = attributeCache.FieldType.Field;
+                var cache = new Dictionary<string, object>();
 
                 foreach ( var valueGroup in valueGroups )
                 {
                     var value = valueGroup.Key;
-                    var attributeCache = AttributeCache.Get( attributeId );
-                    var field = attributeCache.FieldType.Field;
                     var attributeValueIds = valueGroup.Select( vg => vg.AttributeValueId );
                     Field.PersistedValues persistedValues;
 
                     if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                     {
-                        persistedValues = GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues );
+                        persistedValues = GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
                     }
                     else
                     {

@@ -702,6 +702,32 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Compiled Regex for detecting if a string has lava tags. This is
+        /// a more strict version that should prevent false positives.
+        /// </summary>
+        private static readonly Regex _hasStrictLavaTags = new Regex( @"{{.*}}|{%.*%}|{\[.*\]}", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// This is a much stricter check as it specifically looks for {{...}}, {%...%}
+        /// and {[...]}. This should reduce the risk of false positives at the expense
+        /// of a slightly longer check time.
+        /// </summary>
+        /// <param name="content">The content to be checked.</param>
+        /// <returns><c>true</c> if the content contains lava tags; otherwise <c>false</c>.</returns>
+        internal static bool IsStrictLavaTemplate( string content )
+        {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // On a 3KB test string with a single lava merge field at the end, this
+            // took 0.002ms on the development machine.
+            return _hasStrictLavaTags.IsMatch( content );
+        }
+
+        /// <summary>
         /// Compiled RegEx for detecting if a string has Lava tags
         /// regex from some ideas in
         ///  http://stackoverflow.com/a/16538131/1755417
