@@ -68,6 +68,10 @@
     <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.cs" />
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.designer.cs">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.cs" />
     <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
@@ -1392,6 +1396,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211081600377_GroupSchedulingAcceptAll.resx">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
