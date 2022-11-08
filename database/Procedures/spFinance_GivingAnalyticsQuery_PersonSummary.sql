@@ -88,7 +88,7 @@ BEGIN
 				LEFT OUTER JOIN @CurrencyTypeTbl [tt2] ON [tt2].[id] = [fpd].[CurrencyTypeValueId]
 				LEFT OUTER JOIN @SourceTypeTbl [tt3] ON [tt3].[id] = [ft].[SourceTypeValueId]
 				LEFT OUTER JOIN @TransactionTypeTbl [tt4] ON [tt4].[id] = [ft].TransactionTypeValueId
-				WHERE [ft].[TransactionDateTime] BETWEEN @StartDate AND @EndDate
+				WHERE [ft].[TransactionDateTime] >= @StartDate AND [ft].[TransactionDateTime] < @EndDate
 				AND ( @AccountIds IS NULL OR [tt1].[Id] IS NOT NULL )
 				AND ( @CurrencyTypeIds IS NULL OR [tt2].[Id] IS NOT NULL )
 				AND ( @SourceTypeIds IS NULL OR [tt3].[Id] IS NOT NULL )
