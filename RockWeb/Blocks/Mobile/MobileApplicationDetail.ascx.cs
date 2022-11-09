@@ -562,9 +562,9 @@ namespace RockWeb.Blocks.Mobile
                 ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
                 
 
-                cbNavbarTransclucent.Checked = additionalSettings.EnableBarTransparency;
+                cbNavbarTransclucent.Checked = additionalSettings.IOSEnableBarTransparency;
                 ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
-                ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBlurStyle);
+                ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBarBlurStyle);
 
                 cpEditBarBackgroundColor.Value = barBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
@@ -1109,8 +1109,8 @@ namespace RockWeb.Blocks.Mobile
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
                 additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
-                additionalSettings.EnableBarTransparency = cbNavbarTransclucent.Checked;
-                additionalSettings.IOSBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
+                additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
+                additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
                 additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
                 additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
                 additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
