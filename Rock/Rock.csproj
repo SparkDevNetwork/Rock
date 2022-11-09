@@ -540,6 +540,7 @@
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
+    <Compile Include="Attribute\ReminderTypeFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
     <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
@@ -869,6 +870,7 @@
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
+    <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -3883,6 +3885,7 @@
     <Compile Include="Workflow\Action\Groups\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\AddPersonToFamily.cs" />
+    <Compile Include="Workflow\Action\People\AddReminder.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\InactivateFamily.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
