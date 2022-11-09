@@ -9,7 +9,7 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
     public sealed partial class GroupSchedulingAcceptAll : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddAbbreviatedNameToSchedule));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateValueAsAttributeValueColumns));
         
         string IMigrationMetadata.Id
         {
