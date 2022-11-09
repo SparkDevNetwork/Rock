@@ -204,7 +204,7 @@ namespace Rock.Model
         internal void UpdateValueAsProperties( RockContext rockContext )
         {
             var valueAsDateTime = Value.AsDateTime();
-            var valueAsNumeric = Value.AsDecimalOrNull();
+            decimal? valueAsNumeric = null;
             var valueAsGuid = Value.AsGuidOrNull();
             bool? valueAsBoolean = null;
             int? personId = null;
@@ -223,11 +223,11 @@ namespace Rock.Model
             // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
             if ( Value != null && Value.Length <= 24 )
             {
+                const decimal minValue = -9_999_999_999_999_999.99m;
+                const decimal maxValue = 9_999_999_999_999_999.99m;
                 valueAsNumeric = Value.AsDecimalOrNull();
-                var minValue = -9_999_999_999_999_999.99m;
-                var maxValue = 9_999_999_999_999_999.99m;
 
-                // If this is true then we are probably dealing with a comma delimited list and not a number.
+                // If the following is true then we are probably dealing with a comma delimited list and not a number.
                 // Meaning, a list of id numbers such as 111,222,[etc]. These might be parsed correctly
                 // as a decimal even though they are not. The values above represent the minimum and
                 // maximum values that can be saved to the database without throwing an exception. Don't do the
