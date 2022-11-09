@@ -31,6 +31,41 @@ namespace Rock.Web.UI.Controls
     public class FieldVisibilityWrapper : DynamicPlaceholder
     {
         /// <summary>
+        /// The type of form the field is being used on. e.g. a Registration form or a Workflow form
+        /// </summary>
+        public enum FormTypes
+        {
+            /// <summary>
+            /// The field is being used on a registration form
+            /// </summary>
+            Registration = 0,
+
+            /// <summary>
+            /// The field is being used on a workflow form
+            /// </summary>
+            Workflow = 1
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the form the field is being used on. e.g. a Registration form or a Workflow form.
+        /// The default value is FormTypes.Registration.
+        /// </summary>
+        /// <value>The type of the form.</value>
+        public FormTypes FormType
+        {
+            get
+            {
+                if ( ViewState["FormType"] != null )
+                {
+                    return ( FormTypes ) Enum.Parse( typeof( FormTypes ), ViewState["FormType"].ToString() );
+                }
+
+                return FormTypes.Registration;
+            }
+            set => ViewState["FormType"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the field identifier
         /// </summary>
         /// <value>
@@ -65,8 +100,6 @@ namespace Rock.Web.UI.Controls
         /// Gets the form field.
         /// </summary>
         /// <returns></returns>
-        [RockObsolete("1.14")]
-        [Obsolete( "Use GetAttributeCache instead." )]
         public AttributeCache GetFormField()
         {
             return AttributeCache.Get( FormFieldId );
@@ -136,7 +169,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache();
+                var attribute = FormType == FormTypes.Registration ? GetAttributeCache() : GetFormField();
 
                 if ( attribute != null )
                 {
@@ -156,7 +189,7 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache();
+                var attribute = FormType == FormTypes.Registration ? GetAttributeCache() : GetFormField();
 
                 if ( attribute != null )
                 {
@@ -243,7 +276,9 @@ namespace Rock.Web.UI.Controls
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
                 var field = fieldVisibilityWrapper.GetRegistrationTemplateFormField();
-                var fieldAttribute = fieldVisibilityWrapper.GetAttributeCache();
+                var fieldAttribute = fieldVisibilityWrapper.FormType == FormTypes.Registration
+                    ? fieldVisibilityWrapper.GetAttributeCache()
+                    : fieldVisibilityWrapper.GetFormField();
 
                 var fieldAttributeId = field?.AttributeId ?? fieldAttribute?.Id;
                 if ( fieldAttributeId.HasValue )
