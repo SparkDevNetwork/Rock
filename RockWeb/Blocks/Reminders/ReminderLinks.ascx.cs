@@ -201,21 +201,6 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Hides the dialog.
-        /// </summary>
-        private void HideDialog()
-        {
-            switch ( hfActiveReminderDialog.Value )
-            {
-                case "ADDREMINDER":
-                    mdAddReminder.Hide();
-                    break;
-            }
-
-            hfActiveReminderDialog.Value = string.Empty;
-        }
-
-        /// <summary>
         /// Shows existing reminders for the current context entity when the Add Reminders modal is displayed.
         /// </summary>
         /// <param name="contextEntity">The context entity.</param>
