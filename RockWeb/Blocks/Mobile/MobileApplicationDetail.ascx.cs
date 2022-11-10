@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
+using Rock.DownhillCss.Utility;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -539,6 +540,13 @@ namespace RockWeb.Blocks.Mobile
                     return;
                 }
 
+                
+               
+                cbNavbarTransclucent.Checked = additionalSettings.IOSEnableBarTransparency;
+                ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
+                ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
+                ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBarBlurStyle);
+                
                 cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
@@ -565,6 +573,11 @@ namespace RockWeb.Blocks.Mobile
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
             }
+        }
+
+        public void CbNavbarTransclucent_CheckedChanged( object sender, EventArgs e )
+        {
+            ddlNavbarBlurStyle.Visible = ( sender as CheckBox ).Checked;
         }
 
         /// <summary>
@@ -1046,6 +1059,9 @@ namespace RockWeb.Blocks.Mobile
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
                 additionalSettings.BarBackgroundColor = cpEditBarBackgroundColor.Value;
+                additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
+                additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
+
                 additionalSettings.MenuButtonColor = cpEditMenuButtonColor.Value;
                 additionalSettings.ActivityIndicatorColor = cpEditActivityIndicatorColor.Value;
                 additionalSettings.DownhillSettings.TextColor = cpTextColor.Value;
