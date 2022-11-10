@@ -540,33 +540,14 @@ namespace RockWeb.Blocks.Mobile
                     return;
                 }
 
-                var barBackgroundColor = additionalSettings.BarBackgroundColor;
-
-                var barBackgroundOpacity = GetAlphaFromHex( barBackgroundColor );
-
-                // If our bar background color has opacity, we need to reformat our color picker to have the
-                // rgba(r, g, b, a) format.
-                if ( barBackgroundOpacity != null )
-                {
-                    // Let's get the hex color as the last 6 characters of the string.
-                    // #5FFFFFF or #75FFFFFF would still return #FFFFFF this way.
-                    var barBackgroundColorHex = barBackgroundColor.Substring( barBackgroundColor.Length - 6 ).Insert(0, "#");
-
-                    // Convert to RGBA using RockColor utility class.
-                    barBackgroundColor = new RockColor( barBackgroundColorHex )
-                    {
-                        Alpha = barBackgroundOpacity.Value
-                    }.ToRGBA();
-                }
-
-                ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
                 
-
+               
                 cbNavbarTransclucent.Checked = additionalSettings.IOSEnableBarTransparency;
                 ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
+                ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
                 ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBarBlurStyle);
-
-                cpEditBarBackgroundColor.Value = barBackgroundColor;
+                
+                cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
                 cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
