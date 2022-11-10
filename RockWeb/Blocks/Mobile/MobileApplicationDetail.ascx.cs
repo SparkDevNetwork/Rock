@@ -635,6 +635,8 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         /// <param name="color">The color.</param>
         /// <returns></returns>
+        [Obsolete( "Xamarin supports all of the color formatting that our color picker provides, so we don't need to include this." )]
+        [RockObsolete("1.14.1")]
         private string ParseColor( string color )
         {
             //
@@ -1043,23 +1045,23 @@ namespace RockWeb.Blocks.Mobile
 
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
-                additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
-                additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
-                additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
-                additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
-                additionalSettings.DownhillSettings.HeadingColor = ParseColor( cpHeadingColor.Value );
-                additionalSettings.DownhillSettings.BackgroundColor = ParseColor( cpBackgroundColor.Value );
+                additionalSettings.BarBackgroundColor = cpEditBarBackgroundColor.Value;
+                additionalSettings.MenuButtonColor = cpEditMenuButtonColor.Value;
+                additionalSettings.ActivityIndicatorColor = cpEditActivityIndicatorColor.Value;
+                additionalSettings.DownhillSettings.TextColor = cpTextColor.Value;
+                additionalSettings.DownhillSettings.HeadingColor = cpHeadingColor.Value;
+                additionalSettings.DownhillSettings.BackgroundColor = cpBackgroundColor.Value;
 
-                additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Success = ParseColor( cpSuccess.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Danger = ParseColor( cpDanger.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Dark = ParseColor( cpDark.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Brand = ParseColor( cpBrand.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Primary = cpPrimary.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Secondary = cpSecondary.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Success = cpSuccess.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Info = cpInfo.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Danger = cpDanger.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Warning = cpWarning.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Light = cpLight.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Dark = cpDark.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Brand = cpBrand.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Info = cpInfo.Value;
 
                 additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
 
