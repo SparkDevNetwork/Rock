@@ -1111,6 +1111,9 @@ namespace RockWeb.Blocks.Mobile
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
                 additionalSettings.BarBackgroundColor = cpEditBarBackgroundColor.Value;
+                additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
+                additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
+
                 additionalSettings.MenuButtonColor = cpEditMenuButtonColor.Value;
                 additionalSettings.ActivityIndicatorColor = cpEditActivityIndicatorColor.Value;
                 additionalSettings.DownhillSettings.TextColor = cpTextColor.Value;
