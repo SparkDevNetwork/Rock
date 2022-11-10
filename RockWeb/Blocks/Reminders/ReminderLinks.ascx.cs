@@ -113,8 +113,6 @@ namespace RockWeb.Blocks.Reminders
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
-            {
                 if ( !CurrentPersonAliasId.HasValue )
                 {
                     // If user is not logged in, do nothing.
@@ -128,10 +126,12 @@ namespace RockWeb.Blocks.Reminders
                 if ( reminderCount > 0 )
                 {
                     // Show reminder count on icon.
-                    lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
-                    litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
+                    lbReminders.CssClass = lbReminders.CssClass + " active has-reminders";
+                    litReminderCount.Text = "<span class='count-bottom'>" + CurrentPerson.ReminderCount.Value.ToString() + "</span>";
                 }
 
+            if ( !Page.IsPostBack )
+            {
                 SetContextEntityType();
             }
             else
