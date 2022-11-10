@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -223,7 +224,14 @@ namespace Rock.Lava.Fluid
                 return defaultValue;
             }
 
-            return value.ToRealObjectValue();
+            var rawValue = value.ToRealObjectValue();
+            // If the value is wrapped to prevent Fluid from changing the type, unwrap it and return the original value.
+            if ( rawValue is FluidRawValueProxy wrapper )
+            {
+                rawValue = wrapper.Value;
+            }
+
+            return rawValue;
         }
 
         /// <summary>
@@ -234,12 +242,23 @@ namespace Rock.Lava.Fluid
         /// <param name="scopeReference">root|parent|current</param>
         private void SetFieldPrivate( string key, object value, bool allowInternalFieldAccess, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
         {
-            if ( !allowInternalFieldAccess && key.StartsWith( _InternalFieldKeyPrefix ) )
+            var isInternalField = key.StartsWith( _InternalFieldKeyPrefix );
+            if ( isInternalField && !allowInternalFieldAccess )
             {
-                throw new Exception( "SetFieldValue failed. Invalid key." );
+                // Prevent merge fields from using the internal field key prefix.
+                throw new Exception( "SetFieldValue failed. The key contains invalid data." );
             }
 
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
+
+            // When adding a collection to the context, Fluid reprocesses the collection to ensure the elements can be referenced
+            // from a template, and the original type information of the collection may be lost.
+            // This is problematic for internal fields that are not intended to be visible to templates, so 
+            // we wrap the object in a proxy to prevent this behavior.
+            if ( isInternalField && value is IEnumerable && !( value is string ) )
+            {
+                value = new FluidRawValueProxy( value );
+            }
 
             if ( scope == LavaContextRelativeScopeSpecifier.Current )
             {
@@ -315,5 +334,25 @@ namespace Rock.Lava.Fluid
 
             return dictionary;
         }
+
+        #region Helper Classes
+
+        /// <summary>
+        /// An internal proxy for a value that should be stored in the Fluid Context without any modification.
+        /// Some unproxied value types are stored in a modified form by the Fluid framework to ensure they
+        /// can be more easily referenced from a template. This can cause unwanted results when storing and retrieving
+        /// values that are intended for internal use only.
+        /// </summary>
+        internal class FluidRawValueProxy
+        {
+            public FluidRawValueProxy( object value )
+            {
+                Value = value;
+            }
+
+            public object Value { get; private set; }
+        }
+
+        #endregion
     }
 }
