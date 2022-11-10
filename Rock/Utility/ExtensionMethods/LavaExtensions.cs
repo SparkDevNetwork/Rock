@@ -723,7 +723,10 @@ namespace Rock
 
             if ( string.IsNullOrWhiteSpace( enabledLavaCommands ) )
             {
-                renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"] );
+                if ( template.Registers.ContainsKey( "EnabledCommands" ) )
+                {
+                    renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"].ToStringSafe() );
+                }
             }
             else
             {
@@ -906,6 +909,19 @@ namespace Rock
         public static bool IsLavaTemplate( this string content )
         {
             return LavaHelper.IsLavaTemplate( content );
+        }
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// This is a much stricter check as it specifically looks for {{...}}, {%...%}
+        /// and {[...]}. This should reduce the risk of false positives at the expense
+        /// of a slightly longer check time.
+        /// </summary>
+        /// <param name="content">The content to be checked.</param>
+        /// <returns><c>true</c> if the content contains lava tags; otherwise <c>false</c>.</returns>
+        internal static bool IsStrictLavaTemplate( this string content )
+        {
+            return LavaHelper.IsStrictLavaTemplate( content );
         }
 
         #endregion Lava Extensions

@@ -302,6 +302,13 @@ BEGIN
 				AND TIO.[EntityGuid] = @OldGuid
 		WHERE T.[EntityTypeId] = @PersonEntityTypeId
 
+		-- Attribute Value
+		-----------------------------------------------------------------------------------------------
+		-- Update any attribute values associated with old id to be associated with primary person
+		UPDATE [AttributeValue]
+		SET [ValueAsPersonId] = @NewId
+		WHERE [ValueAsPersonId] = @OldId
+
 		-- Update the Person Alias pointer
 		UPDATE [PersonAlias]
 		SET [PersonId] = @NewId

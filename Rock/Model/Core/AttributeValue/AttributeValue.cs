@@ -171,47 +171,45 @@ namespace Rock.Model
         [DataMember]
         public bool IsPersistedValueDirty { get; set; }
 
-        #endregion
-
-        #region Calculated Properties
-
         /// <summary>
-        /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
+        /// Gets the <see cref="Value"/> as a DateTime. This value is only updated on save.
         /// </summary>
-        /// <remarks>
-        /// see tgrAttributeValue_InsertUpdate                                                                                    
-        /// </remarks>
+        /// <value>The <see cref="Value"/> as a DateTime.</value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaHidden]
         public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
-        /// Gets the value as boolean (computed column)
+        /// Gets the Value as a decimal. This value is only updated on save.
+        /// </summary>
+        /// <remarks>The setter should not be called by plug-ins.</remarks>
+        /// <value>The <see cref="Value"/> as a decimal.</value>
+        [DataMember]
+        [LavaHidden]
+        public decimal? ValueAsNumeric { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Value"/> as a PersonId. This value is only
+        /// updated on save.
+        /// </summary>
+        /// <value>The <see cref="Value"/> as a PersonId.</value>
+        [DataMember]
+        [LavaHidden]
+        public int? ValueAsPersonId { get; private set; }
+
+        /// <summary>
+        /// Gets the value as a boolean. This value is only updated on save.
         /// </summary>
         /// <value>
-        /// The value as boolean.
+        /// The <see cref="Value"/> as a boolean.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaHidden]
         public bool? ValueAsBoolean { get; internal set; }
 
-        /// <summary>
-        /// Gets a person alias guid value as a PersonId (ComputedColumn).
-        /// </summary>
-        /// <remarks>
-        /// Computed Column Spec:
-        /// case 
-        ///     when [Value] like '________-____-____-____-____________' 
-        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value]) 
-        ///     else null 
-        /// end
-        /// </remarks>
-        [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaHidden]
-        public int? ValueAsPersonId { get; private set; }
+        #endregion
+
+        #region Calculated Properties
 
         /// <summary>
         /// Gets the value checksum. This is a hash of <see cref="Value"/> that
@@ -236,6 +234,16 @@ namespace Rock.Model
         [DataMember]
         [LavaHidden]
         public virtual Attribute Attribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Person"/> that this AttributeValue points to.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Person"/> that this AttributeValue points to.
+        /// </value>
+        [DataMember]
+        [LavaHidden]
+        public virtual Person ValueAsPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the a list of previous values that this attribute value had (If Attribute.EnableHistory is enabled)
@@ -278,6 +286,7 @@ namespace Rock.Model
         public AttributeValueConfiguration()
         {
             this.HasRequired( p => p.Attribute ).WithMany().HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.ValueAsPerson ).WithMany().HasForeignKey( p => p.ValueAsPersonId ).WillCascadeOnDelete( false );
         }
     }
 

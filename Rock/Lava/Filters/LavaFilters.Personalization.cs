@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
@@ -39,7 +38,7 @@ namespace Rock.Lava
 
             var personalizationTypes = itemTypeList.SplitDelimitedValues( "," )
                 .Select( x => x.ToStringSafe().Trim().ToLower() )
-                .Where ( x => x != string.Empty )
+                .Where( x => x != string.Empty )
                 .ToList();
 
             // Add the Personalization Segments if we have a specified person.
@@ -83,6 +82,74 @@ namespace Rock.Lava
             // Return an ordered list of results.
             items = items.OrderBy( i => i.Type ).ThenBy( i => i.Key ).ToList();
             return items;
+        }
+
+        /// <summary>
+        /// Temporarily adds one or more personalization segments for the specified person.
+        /// </summary>
+        /// <remarks>
+        /// If executed in the context of a HttpRequest, the result is stored in a session cookie and applies until the cookie expires.
+        /// If no HttpRequest is active, the result is stored in the Lava context and applies only for the current render operation.
+        /// </remarks>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The filter input, a reference to a Person or a Person object.</param>
+        /// <param name="segmentKeyList">A comma-delimited list of segment keys to add.</param>
+        public static void AddSegment( ILavaRenderContext context, object input, string segmentKeyList )
+        {
+            var items = new List<PersonalizationItemInfo>();
+            var person = LavaHelper.GetPersonFromInputParameter( input, context );
+
+            if ( person == null )
+            {
+                return;
+            }
+
+            var segmentKeys = segmentKeyList.SplitDelimitedValues( "," )
+                .Select( x => x.ToStringSafe().Trim().ToLower() )
+                .Where( x => x != string.Empty )
+                .ToList();
+
+            if ( !segmentKeys.Any() )
+            {
+                return;
+            }
+
+            // Map the segment names to identifiers.
+            var newSegmentIdList = PersonalizationSegmentCache.GetActiveSegments( includeSegmentsWithNonPersistedDataViews: true )
+                .Where( s => s.SegmentKey != null && segmentKeys.Contains( s.SegmentKey.ToLower() ) )
+                .Select( s => s.Id )
+                .ToList();
+
+            if ( !newSegmentIdList.Any() )
+            {
+                return;
+            }
+
+            // Try to get the current segment list from the Lava context.
+            // The scope of the context is only a single template render, so if the segment list exists we can reuse it.
+            var httpContext = System.Web.HttpContext.Current;
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var key = $"PersonalizationSegmentIdList_{ person.Guid }";
+            var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForContext( context, httpContext, person );
+            var addSegmentIdList = newSegmentIdList.Except( personSegmentIdList ).ToList();
+
+            // Add the new Personalization Segments.
+            if ( addSegmentIdList.Any() )
+            {
+                personSegmentIdList.AddRange( addSegmentIdList );
+
+                var segmentService = new PersonalizationSegmentService( rockContext );
+                segmentService.AddSegmentsForPerson( person.Id, addSegmentIdList );
+
+                rockContext.SaveChanges();
+
+                // If this is a HttpRequest, set the personalization cookie in the response.
+                if ( httpContext != null )
+                {
+                    LavaPersonalizationHelper.SetPersonalizationSegmentsForContext( personSegmentIdList, context, httpContext, person );
+                }
+            }
         }
     }
 

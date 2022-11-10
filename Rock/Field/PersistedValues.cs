@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace Rock.Field
 {
     /// <summary>
-    /// All the persisted values from <see cref="IFieldType.GetPersistedValues(string, Dictionary{string, string})"/>.
+    /// All the persisted values from <see cref="IFieldType.GetPersistedValues(string, Dictionary{string, string}, IDictionary{string, object})"/>.
     /// </summary>
     public class PersistedValues
     {

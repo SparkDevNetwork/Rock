@@ -286,4 +286,10 @@
   <data name="_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202209291606147_rollup_20220929_addchartgridlinecolorproperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202211031956456_rollup_20221103_axislabelsonchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

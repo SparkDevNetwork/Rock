@@ -576,6 +576,7 @@ namespace RockWeb.Blocks.Examples
                 var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
                 var elemRegistrationTemplates = xdoc.Element( "data" ).Element( "registrationTemplates" );
                 var elemRegistrationInstances = xdoc.Element( "data" ).Element( "registrationInstances" );
+                var financialGateways = xdoc.Element( "data" ).Element( "financialGateways" );
 
                 // load studyTopics into DefinedType
                 foreach ( var elemGroup in elemGroups.Elements( "group" ) )
@@ -653,8 +654,11 @@ namespace RockWeb.Blocks.Examples
                         AddToSecurityGroups( elemSecurityGroups, rockContext );
                         LogElapsed( "people added to security roles" );
 
-                        AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
-                        LogElapsed( "registration templates added" );
+                    AddFinancialGateways( financialGateways, rockContext );
+                    LogElapsed( "financialGateways added" );
+
+                    AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    LogElapsed( "registration templates added" );
 
                         AddRegistrationInstances( elemRegistrationInstances, rockContext );
                         LogElapsed( "registration instances added..." );
@@ -882,6 +886,7 @@ namespace RockWeb.Blocks.Examples
                     PaymentReminderTimeSpan = element.Attribute( "paymentReminderTimeSpan" ) != null ? element.Attribute( "paymentReminderTimeSpan" ).Value.AsInteger() : 0,
                     CreatedDateTime = RockDateTime.Now,
                     ModifiedDateTime = RockDateTime.Now,
+                    WaitListEnabled = GetBooleanValueSafe( element, "waitListEnabled" ),
                 };
 
                 registrationTemplateService.Add( registrationTemplate );
@@ -986,6 +991,16 @@ namespace RockWeb.Blocks.Examples
                                     formField.PersonFieldType = registrationPersonFieldType;
                                 }
 
+                                if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute && formFieldElement.Attribute( "attributeGuid" ) != null )
+                                {
+                                    var attributeGuid = formFieldElement.Attribute( "attributeGuid" ).Value.AsGuid();
+                                    var attr = AttributeCache.Get( attributeGuid, rockContext );
+                                    if ( attr != null )
+                                    {
+                                        formField.AttributeId = attr.Id;
+                                    }
+                                }
+
                                 formField.IsInternal = formFieldElement.Attribute( "isInternal" ) != null ? formFieldElement.Attribute( "isInternal" ).Value.AsBoolean() : false;
                                 formField.IsSharedValue = formFieldElement.Attribute( "isCommon" ) != null ? formFieldElement.Attribute( "isCommon" ).Value.AsBoolean() : false;
                                 formField.ShowCurrentValue = formFieldElement.Attribute( "showCurrentValue" ) != null ? formFieldElement.Attribute( "showCurrentValue" ).Value.AsBoolean() : false;
@@ -1010,6 +1025,9 @@ namespace RockWeb.Blocks.Examples
                         discountOrder++;
                         var discount = new RegistrationTemplateDiscount();
                         discount.Guid = Guid.NewGuid();
+                        discount.MaxRegistrants = GetNullableIntegerValueSafe( discountElement, "maxRegistrants" );
+                        discount.MaxUsage = GetNullableIntegerValueSafe( discountElement, "maxUsage" );
+                        discount.MinRegistrants = GetNullableIntegerValueSafe( discountElement, "minRegistrants" );
                         registrationTemplate.Discounts.Add( discount );
 
                         discount.Code = discountElement.Attribute( "code" ).Value;
@@ -1042,6 +1060,10 @@ namespace RockWeb.Blocks.Examples
                         var fee = new RegistrationTemplateFee();
                         fee.Guid = Guid.NewGuid();
                         fee.Name = feeElement.Attribute( "name" ).Value.Trim();
+                        fee.DiscountApplies = GetBooleanValueSafe( feeElement, "discountApplies" );
+                        fee.IsRequired = GetBooleanValueSafe( feeElement, "isRequired" );
+                        fee.HideWhenNoneRemaining = GetBooleanValueSafe( feeElement, "hideWhenNoneRemaining" );
+                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive" );
                         registrationTemplate.Fees.Add( fee );
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
@@ -1119,6 +1141,34 @@ namespace RockWeb.Blocks.Examples
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
                         }
+                    }
+                }
+
+                if ( element.Elements( "registrationAttributes" ) != null )
+                {
+                    foreach ( var registrationAttribute in element.Elements( "registrationAttributes" ).Elements( "registrationAttribute" ) )
+                    {
+                        var type = registrationAttribute.Attribute( "type" ).Value.Trim();
+                        var fieldType = FieldTypeCache.All().FirstOrDefault( f => f.Name == type );
+                        var categoryGuids = registrationAttribute.Attribute( "categoryGuids" ) != null ? registrationAttribute.Attribute( "categoryGuids" ).Value.Trim().SplitDelimitedValues( "," ) : new string[] { };
+                        var attributeState = new Rock.Model.Attribute()
+                        {
+                            Name = registrationAttribute.Attribute( "name" )?.Value,
+                            Guid = registrationAttribute.Attribute( "guid" ).Value.AsGuid(),
+                            FieldTypeId = fieldType.Id
+                        };
+
+                        attributeState.Key = attributeState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
+
+                        new CategoryService( new RockContext() ).Queryable().Where( c => categoryGuids.Contains( c.Guid.ToString() ) ).ToList().ForEach( c => attributeState.Categories.Add( c ) );
+
+                        var attribute = Helper.SaveAttributeEdits( attributeState, new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), rockContext );
+
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                        // update AttributeCache manually since saved changes with disablePrePostProcessing = true
+                        attribute.FieldTypeId = fieldType.Id;
+                        AttributeCache.Get( attribute );
                     }
                 }
             }
@@ -1235,6 +1285,16 @@ namespace RockWeb.Blocks.Examples
 
                 registrationInstanceService.Add( registrationInstance );
             }
+        }
+
+        private bool GetBooleanValueSafe( XElement element, string name )
+        {
+            return element.Attribute( name ) != null && element.Attribute( name ).Value.AsBoolean();
+        }
+
+        private int? GetNullableIntegerValueSafe( XElement element, string name )
+        {
+            return element.Attribute( name ) != null ? element.Attribute( name ).Value.AsIntegerOrNull() : null;
         }
 
         /// <summary>
@@ -3634,6 +3694,45 @@ namespace RockWeb.Blocks.Examples
             }
 
             return sb.ToString();
+        }
+
+        public void AddFinancialGateways( XElement financialGateways, RockContext rockContext )
+        {
+            if ( financialGateways == null )
+            {
+                return;
+            }
+
+            var financialGatewayService = new FinancialGatewayService( rockContext );
+            foreach ( var element in financialGateways.Elements( "financialGateway" ) )
+            {
+                var guidAttribute = element.Attribute( "guid" );
+                if ( guidAttribute == null )
+                {
+                    continue;
+                }
+
+                var guid = guidAttribute.Value.Trim().AsGuid();
+
+                if ( financialGatewayService.Queryable().Any( f => f.Guid == guid ) )
+                {
+                    continue;
+                }
+
+                var entityTypeName = element.Attribute( "entityTypeName" ).Value.Trim();
+                var gatewayComponent = Rock.Financial.GatewayContainer.GetComponent( entityTypeName );
+
+                var financialGateway = new FinancialGateway
+                {
+                    Name = element.Attribute( "name" ).Value.Trim(),
+                    Guid = guid,
+                    IsActive = GetBooleanValueSafe( element, "isActive" ),
+                    EntityTypeId = gatewayComponent.EntityType.Id
+                };
+
+                financialGatewayService.Add( financialGateway );
+                rockContext.SaveChanges();
+            }
         }
 
         #endregion Methods

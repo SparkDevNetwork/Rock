@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+import { mockEnums } from "../mockEnums";
+mockEnums(jest.mock);
+
 import { mount } from "@vue/test-utils";
 import assert = require("assert");
 import TextBox from "../../Framework/Controls/textBox";

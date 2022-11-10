@@ -194,9 +194,13 @@
                 // Manual
                 if (requirementCheckType == '2') {
                     $('.js-manual-mode-div').show();
+                    $('.js-can-expire-checkbox').attr('disabled', 'disabled');
+                    $('.js-can-expire-days').find('.form-control').attr('disabled', 'disabled').addClass('aspNetDisabled');
                 }
                 else {
                     $('.js-manual-mode-div').hide();
+                    $('.js-can-expire-checkbox').removeAttr('disabled');
+                    $('.js-can-expire-days').find('.form-control').removeAttr('disabled').removeClass('aspNetDisabled');
                 }
             }
 

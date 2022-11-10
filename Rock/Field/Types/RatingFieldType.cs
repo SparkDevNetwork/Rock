@@ -414,6 +414,35 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values == null || values.Count == 0 )
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+            else if ( values.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    Value = values[0]
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnumOrNull<ComparisonType>(),
+                    Value = values[1]
+                };
+            }
+        }
+
         /// <summary>
         /// Attributes the constant expression.
         /// </summary>

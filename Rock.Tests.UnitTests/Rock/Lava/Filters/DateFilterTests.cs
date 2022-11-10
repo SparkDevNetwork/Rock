@@ -1745,8 +1745,11 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
-                                      "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
+                    "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+            } );
         }
 
         /// <summary>
@@ -1755,12 +1758,14 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_Now()
         {
-            var now = RockDateTime.Now;
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                var now = RockDateTime.Now;
+                var midnightUtc = LavaDateTime.NewDateTimeOffset( now.Year, now.Month, now.Day, 0, 0, 0 );
 
-            var midnightUtc = LavaDateTime.NewUtcDateTime( now.Year, now.Month, now.Day, 0, 0, 0 );
-
-            TestHelper.AssertTemplateOutputDate( midnightUtc,
-                                      "{{ 'Now' | ToMidnight }}" );
+                TestHelper.AssertTemplateOutputDate( midnightUtc,
+                    "{{ 'Now' | ToMidnight }}" );
+            } );
         }
 
         /// <summary>
@@ -1769,13 +1774,18 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_WithDateTimeOffsetAsInput_PreservesOffset()
         {
-            // Get an input time of 10:00+04:00.
-            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                // Get an input time of 10:00+04:00.
+                var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
 
-            // Add the input DateTimeOffset object to the Lava context.
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+                // Add the input DateTimeOffset object to the Lava context.
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+                TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00",
+                    "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}",
+                    mergeValues );
+            } );
         }
 
         #endregion
@@ -1788,8 +1798,10 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void SundayDate_WithDateTimeStringAsInput_YieldsNextSundayDate()
         {
-            TestHelper.AssertTemplateOutput( "2021-10-17",
-                "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17", "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            } );
         }
 
         /// <summary>
@@ -1803,8 +1815,11 @@ namespace Rock.Tests.UnitTests.Lava
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "2021-10-17",
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17",
                 "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", mergeValues );
+            } );
         }
 
         #endregion

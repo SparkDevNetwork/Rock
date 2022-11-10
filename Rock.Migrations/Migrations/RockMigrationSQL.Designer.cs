@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1097,11 +1097,47 @@ namespace Rock.Migrations.Migrations {
         ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
         ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
-        ///    creating a chart. The first ‘simple’ mode creates a [rest of string was truncated]&quot;;.
+        ///    creating a chart. The first ‘simple’ mode create [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202209291606147_Rollup_20220929_AddChartGridlinecolorProperty {
             get {
                 return ResourceManager.GetString("_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at eac [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode {
+            get {
+                return ResourceManager.GetString("_202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge", resourceCulture);
             }
         }
     }

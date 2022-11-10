@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 10,
         Order = 4,
         Key = TwilioAttributeKey.MaxParallelization )]
-    [Rock.SystemGuid.EntityTypeGuid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4")]
+    [Rock.SystemGuid.EntityTypeGuid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4" )]
     public class Twilio : TransportComponent, IAsyncTransport, ISmsPipelineWebhook
     {
         /// <summary>
@@ -540,6 +540,11 @@ namespace Rock.Communication.Transport
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         phoneNumber.IsMessagingEnabled = false;
+
+                        // Add this to the Person Activity history
+                        var historyChanges = new History.HistoryChangeList();
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is <em>\"{ex.Message}\"</em> <a href='{ex.MoreInfo}' target='_blank'>More info here</a>" );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
                     }
                 }
                 catch ( Exception ex )

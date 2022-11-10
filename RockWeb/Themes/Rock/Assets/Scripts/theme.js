@@ -102,33 +102,32 @@ function PreventNumberScroll() {
             e.preventDefault();
         }
     });
-
-    // $('.js-notetext').on("blur", function() {
-    //   $(this).parent().removeClass("focus-within");
-    // })
-    // .on("focus", function() {
-    //   $(this).parent().addClass("focus-within")
-    // });
-
-    $('.js-note-editor .meta-body').on("focusin", function() {
-        var noteBody = $(this);
-        // calculate height of noteBody
-        var height = noteBody.prop('scrollHeight');
-        noteBody.addClass("focus-within").css('height', height);
-        ResizeTextarea();
-
-        unfocusOnClickOutside(this, function() {
-            console.log('callback');
-            noteBody.removeClass("focus-within no-transition").css('height', '');
-        })
-    })
   });
+
+  $('.js-note-editor .meta-body').on("focusin", function() {
+    var noteBody = $(this);
+    // calculate height of noteBody
+    var height = noteBody.prop('scrollHeight');
+    noteBody.addClass("focus-within").css('height', height);
+    
+    
+    noteBody.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function(e) {
+      if ($(this).hasClass("focus-within")) {
+        noteBody.addClass("overflow-visible");
+      }
+    });
+
+    ResizeTextarea();
+
+    unfocusOnClickOutside(this, function() {
+        noteBody.removeClass("focus-within overflow-visible").css('height', '');
+    })
+  })
 }
 
 function unfocusOnClickOutside(element, callback) {
     $(document).on("click.unfocus", function(e) {
         if (!$(element).is(e.target) && $(element).has(e.target).length === 0) {
-            console.log("unfocus");
             callback();
             // disable the event handler to avoid unwanted behaviours
             $(document).off(".unfocus");

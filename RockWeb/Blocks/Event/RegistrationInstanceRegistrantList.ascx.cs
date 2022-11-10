@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' style='color: black;'><i class='fa fa-file-signature'></i></a>";
-        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
 
@@ -771,11 +771,28 @@ namespace RockWeb.Blocks.Event
                 if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var document = _signatureDocuments[registrant.PersonId.Value];
-                    lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                    if ( document.Status == SignatureDocumentStatus.Signed )
+                    {
+                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                    }
+                    else
+                    {
+                        string message;
+                        if ( document.LastInviteDate.HasValue )
+                        {
+                            message = $"A signed {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been received for {registrant.NickName}. The last request was sent {document.LastInviteDate.Value.ToElapsedString()}.";
+                        }
+                        else
+                        {
+                            message = $"The required {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been sent to {registrant.NickName} for signing.";
+                        }
+
+                        lSignedDocument.Text = string.Format( SIGNATURE_NOT_SIGNED_INDICATOR, message );
+                    }
                 }
                 else
                 {
-                    lSignedDocument.Text = SIGNATURE_NOT_SIGNED_INDICATOR;
+                    lSignedDocument.Text = string.Format( SIGNATURE_NOT_SIGNED_INDICATOR, "Document not signed" );
                 }
             }
 
@@ -1827,8 +1844,6 @@ namespace RockWeb.Blocks.Event
                     .Queryable().AsNoTracking()
                     .Where( d =>
                         d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                        d.Status == SignatureDocumentStatus.Signed &&
-                        d.BinaryFileId.HasValue &&
                         d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
                     .OrderByDescending( d => d.LastStatusDate )
                     .ToList();
