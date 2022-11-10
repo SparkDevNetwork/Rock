@@ -440,6 +440,7 @@ var options = {
     },
     scales: {
         yAxes:[ {
+            display: true,
             ticks: {
                 callback: function(label,index,labels) { returnIntl.NumberFormat().format(label); },
             },
@@ -448,7 +449,7 @@ var options = {
 };
 var data = {
     labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
-    datasets: [      {
+    datasets: [{
           fill: false, 
           backgroundColor: 'rgba(5,155,255,.6)',
           borderColor: '#059BFF',
@@ -918,7 +919,7 @@ This is a super simple panel.
       <div class=``panel-heading``>
         <h3 class=``panel-title``>
             
-                <i class='fa fa-star'></i> 
+                <i class=``fa fa-star``></i> 
             
             Important Stuff</h3>
       </div>
