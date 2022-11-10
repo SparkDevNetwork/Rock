@@ -673,9 +673,7 @@ namespace RockWeb.Blocks.Mobile
                 int red = match.Groups[1].Value.AsInteger();
                 int green = match.Groups[2].Value.AsInteger();
                 int blue = match.Groups[3].Value.AsInteger();
-                var alphaValue = match.Groups[4].Value;
-                var alpha = alphaValue.Contains('.') ? alphaValue.Split( '.' )[1] : alphaValue;
-                return string.Format( "#{0}{1:x2}{2:x2}{3:x2}", alpha, red, green, blue );
+                return string.Format( "#{0:x2}{1:x2}{2:x2}", red, green, blue );
             }
 
             //
@@ -688,37 +686,6 @@ namespace RockWeb.Blocks.Mobile
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the alpha from a hex value, for example, #50FFFFFF would return 0.50.
-        /// Returns null if it is unable to get a value (the hex value is malformed or doesn't have an alpha).
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        private double? GetAlphaFromHex( string color )
-        {
-            double? alpha = null;
-
-            if(color.IsNullOrWhiteSpace())
-            {
-                return null;
-            }
-
-            if(color.StartsWith("#"))
-            {
-                string strippedColor = color.Substring(1);
-                if ( strippedColor.Length == 8 )
-                {
-                    alpha = strippedColor.Substring( 0, 2 ).AsDoubleOrNull();
-                }
-                else if ( strippedColor.Length == 7 )
-                {
-                    alpha = strippedColor.Substring( 0, 1 ).AsDoubleOrNull();
-                }
-            }
-
-            return alpha != null ? alpha / 100 : null;
         }
 
         /// <summary>
