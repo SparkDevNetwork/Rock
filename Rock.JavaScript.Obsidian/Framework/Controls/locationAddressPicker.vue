@@ -14,16 +14,18 @@
         <template #innerLabel>
             <span class="selected-names" v-html="pickerLabel"></span>
         </template>
-
-        <AddressControl v-model="controlValue" />
+        <RockForm>
+            <AddressControl v-model="controlValue" />
+        </RockForm>
     </ContentDropDownPicker>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
-    import AddressControl, { getDefaultAddressControlModel, AddressControlValue } from "./addressControl";
+    import ContentDropDownPicker from "./contentDropDownPicker.vue";
+    import AddressControl, { AddressControlValue } from "./addressControl";
+    import RockForm from "./rockForm";
 
     const props = defineProps({
         ...standardRockFormFieldProps,
@@ -61,7 +63,7 @@
     function select(): void {
         const address = { ...controlValue.value };
         pickerValue.value = address;
-        pickerLabel.value = `${address.street1} ${address.street2}<br>${address.city}, ${address.state} ${address.postalCode}`;
+        pickerLabel.value = `${address.street1 ?? ""}${address.street2 ? `<br>${address.street2}` : ""}<br>${address.city ? `${address.city}, ` : ""}, ${address.state ?? ""} ${address.postalCode ?? ""}`;
     }
 
     function cancel(): void {
@@ -70,7 +72,7 @@
     }
 
     function clear(): void {
-        pickerValue.value = getDefaultAddressControlModel();
+        pickerValue.value = {};
         pickerLabel.value = "";
     }
 
@@ -79,13 +81,11 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        console.log("UPDATE MODEL VALUE");
         updateRefValue(controlValue, { ...props.modelValue });
         updateRefValue(pickerValue, { ...props.modelValue });
     });
 
     watch(pickerValue, () => {
-        console.log("UPDATE PICKER VALUE");
         emit("update:modelValue", pickerValue.value);
     });
 
