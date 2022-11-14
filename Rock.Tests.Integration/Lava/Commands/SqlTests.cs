@@ -125,7 +125,7 @@ UNION
         {
             var input = @"
 {% sql %}
-SELECT * FROM Campus
+SELECT * FROM Campus WHERE [Name] IN ('Main Campus', 'Stepping Stone');
 {% endsql %}
 {% assign campusNames = results | Select:'Name' | Uniq %}
 {% for campusName in campusNames %}

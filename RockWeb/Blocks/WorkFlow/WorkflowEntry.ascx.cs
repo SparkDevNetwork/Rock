@@ -1009,6 +1009,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
                     FormFieldId = formAttribute.AttributeId,
+                    FormType = FieldVisibilityWrapper.FormTypes.Workflow,
                     FieldVisibilityRules = formAttribute.FieldVisibilityRules
                 };
 

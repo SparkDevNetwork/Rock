@@ -45,25 +45,25 @@ namespace RockWeb.Blocks.Groups
         IsRequired = false,
         Order = 0 )]
 
-    [BooleanField( "Show \"Move to another group\" button",
+    [BooleanField( "Show \"Move To Another Group\" Button",
         Description = "Set to false to hide the \"Move to another group\" button",
         Key = AttributeKey.ShowMoveToOtherGroup,
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    [BooleanField( "Are Requirements publicly hidden?",
+    [BooleanField( "Are Requirements Publicly Hidden",
         Description = "Set to true to publicly show the group member's requirements.",
         Key = AttributeKey.AreRequirementsPubliclyHidden,
         DefaultBooleanValue = false,
         Order = 2 )]
 
-    [BooleanField( "Is Requirement Summary Hidden?",
+    [BooleanField( "Is Requirement Summary Hidden",
         Description = "Set to true to hide the \"Summary\" field.",
         Key = AttributeKey.IsSummaryHidden,
         DefaultBooleanValue = false,
         Order = 3 )]
 
-    [BooleanField( "Are Requirements refreshed when block is loaded?",
+    [BooleanField( "Are Requirements Refreshed When Block Is Loaded",
         Description = "Set to true to refresh group member requirements when the block is loaded.",
         Key = AttributeKey.AreRequirementsRefreshedOnLoad,
         DefaultBooleanValue = false,

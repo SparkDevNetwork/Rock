@@ -442,7 +442,14 @@ namespace Rock.Achievement.Component
             ComputedStreak accumulation = null;
 
             // Get the transaction dates and begin calculating attempts
-            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, transaction.AuthorizedPersonAlias.PersonId, minDate, maxDate );
+            if ( !transaction.AuthorizedPersonAliasId.HasValue )
+            {
+                ExceptionLogService.LogException( $"{GetType().Name}. CreateNewAttempts cannot process because the transaction does not have an AuthorizedPersonAliasId." );
+                return null;
+            }
+
+            var personId = new PersonAliasService( new RockContext() ).Get( transaction.AuthorizedPersonAliasId.Value ).PersonId;
+            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, personId, minDate, maxDate );
 
             foreach ( var transactionDate in transactionDates )
             {

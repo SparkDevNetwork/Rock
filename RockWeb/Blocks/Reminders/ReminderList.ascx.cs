@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Reminders
             else if ( entityTypes.Count == 1 )
             {
                 // This user only has a reminder for a single entity type, so hide that dropdown.
-                lSelectedEntityType.Text = entityTypes[0].FriendlyName;
+                lSelectedEntityType.Text = entityTypes[0].FriendlyName.Pluralize();
                 pnlEntityTypeSelection.CssClass = string.Empty;
                 pnlEntityTypeSelection.Attributes.Remove( "data-toggle" );
             }
@@ -221,8 +221,8 @@ namespace RockWeb.Blocks.Reminders
             var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
             if ( selectedEntityTypeId == entityTypeId_Person )
             {
-                lSelectedEntityType.Text = "Person";
-                pnlPersonPicker.Visible = true;
+                lSelectedEntityType.Text = "People";
+                ppSelectedPerson.Visible = true;
                 if ( selectedEntityId.HasValue )
                 {
                     var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
@@ -235,14 +235,14 @@ namespace RockWeb.Blocks.Reminders
             var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
             if ( selectedEntityTypeId == entityTypeId_Group )
             {
-                lSelectedEntityType.Text = "Group";
-                pnlGroupPicker.Visible = true;
+                lSelectedEntityType.Text = "Groups";
+                gpSelectedGroup.Visible = true;
                 gpSelectedGroup.SetValue( selectedEntityId );
                 return;
             }
 
             var selectedEntityType = EntityTypeCache.Get( selectedEntityTypeId.Value );
-            lSelectedEntityType.Text = selectedEntityType.FriendlyName;
+            lSelectedEntityType.Text = selectedEntityType.FriendlyName.Pluralize();
         }
 
         /// <summary>
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Reminders
                 }
             }
 
-            lReminderType.Text = "All";
+            lReminderType.Text = "All Reminder Types";
         }
 
         /// <summary>
@@ -484,7 +484,7 @@ namespace RockWeb.Blocks.Reminders
         {
             var btnEntityType = e.Item.FindControl( "btnEntityType" ) as LinkButton;
             var entityType = ( EntityType ) e.Item.DataItem;
-            btnEntityType.Text = entityType.FriendlyName;
+            btnEntityType.Text = entityType.FriendlyName.Pluralize();
             btnEntityType.CommandArgument = entityType.Id.ToString();
         }
 

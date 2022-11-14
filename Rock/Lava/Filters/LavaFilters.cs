@@ -1052,33 +1052,17 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SundayDate( object input )
         {
-            if ( input == null )
+            var startDto = GetDateTimeOffsetFromInputParameter( input, null );
+            if ( startDto == null )
             {
                 return null;
             }
 
-            DateTime date = DateTime.MinValue;
+            var rockStartDate = LavaDateTime.ConvertToRockDateTime( startDto.Value );
+            var nextSundayDate =  RockDateTime.GetSundayDate( rockStartDate );
+            var output = nextSundayDate.ToShortDateString();
 
-            if ( input.ToString() == "Now" )
-            {
-                date = RockDateTime.Now;
-            }
-            else
-            {
-                if ( !DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( date != DateTime.MinValue )
-            {
-                return date.SundayDate().ToShortDateString();
-            }
-            else
-            {
-                return null;
-            }
+            return output;
         }
 
         /// <summary>

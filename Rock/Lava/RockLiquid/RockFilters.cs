@@ -3877,17 +3877,33 @@ namespace Rock.Lava
             return LavaFilters.PersonalizationItems( lavaContext, input, itemTypeList );
         }
 
+        /// <summary>
+        /// Temporarily adds one or more personalization segments for the specified person.
+        /// </summary>
+        /// <remarks>
+        /// If executed in the context of a HttpRequest, the result is stored in a session cookie and applies until the cookie expires.
+        /// If no HttpRequest is active, the result is stored in the Lava context and applies only for the current render operation.
+        /// </remarks>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The filter input, a reference to a Person or a Person object.</param>
+        /// <param name="segmentKeyList">A comma-delimited list of segment keys to add.</param>
+        public static void AddSegment( Context context, object input, string segmentKeyList )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            LavaFilters.AddSegment( lavaContext, input, segmentKeyList );
+        }
+
         #endregion
 
         #region Group Filters
 
-            /// <summary>
-            /// Loads a Group record from the database from it's GUID.
-            /// </summary>
-            /// <param name="context">The context.</param>
-            /// <param name="input">The input.</param>
-            /// <returns></returns>
-            public static Rock.Model.Group GroupByGuid( Context context, object input )
+        /// <summary>
+        /// Loads a Group record from the database from it's GUID.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupByGuid( Context context, object input )
         {
             if ( input == null )
             {
