@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="modelValue" v-bind="formFieldProps" :name="'picker' + id">
-        <template #default="{uniqueId, field}">
+        <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="picker picker-select rollover-container" :class="pickerClass">
                     <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu">
                         <i :class="pickerIconClass"></i>
-                        <slot name="innerLabel"><span class="selected-names">{{innerLabel}}</span></slot>
+                        <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
                         <b class="fa fa-caret-down pull-right"></b>
                     </a>
 
@@ -44,10 +44,10 @@
                             <!-- Main Action Buttons: Overridable via `mainPickerActions` slot, or just configure with props -->
                             <slot name="mainPickerActions" v-if="!hideMainActionButtons">
                                 <RockButton :btnSize="selectButton.size" :btnType="selectButton.type" class="picker-btn" @click.prevent.stop="onAction('primary')">
-                                    <slot name="primaryButtonLabel">{{primaryButtonLabel}}</slot>
+                                    <slot name="primaryButtonLabel">{{ primaryButtonLabel }}</slot>
                                 </RockButton>
                                 <RockButton :btnSize="cancelButton.size" :btnType="cancelButton.type" class="picker-cancel" @click.prevent.stop="onAction('secondary')">
-                                    <slot name="secondaryButtonLabel">{{secondaryButtonLabel}}</slot>
+                                    <slot name="secondaryButtonLabel">{{ secondaryButtonLabel }}</slot>
                                 </RockButton>
                             </slot>
                             <!-- Custom Action Buttons: `customPickerActions` slot allows you to add additional buttons to the right -->
@@ -91,7 +91,8 @@
 }
 
 .picker-menu {
-    --body-background: var(--panel-bg)
+    --body-background: var(--panel-bg);
+    overflow-y: visible;
 }
 
 .picker-menu.is-fullscreen {
@@ -258,7 +259,7 @@
          */
         showFullscreenButton: {
             type: Boolean as PropType<boolean>,
-            default: ""
+            default: false
         },
     });
 
@@ -298,7 +299,7 @@
     const pickerMenuInnerStyles = computed<string>(() => {
         let height = internalIsFullscreen.value ? "100%" : props.pickerContentBoxHeight;
 
-        return `height: ${height}; overflow-x: hidden; overflow-y: ${props.disablePickerContentBoxScroll ? "hidden" : "scroll"};`;
+        return `height: ${height}; overflow-x: visible; overflow-y: ${props.disablePickerContentBoxScroll ? "visible" : "auto"};`;
     });
 
     const pickerMenuStyles = computed<string>(() => {

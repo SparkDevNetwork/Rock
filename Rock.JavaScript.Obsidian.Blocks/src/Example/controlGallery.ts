@@ -184,6 +184,7 @@ import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
 import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
 import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
+import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.vue";
 
 // #region Gallery Support
 
@@ -1844,7 +1845,7 @@ const addressControlGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref(getDefaultAddressControlModel()),
+            value: ref({}),
             importCode: getControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
@@ -6209,6 +6210,44 @@ const contentDropDownPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Location Address Picker */
+const locationAddressPickerGallery = defineComponent({
+    name: "LocationAddressPickerGallery",
+    components: {
+        GalleryAndResult,
+        LocationAddressPicker,
+        DropDownList,
+        CheckBox,
+        TextBox,
+        Toggle
+    },
+    setup() {
+        return {
+            value: ref({}),
+            importCode: getSfcControlImportPath("locationAddressPicker"),
+            exampleCode: `<LocationAddressPicker v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <LocationAddressPicker label="Location Address Picker" v-model="value" />
+
+    <template #settings>
+        <div class="row">
+
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6327,6 +6366,7 @@ const controlGalleryComponents: Record<string, Component> = [
     intervalPickerGallery,
     geoPickerGallery,
     contentDropDownPickerGallery,
+    locationAddressPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

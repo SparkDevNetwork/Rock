@@ -2104,6 +2104,68 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Gets the child locations, excluding inactive items.
+        /// </summary>
+        /// <param name="options">The options that describe which child locations to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "LocationPickerValidateAddress" )]
+        [Rock.SystemGuid.RestActionGuid( "ca673639-860e-4bba-b58d-6f6e98d3bf00" )]
+        public IHttpActionResult LocationPickerValidateAddress( [FromBody] LocationPickerGetActiveChildrenOptionsBag options )
+        {
+            //var editedLocation = new Location();
+
+            //if ( editedLocation.HasValue )
+            //{
+            //    // Get field values, nullifying any fields that are not available for the selected country.
+            //    var street1 = GetLocationFieldValue( this.Street1, _AddressLine1Requirement );
+            //    var street2 = GetLocationFieldValue( this.Street2, _AddressLine2Requirement );
+            //    var city = GetLocationFieldValue( this.City, _CityRequirement );
+            //    var county = GetLocationFieldValue( this.County, _LocalityRequirement );
+            //    var state = GetLocationFieldValue( this.State, _StateRequirement );
+            //    var postalCode = GetLocationFieldValue( this.PostalCode, _PostalCodeRequirement );
+
+            //    // If country selection is available, get the selected value otherwise use the system default.
+            //    if ( _ShowCountrySelection )
+            //    {
+            //        location.Country = _ddlCountry.SelectedValue;
+            //    }
+            //    else
+            //    {
+            //        location.Country = GetDefaultCountry();
+            //    }
+
+            //    location.Street1 = street1;
+            //    location.Street2 = street2;
+            //    location.City = city;
+            //    location.County = county;
+            //    location.State = state;
+            //    location.PostalCode = postalCode;
+            //}
+
+            //var locationService = new LocationService( new RockContext() );
+
+            //string validationMessage;
+
+            //var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
+
+            //if ( !isValid )
+            //{
+            //    _addressRequirementsValidator.ErrorMessage = validationMessage;
+            //    _addressRequirementsValidator.IsValid = false;
+
+            //    return;
+            //}
+
+            //var location = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+
+            //// Location.GetFullStreetAddress().ConvertCrLfToHtmlBr()
+
+            return Ok( );
+        }
+
         #endregion
 
         #region Merge Template Picker
