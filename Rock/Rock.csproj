@@ -1536,6 +1536,7 @@
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
     <Compile Include="Tasks\UpdateGroupMember.cs" />
     <Compile Include="Tasks\UpdatePaymentStatusFinancialScheduledTransactions.cs" />
+    <Compile Include="Tasks\UpdatePersistedDataset.cs" />
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
     <Compile Include="Tasks\LaunchWorkflow.cs" />
@@ -3915,6 +3916,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
