@@ -102,6 +102,8 @@
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\BadgeDetail\BadgeBag.cs" />
     <Compile Include="Blocks\Crm\BadgeDetail\BadgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\DocumentTypeDetail\DocumentTypeBag.cs" />
+    <Compile Include="Blocks\Crm\DocumentTypeDetail\DocumentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\Bus\QueueDetail\QueueBag.cs" />
     <Compile Include="Blocks\Bus\QueueDetail\QueueDetailOptionsBag.cs" />

@@ -75,6 +75,7 @@
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Core\CategoryDetail.cs" />
     <Compile Include="Core\LocationDetail.cs" />
+    <Compile Include="Crm\DocumentTypeDetail.cs" />
     <Compile Include="Core\NoteTypeDetail.cs" />
     <Compile Include="Core\ServiceJobDetail.cs" />
     <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />

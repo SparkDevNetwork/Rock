@@ -39,6 +39,9 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Crm\documentTypeDetail.vue" />
+    <Content Include="src\Crm\DocumentTypeDetail\editPanel.partial.vue" />
+    <Content Include="src\Crm\DocumentTypeDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\serviceJobDetail.vue" />
     <Content Include="src\Core\ServiceJobDetail\editPanel.partial.vue" />
     <Content Include="src\Core\ServiceJobDetail\viewPanel.partial.vue" />
@@ -87,6 +90,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Crm\DocumentTypeDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
     <Folder Include="src\Core\ServiceJobDetail\" />
@@ -181,6 +185,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />
     <TypeScriptCompile Include="src\Core\LocationDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\LocationDetail\types.d.ts" />
