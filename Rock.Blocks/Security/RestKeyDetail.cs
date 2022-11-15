@@ -196,7 +196,9 @@ namespace Rock.Blocks.Security
                 restKeyBag.Name = entity.Person.LastName;
                 restKeyBag.IsActive = entity.Person.RecordStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 var noteService = new NoteService( rockContext );
-                var description = noteService.Queryable().Where( a => a.EntityId == entity.Person.Id ).FirstOrDefault();
+                // the description gets saved as a system note for the person
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                var description = noteService.Queryable().Where( a => a.EntityId == entity.Person.Id && a.NoteTypeId == noteType.Id ).FirstOrDefault();
                 if ( description != null )
                 {
                     restKeyBag.Description = description.Text;
