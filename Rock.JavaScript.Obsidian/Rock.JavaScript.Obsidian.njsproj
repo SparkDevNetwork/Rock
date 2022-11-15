@@ -874,6 +874,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationAddressPickerValidateAddressOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationAddressPickerValidateAddressResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricCategoryPickerGetChildrenOptionsBag.d.ts" />

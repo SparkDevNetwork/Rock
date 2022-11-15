@@ -9,14 +9,20 @@
                            @secondaryButtonClicked="cancel"
                            @clearButtonClicked="clear"
                            pickerContentBoxHeight="auto"
-                           disablePickerContentBoxScroll>
+                           disablePickerContentBoxScroll
+                           disableAutoCloseOnPrimaryAction
+                           v-model:showPopup="showPopup">
 
         <template #innerLabel>
             <span class="selected-names" v-html="pickerLabel"></span>
         </template>
-        <RockForm>
-            <AddressControl v-model="controlValue" />
-        </RockForm>
+
+        <RockValidation :errors="errors" />
+        <AddressControl v-model="controlValue" rules="required" />
+
+        <template #primaryButtonLabel>
+            <Loading :isLoading="isLoading">Select</Loading>
+        </template>
     </ContentDropDownPicker>
 </template>
 
@@ -25,7 +31,12 @@
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.vue";
     import AddressControl, { AddressControlValue } from "./addressControl";
-    import RockForm from "./rockForm";
+    import { post } from "@Obsidian/Utility/http";
+    import { FormError } from "@Obsidian/Utility/form";
+    import RockValidation from "./rockValidation";
+    import { LocationAddressPickerValidateAddressOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationAddressPickerValidateAddressOptionsBag";
+    import { LocationAddressPickerValidateAddressResultsBag } from "@Obsidian/ViewModels/Rest/Controls/locationAddressPickerValidateAddressResultsBag";
+    import Loading from "./loading";
 
     const props = defineProps({
         ...standardRockFormFieldProps,
@@ -45,10 +56,15 @@
 
     // #region Values
 
+    // Address Control
     const controlValue = ref({ ...props.modelValue });
 
+    // This Picker
     const pickerValue = ref({ ...props.modelValue });
     const pickerLabel = ref("");
+    const errors = ref<FormError[]>([]);
+    const isLoading = ref(false);
+    const showPopup = ref(false);
 
     const formFieldProps = useStandardRockFormFieldProps(props);
 
@@ -60,10 +76,29 @@
 
     // #region Event Handlers
 
-    function select(): void {
-        const address = { ...controlValue.value };
-        pickerValue.value = address;
-        pickerLabel.value = `${address.street1 ?? ""}${address.street2 ? `<br>${address.street2}` : ""}<br>${address.city ? `${address.city}, ` : ""}, ${address.state ?? ""} ${address.postalCode ?? ""}`;
+    async function select(): Promise<void> {
+        isLoading.value = true;
+        const options: LocationAddressPickerValidateAddressOptionsBag = { ...controlValue.value };
+        const response = await post<LocationAddressPickerValidateAddressResultsBag>("/api/v2/Controls/LocationPickerValidateAddress", undefined, options);
+        console.log(response);
+
+        if (response.isSuccess && response.data) {
+            if (response.data.isValid) {
+                errors.value = [];
+                pickerValue.value = { ...response.data.address } as AddressControlValue;
+                controlValue.value = { ...response.data.address } as AddressControlValue;
+                pickerLabel.value = response.data.addressString ?? "";
+                showPopup.value = false;
+            }
+            else {
+                errors.value = [{ name: "Invalid", text: response.data.errorMessage ?? "Please enter a valid address." }];
+            }
+        }
+        else {
+            console.error(response.errorMessage ?? "Unknown error while validating address.");
+            errors.value = [{ name: "Server", text: response.errorMessage ?? "An unknown error occurred. Please try again." }];
+        }
+        isLoading.value = false;
     }
 
     function cancel(): void {
