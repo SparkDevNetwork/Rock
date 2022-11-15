@@ -15,7 +15,7 @@ namespace Rock.Workflow.Action.Groups
     [ActionCategory( "Groups" )]
     [Description( "Adds a new group to a parent group." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Group" )]
+    [ExportMetadata( "ComponentName", "Group Add" )]
 
     [GroupTypeField( "Group Type",
         Description = "The group type to create the group with.",
