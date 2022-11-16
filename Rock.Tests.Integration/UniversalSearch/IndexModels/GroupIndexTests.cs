@@ -30,6 +30,7 @@ namespace Rock.Tests.Integration.UniversalSearch.IndexModels
     public class GroupIndexTests
     {
         [TestMethod]
+        [Ignore]
         public void TestLoadByModel()
         {
             var rockContext = new RockContext();
@@ -41,6 +42,7 @@ namespace Rock.Tests.Integration.UniversalSearch.IndexModels
         }
 
         [TestMethod]
+        [Ignore]
         public void TestGroupIndexTransaction()
         {
             var rockContext = new RockContext();
