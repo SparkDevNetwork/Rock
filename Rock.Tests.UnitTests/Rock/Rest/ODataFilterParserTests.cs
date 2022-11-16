@@ -108,8 +108,6 @@ namespace Rock.Tests.UnitTests.Rest
         [DataRow(
             "Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53",
             "Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
-
-        /*
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747'",
             "ModifiedDateTime eq 2022-10-04T10:56:50.7470000-07:00" )]
@@ -125,7 +123,6 @@ namespace Rock.Tests.UnitTests.Rest
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747' and Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'",
             "ModifiedDateTime eq 2022-10-04T10:56:50.7470000-07:00 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
-        */
         public void DidParseCorrectlyTest( string originalFilter, string expectedResult )
         {
             var tzDefault = RockDateTime.OrgTimeZoneInfo;
