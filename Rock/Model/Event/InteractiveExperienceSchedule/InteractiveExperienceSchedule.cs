@@ -74,6 +74,15 @@ namespace Rock.Model
         [DataMember]
         public int? GroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the JSON representing the additional settings.
+        /// </summary>
+        /// <value>
+        /// The JSON representing the additional settings.
+        /// </value>
+        [DataMember]
+        public string ScheduleSettingsJson { get; set; }
+
         #endregion
 
         #region Navigation Properties

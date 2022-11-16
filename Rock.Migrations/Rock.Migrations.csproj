@@ -148,6 +148,10 @@
     <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.designer.cs">
       <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs" />
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1464,6 +1468,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202211091822240_AddIsPublicToSchedule.resx">
       <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
