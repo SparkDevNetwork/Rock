@@ -100,7 +100,7 @@ namespace Rock.Web.UI
         /// <param name="groupTypeGuid">The group type GUID.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This method moved to the campus badge.", false )]
+        [Obsolete( "This method moved to the campus badge.", true )]
         public IEnumerable<Group> PersonGroups( string groupTypeGuid )
         {
             return PersonGroups( new Guid( groupTypeGuid ) );
@@ -111,7 +111,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This method moved to the campus badge.", false )]
+        [Obsolete( "This method moved to the campus badge.", true )]
         public IEnumerable<Group> PersonGroups( Guid groupTypeGuid )
         {
             string itemKey = "RockGroups:" + groupTypeGuid.ToString();
@@ -137,7 +137,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This method moved to the campus badge.", false )]
+        [Obsolete( "This method moved to the campus badge.", true )]
         public IEnumerable<Group> PersonGroups( int groupTypeId )
         {
             string itemKey = "RockGroups:" + groupTypeId.ToString();

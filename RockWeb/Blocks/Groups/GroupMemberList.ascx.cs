@@ -228,7 +228,8 @@ namespace RockWeb.Blocks.Groups
                     {
                         IconCssClass = "fa fa-comment",
                         HelpText = "Communicate",
-                        EventHandler = gGroupMembers_CommunicateClick
+                        EventHandler = gGroupMembers_CommunicateClick,
+                        Route = GetCommunicationPageRoute()
                     };
                     gGroupMembers.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
                     gGroupMembers.Actions.ShowCommunicate = false;
@@ -311,6 +312,27 @@ namespace RockWeb.Blocks.Groups
                 spanSyncLink.Attributes.Add( "data-content", syncedRolesHtml );
                 spanSyncLink.Visible = true;
             }
+        }
+
+        private string GetCommunicationPageRoute()
+        {
+            string url = gGroupMembers.CommunicationPageRoute;
+            var rockPage = Page as RockPage;
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                var pageRef = rockPage.Site.CommunicationPageReference;
+                if ( pageRef.PageId > 0 )
+                {
+                    pageRef.Parameters.AddOrReplace( "CommunicationId", "0" );
+                    url = pageRef.BuildUrl();
+                }
+                else
+                {
+                    url = "~/Communication/{0}";
+                }
+            }
+
+            return url;
         }
 
         /// <summary>

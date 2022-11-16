@@ -19,9 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -39,66 +40,6 @@ namespace Rock.Field.Types
     public class RatingFieldType : FieldType
     {
         #region Configuration
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( "max" );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            var nb = new NumberBox();
-            controls.Add( nb );
-            nb.NumberType = System.Web.UI.WebControls.ValidationDataType.Integer;
-            nb.AutoPostBack = true;
-            nb.TextChanged += OnQualifierUpdated;
-            nb.Label = "Max Rating";
-            nb.Help = "The number of stars ( max rating ) that should be displayed.";
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "max", new ConfigurationValue( "Max Rating", "The number of stars ( max rating ) that should be displayed.", "" ) );
-
-            if ( controls != null && controls.Count == 1 )
-            {
-                if ( controls[0] != null && controls[0] is NumberBox )
-                    configurationValues["max"].Value = ( (NumberBox)controls[0] ).Text;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( "max" ) )
-                ( (NumberBox)controls[0] ).Text = configurationValues["max"].Value;
-        }
 
         /// <summary>
         /// Gets the maximum rating.
@@ -120,7 +61,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( "max" ) )
             {
                 int max = configurationValues["max"].AsInteger();
-                if ( max > 0)
+                if ( max > 0 )
                 {
                     return max;
                 }
@@ -168,6 +109,235 @@ namespace Rock.Field.Types
             }
 
             return sb.ToString();
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var ratingValue = new RatingPublicValue
+            {
+                Value = privateValue.AsInteger(),
+                MaxValue = GetMaxRating( privateConfigurationValues )
+            };
+
+            return ratingValue.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
+
+            return ratingValue?.Value.ToString() ?? string.Empty;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            return string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('.js-filter-control', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).val()  + '\\'') : '' )", titleJs );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
+            }
+
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsComparedToValue( List<string> filterValues, string value )
+        {
+            if ( filterValues == null || filterValues.Count < 2 )
+            {
+                return false;
+            }
+
+            ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+            ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
+            var filterValueAsDecimal = filterValues[1].AsDecimalOrNull();
+            var valueAsDecimal = value.AsDecimalOrNull();
+
+            return ComparisonHelper.CompareNumericValues( filterComparisonType.Value, valueAsDecimal, filterValueAsDecimal, null );
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsNumeric";
+            }
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values == null || values.Count == 0 )
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+            else if ( values.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    Value = values[0]
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnumOrNull<ComparisonType>(),
+                    Value = values[1]
+                };
+            }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( decimal? );
+            }
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "max" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var nb = new NumberBox();
+            controls.Add( nb );
+            nb.NumberType = System.Web.UI.WebControls.ValidationDataType.Integer;
+            nb.AutoPostBack = true;
+            nb.TextChanged += OnQualifierUpdated;
+            nb.Label = "Max Rating";
+            nb.Help = "The number of stars ( max rating ) that should be displayed.";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "max", new ConfigurationValue( "Max Rating", "The number of stars ( max rating ) that should be displayed.", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is NumberBox )
+                    configurationValues["max"].Value = ( ( NumberBox ) controls[0] ).Text;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( "max" ) )
+                ( ( NumberBox ) controls[0] ).Text = configurationValues["max"].Value;
         }
 
         /// <summary>
@@ -245,30 +415,6 @@ namespace Rock.Field.Types
             return this.ValueAsFieldType( parentControl, value, configurationValues );
         }
 
-        #endregion
-
-        #region Edit Control
-
-        /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var ratingValue = new RatingPublicValue
-            {
-                Value = privateValue.AsInteger(),
-                MaxValue = GetMaxRating( privateConfigurationValues )
-            };
-
-            return ratingValue.ToCamelCaseJson( false, true );
-        }
-
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
-
-            return ratingValue?.Value.ToString() ?? string.Empty;
-        }
-
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -279,24 +425,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            int max = GetMaxRating(configurationValues);
+            int max = GetMaxRating( configurationValues );
             return new RockRating { ID = id, Max = max };
-        }
-
-
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get { return ComparisonHelper.NumericFilterComparisonTypes; }
         }
 
         /// <summary>
@@ -342,102 +472,7 @@ namespace Rock.Field.Types
             base.SetFilterValueValue( control.Controls[0], configurationValues, value );
         }
 
-        /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('.js-filter-control', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).val()  + '\\'') : '' )", titleJs );
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            if ( filterValues.Count == 1 )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
-                ComparisonType comparisonType = ComparisonType.EqualTo;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
-            }
-
-            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
-        }
-
-        /// <summary>
-        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
-        /// </summary>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsComparedToValue( List<string> filterValues, string value )
-        {
-            if ( filterValues == null || filterValues.Count < 2 )
-            {
-                return false;
-            }
-
-            ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
-            ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
-            var filterValueAsDecimal = filterValues[1].AsDecimalOrNull();
-            var valueAsDecimal = value.AsDecimalOrNull();
-
-            return ComparisonHelper.CompareNumericValues( filterComparisonType.Value, valueAsDecimal, filterValueAsDecimal, null );
-        }
-
-        /// <summary>
-        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
-        /// </summary>
-        /// <value>
-        /// The name of the attribute value field.
-        /// </value>
-        public override string AttributeValueFieldName
-        {
-            get
-            {
-                return "ValueAsNumeric";
-            }
-        }
-
-        /// <summary>
-        /// Attributes the constant expression.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override ConstantExpression AttributeConstantExpression( string value )
-        {
-            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
-        }
-
-        /// <summary>
-        /// Gets the type of the attribute value field.
-        /// </summary>
-        /// <value>
-        /// The type of the attribute value field.
-        /// </value>
-        public override Type AttributeValueFieldType
-        {
-            get
-            {
-                return typeof( decimal? );
-            }
-        }
-
+#endif
         #endregion
 
         private class RatingPublicValue

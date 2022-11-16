@@ -76,8 +76,11 @@
     <Reference Include="Microsoft.Extensions.Primitives, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Primitives.2.2.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.2.1\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocols, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
@@ -85,8 +88,8 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.2.1\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.2.1.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
@@ -124,8 +127,8 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.2.1\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression">
       <Private>True</Private>
@@ -175,6 +178,7 @@
     <Compile Include="Field.Types\MergeTemplateFieldTypeTests.cs" />
     <Compile Include="Field.Types\MetricCategoriesFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
+    <Compile Include="Issues\Issues_v14.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
     <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
@@ -196,6 +200,7 @@
     <Compile Include="Lava\FileSystem\MockFileProvider.cs" />
     <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
     <Compile Include="Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Lava\Filters\EntityFilterTests.cs" />
     <Compile Include="Lava\Filters\PersonFilterTests.cs" />
     <Compile Include="Lava\Filters\WebFilterTests.cs" />
     <Compile Include="Lava\Filters\MiscellaneousFilterTests.cs" />
@@ -211,7 +216,7 @@
     <Compile Include="Lava\Commands\ShortcodeCodeTests.cs" />
     <Compile Include="Lava\Commands\CommandTests.cs" />
     <Compile Include="Lava\Commands\ShortcodeTemplateTests.cs" />
-    <Compile Include="Lava\SqlTests.cs" />
+    <Compile Include="Lava\Commands\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />
@@ -229,6 +234,7 @@
     <Compile Include="Model\StepProgramServiceTests.cs" />
     <Compile Include="Model\GroupMemberTests.cs" />
     <Compile Include="Model\UserLoginTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDevicesDataFilterTests.cs" />
     <Compile Include="Rest\ControllersTests\FollowingControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
@@ -239,6 +245,7 @@
     <Compile Include="StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="StorageTests\BaseStorageComponentTests.cs" />
     <Compile Include="StorageTests\GoogleCloudComponentTests.cs" />
+    <Compile Include="TestData\EventTestDataHelper.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
@@ -293,7 +300,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="app.ConnectionStrings.config" />
     <None Include="packages.config" />
     <None Include="settings\lava-dotliquid-engine.runsettings" />
     <None Include="settings\lava-fluid-engine.runsettings" />
@@ -303,6 +309,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="app.ConnectionStrings.config.example" />
+    <None Include="app.ConnectionStrings.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

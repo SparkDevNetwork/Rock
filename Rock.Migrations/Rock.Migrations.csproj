@@ -64,6 +64,98 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.cs" />
+    <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
+      <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.cs" />
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.designer.cs">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
+      <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209291606147_Rollup_20220929.cs" />
+    <Compile Include="Migrations\202209291606147_Rollup_20220929.designer.cs">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.cs" />
+    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.designer.cs">
+      <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210042001360_Rollup_20221004.cs" />
+    <Compile Include="Migrations\202210042001360_Rollup_20221004.designer.cs">
+      <DependentUpon>202210042001360_Rollup_20221004.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210042013215_CodeGenerated_20221004.cs" />
+    <Compile Include="Migrations\202210042013215_CodeGenerated_20221004.designer.cs">
+      <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.cs" />
+    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.designer.cs">
+      <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210181655410_AddRemindersModels.cs" />
+    <Compile Include="Migrations\202210181655410_AddRemindersModels.designer.cs">
+      <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210182331163_Rollup_20221018.cs" />
+    <Compile Include="Migrations\202210182331163_Rollup_20221018.designer.cs">
+      <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.cs" />
+    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.designer.cs">
+      <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs" />
+    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.designer.cs">
+      <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.cs" />
+    <Compile Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.designer.cs">
+      <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.cs" />
+    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.designer.cs">
+      <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210262309179_InteractionSession1900.cs" />
+    <Compile Include="Migrations\202210262309179_InteractionSession1900.designer.cs">
+      <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202210281944003_AddMissingIndexes.cs" />
+    <Compile Include="Migrations\202210281944003_AddMissingIndexes.designer.cs">
+      <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211031956456_Rollup_20221103.cs" />
+    <Compile Include="Migrations\202211031956456_Rollup_20221103.designer.cs">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.cs" />
+    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.designer.cs">
+      <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.cs" />
+    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.designer.cs">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.cs" />
+    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.designer.cs">
+      <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.cs" />
+    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.designer.cs">
+      <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs" />
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
+      <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.designer.cs">
       <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
@@ -1314,6 +1406,75 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.resx">
+      <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211081600377_GroupSchedulingAcceptAll.resx">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
+      <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209291606147_Rollup_20220929.resx">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.resx">
+      <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210042001360_Rollup_20221004.resx">
+      <DependentUpon>202210042001360_Rollup_20221004.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210042013215_CodeGenerated_20221004.resx">
+      <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.resx">
+      <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210181655410_AddRemindersModels.resx">
+      <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210182331163_Rollup_20221018.resx">
+      <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210190005219_CodeGenerated_20221018.resx">
+      <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.resx">
+      <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.resx">
+      <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210212133265_BinaryFileSecurity.resx">
+      <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210262309179_InteractionSession1900.resx">
+      <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202210281944003_AddMissingIndexes.resx">
+      <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211031956456_Rollup_20221103.resx">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211032103215_CodeGenerated_20221103.resx">
+      <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.resx">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.resx">
+      <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211091822240_AddIsPublicToSchedule.resx">
+      <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
+      <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208281854246_AddInteractiveExperience.resx">
       <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
     </EmbeddedResource>
@@ -2265,6 +2426,13 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
+      <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
+      <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </Content>
+    <None Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql" />
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
     </Content>
@@ -2444,6 +2612,10 @@
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
+      <Name>Rock.Enums</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

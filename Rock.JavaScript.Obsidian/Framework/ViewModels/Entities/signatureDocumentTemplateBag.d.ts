@@ -25,17 +25,32 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SignatureDocumentTemplate View Model */
 export type SignatureDocumentTemplateBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the binary file type identifier. */
     binaryFileTypeId?: number | null;
 
     /** The System Communication that will be used when sending the signature document completion email. */
     completionSystemCommunicationId?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets a user defined description or summary about the SignatureDocumentTemplate. */
     description?: string | null;
 
     /** The term used to simply describe the document (wavier, release form, etc.). */
     documentTerm?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the invite system email identifier. */
     inviteSystemCommunicationId?: number | null;
@@ -45,6 +60,12 @@ export type SignatureDocumentTemplateBag = {
 
     /** The Lava template that will be used to build the signature document. */
     lavaTemplate?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the friendly Name of the SignatureDocumentTemplate. This property is required. */
     name?: string | null;
@@ -60,25 +81,4 @@ export type SignatureDocumentTemplateBag = {
      * Ex: Rock.Model.SignatureType.Drawn or Rock.Model.SignatureType.Typed, etc.
      */
     signatureType: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

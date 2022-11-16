@@ -21,8 +21,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -43,8 +41,7 @@ namespace Rock.Jobs
     [BooleanField("Set Visit Dates", "If enabled will update the first and second visit person attributes.", true, order: 3)]
 
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
-    [DisallowConcurrentExecution]
-    public class CalculateFamilyAnalytics : IJob
+    public class CalculateFamilyAnalytics : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
 
@@ -61,20 +58,14 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will run quick SQL queries on a schedule.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? entryWorkflowType = GetAttributeValue( "EraEntryWorkflow" ).AsGuidOrNull();
+            Guid? exitWorkflowType = GetAttributeValue( "EraExitWorkflow" ).AsGuidOrNull();
+            bool updateVisitDates = GetAttributeValue( "SetVisitDates" ).AsBoolean();
 
-            Guid? entryWorkflowType = dataMap.GetString( "EraEntryWorkflow" ).AsGuidOrNull();
-            Guid? exitWorkflowType = dataMap.GetString( "EraExitWorkflow" ).AsGuidOrNull();
-            bool updateVisitDates = dataMap.GetBooleanValue( "SetVisitDates" );
-
-            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
+            int commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
             // configuration
             //
@@ -88,7 +79,6 @@ namespace Rock.Jobs
 
             // get era dataset from stored proc
             var resultContext = new RockContext();
-
             
             var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
             var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
@@ -101,7 +91,7 @@ namespace Rock.Jobs
 
             resultContext.Database.CommandTimeout = commandTimeout;
 
-            context.UpdateLastStatusMessage( "Getting Family Analytics Era Dataset..." );
+            this.UpdateLastStatusMessage( "Getting Family Analytics Era Dataset..." );
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
@@ -265,25 +255,25 @@ namespace Rock.Jobs
                 }
 
                 // update stats
-                context.UpdateLastStatusMessage( $"Updating eRA {progressPosition} of {progressTotal}" );
+                this.UpdateLastStatusMessage( $"Updating eRA {progressPosition} of {progressTotal}" );
             }
 
             // load giving attributes
-            context.UpdateLastStatusMessage( "Updating Giving..." );
+            this.UpdateLastStatusMessage( "Updating Giving..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
 
             // load attendance attributes
-            context.UpdateLastStatusMessage( "Updating Attendance..." );
+            this.UpdateLastStatusMessage( "Updating Attendance..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
 
             // process visit dates
             if ( updateVisitDates )
             {
-                context.UpdateLastStatusMessage( "Updating Visit Dates..." );
+                this.UpdateLastStatusMessage( "Updating Visit Dates..." );
                 resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsUpdateVisitDates" );
             }
 
-            context.UpdateLastStatusMessage( "" );
+            this.UpdateLastStatusMessage( "" );
         }
 
         /// <summary>

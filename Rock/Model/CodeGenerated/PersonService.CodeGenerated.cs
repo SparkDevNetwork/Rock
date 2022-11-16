@@ -101,6 +101,7 @@ namespace Rock.Model
                 Email = model.Email,
                 EmailNote = model.EmailNote,
                 EmailPreference = ( int ) model.EmailPreference,
+                EthnicityValueId = model.EthnicityValueId,
                 FirstName = model.FirstName,
                 Gender = ( int ) model.Gender,
                 GivingGroupId = model.GivingGroupId,
@@ -119,10 +120,12 @@ namespace Rock.Model
                 PreferredLanguageValueId = model.PreferredLanguageValueId,
                 PrimaryCampusId = model.PrimaryCampusId,
                 PrimaryFamilyId = model.PrimaryFamilyId,
+                RaceValueId = model.RaceValueId,
                 RecordStatusLastModifiedDateTime = model.RecordStatusLastModifiedDateTime,
                 RecordStatusReasonValueId = model.RecordStatusReasonValueId,
                 RecordStatusValueId = model.RecordStatusValueId,
                 RecordTypeValueId = model.RecordTypeValueId,
+                ReminderCount = model.ReminderCount,
                 ReviewReasonNote = model.ReviewReasonNote,
                 ReviewReasonValueId = model.ReviewReasonValueId,
                 SuffixValueId = model.SuffixValueId,
@@ -214,6 +217,7 @@ namespace Rock.Model
             target.Email = source.Email;
             target.EmailNote = source.EmailNote;
             target.EmailPreference = source.EmailPreference;
+            target.EthnicityValueId = source.EthnicityValueId;
             target.FirstName = source.FirstName;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -234,10 +238,12 @@ namespace Rock.Model
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
+            target.RaceValueId = source.RaceValueId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;
             target.RecordTypeValueId = source.RecordTypeValueId;
+            target.ReminderCount = source.ReminderCount;
             target.ReviewReasonNote = source.ReviewReasonNote;
             target.ReviewReasonValueId = source.ReviewReasonValueId;
             target.SuffixValueId = source.SuffixValueId;

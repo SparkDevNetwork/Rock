@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -33,17 +36,6 @@ namespace Rock.Field.Types
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( REPEAT_COLUMNS );
-            return configKeys;
-        }
 
         private Dictionary<int, string> _EnumValues { get; set; }
 
@@ -99,10 +91,10 @@ namespace Rock.Field.Types
         {
             _EnumValues = new Dictionary<int, string>();
 
-            foreach ( var value in Enum.GetValues( typeof(T) ) )
+            foreach ( var value in Enum.GetValues( typeof( T ) ) )
             {
-                if ( ( includedValues == null || includedValues.Contains( (T)value ) )
-                     && ( excludedValues == null  || !excludedValues.Contains( (T)value ) ) )
+                if ( ( includedValues == null || includedValues.Contains( ( T ) value ) )
+                     && ( excludedValues == null || !excludedValues.Contains( ( T ) value ) ) )
                 {
                     _EnumValues.Add( ( int ) value, value.ToString().SplitCase() );
                 }
@@ -111,6 +103,233 @@ namespace Rock.Field.Types
         }
 
         #region Configuration
+
+        #endregion Configuration
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var intValue = privateValue.AsIntegerOrNull();
+
+            if ( intValue.HasValue && _EnumValues.ContainsKey( intValue.Value ) )
+            {
+                return _EnumValues[intValue.Value];
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public override string GetEqualToCompareValue()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
+            return AddQuotes( _EnumValues
+                .Where( v => selectedValues.Contains( v.Key ) )
+                .Select( v => v.Value )
+                .ToList()
+                .AsDelimited( "' OR '" ) );
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                var selectedValues = values[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                if ( selectedValues.Count == 0 )
+                {
+                    return new ComparisonValue
+                    {
+                        Value = string.Empty
+                    };
+                }
+                else
+                {
+                    return new ComparisonValue
+                    {
+                        ComparisonType = ComparisonType.Contains,
+                        Value = selectedValues.Select( v => GetPublicEditValue( v, privateConfigurationValues ) ).JoinStrings( "," )
+                    };
+                }
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Used only by enums ( See the EntityHelper.GetEntityFields() method )
+        /// </remarks>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( selectedValues.Any() )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+                object constantValue;
+                if ( propertyType.IsEnum )
+                {
+                    constantValue = Enum.Parse( propertyType, selectedValues[0] );
+                }
+                else
+                {
+                    constantValue = selectedValues[0] as string;
+                }
+
+                ConstantExpression constantExpression = Expression.Constant( constantValue );
+                Expression comparison = Expression.Equal( propertyExpression, constantExpression );
+
+                foreach ( string selectedValue in selectedValues.Skip( 1 ) )
+                {
+                    constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
+                    comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
+                }
+
+                return comparison;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( selectedValues.Any() )
+                {
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Get a serialized representation of a value for this field type.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string GetSerializedValue( T value )
+        {
+            return ( ( int ) ( object ) value ).ToString();
+        }
+
+        /// <summary>
+        /// Get a value for this field type from a serialized representation, or return the specified default value.
+        /// </summary>
+        /// <param name="serialized"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public T GetDeserializedValue( string serialized, T defaultValue )
+        {
+            T enumValue;
+
+            var isValid = Enum.TryParse( serialized, out enumValue );
+
+            if ( isValid )
+            {
+                return enumValue;
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
+
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -140,7 +359,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
             string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null && controls.Count > 0 )
             {
@@ -167,23 +386,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion Configuration
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var intValue = privateValue.AsIntegerOrNull();
-
-            if ( intValue.HasValue && _EnumValues.ContainsKey( intValue.Value ) )
-            {
-                return _EnumValues[intValue.Value];
-            }
-
-            return string.Empty;
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -192,7 +394,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             // Don't ever truncate the value even in condensed mode.
             return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
@@ -209,10 +411,6 @@ namespace Rock.Field.Types
         {
             return value.AsIntegerOrNull();
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -281,10 +479,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-         
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -302,7 +496,7 @@ namespace Rock.Field.Types
 
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 
@@ -335,30 +529,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
-        /// </summary>
-        /// <returns></returns>
-        public override string GetEqualToCompareValue()
         {
             return null;
         }
@@ -375,7 +551,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -409,7 +585,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -417,142 +593,7 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
-            return AddQuotes( _EnumValues
-                .Where( v => selectedValues.Contains( v.Key ) )
-                .Select( v => v.Value )
-                .ToList()
-                .AsDelimited( "' OR '" ) );
-        }
-
-        /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
-            return string.Format( format, titleJs );
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an entity property value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Used only by enums ( See the EntityHelper.GetEntityFields() method )
-        /// </remarks>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
-        {
-            List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
-
-                object constantValue;
-                if ( propertyType.IsEnum )
-                {
-                   constantValue = Enum.Parse( propertyType, selectedValues[0] );
-                }
-                else
-                {
-                    constantValue = selectedValues[0] as string;
-                }
-
-                 ConstantExpression constantExpression = Expression.Constant( constantValue );
-                Expression comparison = Expression.Equal( propertyExpression, constantExpression );
-
-                foreach ( string selectedValue in selectedValues.Skip( 1 ) )
-                {
-                    constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
-                    comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
-                }
-
-                return comparison;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            if ( filterValues.Count == 1 )
-            {
-                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
-                {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof(List<string>) );
-                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof(string) } ), propertyExpression );
-                }
-            }
-
-            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Get a serialized representation of a value for this field type.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public string GetSerializedValue( T value )
-        {
-            return ( ( int ) ( object ) value ).ToString();
-        }
-
-        /// <summary>
-        /// Get a value for this field type from a serialized representation, or return the specified default value.
-        /// </summary>
-        /// <param name="serialized"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public T GetDeserializedValue( string serialized, T defaultValue )
-        {
-            T enumValue;
-
-            var isValid = Enum.TryParse( serialized, out enumValue );
-
-            if ( isValid )
-            {
-                return enumValue;
-            }
-            else
-            {
-                return defaultValue;
-            }
-        }
-
+#endif
         #endregion
 
     }

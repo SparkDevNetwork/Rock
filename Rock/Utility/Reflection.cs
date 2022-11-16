@@ -123,6 +123,11 @@ namespace Rock
                                     types.Add( type.FullName, type );
                                     break;
                                 }
+                                else if ( baseType.IsGenericType && parentType.IsGenericType && parentType.GetGenericTypeDefinition() == baseType )
+                                {
+                                    types.Add( type.FullName, type );
+                                    break;
+                                }
                                 parentType = parentType.BaseType;
                             }
                         }

@@ -2395,7 +2395,7 @@ namespace Rock.Model
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter" )]
+        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter", true )]
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
         {
             return GetPersonFromMobilePhoneNumber( phoneNumber, false );
@@ -4277,14 +4277,22 @@ namespace Rock.Model
             var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
                 .Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
+            // Unknown if Birthdate is not present and not in any family
+            var unknownBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => !p.BirthDate.HasValue && !familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any() );
+
             // Adult if Age >= 18 OR has a role of Adult in one or more (ANY) families
             var adultBasedOnBirthdateOrFamilyRole = personQuery
-                .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
-                    || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId ) );
+                .Where( p => !unknownBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                    &&
+                    ( ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                        || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId )
+                    ) );
 
             // Child if (not adultBasedOnBirthdateOrFamilyRole) AND (Age < 18 OR child in ALL families)
+            var alreadyClassified = unknownBasedOnBirthdateOrFamilyRole.Union( adultBasedOnBirthdateOrFamilyRole );
             var childBasedOnBirthdateOrFamilyRole = personQuery
-                .Where( p => !adultBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                .Where( p => !alreadyClassified.Any( a => a.Id == p.Id )
                     &&
                     ( ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
                         ||
@@ -4387,6 +4395,7 @@ FROM (
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
+            AND gm.IsArchived = 0
             AND gm.PersonId = p.Id
         ORDER BY gm.GroupOrder
             ,gm.GroupId

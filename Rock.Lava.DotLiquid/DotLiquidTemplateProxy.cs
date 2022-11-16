@@ -24,17 +24,25 @@ namespace Rock.Lava.DotLiquid
     /// </summary>
     public class DotLiquidTemplateProxy : LavaTemplateBase
     {
-        #region Constructors
-
         // A parsed DotLiquid template.
         private Template _dotLiquidTemplate;
+        private string _description = null;
 
-        public DotLiquidTemplateProxy( Template template )
+        #region Constructors
+
+        public DotLiquidTemplateProxy( Template template, string description )
         {
             _dotLiquidTemplate = template;
+            _description = description;
         }
 
         #endregion
+
+        /// <inheritdoc>
+        public override string GetDescription()
+        {
+            return _description;
+        }
 
         /// <summary>
         /// Get the DotLiquid template instance.

@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceRequest View Model */
 export type BenevolenceRequestBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the benevolence type identifier. */
     benevolenceTypeId: number;
 
@@ -40,6 +46,12 @@ export type BenevolenceRequestBag = {
     /** Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the connection status of the Requester. */
     connectionStatusValueId?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the email address of the person requesting benevolence. */
     email?: string | null;
 
@@ -52,11 +64,20 @@ export type BenevolenceRequestBag = {
     /** Gets or sets the Home Phone Number of the person who requested benevolence. */
     homePhoneNumber?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Last Name of the person that this benevolence request is about. This property is required. */
     lastName?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.Location that is associated with this BenevolenceRequest. */
     locationId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the provided next steps. */
     providedNextSteps?: string | null;
@@ -78,25 +99,4 @@ export type BenevolenceRequestBag = {
 
     /** Gets or sets the Work Phone Number of the person who requested benevolence. */
     workPhoneNumber?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

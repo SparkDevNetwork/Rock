@@ -26,11 +26,12 @@
 
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlOpportunity" runat="server" Label="Opportunity" AutoPostBack="true" OnSelectedIndexChanged="ddlOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
-                            <Rock:RockDropDownList ID="ddlState" runat="server" Label="State" />
+                            <Rock:RockDropDownList ID="ddlState" runat="server" Label="State" AutoPostBack="true" OnSelectedIndexChanged="ddlState_SelectedIndexChanged" />
                         </div>
 
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                            <Rock:DatePicker ID="dpFollowUpDate" runat="server" Label="Follow-up Date" AllowPastDateSelection="false" Visible="false" />
                         </div>
 
                     </div>

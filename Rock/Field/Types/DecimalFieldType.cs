@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-
+#if WEBFORMS
+using System.Web.UI;
+using System.Web.UI.WebControls;
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -52,75 +55,9 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Formats the value.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return value.AsDecimalOrNull();
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            // return ValueAsFieldType which returns the value as a Decimal
-            return this.ValueAsFieldType( parentControl, value, configurationValues );
-        }
-
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        public override System.Web.UI.WebControls.HorizontalAlign AlignValue
-        {
-            get
-            {
-                return System.Web.UI.WebControls.HorizontalAlign.Right;
-            }
-        }
-
         #endregion
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var numberBox = new NumberBox { ID = id };
-            numberBox.NumberType = System.Web.UI.WebControls.ValidationDataType.Double;
-            return numberBox;
-        }
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -159,6 +96,25 @@ namespace Rock.Field.Types
         public override ComparisonType FilterComparisonType
         {
             get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.EqualTo,
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
         }
 
         /// <summary>
@@ -241,6 +197,78 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsDecimalOrNull();
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as a Decimal
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
+        /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public override HorizontalAlign AlignValue
+        {
+            get
+            {
+                return HorizontalAlign.Right;
+            }
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var numberBox = new NumberBox { ID = id };
+            numberBox.NumberType = ValidationDataType.Double;
+            return numberBox;
+        }
+
+#endif
         #endregion
     }
 }

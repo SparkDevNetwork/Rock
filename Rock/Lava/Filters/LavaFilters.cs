@@ -1052,33 +1052,17 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SundayDate( object input )
         {
-            if ( input == null )
+            var startDto = GetDateTimeOffsetFromInputParameter( input, null );
+            if ( startDto == null )
             {
                 return null;
             }
 
-            DateTime date = DateTime.MinValue;
+            var rockStartDate = LavaDateTime.ConvertToRockDateTime( startDto.Value );
+            var nextSundayDate =  RockDateTime.GetSundayDate( rockStartDate );
+            var output = nextSundayDate.ToShortDateString();
 
-            if ( input.ToString() == "Now" )
-            {
-                date = RockDateTime.Now;
-            }
-            else
-            {
-                if ( !DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( date != DateTime.MinValue )
-            {
-                return date.SundayDate().ToShortDateString();
-            }
-            else
-            {
-                return null;
-            }
+            return output;
         }
 
         /// <summary>
@@ -2075,6 +2059,30 @@ namespace Rock.Lava
                     if ( qualifier.Equals( "RawValue", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return rawValue;
+                    }
+
+                    // Check qualifer for "TextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "TextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
+                    if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedTextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedHtmlValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedHtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedHtmlValue;
                     }
 
                     // Check qualifier for 'Url' and if present and attribute's field type is a ILinkableFieldType, then return the formatted url value
@@ -5081,6 +5089,31 @@ namespace Rock.Lava
             var rockDateTime = LavaDateTime.ParseToOffset( input.ToString() );
 
             return rockDateTime;
+        }
+
+        /// <summary>
+        /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
+        /// If the input value does not specify an offset, the current Rock time zone is assumed.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
+        public static DateTimeOffset? AsDateTimeUtc( object input )
+        {
+            DateTimeOffset? utc;
+            if ( input is DateTime dt )
+            {
+                utc = LavaDateTime.ConvertToDateTimeOffset( dt ).ToUniversalTime();
+            }
+            else if ( input is DateTimeOffset dto )
+            {
+                utc = dto.ToUniversalTime();
+            }
+            else
+            {
+                utc = LavaDateTime.ParseToUtc( input.ToStringSafe() );
+            }
+
+            return utc;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -117,7 +117,8 @@ namespace RockWeb.Blocks.Groups
                         g.Id,
                         GroupType = g.GroupType.Name,
                         Structure = ParentStructure( g ),
-                        MemberCount = g.Members.Count
+                        MemberCount = g.Members.Count,
+                        Campus = g.Campus?.Name
                     } )
                     .ToList();
                 gGroups.DataBind();

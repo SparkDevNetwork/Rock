@@ -29,20 +29,17 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * of attributes (not values, the attributes themselves).
  */
 export type PublicEditableAttributeBag = {
-    /**
-     * Gets or sets the unique identifier of the existing attribute. If
-     * this is a new attribute the value should be null.
-     */
-    guid?: Guid | null;
-
-    /** Gets or sets the name of the attribute. */
-    name?: string | null;
-
-    /** Gets or sets the key that identifies the attribute. */
-    key?: string | null;
-
     /** Gets or sets the abbreviated name of the attribute. */
     abbreviatedName?: string | null;
+
+    /** Gets or sets the categories the attribute is associated with. */
+    categories?: ListItemBag[] | null;
+
+    /** Gets or sets the configuration values for the attribute. */
+    configurationValues?: Record<string, string> | null;
+
+    /** Gets or sets the default value of the attribute. */
+    defaultValue?: string | null;
 
     /**
      * Gets or sets the description of the attribute. This is usually used
@@ -50,41 +47,34 @@ export type PublicEditableAttributeBag = {
      */
     description?: string | null;
 
+    /**
+     * Gets or sets the field type unique identifier that defines the behavior
+     * of the attribute. A value of null is only valid when transmitted
+     * from the server to remote systems so that it can provide default values
+     * in other properties.
+     */
+    fieldTypeGuid?: Guid | null;
+
+    /**
+     * Gets or sets the unique identifier of the existing attribute. If
+     * this is a new attribute the value should be null.
+     */
+    guid?: Guid | null;
+
     /** Gets or sets a value indicating whether the attribute is active. */
     isActive: boolean;
-
-    /** Gets or sets a value indicating whether the attribute is publically visible. */
-    isPublic: boolean;
-
-    /**
-     * Gets or sets a value indicating whether the attribute is required
-     * to be filled in when the edit control is rendered on a page.
-     */
-    isRequired: boolean;
-
-    /**
-     * Gets or sets a value indicating whether the attribute is shown on
-     * bulk update screens.
-     */
-    isShowOnBulk: boolean;
-
-    /** Gets or sets a value indicating whether the attribute is shown on grids. */
-    isShowInGrid: boolean;
-
-    /** Gets or sets the categories the attribute is associated with. */
-    categories?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating whether this attribute is used for analytics. */
-    isAnalytic: boolean;
-
-    /** Gets or sets a value indicating whether this attribute records analytic history. */
-    isAnalyticHistory: boolean;
 
     /**
      * Gets or sets a value indicating whether this attribute should be made available
      * when performing searches.
      */
     isAllowSearch: boolean;
+
+    /** Gets or sets a value indicating whether this attribute is used for analytics. */
+    isAnalytic: boolean;
+
+    /** Gets or sets a value indicating whether this attribute records analytic history. */
+    isAnalyticHistory: boolean;
 
     /**
      * Gets or sets a value indicating whether changes to this attribute's values should
@@ -95,29 +85,39 @@ export type PublicEditableAttributeBag = {
     /** Gets or sets a value indicating whether this attribute is indexed by universal search. */
     isIndexEnabled: boolean;
 
+    /** Gets or sets a value indicating whether the attribute is publically visible. */
+    isPublic: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the attribute is required
+     * to be filled in when the edit control is rendered on a page.
+     */
+    isRequired: boolean;
+
+    /** Gets or sets a value indicating whether the attribute is shown on grids. */
+    isShowInGrid: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the attribute is shown on
+     * bulk update screens.
+     */
+    isShowOnBulk: boolean;
+
     /**
      * Gets or sets a value indicating whether this attribute is a system
      * attribute, which implies limited editing ability.
      */
     isSystem: boolean;
 
-    /** Gets or sets any HTML to be rendered before the attribute's edit control. */
-    preHtml?: string | null;
+    /** Gets or sets the key that identifies the attribute. */
+    key?: string | null;
+
+    /** Gets or sets the name of the attribute. */
+    name?: string | null;
 
     /** Gets or sets any HTML to be rendered after the attribute's edit control. */
     postHtml?: string | null;
 
-    /**
-     * Gets or sets the field type unique identifier that defines the behavior
-     * of the attribute. A value of null is only valid when transmitted
-     * from the server to remote systems so that it can provide default values
-     * in other properties.
-     */
-    fieldTypeGuid?: Guid | null;
-
-    /** Gets or sets the configuration values for the attribute. */
-    configurationValues?: Record<string, string> | null;
-
-    /** Gets or sets the default value of the attribute. */
-    defaultValue?: string | null;
+    /** Gets or sets any HTML to be rendered before the attribute's edit control. */
+    preHtml?: string | null;
 };

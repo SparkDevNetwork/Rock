@@ -60,7 +60,7 @@
                                 <Rock:HiddenFieldWithClass ID="hfRequirementCheckType" CssClass="js-hidden-selected" runat="server" />
                                 <div class="btn-group">
                                     <asp:HyperLink ID="btnRequirementCheckTypeSQL" runat="server" CssClass="btn btn-default active" Text="SQL" data-val="0" />
-                                    <asp:HyperLink ID="btnRequirementCheckTypeDataview" runat="server" CssClass="btn btn-default" Text="Dataview" data-val="1" />
+                                    <asp:HyperLink ID="btnRequirementCheckTypeDataview" runat="server" CssClass="btn btn-default" Text="Data View" data-val="1" />
                                     <asp:HyperLink ID="btnRequirementCheckTypeManual" runat="server" CssClass="btn btn-default" Text="Manual" data-val="2" />
                                 </div>
                             </div>
@@ -71,10 +71,10 @@
                             <div class="js-dataview-mode-div">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Dataview" Help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
+                                        <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Criteria Data View" Help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataViewItemPicker ID="dpWarningDataView" runat="server" Label="Warning Dataview" Help="Optional dataview that will return a list of people that should be marked as in a warning status." />
+                                        <Rock:DataViewItemPicker ID="dpWarningDataView" runat="server" Label="Warning Criteria Data View" Help="Optional data view that will return a list of people that should be marked as in a warning status." />
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                     <hr class="margin-t-sm">
                     <div class="row">
                         <div class="col-md-4">
-                            <Rock:WorkflowTypePicker ID="wtpDoesNotMeetWorkflowType" runat="server" Label="Does Not Meet Requirement Workflow" />
+                            <Rock:WorkflowTypePicker ID="wtpDoesNotMeetWorkflowType" runat="server" Label="Does Not Meet Requirement Workflow" Help="The workflow type to configure for requirements that are not met. These workflows can help an individual complete requirements." />
                         </div>
                         <div class="col-md-2">
                             <Rock:RockCheckBox ID="cbAutoInitiateDoesNotMeetRequirementWorkflow" runat="server" Label="Auto initiate" Help="Determines if the workflow should be automatically launched at the time of not being met, or if the workflow should be manually launched by the individual." />
@@ -128,7 +128,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-4">
-                            <Rock:WorkflowTypePicker ID="wtpWarningWorkflowType" runat="server" Label="Warning Requirement Workflow" />
+                            <Rock:WorkflowTypePicker ID="wtpWarningWorkflowType" runat="server" Label="Warning Requirement Workflow" Help="The workflow type to configure for requirements that are in a warning state. These workflows can help an individual complete requirements." />
                         </div>
                         <div class="col-md-2">
                             <Rock:RockCheckBox ID="cbAutoInitiateWarningRequirementWorkflow" runat="server" Label="Auto initiate" Help="Determines if the workflow should be automatically launched at the time of warning, or if the workflow should be manually launched by the individual." />
@@ -194,9 +194,13 @@
                 // Manual
                 if (requirementCheckType == '2') {
                     $('.js-manual-mode-div').show();
+                    $('.js-can-expire-checkbox').attr('disabled', 'disabled');
+                    $('.js-can-expire-days').find('.form-control').attr('disabled', 'disabled').addClass('aspNetDisabled');
                 }
                 else {
                     $('.js-manual-mode-div').hide();
+                    $('.js-can-expire-checkbox').removeAttr('disabled');
+                    $('.js-can-expire-days').find('.form-control').removeAttr('disabled').removeClass('aspNetDisabled');
                 }
             }
 

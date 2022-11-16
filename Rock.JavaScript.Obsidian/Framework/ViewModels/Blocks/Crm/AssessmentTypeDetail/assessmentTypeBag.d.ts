@@ -34,8 +34,17 @@ export type AssessmentTypeBag = {
     /** Gets or sets the AssessmentResultsPath of the Rock.Model.Assessment or the Rock.Model.AssessmentType if no requestor required. */
     assessmentResultsPath?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Description of the Rock.Model.AssessmentType */
     description?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the IsActive flag for the Rock.Model.AssessmentType. */
     isActive: boolean;
@@ -57,13 +66,4 @@ export type AssessmentTypeBag = {
      * How long (in days) is this assessment valid before it must be taken again.
      */
     validDuration: number;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

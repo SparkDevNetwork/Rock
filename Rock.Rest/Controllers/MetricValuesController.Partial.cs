@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-using System.Web.Http.OData;
+
+using Microsoft.AspNet.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -42,7 +43,7 @@ namespace Rock.Rest.Controllers
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
+        [RockEnableQuery]
         [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
         [Rock.SystemGuid.RestActionGuid( "A92E98C4-B44B-4119-A2C5-B4AD3451959A" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )

@@ -1,0 +1,103 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RadioButtonList v-model="cacheType" :items="cacheTypeOptions" horizontal label="Cacheability Type" help="This determines how the item will be treated in cache.<br /><br>Public - This item can be cached on the browser or any other shared network cache like a CDN.<br /><br>Private - This item can only be cached in the browser.<br /><br>No-Cache - The item will be checked on every load, but if it is deemed to not have changed since the last load it will use a local copy.<br /><br>No-Store - This item will never be stored by the local browser.This is used for sensitive files like check images." />
+
+    <div class="row" v-if="shouldAskForMaxAge || shouldAskForSharedMaxAge">
+        <TimeIntervalPicker v-if="shouldAskForMaxAge" formGroupClasses="col-md-6" v-model="maxAge" label="Max Age" help="The maximum amount of time that the item will be cached." />
+        <TimeIntervalPicker v-if="shouldAskForSharedMaxAge" formGroupClasses="col-md-6" v-model="sharedMaxAge" label="Max Age" help="The maximum amount of time the item will be cached in a shared cache (e.g. CDN). If not provided then the Max Age is typically used." />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import TimeIntervalPicker from "./timeIntervalPicker.vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
+    import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
+    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RockCacheability | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: RockCacheability | null): void
+    }>();
+
+    function defaultValue(): RockCacheability {
+        return {
+            rockCacheabilityType: 0,
+            maxAge: { unit: TimeIntervalUnit.Minutes, value: null },
+            sharedMaxAge: { unit: TimeIntervalUnit.Minutes, value: null }
+        };
+    }
+
+    const internalValue = computed<RockCacheability>({
+        get() {
+            // Don't ever use null here because we want to ensure (sub)properties exist
+            return props.modelValue ?? defaultValue();
+        },
+        set(newValue) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    const cacheTypeOptions: ListItemBag[] = [
+        { text: "Public", value: RockCacheabilityType.Public.toString() },
+        { text: "Private", value: RockCacheabilityType.Private.toString() },
+        { text: "No-Cache", value: RockCacheabilityType.NoCache.toString() },
+        { text: "No-Store", value: RockCacheabilityType.NoStore.toString() },
+    ];
+
+    const cacheType = computed<string>({
+        get() {
+            return internalValue.value.rockCacheabilityType.toString();
+        },
+        set(newValue) {
+            internalValue.value = {
+                rockCacheabilityType: toNumber(newValue),
+                maxAge: internalValue.value.maxAge,
+                sharedMaxAge: internalValue.value.sharedMaxAge
+            };
+        }
+    });
+
+    const maxAge = computed<TimeInterval>({
+        get() {
+            return internalValue.value.maxAge;
+        },
+        set(newValue) {
+            internalValue.value = {
+                rockCacheabilityType: internalValue.value.rockCacheabilityType,
+                maxAge: newValue,
+                sharedMaxAge: internalValue.value.sharedMaxAge
+            };
+        }
+    });
+
+    const sharedMaxAge = computed<TimeInterval>({
+        get() {
+            return internalValue.value.sharedMaxAge;
+        },
+        set(newValue) {
+            internalValue.value = {
+                rockCacheabilityType: internalValue.value.rockCacheabilityType,
+                maxAge: internalValue.value.maxAge,
+                sharedMaxAge: newValue
+            };
+        }
+    });
+
+    const shouldAskForMaxAge = computed<boolean>(() => {
+        const cacheType = internalValue.value.rockCacheabilityType;
+        return cacheType == RockCacheabilityType.Public || cacheType == RockCacheabilityType.Private;
+    });
+
+    const shouldAskForSharedMaxAge = computed<boolean>(() => internalValue.value.rockCacheabilityType == RockCacheabilityType.Public);
+</script>

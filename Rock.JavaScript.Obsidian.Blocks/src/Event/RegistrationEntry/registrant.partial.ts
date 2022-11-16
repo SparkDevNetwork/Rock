@@ -71,12 +71,14 @@ export default defineComponent({
         const signatureData = ref<ElectronicSignatureValue | null>(null);
         const signatureSource = ref("");
         const signatureToken = ref("");
+        const clearFormErrors = ref(false);
 
         const isNextDisabled = ref(false);
 
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
+            clearFormErrors,
             getRegistrationEntryBlockArgs,
             invokeBlockAction,
             isNextDisabled,
@@ -243,6 +245,7 @@ export default defineComponent({
     },
     methods: {
         onPrevious(): void {
+            this.clearFormErrors = true;
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
@@ -251,6 +254,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex--;
         },
         async onNext(): Promise<void> {
+            this.clearFormErrors = true;
             let lastFormIndex = this.formsToShow.length - 1;
 
             // If we have an inline signature then there is an additional form
@@ -368,7 +372,7 @@ export default defineComponent({
     },
     template: `
 <div>
-    <RockForm @submit="onNext">
+    <RockForm @submit="onNext" v-model:clearFormErrors="clearFormErrors">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
@@ -384,7 +388,7 @@ export default defineComponent({
             <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
                 <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
                     <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                    <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" />
+                    <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
                     <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
                 </template>
             </ItemsWithPreAndPostHtml>

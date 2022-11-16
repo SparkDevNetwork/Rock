@@ -33,8 +33,6 @@ export const enum FieldType {
     AssetStorageSystem = "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
     Attribute = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B",
-    /** Audio field type */
-    Audio = "0D842975-7439-4D2E-BB94-BAD8DDF22260",
     /** Audio File field type */
     AudioFile = "9772CB1F-3BC4-432E-80DD-D635CDB2DA32",
     /** Audio Url field type */
@@ -271,8 +269,6 @@ export const enum FieldType {
     UrlLink = "C0D0D7E2-C3B0-4004-ABEA-4BBFAD10D5D2",
     /** Value List field type */
     ValueList = "7BDAE237-6E49-47AC-9961-A45AFB69E240",
-    /** Video field type */
-    Video = "FA398F9D-5B01-41EA-9A93-112F910A277D",
     /** Video File field type */
     VideoFile = "F1F5B59D-F086-4627-A94A-DFA7E67950F3",
     /** Video Url field type */

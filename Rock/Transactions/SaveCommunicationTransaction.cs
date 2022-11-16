@@ -37,7 +37,7 @@ namespace Rock.Transactions
         /// The recipient emails.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use Recipients instead to ensure the correct person is associated with the communication." )]
+        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use Recipients instead to ensure the correct person is associated with the communication.", true )]
         public List<string> RecipientEmails
         {
             get => _recipientEmailAddresses;
@@ -178,7 +178,7 @@ namespace Rock.Transactions
         /// <param name="subject">The subject.</param>
         /// <param name="message">The message.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication." )]
+        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
         public SaveCommunicationTransaction( string to, string fromName, string fromAddress, string subject, string message )
             : this( fromName, fromAddress, subject, message )
         {
@@ -194,7 +194,7 @@ namespace Rock.Transactions
         /// <param name="subject">The subject.</param>
         /// <param name="message">The message.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication." )]
+        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
         public SaveCommunicationTransaction( List<string> to, string fromName, string fromAddress, string subject, string message )
             : this( fromName, fromAddress, subject, message )
         {

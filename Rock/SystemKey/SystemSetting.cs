@@ -184,27 +184,6 @@ namespace Rock.SystemKey
         public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
 
         /// <summary>
-        /// Settings for Do Not Disturb Start
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
-
-        /// <summary>
-        /// Settings for Do Not Disturb End
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
-
-        /// <summary>
-        /// Settings for Do Not Disturb Active
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
-
-        /// <summary>
         /// The open id connect RSA keys
         /// </summary>
         public const string OPEN_ID_CONNECT_RSA_KEYS = "OpenIdConnectRsaKeys";
@@ -288,5 +267,25 @@ namespace Rock.SystemKey
         /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
         /// </summary>
         public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
+
+        /// <summary>
+        /// Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database.
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES = "core_PersonalizationSegmentCookieAffinityDurationMinutes";
+
+        /// <summary>
+        /// Label text for the PersonRacePicker
+        /// </summary>
+        public const string PERSON_RACE_LABEL = "core_PersonRaceLabel";
+
+        /// <summary>
+        /// Label text for the PersonEthnicityPicker
+        /// </summary>
+        public const string PERSON_ETHNICITY_LABEL = "core_PersonEthnicityLabel";
+
+        /// <summary>
+        /// Label text for the PersonGenderPicker
+        /// </summary>
+        public const string PERSON_GENDER_LABEL = "core_GenderLabel";
     }
 }

@@ -18,8 +18,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Model;
 
@@ -34,8 +32,7 @@ namespace Rock.Jobs
     [IntegerField( "Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
     [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
-    [DisallowConcurrentExecution]
-    public class LocationServicesVerify : IJob
+    public class LocationServicesVerify : RockJob
     {
         
         /// <summary> 
@@ -48,23 +45,13 @@ namespace Rock.Jobs
         public LocationServicesVerify()
         {
         }
-        
-        /// <summary> 
-        /// Job that updates the JobPulse setting with the current date/time.
-        /// This will allow us to notify an admin if the jobs stop running.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute(IJobExecutionContext context)
-        {
-            // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
-            int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
-            int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
+        {
+            int maxRecords = GetAttributeValue( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
+            int throttlePeriod = GetAttributeValue( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
+            int retryPeriod = GetAttributeValue( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
 
             var retryDate = RockDateTime.Now.Subtract( new TimeSpan( retryPeriod, 0, 0, 0 ) );
 
@@ -97,7 +84,7 @@ namespace Rock.Jobs
                 System.Threading.Tasks.Task.Delay( throttlePeriod ).Wait();
             }
 
-            context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );
+            this.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );
         }
     }
 }

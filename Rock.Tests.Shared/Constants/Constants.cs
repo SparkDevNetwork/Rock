@@ -52,6 +52,7 @@ namespace Rock.Tests.Shared
 
         public const string Communications = "Communications";
         public const string Groups = "Groups";
+        public const string Personalization = "Personalization";
 
     }
 

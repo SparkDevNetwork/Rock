@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Linq.Expressions;
 using Rock.Data;
+using Rock.Reporting;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -308,6 +310,67 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the sorted group member list for person.
+        /// Ordered by adult males oldest to youngest, adult females oldest to youngest, and then children oldest to youngest.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="showOnlyPrimaryGroup">if set to <c>true</c> [show only primary group].</param>
+        /// <returns>IEnumerable&lt;GroupMember&gt;.</returns>
+        public IEnumerable<GroupMember> GetSortedGroupMemberListForPerson( int personId, int groupTypeId, bool showOnlyPrimaryGroup )
+        {
+            var orderedGroupMemberList = new List<GroupMember>();
+            var groupMemberList = new List<GroupMember>();
+            var groupIds = new List<int>();
+
+            if ( showOnlyPrimaryGroup )
+            {
+                groupIds.Add( Queryable( true )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == personId )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
+                    .Select( m => m.GroupId )
+                    .FirstOrDefault() );
+            }
+            else
+            {
+                groupIds = Queryable( true )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == personId )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
+                    .Select( m => m.GroupId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            foreach ( var groupId in groupIds )
+            {
+                var members = Queryable( "GroupRole,Person", true )
+                    .Where( m => m.GroupId == groupId && m.PersonId != personId )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ThenBy( m => m.Id )
+                    .ToList();
+
+                // Add adult males
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender == Gender.Male )
+                    .OrderByDescending( m => m.Person.Age ) );
+
+                // Add adult females
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender != Gender.Male )
+                    .OrderByDescending( m => m.Person.Age ) );
+
+                // Add non-adults
+                orderedGroupMemberList.AddRange( members
+                    .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                    .OrderByDescending( m => m.Person.Age ) );
+            }
+
+            return orderedGroupMemberList;
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="System.String"/> objects representing the first names of each person in a <see cref="Rock.Model.Group"/> ordered by group role, age, and gender
         /// </summary>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
@@ -587,33 +650,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Archives the specified group member with an option to null the GroupMemberId from Registrant tables
-        /// </summary>
-        /// <param name="groupMember">The group member.</param>
-        /// <param name="currentPersonAliasId">The current person alias identifier (leave null to have Rock figure it out)</param>
-        /// <param name="removeFromRegistrants">if set to <c>true</c> [remove from registrants].</param>
-        public void Archive( GroupMember groupMember, int? currentPersonAliasId, bool removeFromRegistrants )
-        {
-            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
-            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
-            {
-                registrant.GroupMemberId = null;
-            }
-
-            if ( !currentPersonAliasId.HasValue )
-            {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
-                }
-            }
-
-            groupMember.IsArchived = true;
-            groupMember.ArchivedByPersonAliasId = currentPersonAliasId;
-            groupMember.ArchivedDateTime = RockDateTime.Now;
-        }
-
-        /// <summary>
         /// Creates the known relationship if it doesn't already exist
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -835,6 +871,391 @@ namespace Rock.Model
 
             return changesMade;
         }
+
+        /// <summary>
+        /// Gets the group placement group members.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns></returns>
+        public List<GroupPlacementGroupMember> GetGroupPlacementGroupMembers( GetGroupPlacementGroupMembersParameters options, Person currentPerson )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMemberQuery = groupMemberService.Queryable();
+
+            groupMemberQuery = groupMemberQuery
+                .Where( a => a.GroupId == options.GroupId && a.GroupRoleId == options.GroupRoleId && a.GroupMemberStatus != GroupMemberStatus.Inactive );
+
+            var registrationInstanceGroupPlacementBlock = BlockCache.Get( options.BlockId );
+            if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
+            {
+                var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+
+                const string groupMemberAttributeFilter_GroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
+                string userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
+
+                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var parameterExpression = groupMemberService.ParameterExpression;
+                Expression groupMemberWhereExpression = null;
+                foreach ( var attributeFilter in attributeFilters )
+                {
+                    var attribute = AttributeCache.Get( attributeFilter.Key );
+                    var attributeFilterValues = attributeFilter.Value.FromJsonOrNull<List<string>>();
+                    var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+                    if ( entityField != null && attributeFilterValues != null )
+                    {
+                        var attributeWhereExpression = ExpressionHelper.GetAttributeExpression( groupMemberService, parameterExpression, entityField, attributeFilterValues );
+                        if ( groupMemberWhereExpression == null )
+                        {
+                            groupMemberWhereExpression = attributeWhereExpression;
+                        }
+                        else
+                        {
+                            groupMemberWhereExpression = Expression.AndAlso( groupMemberWhereExpression, attributeWhereExpression );
+                        }
+                    }
+                }
+
+                if ( groupMemberWhereExpression != null )
+                {
+                    groupMemberQuery = groupMemberQuery.Where( parameterExpression, groupMemberWhereExpression );
+                }
+            }
+
+            var groupPlacementRegistrants = new List<GroupPlacementRegistrant>();
+            if ( options.ApplyRegistrantFilter )
+            {
+                var registrantService = new RegistrationRegistrantService( rockContext );
+                var getGroupPlacementRegistrantsParameters = new GetGroupPlacementRegistrantsParameters
+                {
+                    FilterFeeId = options.FilterFeeId,
+                    RegistrationTemplatePlacementId = options.RegistrationTemplatePlacementId,
+                    BlockId = options.BlockId,
+                    DisplayedAttributeIds = options.DisplayedRegistrantAttributeIds,
+                    FilterFeeOptionIds = options.FilterFeeOptionIds,
+                    RegistrantPersonDataViewFilterId = options.RegistrantPersonDataViewFilterId,
+                    RegistrationInstanceId = options.RegistrationInstanceId,
+                    RegistrationTemplateId = options.RegistrationTemplateId
+                };
+
+                groupPlacementRegistrants = registrantService.GetGroupPlacementRegistrants( getGroupPlacementRegistrantsParameters, currentPerson ).Where( a => a.AlreadyPlacedInGroup ).ToList();
+                var personIds = groupPlacementRegistrants.Select( a => a.PersonId ).ToList();
+                groupMemberQuery = groupMemberQuery.Where( a => personIds.Contains( a.PersonId ) );
+            }
+            else if ( options.DisplayRegistrantAttributes )
+            {
+                /*
+                 SK - 10-07-2022
+                 Even if Apply Registrant Filter is not checked, we still need to find the registrant with No Filter in order to display the registrant attribute.
+                 */
+                var registrantService = new RegistrationRegistrantService( rockContext );
+                var getGroupPlacementRegistrantsParameters = new GetGroupPlacementRegistrantsParameters
+                {
+                    RegistrationTemplatePlacementId = options.RegistrationTemplatePlacementId,
+                    BlockId = options.BlockId,
+                    DisplayedAttributeIds = options.DisplayedRegistrantAttributeIds,
+                    RegistrationInstanceId = options.RegistrationInstanceId,
+                    RegistrationTemplateId = options.RegistrationTemplateId
+                };
+
+                groupPlacementRegistrants = registrantService.GetGroupPlacementRegistrants( getGroupPlacementRegistrantsParameters, currentPerson ).Where( a => a.AlreadyPlacedInGroup ).ToList();
+            }
+
+            var groupMemberList = groupMemberQuery.ToList();
+            var groupPlacementGroupMemberList = new List<GroupPlacementGroupMember>();
+            if ( options.DisplayRegistrantAttributes )
+            {
+                foreach ( var groupMember in groupMemberList )
+                {
+                    var registrantAttributes = groupPlacementRegistrants.Where( a => a.PersonId == groupMember.PersonId ).Select( a => a.Attributes ).FirstOrDefault();
+                    var registrantAttributeValues = groupPlacementRegistrants.Where( a => a.PersonId == groupMember.PersonId ).Select( a => a.AttributeValues ).FirstOrDefault();
+                    groupPlacementGroupMemberList.Add( new GroupPlacementGroupMember( groupMember, registrantAttributes, registrantAttributeValues, options ) );
+                }
+            }
+            else
+            {
+                groupPlacementGroupMemberList = groupMemberList
+                .Select( x => new GroupPlacementGroupMember( x, options ) )
+                .ToList();
+            }
+
+            return groupPlacementGroupMemberList;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GroupPlacementGroupMember
+    {
+        /// <summary>
+        /// Gets or sets the registration registrant.
+        /// </summary>
+        /// <value>
+        /// The registration registrant.
+        /// </value>
+        private RegistrationRegistrant RegistrationRegistrant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member.
+        /// </summary>
+        /// <value>
+        /// The group member.
+        /// </value>
+        private GroupMember GroupMember { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options.
+        /// </summary>
+        /// <value>
+        /// The options.
+        /// </value>
+        private GetGroupPlacementGroupMembersParameters Options { get; set; }
+
+        /// <summary>
+        /// Gets the group member identifier.
+        /// </summary>
+        /// <value>
+        /// The group member identifier.
+        /// </value>
+        public int Id => this.GroupMember.Id;
+
+        /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int PersonId => this.GroupMember.Person.Id;
+
+        /// <summary>
+        /// Gets the name of the person.
+        /// </summary>
+        /// <value>
+        /// The name of the person.
+        /// </value>
+        public string PersonName => this.GroupMember.Person.FullName;
+
+        /// <summary>
+        /// Gets the person gender.
+        /// </summary>
+        /// <value>
+        /// The person gender.
+        /// </value>
+        public Gender PersonGender => this.GroupMember.Person.Gender;
+
+
+        /// <summary>
+        /// Gets the group member attributes.
+        /// </summary>
+        /// <value>
+        /// The group member attributes.
+        /// </value>
+        public Dictionary<string, AttributeCache> GroupMemberAttributes
+        {
+            get
+            {
+                if ( !Options.DisplayedGroupMemberAttributeIds.Any() )
+                {
+                    // don't spend time loading attributes if there aren't any to be displayed
+                    return null;
+                }
+
+                if ( GroupMember.AttributeValues == null )
+                {
+                    GroupMember.LoadAttributes();
+                }
+
+                var displayedAttributeValues = GroupMember
+                        .Attributes.Where( a => Options.DisplayedGroupMemberAttributeIds.Contains( a.Value.Id ) )
+                        .ToDictionary( k => k.Key, v => v.Value );
+
+                return displayedAttributeValues;
+            }
+        }
+
+        /// <summary>
+        /// Gets the displayed group member attribute values.
+        /// </summary>
+        /// <value>
+        /// The displayed group member attribute values.
+        /// </value>
+        public Dictionary<string, AttributeValueCache> GroupMemberAttributeValues
+        {
+            get
+            {
+                if ( !Options.DisplayedGroupMemberAttributeIds.Any() )
+                {
+                    // don't spend time loading attributes if there aren't any to be displayed
+                    return null;
+                }
+
+                if ( GroupMember.AttributeValues == null )
+                {
+                    GroupMember.LoadAttributes();
+                }
+
+                var displayedAttributeValues = GroupMember
+                    .AttributeValues.Where( a => Options.DisplayedGroupMemberAttributeIds.Contains( a.Value.AttributeId ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+
+                return displayedAttributeValues;
+            }
+        }
+
+        /// <summary>
+        /// Gets the registrant attributes.
+        /// </summary>
+        /// <value>
+        /// The group member attributes.
+        /// </value>
+        public Dictionary<string, AttributeCache> RegistrantAttributes { get; set; }
+
+        /// <summary>
+        /// Gets the displayed group member attribute values.
+        /// </summary>
+        /// <value>
+        /// The displayed group member attribute values.
+        /// </value>
+        public Dictionary<string, AttributeValueCache> RegistrantAttributeValues { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant" /> class.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <param name="registrantAttributes">The registrant attributes.</param>
+        /// <param name="registrantAttributeValues">The registrant attribute values.</param>
+        /// <param name="options">The options.</param>
+        public GroupPlacementGroupMember( GroupMember groupMember, Dictionary<string, AttributeCache> registrantAttributes, Dictionary<string, AttributeValueCache> registrantAttributeValues, GetGroupPlacementGroupMembersParameters options )
+        {
+            this.RegistrantAttributes = registrantAttributes;
+            this.RegistrantAttributeValues = registrantAttributeValues;
+            this.GroupMember = groupMember;
+            this.Options = options;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant" /> class.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <param name="options">The options.</param>
+        public GroupPlacementGroupMember( GroupMember groupMember, GetGroupPlacementGroupMembersParameters options )
+        {
+            this.GroupMember = groupMember;
+            this.Options = options;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GetGroupPlacementGroupMembersParameters
+    {
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group role identifier.
+        /// </summary>
+        /// <value>
+        /// The group role identifier.
+        /// </value>
+        public int GroupRoleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template placement identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template placement identifier.
+        /// </value>
+        public int RegistrationTemplatePlacementId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the displayed attribute ids.
+        /// </summary>
+        /// <value>
+        /// The displayed attribute ids.
+        /// </value>
+        public int[] DisplayedGroupMemberAttributeIds { get; set; } = new int[0];
+
+        /// <summary>
+        /// Gets or sets the block identifier.
+        /// </summary>
+        /// <value>
+        /// The block identifier.
+        /// </value>
+        public int BlockId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [apply registrant filter].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [apply registrant filter]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ApplyRegistrantFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display registrant attributes].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display registrant attributes]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayRegistrantAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        public int RegistrationTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration instance identifier.
+        /// </summary>
+        /// <value>
+        /// The registration instance identifier.
+        /// </value>
+        public int? RegistrationInstanceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view filter identifier.
+        /// </summary>
+        /// <value>
+        /// The data view filter identifier.
+        /// </value>
+        public int? RegistrantPersonDataViewFilterId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the displayed registrant attribute ids.
+        /// </summary>
+        /// <value>
+        /// The displayed registrant attribute ids.
+        /// </value>
+        public int[] DisplayedRegistrantAttributeIds { get; set; } = new int[0];
+
+        /// <summary>
+        /// Gets or sets the filter fee identifier.
+        /// </summary>
+        /// <value>
+        /// The filter fee identifier.
+        /// </value>
+        public int? FilterFeeId { get; set; }
+
+        /// <summary>
+        /// Gets the filter fee option ids.
+        /// </summary>
+        /// <value>
+        /// The filter fee option ids.
+        /// </value>
+        public int[] FilterFeeOptionIds { get; set; } = new int[0];
     }
 
     #region Extension Methods

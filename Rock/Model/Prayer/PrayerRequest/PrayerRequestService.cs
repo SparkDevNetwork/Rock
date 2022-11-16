@@ -199,9 +199,14 @@ namespace Rock.Model
 
             // If we are not filtering by group, then exclude any group requests
             // unless the block setting including them is enabled.
-            if ( !(options.GroupGuids?.Any() ?? false ) && !options.IncludeGroupRequests )
+            if ( !( options.GroupGuids?.Any() ?? false ) && !options.IncludeGroupRequests )
             {
                 qryPrayerRequests = qryPrayerRequests.Where( a => !a.GroupId.HasValue );
+            }
+
+            if ( options.MinutesToFilter != 0 && options.CurrentPersonId != null )
+            {
+                qryPrayerRequests = qryPrayerRequests.FilterByRecentlyPrayedFor( ( RockContext ) Context, options.CurrentPersonId.Value, options.MinutesToFilter );
             }
 
             return qryPrayerRequests;
@@ -353,6 +358,102 @@ namespace Rock.Model
                 default:
                     return prayerRequests.ThenBy( a => a.PrayerCount );
             }
+        }
+
+        /// <summary>
+        /// Orders the collection of <see cref="PrayerRequest"/> by a defined
+        /// set of possible orders.
+        /// </summary>
+        /// <param name="prayerRequests">The prayer requests.</param>
+        /// <param name="order">The order.</param>
+        /// <returns>The collection in the requested order.</returns>
+        internal static IOrderedQueryable<PrayerRequest> ThenBy( this IOrderedQueryable<PrayerRequest> prayerRequests, PrayerRequestOrder order )
+        {
+            switch ( order )
+            {
+                case PrayerRequestOrder.Newest:
+                    return prayerRequests.ThenByDescending( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Oldest:
+                    return prayerRequests.ThenBy( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Random:
+                    return prayerRequests.ThenBy( a => Guid.NewGuid() );
+
+                case 0:
+                default:
+                    return prayerRequests.ThenBy( a => a.PrayerCount );
+            }
+        }
+
+        /// <summary>
+        /// Filters out recently prayed for objects by x minutes, based on the Interaction data of the current person.
+        /// </summary>
+        /// <param name="prayerRequests">The current list of prayer requests.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier of the currently logged in person.</param>
+        /// <param name="minutes">The number of minutes to use when determining which prayer requests to exclude.</param>
+        /// <returns>An enumeration of prayer requests that have not been prayed for in the last <paramref name="minutes"/>.</returns>
+        public static IQueryable<PrayerRequest> FilterByRecentlyPrayedFor( this IQueryable<PrayerRequest> prayerRequests, RockContext rockContext, int personId, int minutes )
+        {
+            if ( minutes == 0 )
+            {
+                return prayerRequests;
+            }
+
+            var interactionComponents = new InteractionComponentService( rockContext ).Queryable();
+            var interactionChannels = new InteractionChannelService( rockContext ).Queryable();
+            var interactions = new InteractionService( rockContext ).Queryable();
+            var aliases = new PersonAliasService( rockContext ).Queryable();
+
+            var prayerEventsGuid = SystemGuid.InteractionChannel.PRAYER_EVENTS.AsGuid();
+            var entityIdsToFilter = interactionComponents
+                .Join(
+                // Join our Interaction Channels.
+                interactionChannels,
+                    ic => ic.InteractionChannelId, // InteractionComponent.InteractionChannelId
+                    ich => ich.Id, // InteractionChannel.Id
+                    ( ic, ich ) => new
+                    {
+                        ich.Guid, // InteractionChannel.Guid
+                        ic.EntityId, // InteractionComponent.EntityId
+                        ic.Id // InteractionComponent.Id
+                    }
+                )
+                // Filter to prayer interaction channel by Guid.
+                .Where( a => a.Guid == prayerEventsGuid )
+                // Join our Interactions.
+                .Join( interactions,
+                    a => a.Id, // InteractionComponent.Id
+                    i => i.InteractionComponentId, // Interaction.InteractionComponentId
+                    ( a, i ) => new
+                    {
+                        a.EntityId, // InteractionComponent.EntityId
+                        i.Operation, // Interaction.Operation
+                        i.InteractionDateTime, // Interaction.InteractionDateTime
+                        i.PersonAliasId // Interaction.PersonAliasId
+                    }
+                )
+                // Join our PersonAliases.
+                .Join( aliases,
+                    a => a.PersonAliasId, // Interaction.PersonAliasId
+                    al => al.Id, // PersonAlias.Id
+                    ( a, al ) => new
+                    {
+                        a.EntityId, // InteractionComponent.EntityId
+                        a.Operation, // Interaction.Operation
+                        a.InteractionDateTime, // Interaction.InteractionDateTime
+                        al.PersonId // PersonAlias.PersonId
+                    }
+                )
+                // Where the request is this current person, the interaction date time is within our filtered minutes, and where the operation is Prayed.
+                .Where( a => a.PersonId == personId
+                    && a.InteractionDateTime >= System.Data.Entity.DbFunctions.AddMinutes( DateTime.Now, minutes * -1 )
+                    && a.Operation == "Prayed" )
+                .Select( a => a.EntityId );
+
+            // Filter the prayer requests entity Ids we found from our query out of the original passed in list.
+            return prayerRequests.Where( a => !entityIdsToFilter.Any( b => b == a.Id ) );
         }
     }
 }

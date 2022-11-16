@@ -200,6 +200,10 @@ export const enum DefinedType {
     Languages = "6060ba8b-4085-4a29-bf19-a4862b95556a",
     /** The apple device models */
     AppleDeviceModels = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
+    /** A person's race */
+    PersonRace = "A6E2518F-8DBB-4C60-BA17-05768EC68EA5",
+    /** A person's ethnicity */
+    PersonEthnicity = "79C8AA9A-507C-454B-AFC8-7A9464298A6E",
     /** The statement generator lava template (Legacy) */
     StatementGeneratorLavaTemplateLegacy = "74A23516-A20A-40C9-93B5-1AB5FDFF6750",
 }

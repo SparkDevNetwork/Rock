@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,7 +34,9 @@ using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Crm
 {
-    [DisplayName( "Person Update - Kiosk" )]
+    [DisplayName( "Person Update - Kiosk (deprecated)" )]
+    [RockObsolete( "1.15" )]
+    [Obsolete( "This block type has been deprecated." )]
     [Category( "CRM" )]
     [Description( "Block used to update a person's information from a kiosk." )]
 

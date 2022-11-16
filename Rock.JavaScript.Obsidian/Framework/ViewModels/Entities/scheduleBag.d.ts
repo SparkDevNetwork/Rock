@@ -25,6 +25,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Schedule View Model */
 export type ScheduleBag = {
+    /**
+     * Gets or sets the shortened name of the attribute.
+     * If null or whitespace then the full name is returned.
+     */
+    abbreviatedName?: string | null;
+
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a value indicating whether [auto inactivate when complete]. */
     autoInactivateWhenComplete: boolean;
 
@@ -43,6 +55,12 @@ export type ScheduleBag = {
      */
     checkInStartOffsetMinutes?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets a user defined Description of the Schedule. */
     description?: string | null;
 
@@ -55,8 +73,17 @@ export type ScheduleBag = {
     /** Gets or sets the content lines of the iCalendar */
     iCalendarContent?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this is an active schedule. This value is required. */
     isActive: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Name of the Schedule. This property is required. */
     name?: string | null;
@@ -70,25 +97,4 @@ export type ScheduleBag = {
 
     /** Gets or sets the weekly day of week. */
     weeklyDayOfWeek?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

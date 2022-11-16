@@ -181,9 +181,6 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
-            #pragma warning disable 612, 618
-            target.InviteSystemEmailId = source.InviteSystemEmailId;
-            #pragma warning restore 612, 618
             target.IsActive = source.IsActive;
             target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;

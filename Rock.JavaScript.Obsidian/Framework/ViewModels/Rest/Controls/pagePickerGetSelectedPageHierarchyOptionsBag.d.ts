@@ -29,14 +29,14 @@ import { Guid } from "@Obsidian/Types";
  */
 export type PagePickerGetSelectedPageHierarchyOptionsBag = {
     /**
-     * Gets or sets the list of unique identifier of the pages we're
-     * retrieving the the parent hierarchy of.
-     */
-    selectedPageGuids?: Guid[] | null;
-
-    /**
      * Gets or sets the security grant token to use when performing
      * authorization checks.
      */
     securityGrantToken?: string | null;
+
+    /**
+     * Gets or sets the list of unique identifier of the pages we're
+     * retrieving the the parent hierarchy of.
+     */
+    selectedPageGuids?: Guid[] | null;
 };

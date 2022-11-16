@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,9 +77,10 @@ namespace Rock.Search.Group
         {
             var groupQry = ( IQueryable<Model.Group> ) SearchQuery( searchterm );
 
+            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
             return GetSearchResults( searchterm )
                 .OrderBy( g => g.Name )
-                .Select( g => g.Name );
+                .Select( g => g.Campus == null ? g.Name : g.Name + "                                               <span class='search-accessory label label-default pull-right'>" + (g.Campus.ShortCode != "" ? g.Campus.ShortCode : g.Campus.Name) + "</span>" );
         }
     }
 }

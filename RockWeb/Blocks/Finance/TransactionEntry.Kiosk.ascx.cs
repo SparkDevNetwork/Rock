@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,7 +34,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DisplayName( "Transaction Entry - Kiosk" )]
+    [DisplayName( "Transaction Entry - Kiosk (deprecated)" )]
+    [RockObsolete( "1.15" )]
+    [Obsolete( "This block type has been deprecated." )]
     [Category( "Finance" )]
     [Description( "Block used to process giving from a kiosk." )]
 

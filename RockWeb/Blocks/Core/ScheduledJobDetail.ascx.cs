@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Administration
             {
                 try
                 {
-                    Type selectedJobType = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+                    Type selectedJobType = job.GetCompiledType();
                     tbName.Text = Rock.Reflection.GetDisplayName( selectedJobType );
                     tbDescription.Text = Rock.Reflection.GetDescription( selectedJobType );
                 }
@@ -301,8 +301,20 @@ namespace RockWeb.Blocks.Administration
             ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
             int? jobEntityTypeId = EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
+            var rockJobType = typeof( Rock.Jobs.RockJob );
 
-            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+            var rockJobs = Rock.Reflection.FindTypes( rockJobType ).Values;
+
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            var obsoleteQuartzJobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values.Where( a => !rockJobType.IsAssignableFrom( a ) );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            var jobs = rockJobs.ToList();
+            foreach(var obsoleteQuartzJob in obsoleteQuartzJobs)
+            {
+                jobs.Add( obsoleteQuartzJob, true );
+            }
 
             var rockContext = new RockContext();
             List<string> jobTypeErrors = new List<string>();

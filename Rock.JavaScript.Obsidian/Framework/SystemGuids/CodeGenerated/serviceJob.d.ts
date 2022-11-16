@@ -53,6 +53,10 @@ export const enum ServiceJob {
     DataMigrations140AddMissingMediaElementInteractions = "3E6817DA-CEE0-42F8-A30E-FF787719493C",
     /** The Job to run Post v14.0 Data Migrations to update current sessions */
     DataMigrations140UpdateCurrentSessions = "53A6804F-5895-4E19-907D-916B5CF175AB",
+    /** The Job to run Post v14.1 Data Migrations to update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime */
+    DataMigrations141UpdateCurrentSessions1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E",
+    /** The Job to run Post v14.1 Data Migrations to add some missing indexes */
+    DataMigrations141AddMissingIndexes = "B1970CD1-1DDD-46FC-B259-6D151D53374D",
     /** The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId. */
     DataMigrations140CreateFkIndexes = "D96BD1F7-6A4A-4DC0-B10D-40031F709573",
     /** The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields. */
@@ -84,4 +88,6 @@ export const enum ServiceJob {
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
+    /** The Rock.Jobs.ProcessReminders job. */
+    ProcessReminders = "3F697C80-4C33-4552-9038-D3470445EA40",
 }

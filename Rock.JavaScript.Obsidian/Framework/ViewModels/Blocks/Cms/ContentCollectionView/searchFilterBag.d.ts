@@ -29,11 +29,11 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * individual for them to limit the results that will be returned.
  */
 export type SearchFilterBag = {
-    /** Gets or sets the label to identify the search filter. */
-    label?: string | null;
-
     /** Gets or sets the control type to use when rendering the filter. */
     control: ContentCollectionFilterControl;
+
+    /** Gets or sets the markup to display above the filter control. */
+    headerMarkup?: string | null;
 
     /**
      * Gets or sets a value indicating whether this filter supports
@@ -44,6 +44,6 @@ export type SearchFilterBag = {
     /** Gets or sets the items to allow the individual to pick from. */
     items?: ListItemBag[] | null;
 
-    /** Gets or sets the markup to display above the filter control. */
-    headerMarkup?: string | null;
+    /** Gets or sets the label to identify the search filter. */
+    label?: string | null;
 };

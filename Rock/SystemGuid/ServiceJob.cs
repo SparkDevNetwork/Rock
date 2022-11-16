@@ -99,6 +99,21 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS = "53A6804F-5895-4E19-907D-916B5CF175AB";
 
         /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to add some missing indexes
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_ADD_MISSING_INDEXES = "B1970CD1-1DDD-46FC-B259-6D151D53374D";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update the ValueAs___ columns after migration.
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS = "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";
@@ -170,5 +185,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersonalizationData" /> job.
         /// </summary>
         public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.ProcessReminders"/> job.
+        /// </summary>
+        public const string PROCESS_REMINDERS = "3F697C80-4C33-4552-9038-D3470445EA40";
     }
 }

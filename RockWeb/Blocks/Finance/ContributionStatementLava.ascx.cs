@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Finance
             qry = qry.OrderBy( t => t.Transaction.TransactionDateTime );
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Person", targetPerson);
+            mergeFields.Add( "Person", targetPerson );
             mergeFields.Add( "StatementStartDate", "1/1/" + statementYear.ToString() );
             if ( statementYear == RockDateTime.Now.Year )
             {

@@ -1193,6 +1193,57 @@
 		</placementGroup>
 	  </placementGroups>
     </registrationTemplate>
+    <registrationTemplate name="Big Student Event" guid="2379DC00-1F88-4F17-8C39-C04BDE078AAD"
+            categoryGuid="568530FB-1B92-4FB7-9974-CCA169E51782" allowMultipleRegistrants="true" groupTypeGuid="8400497B-C52F-40AE-A529-3FCCB9587101"
+            allowGroupPlacement="false" waitListEnabled = "true" maxRegistrants="5" registrantsInSameFamily="Ask"
+            setCostOn="instance" allowExternalUpdatesToSavedRegistrations="true" feeTerm="Additional Options"
+            addPersonNote="true" loginRequired="false" financialGateway="Test Redirection Gateway" notify="Group Followers"
+            paymentReminderTimeSpan="14" registrationTerm="Registration" registrantTerm="Registrant" cost="200" minInitialPayment="0"
+            discountCodeTerm="Discount Code" RegistrarOption="PromptForRegistrar" showCurrentFamilyMembers="true">
+
+          <forms>
+              <form name="First Form" guid="DDD61CA9-1C9A-4E09-AA08-848B2E7BF51D">
+                  <formFields>
+                      <field name="First Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
+                      <field name="Last Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
+                      <field name="Email" source="Person Field" showOnGrid="true" showOnWaitList="false"></field>
+                  </formFields>
+              </form>
+              <form name="Second Form" guid="2481C884-BED4-4A96-9962-3F7F9057B88B">
+                  <formFields>
+                      <field name="Ability Level" source="Person Attribute" attributeGuid="4abf0bf2-49ba-4363-9d85-ac48a0f7e92a" guid="BE88DCDB-3B4E-4370-915A-40EED064944E" type="Ability Level" isCommon="false" isRequired="false" isInternal="false" showOnGrid="false" showOnWaitList="true" showCurrentValue="true" preText="" postText=""></field>
+                      <field name="Show Common Text Value" source="Registrant Attribute" guid="1A9E6821-F911-4199-BCAC-FBF249681B60" type="Boolean" isCommon="false" isRequired="false" isInternal="false" showOnGrid="false" showOnWaitList="true" showCurrentValue="false" preText="" postText=""></field>
+                      <field name="Common Text Value" source="Registrant Attribute" guid="82DB83F8-41AC-485E-AE3B-DAF0FB4CC5B3" type="Text" isCommon="true" isRequired="false" isInternal="false" showOnGrid="false" showOnWaitList="true" showCurrentValue="false" preText="" postText=""></field>
+                  </formFields>
+              </form>
+          </forms>
+
+          <registrationAttributes>
+              <registrationAttribute name="What is your goal for this event?" guid="5C78C8A7-D937-49BD-A302-0241F32E61B4" categoryGuids="27808664-97E7-432B-A1E7-D02F6DE5977A" type="Text"></registrationAttribute>
+              <registrationAttribute name="What event would you like to see next year?" guid="18304842-52AC-4BB0-8E51-7F1CE2778E72" categoryGuids="4648196E-CEB8-4D76-8F27-273EBBC35A08" type="Text"></registrationAttribute>
+          </registrationAttributes>
+
+          <fees>
+              <fee name="Single Fee" type="single" cost="5" isActive="true" enableQuantity="true" isRequired="false" discountApplies="false"></fee>
+              <fee name="Multiple Fees" type="multiple" cost="" isActive="true" enableQuantity="false" discountApplies="false">
+                  <option name="Small" cost="10.00"></option>
+                  <option name="Medium" cost="10.00"></option>
+                  <option name="Large" cost="10.00"></option>
+                  <option name="X-Large" cost="10.00"></option>
+              </fee>
+              <fee name="Quantity Fee" type="single" cost="5" isActive="true" enableQuantity="true" isRequired="false" discountApplies="false"></fee>
+              <fee name="Discounted Fee" type="single" cost="5" isActive="true" discountApplies="true" isRequired="false" enableQuantity="false"></fee>
+              <fee name="Required Fee" type="single" cost="5" isActive="true" isRequired="true" discountApplies="false" enableQuantity="false"></fee>
+              <fee name="Hide When None Remaining Fee" type="single" cost="5" isActive="true" hideWhenNoneRemaining="true" discountApplies="false" enableQuantity="false"></fee>
+              <fee name="Inactive Fee" type="single" cost="5" isActive="false" discountApplies="false" enableQuantity="false"></fee>
+          </fees>
+
+          <discounts>
+              <discount code="HALFOFF" type="Percentage" value="50" maxRegistrants="" maxUsage="2" minRegistrants="2"></discount>
+              <discount code="FIVEOFF" type="Amount" value="5" maxRegistrants="1" maxUsage="" minRegistrants=""></discount>
+          </discounts>
+
+      </registrationTemplate>
   </registrationTemplates>
 
   <registrationInstances>
@@ -1307,4 +1358,12 @@
       </members>
     </group>
   </securityRoles>
+
+  <financialGateways>
+    <financialGateway entityTypeName="Rock.Financial.TestRedirectionGateway"
+     name="Test Redirection Gateway"
+     guid="1053E89B-EF9C-41C9-88B8-2C575E115BA3"
+     isActive="true">
+    </financialGateway>
+  </financialGateways>
 </data>

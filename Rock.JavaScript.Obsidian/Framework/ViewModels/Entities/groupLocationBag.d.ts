@@ -25,6 +25,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupLocation View Model */
 export type GroupLocationBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Id of the Rock.Model.Group that is associated with this GroupLocation. This property is required. */
     groupId: number;
 
@@ -39,6 +51,9 @@ export type GroupLocationBag = {
      * member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
      */
     groupMemberPersonAliasId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /**
      * Gets or sets a flag indicating if the Rock.Model.Location referenced by this GroupLocation is the mailing address/location for the Rock.Model.Group.  
@@ -55,30 +70,15 @@ export type GroupLocationBag = {
     /** Gets or sets the Id of the Rock.Model.Location that is associated with this GroupLocation. This property is required. */
     locationId: number;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /**
      * Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the 
      * display priority this GroupLocation has. This property is required.
      */
     order: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

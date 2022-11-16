@@ -172,6 +172,14 @@ namespace Rock.ViewModels.Entities
         public int PersonEntryEmailEntryOption { get; set; }
 
         /// <summary>
+        /// Gets or sets the person entry ethnicity entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        public int PersonEntryEthnicityEntryOption { get; set; }
+
+        /// <summary>
         /// Gets or sets the person entry family attribute unique identifier. (The one used to set the Added/Edited Person's Family to)
         /// </summary>
         /// <value>
@@ -242,6 +250,14 @@ namespace Rock.ViewModels.Entities
         /// The person entry preHTML.
         /// </value>
         public string PersonEntryPreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person entry race entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        public int PersonEntryRaceEntryOption { get; set; }
 
         /// <summary>
         /// Gets or sets the person entry record status value identifier.

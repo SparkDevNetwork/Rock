@@ -23,7 +23,9 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -53,14 +55,22 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
     public partial class RegistrationDetail : RockBlock
     {
+        #region ViewState Keys
+
+        private static class ViewStateKey
+        {
+            public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
+        }
+
+        #endregion ViewState Keys
+
         #region Fields
 
         private Registration Registration = null;
 
-        // The URL for the Step-2 Iframe Url
-        protected string Step2IFrameUrl { get; set; }
+        private Control _hostedPaymentInfoControl;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -165,24 +175,44 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        private IHostedGatewayComponent _financialGatewayComponent = null;
+
         /// <summary>
-        /// Gets or sets a value indicating whether [using three-step gateway].
+        /// Gets the financial gateway component that is configured for this block
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [using three-step gateway]; otherwise, <c>false</c>.
-        /// </value>
-        protected bool Using3StepGateway
+        private IHostedGatewayComponent FinancialGatewayComponent
         {
             get
             {
-                FinancialGateway financialGateway = this.FinancialGateway;
-
-                if ( financialGateway != null )
+                if ( _financialGatewayComponent == null )
                 {
-                    return financialGateway.GetGatewayComponent() is IThreeStepGatewayComponent;
+                    var financialGateway = FinancialGateway;
+                    if ( financialGateway != null )
+                    {
+                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                    }
                 }
 
-                return false;
+                return _financialGatewayComponent;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the host payment information submit JavaScript.
+        /// </summary>
+        /// <value>
+        /// The host payment information submit script.
+        /// </value>
+        protected string HostPaymentInfoSubmitScript
+        {
+            get
+            {
+                return ViewState[ViewStateKey.HostPaymentInfoSubmitScript] as string;
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.HostPaymentInfoSubmitScript] = value;
             }
         }
 
@@ -208,7 +238,8 @@ namespace RockWeb.Blocks.Event
         private RegistrationTemplate _registrationTemplate = null;
 
         private List<RegistrantInfo> RegistrantsState { get; set; }
-        #endregion
+
+        #endregion Properties
 
         #region Control Methods
 
@@ -263,6 +294,8 @@ namespace RockWeb.Blocks.Event
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
+
+            InitializeFinancialGatewayControls();
         }
 
         /// <summary>
@@ -313,7 +346,7 @@ namespace RockWeb.Blocks.Event
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Edit Events
 
@@ -624,7 +657,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Edit Events
 
         #region Registration Detail Events
 
@@ -884,6 +917,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        #endregion Registration Detail Events
+
+        #region Payment Buttons Events
+
         protected void lbAddPayment_Click( object sender, EventArgs e )
         {
             if ( Registration != null )
@@ -915,62 +952,35 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbProcessPayment_Click( object sender, EventArgs e )
         {
-            if ( Registration != null && Registration.PersonAliasId.HasValue && this.RegistrationTemplate != null && this.RegistrationTemplate.FinancialGateway != null )
+            if ( Registration == null || Registration.PersonAliasId == null || this.RegistrationTemplate == null || this.RegistrationTemplate.FinancialGateway == null )
             {
-                var component = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent();
-                if ( component != null )
-                {
-                    txtCardFirstName.Visible = component.SplitNameOnCard;
-                    txtCardLastName.Visible = component.SplitNameOnCard;
-                    txtCardName.Visible = !component.SplitNameOnCard;
-                    mypExpiration.MinimumYear = RockDateTime.Now.Year;
-
-                    cbPaymentAmount.Value = Registration.BalanceDue;
-
-                    txtCreditCard.Text = string.Empty;
-                    mypExpiration.SelectedDate = null;
-                    txtCVV.Text = string.Empty;
-
-                    if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
-                    {
-                        var person = Registration.PersonAlias.Person;
-
-                        ppPayee.SetValue( person );
-                        txtCardFirstName.Text = person.FirstName;
-                        txtCardLastName.Text = person.LastName;
-                        txtCardName.Text = person.FullName;
-
-                        var location = person.GetHomeLocation();
-                        acBillingAddress.SetValues( location );
-                    }
-                    else
-                    {
-                        ppPayee.SetValue( null );
-                        txtCardFirstName.Text = string.Empty;
-                        txtCardLastName.Text = string.Empty;
-                        txtCardName.Text = string.Empty;
-                        acBillingAddress.SetValues( null );
-                    }
-
-                    SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentProcess );
-
-                    var threeStepGateway = component as IThreeStepGatewayComponent;
-                    bool using3StepGateway = threeStepGateway != null;
-                    phCCDetails.Visible = !using3StepGateway;
-                    if ( using3StepGateway )
-                    {
-                        phCCDetails.Visible = false;
-                        lbSubmitPayment.Text = "Next";
-                    }
-                    else
-                    {
-                        phCCDetails.Visible = true;
-                        lbSubmitPayment.Text = "Submit";
-                    }
-
-                    return;
-                }
+                return;
             }
+
+            var iHostedGatewayComponent = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+            if ( iHostedGatewayComponent == null )
+            {
+                return;
+            }
+
+            cbPaymentAmount.Value = Registration.BalanceDue;
+
+            if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+            {
+                var person = Registration.PersonAlias.Person;
+
+                ppPayee.SetValue( person );
+
+                var location = person.GetHomeLocation();
+                acBillingAddress.SetValues( location );
+            }
+            else
+            {
+                ppPayee.SetValue( null );
+                acBillingAddress.SetValues( null );
+            }
+
+            SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentProcess );
         }
 
         protected void lbSubmitPayment_Click( object sender, EventArgs e )
@@ -999,27 +1009,22 @@ namespace RockWeb.Blocks.Event
                     rockContext.WrapTransaction( () =>
                     {
                         string errorMessage = string.Empty;
+
                         if ( !ProcessPayment( !phManualDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
                         {
                             throw new Exception( errorMessage );
                         }
                     } );
 
-                    if ( lbSubmitPayment.Text == "Submit" )
-                    {
-                        // reload registration
-                        Registration = GetRegistration( Registration.Id, rockContext );
+                    // reload registration
+                    Registration = GetRegistration( Registration.Id, rockContext );
 
-                        RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
 
-                        ShowReadonlyDetails( Registration );
+                    ShowReadonlyDetails( Registration );
 
-                        SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentList );
-                    }
-                    else
-                    {
-                        SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentCardDetails );
-                    }
+                    SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentList );
+
                 }
                 catch ( Exception ex )
                 {
@@ -1045,51 +1050,7 @@ namespace RockWeb.Blocks.Event
             SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentList );
         }
 
-        protected void lbStep2Return_Click( object sender, EventArgs e )
-        {
-            int? personAliasId = ppPayee.PersonAliasId;
-
-            decimal pmtAmount = cbPaymentAmount.Value == null ? 0 : cbPaymentAmount.Value.Value;
-            if ( Registration != null )
-            {
-                if ( !personAliasId.HasValue && Registration.PersonAliasId.HasValue )
-                {
-                    personAliasId = Registration.PersonAliasId;
-                }
-            }
-
-            try
-            {
-                var rockContext = new RockContext();
-                rockContext.WrapTransaction( () =>
-                {
-                    string errorMessage = string.Empty;
-                    if ( !ProcessStep3( hfStep2ReturnQueryString.Value, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
-                    {
-                        throw new Exception( errorMessage );
-                    }
-                } );
-
-                // reload registration
-                Registration = GetRegistration( Registration.Id, rockContext );
-
-                RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
-
-                ShowReadonlyDetails( Registration );
-
-                SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentList );
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-
-                nbPaymentError.Heading = "Error Processing Payment";
-                nbPaymentError.Text = ex.Message;
-                nbPaymentError.Visible = true;
-            }
-        }
-
-        #endregion
+        #endregion Payment Buttons Events
 
         #region Registrant Events
 
@@ -1334,7 +1295,7 @@ namespace RockWeb.Blocks.Event
             NavigateToLinkedPage( "RegistrantPage", "RegistrantId", 0, "RegistrationId", RegistrationId );
         }
 
-        #endregion
+        #endregion Registrant Events
 
         #region Payment Details Events
 
@@ -1360,9 +1321,7 @@ namespace RockWeb.Blocks.Event
             dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
-        #endregion
-
-        #region Methods
+        #endregion Payment Details Events
 
         #region Load/Save Methods
 
@@ -1448,7 +1407,7 @@ namespace RockWeb.Blocks.Event
             return null;
         }
 
-        #endregion
+        #endregion Load/Save Methods
 
         #region Display Methods
 
@@ -1749,14 +1708,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
-            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
-
-            string script = @"
-    // Detect credit card type
-    $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-";
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registration-detail-card-info", script, true );
-
             string deleteScript = @"
 
     $('a.js-delete-registration').on('click', function( e ){
@@ -1777,41 +1728,47 @@ namespace RockWeb.Blocks.Event
     });
 ";
             ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteRegistrationScript", deleteScript, true );
+        }
 
-            // hfStep2Url.ClientID      {0}
-            // txtCreditCard.ClientID   {1}
-            // mypExpiration.ClientID   {2}
-            // txtCVV.ClientID          {3}
-            string submitScript = string.Format(
-@"
-    if ( $('#{0}').val() != '' ) {{
-        $('#{1}').val('');
-        $('#{2}_monthDropDownList').val('');
-        $('#{2}_yearDropDownList_').val('');
-        $('#{3}').val('');
-    }}
-",
-                hfStep2Url.ClientID,
-                txtCreditCard.ClientID,
-                mypExpiration.ClientID,
-                txtCVV.ClientID );
+        #endregion Display Methods
 
-            ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+        #region Payment / Hosted Gateway
 
-            if ( Using3StepGateway )
+        private void InitializeFinancialGatewayControls()
+        {
+            bool enableACH = false;
+            bool enableCreditCard = true;
+            if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                bool usingNMIThreeStep = this.FinancialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
-                if ( usingNMIThreeStep )
-                {
-                    var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, string.Empty ) );
-                    ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
-                }
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
+                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+            }
+
+            if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
+            {
+                ( _hostedPaymentInfoControl as IHostedGatewayPaymentControlTokenEvent ).TokenReceived += _hostedPaymentInfoControl_TokenReceived;
             }
         }
 
-        #endregion
-
-        #region Payment
+        /// <summary>
+        /// Handles the TokenReceived event of the _hostedPaymentInfoControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
+        {
+            if ( !e.IsValid )
+            {
+                nbPaymentTokenError.Text = e.ErrorMessage;
+                nbPaymentTokenError.Visible = true;
+            }
+            else
+            {
+                nbPaymentTokenError.Visible = false;
+                lbSubmitPayment_Click( sender, e );
+            }
+        }
 
         /// <summary>
         /// Processes the payment.
@@ -1825,16 +1782,14 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
-            FinancialTransaction transaction = null;
-
             var registrationChanges = new History.HistoryChangeList();
 
             if ( submitToGateway )
             {
-                GatewayComponent gateway = null;
+                IHostedGatewayComponent gateway = null;
                 if ( this.RegistrationTemplate != null && this.RegistrationTemplate.FinancialGateway != null )
                 {
-                    gateway = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+                    gateway = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
                 }
 
                 if ( gateway == null )
@@ -1843,31 +1798,14 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
-                var threeStepGateway = gateway as IThreeStepGatewayComponent;
-
                 if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
                 {
                     errorMessage = "There was a problem with the account configuration for this registration.";
                     return false;
                 }
 
-                if ( threeStepGateway == null
-                     && mypExpiration.SelectedDate == null )
-                {
-                    errorMessage = "An Expiration Date is required.";
-                    return false;
-                }
-
-                var paymentInfo = threeStepGateway != null ? new CreditCardPaymentInfo() : new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
-                paymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
-                paymentInfo.LastNameOnCard = txtCardLastName.Text;
-
-                paymentInfo.BillingStreet1 = acBillingAddress.Street1;
-                paymentInfo.BillingStreet2 = acBillingAddress.Street2;
-                paymentInfo.BillingCity = acBillingAddress.City;
-                paymentInfo.BillingState = acBillingAddress.State;
-                paymentInfo.BillingPostalCode = acBillingAddress.PostalCode;
-                paymentInfo.BillingCountry = acBillingAddress.Country;
+                var paymentInfo = new ReferencePaymentInfo();
+                paymentInfo.UpdateAddressFieldsFromAddressControl( acBillingAddress );
 
                 paymentInfo.Amount = amount;
                 paymentInfo.Email = registration.ConfirmationEmail;
@@ -1880,30 +1818,29 @@ namespace RockWeb.Blocks.Event
                 var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
                 paymentInfo.TransactionTypeValueId = txnType.Id;
 
-                if ( threeStepGateway == null )
+                gateway.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                var customerToken = gateway.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
-                    transaction = ProcessTransaction( gateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage );
-                    if ( transaction == null )
-                    {
-                        return false;
-                    }
+                    nbPaymentError.Text = errorMessage ?? "Unknown Error";
+                    nbPaymentError.Visible = true;
+                    return false;
                 }
-                else
+
+                paymentInfo.GatewayPersonIdentifier = customerToken;
+
+                var gatewayTransaction = ProcessTransaction( gateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage );
+                if ( gatewayTransaction == null )
                 {
-                    if ( !ProcessStep1( threeStepGateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage ) )
-                    {
-                        return false;
-                    }
+                    return false;
                 }
+
+                SaveTransaction( rockContext, registration, gatewayTransaction, personAliasId, amount );
             }
             else
             {
-                transaction = ProcessManualTransaction( amount, registrationChanges );
-            }
-
-            if ( transaction != null )
-            {
-                SaveTransaction( rockContext, registration, transaction, personAliasId, amount );
+                var manualTransaction = ProcessManualTransaction( amount, registrationChanges );
+                SaveTransaction( rockContext, registration, manualTransaction, personAliasId, amount );
             }
 
             if ( registrationChanges.Any() )
@@ -1920,7 +1857,7 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
-        private FinancialTransaction ProcessTransaction( GatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
+        private FinancialTransaction ProcessTransaction( IHostedGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             var transaction = gateway.Charge( this.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
             if ( transaction != null )
@@ -1931,99 +1868,12 @@ namespace RockWeb.Blocks.Event
                     transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                 }
 
-                transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+                transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway as GatewayComponent, rockContext );
 
                 registrationChanges.AddChange( History.HistoryVerb.Process, History.HistoryChangeType.Record, string.Format( "Payment of {0}.", amount.FormatAsCurrency() ) );
             }
 
             return transaction;
-        }
-
-        private bool ProcessStep1( IThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
-        {
-            paymentInfo.IPAddress = GetClientIpAddress();
-            paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
-
-            string result = gateway.ChargeStep1( this.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
-            if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
-            {
-                Step2IFrameUrl = ResolveRockUrl( gateway.Step2FormUrl );
-                hfStep2Url.Value = result;
-            }
-
-            return string.IsNullOrWhiteSpace( errorMessage );
-        }
-
-        private bool ProcessStep3( string resultQueryString, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
-        {
-            IThreeStepGatewayComponent gateway = null;
-            if ( this.RegistrationTemplate != null && this.RegistrationTemplate.FinancialGateway != null )
-            {
-                gateway = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
-            }
-
-            if ( gateway == null )
-            {
-                errorMessage = "There was a problem creating the payment gateway information";
-                return false;
-            }
-
-            // Set this again in case an error occurred.
-            Step2IFrameUrl = ResolveRockUrl( gateway.Step2FormUrl );
-
-            if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
-            {
-                errorMessage = "There was a problem with the account configuration for this registration.";
-                return false;
-            }
-
-            PaymentInfo paymentInfo = new CreditCardPaymentInfo();
-            if ( paymentInfo == null )
-            {
-                errorMessage = "There was a problem creating the payment information";
-                return false;
-            }
-
-            paymentInfo.FirstName = registration.FirstName;
-            paymentInfo.LastName = registration.LastName;
-            paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
-
-            var transaction = gateway.ChargeStep3( this.RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
-            if ( transaction == null )
-            {
-                string realMessage = errorMessage;
-
-                paymentInfo.Amount = amount;
-                paymentInfo.Email = registration.ConfirmationEmail;
-                paymentInfo.FirstName = registration.FirstName;
-                paymentInfo.LastName = registration.LastName;
-                paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
-                paymentInfo.IPAddress = GetClientIpAddress();
-                paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
-
-                string result = gateway.ChargeStep1( this.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
-                if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
-                {
-                    hfStep2Url.Value = result;
-                }
-
-                errorMessage = realMessage;
-                return false;
-            }
-
-            SaveTransaction( rockContext, registration, transaction, personAliasId, amount );
-
-            var registrationChanges = new History.HistoryChangeList();
-            registrationChanges.AddChange( History.HistoryVerb.Process, History.HistoryChangeType.Record, string.Format( "payment of {0}.", amount.FormatAsCurrency() ) );
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( Registration ),
-                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                registration.Id,
-                registrationChanges );
-
-            errorMessage = string.Empty;
-            return true;
         }
 
         private FinancialTransaction ProcessManualTransaction( decimal amount, History.HistoryChangeList registrationChanges )
@@ -2041,104 +1891,102 @@ namespace RockWeb.Blocks.Event
 
         private bool SaveTransaction( RockContext rockContext, Registration registration, FinancialTransaction transaction, int? personAliasId, decimal amount )
         {
-            if ( transaction != null )
-            {
-                transaction.Summary = tbComments.Text;
-                transaction.AuthorizedPersonAliasId = personAliasId;
-                transaction.TransactionDateTime = RockDateTime.Now;
-
-                var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-                transaction.TransactionTypeValueId = txnType.Id;
-
-                Guid sourceGuid = Guid.Empty;
-                if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
-                {
-                    var source = DefinedValueCache.Get( sourceGuid );
-                    if ( source != null )
-                    {
-                        transaction.SourceTypeValueId = source.Id;
-                    }
-                }
-
-                var transactionDetail = new FinancialTransactionDetail();
-                transactionDetail.Amount = amount;
-                transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
-                transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-                transactionDetail.EntityId = registration.Id;
-                transaction.TransactionDetails.Add( transactionDetail );
-
-                var batchService = new FinancialBatchService( rockContext );
-
-                // determine batch prefix
-                string batchPrefix = string.Empty;
-                if ( !string.IsNullOrWhiteSpace( this.RegistrationTemplate.BatchNamePrefix ) )
-                {
-                    batchPrefix = this.RegistrationTemplate.BatchNamePrefix;
-                }
-                else
-                {
-                    batchPrefix = GetAttributeValue( "BatchNamePrefix" );
-                }
-
-                DefinedValueCache dvCurrencyType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue ) ?
-                    DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) : null;
-                DefinedValueCache dvCredCardType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue ) ?
-                    DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value ) : null;
-
-                // Get the batch
-                var batch = batchService.Get(
-                    batchPrefix,
-                    dvCurrencyType,
-                    dvCredCardType,
-                    transaction.TransactionDateTime.Value,
-                    this.RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
-
-                var batchChanges = new History.HistoryChangeList();
-
-                if ( batch.Id == 0 )
-                {
-                    batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                }
-
-                decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-
-                // If this is a new Batch, SaveChanges so that we can get the Batch.Id
-                if ( batch.Id == 0 )
-                {
-                    rockContext.SaveChanges();
-                }
-
-                transaction.BatchId = batch.Id;
-
-                // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
-                financialTransactionService.Add( transaction );
-
-                rockContext.SaveChanges();
-
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( FinancialBatch ),
-                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                    batch.Id,
-                    batchChanges );
-
-                return true;
-            }
-            else
+            if ( transaction == null )
             {
                 return false;
             }
+
+            transaction.Summary = tbComments.Text;
+            transaction.AuthorizedPersonAliasId = personAliasId;
+            transaction.TransactionDateTime = RockDateTime.Now;
+
+            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+            transaction.TransactionTypeValueId = txnType.Id;
+
+            Guid sourceGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            {
+                var source = DefinedValueCache.Get( sourceGuid );
+                if ( source != null )
+                {
+                    transaction.SourceTypeValueId = source.Id;
+                }
+            }
+
+            var transactionDetail = new FinancialTransactionDetail();
+            transactionDetail.Amount = amount;
+            transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
+            transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+            transactionDetail.EntityId = registration.Id;
+            transaction.TransactionDetails.Add( transactionDetail );
+
+            var batchService = new FinancialBatchService( rockContext );
+
+            // determine batch prefix
+            string batchPrefix = string.Empty;
+            if ( !string.IsNullOrWhiteSpace( this.RegistrationTemplate.BatchNamePrefix ) )
+            {
+                batchPrefix = this.RegistrationTemplate.BatchNamePrefix;
+            }
+            else
+            {
+                batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+            }
+
+            DefinedValueCache dvCurrencyType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue ) ?
+                DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) : null;
+            DefinedValueCache dvCredCardType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue ) ?
+                DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value ) : null;
+
+            // Get the batch
+            var batch = batchService.Get(
+                batchPrefix,
+                dvCurrencyType,
+                dvCredCardType,
+                transaction.TransactionDateTime.Value,
+                this.RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+
+            var batchChanges = new History.HistoryChangeList();
+
+            if ( batch.Id == 0 )
+            {
+                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+            }
+
+            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+            batch.ControlAmount = newControlAmount;
+
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0 )
+            {
+                rockContext.SaveChanges();
+            }
+
+            transaction.BatchId = batch.Id;
+
+            // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+            financialTransactionService.Add( transaction );
+
+            rockContext.SaveChanges();
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                batch.Id,
+                batchChanges );
+
+            return true;
         }
 
-        #endregion
+        #endregion Payment
 
         #region Payment Details
 
@@ -2238,7 +2086,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Payment Details
 
         #region Registration Detail Methods
 
@@ -2278,7 +2126,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Registration Detail Methods
 
         #region Dynamic Controls
 
@@ -2415,7 +2263,15 @@ namespace RockWeb.Blocks.Event
                 EditAllowed )
             {
                 lbAddPayment.Visible = true;
+
                 lbProcessPayment.Visible = this.RegistrationTemplate.FinancialGateway != null;
+                var isHostedGateway = this.FinancialGatewayComponent?.GetSupportedHostedGatewayModes( this.RegistrationTemplate.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) ?? false;
+                if ( !isHostedGateway )
+                {
+                    lbProcessPayment.Enabled = false;
+                    lbProcessPaymentButtonTooltipWrapper.Attributes["title"] = "The payment gateway used by this event's registration template does not support making payments here.";
+                }
+
                 nbNoAssociatedPerson.Visible = false;
             }
             else
@@ -2915,9 +2771,7 @@ namespace RockWeb.Blocks.Event
             pnlPaymentInfo.Visible = false;
             phPaymentAmount.Visible = false;
             phManualDetails.Visible = false;
-            phCCDetails.Visible = false;
-            aStep2Submit.Visible = false;
-            lbSubmitPayment.Visible = false;
+            pnlCCDetails.Visible = false;
 
             switch ( tab )
             {
@@ -2938,21 +2792,13 @@ namespace RockWeb.Blocks.Event
                     pnlPaymentInfo.Visible = true;
                     phPaymentAmount.Visible = true;
                     phManualDetails.Visible = true;
-                    lbSubmitPayment.Visible = true;
-                    break;
-
-                case RegistrationDetailAccountPanelSpecifier.PaymentCardDetails:
-                    ShowTabPayments( true );
-                    pnlPaymentInfo.Visible = true;
-                    phCCDetails.Visible = true;
-                    aStep2Submit.Visible = true;
                     break;
 
                 case RegistrationDetailAccountPanelSpecifier.PaymentProcess:
                     ShowTabPayments( true );
                     pnlPaymentInfo.Visible = true;
                     phPaymentAmount.Visible = true;
-                    lbSubmitPayment.Visible = true;
+                    pnlCCDetails.Visible = true;
                     break;
 
                 default:
@@ -3008,9 +2854,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
-
-        #endregion
+        #endregion Dynamic Controls
 
         #region Support Classes and Enumerations
 
@@ -3020,10 +2864,9 @@ namespace RockWeb.Blocks.Event
             FeeList,
             PaymentList,
             PaymentManualDetails,
-            PaymentCardDetails,
             PaymentProcess
         }
 
-        #endregion
+        #endregion Support Classes and Enumerations
     }
 }

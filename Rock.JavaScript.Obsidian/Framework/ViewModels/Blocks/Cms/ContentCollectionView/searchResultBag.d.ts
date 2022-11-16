@@ -30,4 +30,7 @@ import { SearchResultSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCo
 export type SearchResultBag = {
     /** Gets or sets the sources that results have been generated for. */
     resultSources?: SearchResultSourceBag[] | null;
+
+    /** Gets or sets the total number of matching results found in the index. */
+    totalResultCount: number;
 };

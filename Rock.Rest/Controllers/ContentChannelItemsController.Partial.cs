@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,6 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;

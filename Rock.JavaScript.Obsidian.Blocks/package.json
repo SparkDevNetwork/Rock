@@ -5,7 +5,7 @@
     "build-fast": "node build/build-fast.js",
     "build": "ts-node ../Rock.JavaScript.Obsidian/Build/obsidian-tsc.ts . && rollup --config rollup.config.js && npm run copy && echo '' > dist/.buildstamp && echo DONE",
     "copy": "copyfiles -u 2 \"dist/BlocksBundled/**/*\" \"../RockWeb/Obsidian/Blocks\"",
-    "watch": "echo \"Watch mode does not currently work.\" && exit 1 && rollup --config rollup.config.js --watch",
+    "watch": "watch \"npm run build\" .\\src\\ --wait=1 --interval=1",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts src",
     "test": "jest"
@@ -31,7 +31,9 @@
     "ts-node": "^10.4.0",
     "ttypescript": "^1.5.13",
     "typescript": "4.5.5",
-    "vue": "3.2.35"
+    "vue": "3.2.35",
+    "vue-eslint-parser": "^9.1.0",
+    "watch": "^1.0.2"
   },
   "optionalDependencies": {
     "fsevents": "^2.3.2"

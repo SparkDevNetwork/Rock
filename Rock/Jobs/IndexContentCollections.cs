@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Data;
@@ -46,8 +44,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
-    public class IndexContentCollections : IJob
+    public class IndexContentCollections : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -68,20 +65,16 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            var maxConcurrency = dataMap.GetString( AttributeKey.MaxConcurrency ).AsIntegerOrNull() ?? 10;
+            var maxConcurrency = GetAttributeValue( AttributeKey.MaxConcurrency ).AsIntegerOrNull() ?? 10;
 
             var processDocumentIndexTask = Task.Run( async () => await GenerateDocumentIndexAsync( maxConcurrency ) );
             processDocumentIndexTask.Wait();
             var documentCount = processDocumentIndexTask.Result;
 
-            context.Result = $"Indexed {documentCount:N0} {"document".PluralizeIf( documentCount != 1 )}.";
+            this.Result = $"Indexed {documentCount:N0} {"document".PluralizeIf( documentCount != 1 )}.";
         }
 
         /// <summary>

@@ -87,7 +87,10 @@ namespace Rock.Migrations.RockStartup
 				SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_ADD_MISSING_INDEXES.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
@@ -103,7 +106,7 @@ namespace Rock.Migrations.RockStartup
                      try
                      {
                          var job = jobService.Get( runOnceJobId );
-                         jobService.RunNow( job, out _ );
+                         jobService.RunNow( job );
                      }
                      catch ( Exception ex )
                      {

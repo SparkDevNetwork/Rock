@@ -25,6 +25,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupLocationHistorical View Model */
 export type GroupLocationHistoricalBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /**
      * Gets or sets a value indicating whether [current row indicator].
      * This will be True if this represents the same values as the current tracked record for this
@@ -57,6 +69,9 @@ export type GroupLocationHistoricalBag = {
     /** Gets or sets the group location type value identifier for this group location at this point in history */
     groupLocationTypeValueId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Rock.Model.Location id of this group's location at this point in history */
     locationId: number;
 
@@ -66,24 +81,9 @@ export type GroupLocationHistoricalBag = {
     /** Gets or sets the Rock.Model.Location name of this group's location at this point in history (Group.GroupLocation.Location.ToString()) */
     locationName?: string | null;
 
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 };

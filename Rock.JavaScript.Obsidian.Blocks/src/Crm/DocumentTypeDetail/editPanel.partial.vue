@@ -53,12 +53,12 @@
         <div class="row">
             <div class="col-sm-12 text-right">
                 <RockButton v-if="!showAdvanced"
-                            :btnType="BtnType.Link"
+                            :btnType="link"
                             @click="onShowAdvanced(true)">
                     Show Advanced Settings
                 </RockButton>
                 <RockButton v-if="showAdvanced"
-                            :btnType="BtnType.Link"
+                            :btnType="link"
                             @click="onShowAdvanced(false)">
                     Hide Advanced Settings
                 </RockButton>
@@ -101,7 +101,7 @@
     import NumberBox from "@Obsidian/Controls/numberBox";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";

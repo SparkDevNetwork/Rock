@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,6 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="DateTime"/> this instance was created on the provider.
         /// </value>
+        [DataMember]
         public DateTime? SourceCreatedDateTime { get; set; }
 
         /// <summary>
@@ -87,6 +88,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="DateTime"/> this instance was modified on the provider.
         /// </value>
+        [DataMember]
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>

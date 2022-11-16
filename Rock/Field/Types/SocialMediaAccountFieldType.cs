@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -43,6 +44,115 @@ namespace Rock.Field.Types
         private const string TEXT_TEMPLATE = "texttemplate";
         private const string BASEURL = "baseurl";
         private const string BASEURL_ALIASES = "baseurlaliases";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                if ( privateConfigurationValues != null )
+                {
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    string template = string.Empty;
+
+                    if ( privateConfigurationValues.ContainsKey( TEXT_TEMPLATE ) )
+                    {
+                        template = privateConfigurationValues[TEXT_TEMPLATE];
+                    }
+                    if ( string.IsNullOrWhiteSpace( template ) )
+                    {
+                        // If an output template is not specified, use a default.
+                        template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
+                    }
+                    if ( privateConfigurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
+                    {
+
+                        string iconCssClass = privateConfigurationValues[ICONCSSCLASS_KEY];
+                        if ( !iconCssClass.Contains( "fa-fw" ) )
+                        {
+                            iconCssClass = iconCssClass + " fa-fw";
+                        }
+                        mergeFields.Add( ICONCSSCLASS_KEY, iconCssClass );
+                    }
+
+                    if ( privateConfigurationValues.ContainsKey( COLOR_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[COLOR_KEY] ) )
+                    {
+                        mergeFields.Add( COLOR_KEY, privateConfigurationValues[COLOR_KEY] );
+                    }
+
+                    if ( privateConfigurationValues.ContainsKey( BASEURL ) && !string.IsNullOrEmpty( privateConfigurationValues[BASEURL] ) )
+                    {
+                        mergeFields.Add( BASEURL, privateConfigurationValues[BASEURL] );
+                    }
+
+                    if ( privateConfigurationValues.ContainsKey( NAME_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[NAME_KEY] ) )
+                    {
+                        mergeFields.Add( NAME_KEY, privateConfigurationValues[NAME_KEY] );
+                    }
+
+                    mergeFields.Add( "value", privateValue );
+
+                    return template.ResolveMergeFields( mergeFields );
+                }
+
+                return privateValue;
+            }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Lava could cause a different result with each render
+            return false;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region FilterControl
+
+        /// <summary>
+        /// Determines whether [has filter control].
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.EqualOrBlankFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -193,10 +303,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -209,79 +315,6 @@ namespace Rock.Field.Types
         {
             return GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return string.Empty;
-            }
-            else
-            {
-                if ( privateConfigurationValues != null )
-                {
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                    string template = string.Empty;
-
-                    if ( privateConfigurationValues.ContainsKey( TEXT_TEMPLATE ) )
-                    {
-                        template = privateConfigurationValues[TEXT_TEMPLATE];
-                    }
-                    if ( string.IsNullOrWhiteSpace( template ) )
-                    {
-                        // If an output template is not specified, use a default.
-                        template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
-                    }
-                    if ( privateConfigurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
-                    {
-
-                        string iconCssClass = privateConfigurationValues[ICONCSSCLASS_KEY];
-                        if ( !iconCssClass.Contains( "fa-fw" ) )
-                        {
-                            iconCssClass = iconCssClass + " fa-fw";
-                        }
-                        mergeFields.Add( ICONCSSCLASS_KEY, iconCssClass );
-                    }
-
-                    if ( privateConfigurationValues.ContainsKey( COLOR_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[COLOR_KEY] ) )
-                    {
-                        mergeFields.Add( COLOR_KEY, privateConfigurationValues[COLOR_KEY] );
-                    }
-
-                    if ( privateConfigurationValues.ContainsKey( BASEURL ) && !string.IsNullOrEmpty( privateConfigurationValues[BASEURL] ) )
-                    {
-                        mergeFields.Add( BASEURL, privateConfigurationValues[BASEURL] );
-                    }
-
-                    if ( privateConfigurationValues.ContainsKey( NAME_KEY ) && !string.IsNullOrEmpty( privateConfigurationValues[NAME_KEY] ) )
-                    {
-                        mergeFields.Add( NAME_KEY, privateConfigurationValues[NAME_KEY] );
-                    }
-
-                    mergeFields.Add( "value", privateValue );
-
-                    return template.ResolveMergeFields( mergeFields );
-                }
-
-                return privateValue;
-            }
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Lava could cause a different result with each render
-            return false;
-        }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -344,10 +377,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region FilterControl
-
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -371,15 +400,6 @@ namespace Rock.Field.Types
             {
                 return base.FilterCompareControl( configurationValues, id, required, filterMode );
             }
-        }
-
-        /// <summary>
-        /// Determines whether [has filter control].
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
         }
 
         /// <summary>
@@ -430,21 +450,7 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.EqualOrBlankFilterComparisonTypes;
-            }
-        }
-
+#endif
         #endregion
-
     }
 }

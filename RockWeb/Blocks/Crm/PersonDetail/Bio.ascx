@@ -57,8 +57,10 @@
             <div class="card-section">
                 <dl class="reversed-label">
                     <asp:Literal ID="lGender" runat="server" />
+                    <asp:Literal ID="lRaceAndEthnicity" runat="server" />
                     <asp:Literal ID="lAge" runat="server" />
                     <asp:Literal ID="lMaritalStatus" runat="server" />
+                    <asp:Literal ID="lGrade" runat="server" />
                     <asp:Literal ID="lGraduation" runat="server" />
                 </dl>
             </div>

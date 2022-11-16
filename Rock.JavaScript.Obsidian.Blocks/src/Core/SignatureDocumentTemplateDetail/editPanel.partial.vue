@@ -52,7 +52,7 @@
 
         </div>
 
-        <RockButton :btnType="BtnType.Link"
+        <RockButton :btnType="link"
                     @click="onTemplateTipsClick">
             Template Tips
         </RockButton>
@@ -137,7 +137,7 @@
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-    import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import Toggle from "@Obsidian/Controls/toggle";
     import CodeEditor from "@Obsidian/Controls/codeEditor";

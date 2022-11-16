@@ -447,12 +447,21 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses( RockContext rockContext )
         {
+            /*
+                9/26/2022 - CWR
+                The logic for the group requirement status:
+                #1) If the Requirement has a Met DateTime or was manually completed or was overridden, then the MeetsGroupRequirement status is "Meets".
+                #2) If not that, then if the Requirement has a Warning DateTime, its status is "Meets With Warning".
+                #3) If neither #1 or #2, then the status is considered "Not Met".
+
+                Without this order, a Group Member Requirement that was once set as "Meets with Warning" with a DateTime could prevent the status from ever being set as "Met".
+             */
+
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
                 GroupRequirementId = a.GroupRequirement.Id,
-                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden
-                    ? a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
-                    : MeetsGroupRequirement.NotMet,
+                MeetsGroupRequirement = ( a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden )
+                    ? MeetsGroupRequirement.Meets : a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet,
                 a.RequirementWarningDateTime,
                 a.LastRequirementCheckDateTime,
                 GroupMemberRequirementId = a.Id
@@ -464,16 +473,26 @@ namespace Rock.Model
             // If the requirement's Applies To Age Classification is not "All", filter the query to the corresponding Age Classification.
             allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToAgeClassification == AppliesToAgeClassification.All || ( int ) a.AppliesToAgeClassification == ( int ) this.Person.AgeClassification ).ToList();
 
-            //allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToDataViewId == null || 
-            //if ( this.AppliesToDataViewId.HasValue )
-            //{
-            //    // If the Group Requirement has a Data View it applies to, apply it here.
-            //    var appliesToDataViewPersonService = new PersonService( rockContext );
-            //    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
-            //    var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
-            //    var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
-            //    personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
-            //}
+            var requirementsWithDataviewIds = allGroupRequirements.Where( a => a.AppliesToDataViewId != null );
+            if ( requirementsWithDataviewIds.Any() )
+            {
+                List<int> requirementToRemoveIds = new List<int>();
+                foreach ( var requirement in requirementsWithDataviewIds )
+                {
+                    var appliesToDataViewPersonService = new PersonService( rockContext );
+                    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+                    var appliesToDataViewWhereExpression = requirement.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+                    var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
+                    if ( !appliesToDataViewPersonIds.Contains( this.PersonId ) )
+                    {
+                        requirementToRemoveIds.Add( requirement.Id );
+                    }
+                };
+                if ( requirementToRemoveIds.Any() )
+                {
+                    allGroupRequirements.RemoveAll( r => requirementToRemoveIds.Contains( r.Id ) );
+                }
+            }
 
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements

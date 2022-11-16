@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,19 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
-using System.Data.Entity;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -346,6 +344,11 @@ namespace RockWeb.Blocks.Communication
                     Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
                     if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
                     {
+                        var category = CategoryCache.Get( categoryGuid.Value );
+                        if ( !category.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        {
+                            continue;
+                        }
                         viewableCommunicationLists.Add( communicationList );
                     }
                 }

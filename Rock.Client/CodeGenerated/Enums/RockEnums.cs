@@ -764,9 +764,6 @@ namespace Rock.Client.Enums
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
-
-        [Obsolete( "Use RegistrantAttribute instead", true )]
-        RegistrationAttribute = 0x4,
     }
 
     /// <summary>
@@ -800,6 +797,16 @@ namespace Rock.Client.Enums
         ConnectionStatus = 0xc,
         MiddleName = 0xd,
         AnniversaryDate = 0xe,
+        Race = 0xf,
+        Ethnicity = 0x10,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ReminderNotificationType
+    {
+        Communication = 0x0,
+        Workflow = 0x1,
     }
 
     /// <summary>
@@ -1099,41 +1106,21 @@ namespace Rock.Client.Enums.Cms
 
 }
 
-namespace Rock.Client.Enums.Reporting
-{
-    /// <summary>
-    /// </summary>
-    public enum FieldFilterSourceType
-    {
-        Attribute = 0x0,
-    }
-
-}
-
-namespace Rock.Client.Enums.Event
-{
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperienceApprovalStatus
-    {
-        Pending = 0x0,
-        Approved = 0x1,
-        Rejected = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperiencePushNotificationType
-    {
-        Never = 0x0,
-        EveryAction = 0x1,
-        SpecificActions = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Controls
 {
+    /// <summary>
+    /// </summary>
+    public enum DayOfWeek
+    {
+        Sunday = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x3,
+        Thursday = 0x4,
+        Friday = 0x5,
+        Saturday = 0x6,
+    }
+
     /// <summary>
     /// </summary>
     public enum MergeTemplateOwnership
@@ -1166,6 +1153,39 @@ namespace Rock.Client.Enums.Controls
         Week = 0x2,
         Month = 0x3,
         Year = 0x4,
+    }
+
+}
+
+namespace Rock.Client.Enums.Reporting
+{
+    /// <summary>
+    /// </summary>
+    public enum FieldFilterSourceType
+    {
+        Attribute = 0x0,
+    }
+
+}
+
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
     }
 
 }

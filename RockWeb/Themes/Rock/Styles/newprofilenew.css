@@ -167,45 +167,6 @@
   white-space: nowrap;
 }
 
-/* TODO RENAME and or Remove */
-.family-member {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 33.33333333%;
-  padding: 0 12px;
-  margin-bottom: 12px;
-  font-size: 13px;
-  line-height: 16px;
-  text-align: center;
-}
-.family-member .photo-link {
-  position: relative;
-  width: 100%;
-  padding-bottom: 100%;
-  border-radius: 8px;
-}
-.family-member .photo-link > * {
-  border-radius: inherit;
-}
-.family-member .photo-link .photo-shadow {
-  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
-}
-.family-member .photo-link:hover .photo-shadow {
-  background: rgba(0, 0, 0, 0.05);
-}
-.family-member .name-link {
-  min-height: 30px;
-  margin-top: 4px;
-  color: #343A40;
-}
-.family-member .name-link .name {
-  font-weight: 600;
-}
-.family-member .name-link .person-age {
-  color: #6c757d;
-}
-
 .btn-phone {
   position: relative;
   display: flex;
@@ -265,30 +226,4 @@
   margin-bottom: 4px;
   border-radius: 4px;
 }
-.protection-profile {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 1010;
-  display: flex;
-  justify-content: space-between;
-  padding: 6px;
-  color: #d4442e;
-  text-align: right;
-  border-top: 3px solid #d4442e;
-  transition: background 0.2s ease-in-out;
-}
-.protection-profile .profile-label {
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-.protection-profile:hover {
-  background: #fcf2f1;
-}
-.protection-profile:hover .profile-label {
-  opacity: 1;
-}
+

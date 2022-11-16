@@ -407,6 +407,22 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The name of the signature document template.
         /// </value>
         public string SignatureDocumentTemplateName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the races available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The races available for the user to select.
+        /// </value>
+        public List<ListItemBag> Races { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ethnicities available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The ethnicities available for the user to select.
+        /// </value>
+        public List<ListItemBag> Ethnicities { get; set; }
     }
 
     /// <summary>
@@ -661,20 +677,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public Guid ComparedToRegistrationTemplateFormFieldGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the comparison.
+        /// Gets or sets the comparison value for this field.
         /// </summary>
-        /// <value>
-        /// The type of the comparison.
-        /// </value>
-        public int ComparisonType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the compared to value.
-        /// </summary>
-        /// <value>
-        /// The compared to value.
-        /// </value>
-        public string ComparedToValue { get; set; }
+        /// <value>The comparison value for this field.</value>
+        public PublicComparisonValueBag ComparisonValue { get; set; }
     }
 
     /// <summary>

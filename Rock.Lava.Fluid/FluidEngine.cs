@@ -632,25 +632,22 @@ namespace Rock.Lava.Fluid
                 encoder = NullEncoder.Default;
             }
 
-            var writer = new StringWriter( sb );
-
-            try
+            using ( var writer = new StringWriter( sb ) )
             {
-                template.Render( templateContext.FluidContext, encoder, writer );
+                try
+                {
+                    template.Render( templateContext.FluidContext, encoder, writer );
 
-                writer.Flush();
-                result.Text = sb.ToString();
+                    writer.Flush();
+                    result.Text = sb.ToString();
 
-            }
-            catch ( LavaInterruptException )
-            {
-                // The render was terminated intentionally, so return the current buffer content.
-                writer.Flush();
-                result.Text = sb.ToString();
-            }
-            finally
-            {
-                writer.Dispose();
+                }
+                catch ( LavaInterruptException )
+                {
+                    // The render was terminated intentionally, so return the current buffer content.
+                    writer.Flush();
+                    result.Text = sb.ToString();
+                }
             }
 
             return result;
@@ -728,11 +725,9 @@ namespace Rock.Lava.Fluid
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
-            string liquidTemplate;
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out _ );
 
-            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out liquidTemplate );
-
-            var newTemplate = new FluidTemplateProxy( fluidTemplate );
+            var newTemplate = new FluidTemplateProxy( fluidTemplate, lavaTemplate );
 
             return newTemplate;
         }

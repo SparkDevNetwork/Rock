@@ -32,6 +32,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * required to build the filter UI.
  */
 export type FieldFilterSourceBag = {
+    /** Gets or sets the attribute if the source type is Attribute. */
+    attribute?: PublicAttributeBag | null;
+
     /** Gets or sets the unique identifier of this source item. */
     guid?: Guid | null;
 
@@ -40,7 +43,4 @@ export type FieldFilterSourceBag = {
      * other properties are valid for inspection.
      */
     type: FieldFilterSourceType;
-
-    /** Gets or sets the attribute if the source type is Attribute. */
-    attribute?: PublicAttributeBag | null;
 };

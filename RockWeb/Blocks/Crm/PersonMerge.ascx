@@ -51,6 +51,7 @@
                         Heading="Conflicting Attribute Values:"
                         Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+                    <Rock:NotificationBox ID="nbGroupMemberAttributeConflict" Heading="Conflicting Group Member Attribute Values:" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <div class="grid">
                         <Rock:Grid ID="gValues" TableStriped="false" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />

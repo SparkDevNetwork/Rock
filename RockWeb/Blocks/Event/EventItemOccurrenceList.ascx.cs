@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -482,6 +482,8 @@ namespace RockWeb.Blocks.Event
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
+                    (  a.EntityTypeQualifierColumn == null || a.EntityTypeQualifierColumn == string.Empty  || a.EntityTypeQualifierColumn.Equals( "EventItemId", StringComparison.OrdinalIgnoreCase ) ) &&
+                    ( a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == string.Empty || a.EntityTypeQualifierValue == _eventItem.Id.ToString() ) &&
                     a.IsGridColumn
                    )
                 .OrderBy( a => a.Order )

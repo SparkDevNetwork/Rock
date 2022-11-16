@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** InteractionComponent View Model */
 export type InteractionComponentBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the channel custom 1. */
     channelCustom1?: string | null;
 
@@ -40,12 +46,18 @@ export type InteractionComponentBag = {
     /** Gets or sets the component summary. */
     componentSummary?: string | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /**
      * Gets or sets the Id of the entity that this interaction component is related to (determined by Rock.Model.InteractionChannel.ComponentEntityTypeId )
      * 
      * 
      *     <term>Page Views</term>
-     *     <description><see cref="T:Rock.Model.Site" /> Id</description>
+     *     <description><see cref="T:Rock.Model.Page" /> Id</description>
      * 
      *     <term>Communication Recipient Activity</term>
      *     <description><see cref="T:Rock.Model.Communication" /> Id</description>
@@ -58,30 +70,18 @@ export type InteractionComponentBag = {
      */
     entityId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Id of the Rock.Model.InteractionChannel channel that is associated with this Component. */
     interactionChannelId: number;
-
-    /** Gets or sets the interaction component name. */
-    name?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
 
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the interaction component name. */
+    name?: string | null;
 };

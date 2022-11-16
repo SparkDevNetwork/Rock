@@ -1009,6 +1009,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
                     FormFieldId = formAttribute.AttributeId,
+                    FormType = FieldVisibilityWrapper.FormTypes.Workflow,
                     FieldVisibilityRules = formAttribute.FieldVisibilityRules
                 };
 
@@ -1444,6 +1445,12 @@ namespace RockWeb.Blocks.WorkFlow
 
             // we have a another MaritalStatus picker that will apply to both Person and Person's Spouse
             personBasicEditor.ShowMaritalStatus = false;
+
+            personBasicEditor.ShowRace = formPersonEntrySettings.RaceEntry != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireRace = formPersonEntrySettings.RaceEntry == WorkflowActionFormPersonEntryOption.Required;
+
+            personBasicEditor.ShowEthnicity = formPersonEntrySettings.EthnicityEntry != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireEthnicity = formPersonEntrySettings.EthnicityEntry == WorkflowActionFormPersonEntryOption.Required;
         }
 
         /// <summary>
@@ -1532,6 +1539,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                personEntryPerson.RaceValueId = formPersonEntrySettings.RaceValueId;
+                personEntryPerson.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1566,6 +1575,8 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                    personEntryPersonSpouse.RaceValueId = formPersonEntrySettings.RaceValueId;
+                    personEntryPersonSpouse.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 

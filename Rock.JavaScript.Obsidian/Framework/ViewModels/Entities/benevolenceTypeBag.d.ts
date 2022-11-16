@@ -28,11 +28,32 @@ export type BenevolenceTypeBag = {
     /** Gets or sets the additional settings json. */
     additionalSettingsJson?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Rock.Model.BenevolenceType.Description value on the Rock.Model.BenevolenceType. This property is required. */
     description?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Rock.Model.BenevolenceType.IsActive value on the Rock.Model.BenevolenceType. This property is required. */
     isActive: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Rock.Model.BenevolenceType.Name value on the Rock.Model.BenevolenceType. This property is required. */
     name?: string | null;
@@ -42,25 +63,4 @@ export type BenevolenceTypeBag = {
 
     /** Gets or sets a value indicating whether [show financial results]. */
     showFinancialResults: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -115,7 +115,20 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
+            var name = type.Name.Split( '`' )[0];
+
+            // If the type name is all CAPS then just convert the whole thing
+            // to lowercase. Otherwise convert to camelCase.
+            if ( name.All( c => char.IsUpper( c ) ) )
+            {
+                name = name.ToLower();
+            }
+            else
+            {
+                name = name.CamelCase();
+            }
+
+            return $"{name}.d.ts";
         }
 
         /// <summary>
@@ -129,6 +142,59 @@ namespace Rock.CodeGeneration.Pages
                 .Where( t => t.IsExporting )
                 .Select( t => t.Type )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Performs post-processing of any exported files.
+        /// </summary>
+        /// <param name="files">The files that were listed to be possibly exported.</param>
+        /// <param name="context">The context to provide status information back.</param>
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> files, GeneratedFilePreviewPage.PostSaveContext context )
+        {
+            var createdFiles = files.Where( f => f.SaveState == GeneratedFileSaveState.Created ).ToList();
+
+            if ( !createdFiles.Any() )
+            {
+                return;
+            }
+
+            var solutionPath = SupportTools.GetSolutionPath();
+            var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
+
+            if ( solutionFileName == null )
+            {
+                context.ShowMessage( "Cannot update projects", "Could not determine the solution path to update the project files." );
+                return;
+            }
+
+            try
+            {
+                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+                {
+                    // Loop through each created file and make sure it exists in
+                    // the appropriate project file.
+                    for ( int i = 0; i < createdFiles.Count; i++ )
+                    {
+                        var file = createdFiles[i];
+                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        {
+                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+
+                            solution.AddCompileFileToProject( projectName, filename );
+                        }
+
+                        context.SetProgress( i + 1, createdFiles.Count );
+                    }
+
+                    solution.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                context.ShowMessage( "Failed to update projects", $"Unable to add one or more files to projects. Please check to make sure everything has been added.\n{ex.Message}" );
+            }
         }
 
         #endregion
@@ -197,7 +263,12 @@ namespace Rock.CodeGeneration.Pages
                     }
                 } );
 
-                await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+                var previewPage = new GeneratedFilePreviewPage( files )
+                {
+                    PostSaveAction = ProcessPostSaveFiles
+                };
+
+                await this.Navigation().PushPageAsync( previewPage );
             }
             finally
             {

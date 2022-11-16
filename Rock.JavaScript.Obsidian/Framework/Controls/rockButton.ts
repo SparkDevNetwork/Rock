@@ -16,23 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref } from "vue";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
-
-export enum BtnType {
-    Default = "default",
-    Primary = "primary",
-    Danger = "danger",
-    Warning = "warning",
-    Success = "success",
-    Info = "info",
-    Link = "link"
-}
-
-export enum BtnSize {
-    Default = "",
-    ExtraSmall = "xs",
-    Small = "sm",
-    Large = "lg"
-}
+import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
 
 export default defineComponent({
     name: "RockButton",

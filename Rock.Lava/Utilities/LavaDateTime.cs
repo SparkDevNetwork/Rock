@@ -149,10 +149,15 @@ namespace Rock.Lava
 
         private static DateTimeOffset NewDateTimeOffset( int year, int month, int day, int hour, int minute, int second, TimeSpan? offset )
         {
-            offset = offset ?? RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
+            // Get the correct offset for the timezone, which will be date dependent if the timezone supports Daylight Saving Time (DST).
+            if ( offset == null )
+            {
+                var dateTime = new DateTime( year, month, day, hour, minute, second, DateTimeKind.Unspecified );
+                offset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dateTime );
+            }
 
+            // Automatically correct leap-year dates if they are invalid.
             DateTimeOffset dateTimeOffset;
-
             if ( !DateTime.IsLeapYear( year ) && month == 2 && day == 29 )
             {
                 dateTimeOffset = new DateTimeOffset( year, 2, 28, hour, minute, second, offset.Value );
@@ -205,10 +210,20 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTime ConvertToRockDateTime( DateTime dateTime )
         {
-            var rockDateTime = TimeZoneInfo.ConvertTime( dateTime, RockDateTime.OrgTimeZoneInfo );
+            DateTime rockDateTime;
 
-            // Return the Rock datetime with a kind of Unspecified, because it does not necessarily correspond to local system time.
-            rockDateTime = DateTime.SpecifyKind( rockDateTime, DateTimeKind.Unspecified );
+            if ( dateTime.Kind == DateTimeKind.Utc || dateTime.Kind == DateTimeKind.Local )
+            {
+                rockDateTime = TimeZoneInfo.ConvertTime( dateTime, RockDateTime.OrgTimeZoneInfo );
+
+                // Return the Rock datetime with a kind of Unspecified, because it does not necessarily correspond to local system time.
+                rockDateTime = DateTime.SpecifyKind( rockDateTime, DateTimeKind.Unspecified );
+            }
+            else
+            {
+                // Assume an Unspecified Date Kind refers to the Rock timezone.
+                rockDateTime = dateTime;
+            }
 
             return rockDateTime;
         }
@@ -282,30 +297,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTime? ParseToUtc( string input, DateTime? defaultValue = null )
         {
-            DateTimeOffset dto;
-
-            var isValid = DateTimeOffset.TryParse( input, out dto );
-
-            if ( !isValid )
+            var dtoParsed = ParseToOffset( input, defaultValue );
+            if ( dtoParsed == null )
             {
                 return defaultValue;
             }
 
-            DateTime? dt;
-
-            if ( dto.Offset == TimeZoneInfo.Local.BaseUtcOffset )
-            {
-                // If the offset for the parsed datetime is the same as the local system time, assume no timezone was specified.
-                // In that case, return a datetime for the Rock timezone, expressed in UTC.
-                dt = NewUtcDateTime( dto.Year, dto.Month, dto.Day, dto.Hour, dto.Minute, dto.Second );
-            }
-            else
-            {
-                // The parsed datetime has an offset that is different from the Rock timezone.
-                dt = ConvertToRockDateTime( dto );
-            }
-
-            return dt;
+            return dtoParsed.Value.UtcDateTime;
         }
 
         /// <summary>
