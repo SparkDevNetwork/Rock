@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -172,6 +172,7 @@ namespace Rock.Workflow.Action
             if ( recipients.Any() )
             {
                 var emailMessage = new RockEmailMessage( GetAttributeValue( action, "SystemEmail" ).AsGuid() );
+                emailMessage.AdditionalMergeFields = mergeFields;
                 emailMessage.SetRecipients( recipients );
                 emailMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
                 emailMessage.Send();
