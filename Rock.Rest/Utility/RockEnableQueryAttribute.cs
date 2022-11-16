@@ -206,41 +206,20 @@ namespace Rock.Rest
             return updatedUrl;
         }
 
-        // Derived from https://github.com/OData/odata.net/blob/7dcad74478debcfe54e93c63f47b7cb57f2d2e67/src/PlatformHelper.cs#L325-L346
-        private static string ToODataV4DateTimeOffsetFormat( string dateTimeText )
+        private static string ToODataV4DateTimeOffsetFormat( string dateTimeString )
         {
-
-            // The XML DateTime pattern is described here: http://www.w3.org/TR/xmlschema-2/#dateTime
-            // If timezone is specified, the indicator will always be at the same place from the end of the string, so we can look there for the Z or +/-.
-            //
-            // UTC timezone, for example: "2012-12-21T15:01:23.1234567Z"
-            if ( dateTimeText.Length > 1 && ( dateTimeText[dateTimeText.Length - 1] == 'Z' || dateTimeText[dateTimeText.Length - 1] == 'z' ) )
+            if ( dateTimeString.IsNullOrWhiteSpace() )
             {
-                return dateTimeText;
+                return dateTimeString;
             }
 
-            // Timezone offset from UTC, for example: "2012-12-21T15:01:23.1234567-08:00" or "2012-12-21T15:01:23.1234567+08:00"
-            const int timeZoneSignOffset = 6;
-            if ( dateTimeText.Length > timeZoneSignOffset && ( dateTimeText[dateTimeText.Length - timeZoneSignOffset] == '-' || dateTimeText[dateTimeText.Length - timeZoneSignOffset] == '+' ) )
+            if ( DateTimeOffset.TryParse( dateTimeString, out DateTimeOffset dateTimeOffset ) )
             {
-                return dateTimeText;
+                return dateTimeOffset.ToString( "o" );
             }
 
-            // No timezone specified, for example: "2012-12-21T15:01:23.1234567", so add the RockDateTime timezone offset
-            var baseUtcOffset = RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
-            string offsetSuffix;
-            if ( baseUtcOffset.Hours >= 0 )
-            {
-                // if there is a positive offset, prefix with '+'
-                offsetSuffix = $"+{baseUtcOffset.Hours:00}:{baseUtcOffset.Minutes:00}";
-            }
-            else
-            {
-                // if there is a negative offset, the '-' will be included already
-                offsetSuffix = $"{baseUtcOffset.Hours:00}:{baseUtcOffset.Minutes:00}";
-            }
+            return dateTimeString;
 
-            return dateTimeText + offsetSuffix;
         }
 
         private static string ParseMatch( string updatedUrl, Match match, bool parseAsDateTimeOffset = false )
