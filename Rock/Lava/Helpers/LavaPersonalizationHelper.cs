@@ -84,8 +84,10 @@ namespace Rock.Lava
         /// <summary>
         /// Sets the personalization segments for the current context.
         /// </summary>
-        /// <param name="person"></param>
+        /// <param name="segmentIdList">The list of personaliation segment identifiers to be set on the context.</param>
+        /// <param name="lavaContext">The current lava context that is handling rendering.</param>
         /// <param name="httpContext"></param>
+        /// <param name="person"></param>
         /// <returns></returns>
         public static void SetPersonalizationSegmentsForContext( List<int> segmentIdList, ILavaRenderContext lavaContext, HttpContext httpContext, Person person )
         {

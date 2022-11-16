@@ -17,7 +17,6 @@ namespace Rock.Tests.Integration.TestData
             private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
             private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
             private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-            private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
 
             /// <summary>
             /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.

@@ -423,7 +423,6 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
         private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
         private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
         private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-        private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
 
         private static void InitializeTestData()
         {
