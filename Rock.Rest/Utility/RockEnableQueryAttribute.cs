@@ -17,7 +17,6 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 
 using Microsoft.AspNet.OData;
@@ -90,9 +89,9 @@ namespace Rock.Rest
         /// <returns>ODataQueryOptions.</returns>
         private ODataQueryOptions EnsureV4ODataQueryOptions( ODataQueryOptions queryOptions )
         {
-            if ( RequestUriHasObsoleteV3Syntax( queryOptions ) )
+            if ( RequestUriHasObsoleteV3Filters( queryOptions ) )
             {
-                return ConvertOData3SyntaxToODataV4( queryOptions );
+                return ConvertOData3FiltersToODataV4( queryOptions );
             }
             else
             {
@@ -101,44 +100,21 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Return true if the Request has OData V3 Syntax that were made obsolete in V4
+        /// Return true if the Request has OData V3 filters that were made obsolete in V4
         /// </summary>
         /// <param name="queryOptions">The query options.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        private bool RequestUriHasObsoleteV3Syntax( ODataQueryOptions queryOptions )
+        private bool RequestUriHasObsoleteV3Filters( ODataQueryOptions queryOptions )
         {
-            var rawFilter = queryOptions?.Filter?.RawValue ?? string.Empty;
-            var selectExpandRawExpand = queryOptions?.SelectExpand?.RawExpand ?? string.Empty;
-            var selectExpandRawSelect = queryOptions?.SelectExpand?.RawSelect ?? string.Empty;
-            if ( rawFilter.IsNullOrWhiteSpace() && selectExpandRawExpand.IsNullOrWhiteSpace() && selectExpandRawSelect.IsNullOrWhiteSpace() )
+            var rawFilter = queryOptions?.Filter?.RawValue;
+            if ( rawFilter.IsNullOrWhiteSpace() )
             {
                 return false;
             }
 
-            bool isV3FilterSyntax;
-            if ( rawFilter.IsNotNullOrWhiteSpace() )
-            {
-                var isV3DateTimeFilter = _dateTimeFilterCapture.IsMatch( rawFilter );
-                var isV3GuidFilter = _guidFilterCapture.IsMatch( rawFilter );
-                isV3FilterSyntax = isV3DateTimeFilter || isV3GuidFilter;
-            }
-            else
-            {
-                isV3FilterSyntax = false;
-            }
-
-            bool isSelectExpandSyntax;
-
-            if ( selectExpandRawExpand.Contains( "/" ) || selectExpandRawSelect.Contains( "/" ) )
-            {
-                isSelectExpandSyntax = true;
-            }
-            else
-            {
-                isSelectExpandSyntax = false;
-            }
-
-            return isV3FilterSyntax || isSelectExpandSyntax;
+            var isV3DateTimeFilter = _dateTimeFilterCapture.IsMatch( rawFilter );
+            var isV3GuidFilter = _guidFilterCapture.IsMatch( rawFilter );
+            return isV3DateTimeFilter || isV3GuidFilter;
         }
 
         /// <summary>
@@ -166,16 +142,12 @@ namespace Rock.Rest
         /// </summary>
         /// <param name="queryOptions">The query options.</param>
         /// <returns>ODataQueryOptions.</returns>
-        private ODataQueryOptions ConvertOData3SyntaxToODataV4( ODataQueryOptions queryOptions )
+        private ODataQueryOptions ConvertOData3FiltersToODataV4( ODataQueryOptions queryOptions )
         {
             var originalUrl = queryOptions.Request.RequestUri.OriginalString;
             var rawFilter = queryOptions?.Filter?.RawValue;
-            var selectExpandRawExpand = queryOptions?.SelectExpand?.RawExpand;
-            //var selectExpandRawSelect = queryOptions?.SelectExpand?.RawSelect;
 
-            string updatedUrl = ParseRawFilterFromOriginalUrl( originalUrl, rawFilter );
-            updatedUrl = ParseSelectExpandFromOriginalUrl( updatedUrl, selectExpandRawExpand, SelectExpandType.Expand );
-            //updatedUrl = ParseSelectExpandFromOriginalUrl( updatedUrl, selectExpandRawSelect, SelectExpandType.Select );
+            string updatedUrl = ParseUrl( originalUrl, rawFilter );
 
             var convertedRequest = new HttpRequestMessage( queryOptions.Request.Method, updatedUrl );
             foreach ( var origProperty in queryOptions.Request.Properties )
@@ -193,67 +165,8 @@ namespace Rock.Rest
             return convertedODataQueryOptions;
         }
 
-        internal enum SelectExpandType
+        internal static string ParseUrl( string originalUrl, string rawFilter )
         {
-            //Select,
-            Expand,
-        }
-
-        internal static string ParseSelectExpandFromOriginalUrl( string originalUrl, string rawSelectExpand, SelectExpandType selectExpandType )
-        {
-            if ( rawSelectExpand.IsNullOrWhiteSpace() || !rawSelectExpand.Contains( '/' ) )
-            {
-                return originalUrl;
-            }
-
-            var selectExpandParts = rawSelectExpand.Split( '/' );
-            if ( selectExpandParts.Length < 2 )
-            {
-                return originalUrl;
-            }
-
-            var originalRawSelectExpand = rawSelectExpand;
-            var updatedRawSelectExpandBuilder = new StringBuilder();
-            updatedRawSelectExpandBuilder.Append( selectExpandParts[0] );
-            var remainingParts = selectExpandParts.Skip( 1 ).ToArray();
-            foreach ( var part in remainingParts )
-            {
-                if ( selectExpandType == SelectExpandType.Expand )
-                {
-                    updatedRawSelectExpandBuilder.Append( $"($expand={part})" );
-                }
-                /*
-                else if ( selectExpandType == SelectExpandType.Select )
-                {
-                    updatedRawSelectExpandBuilder.Append( $"($select={part})" );
-                }*/
-            }
-
-            var updatedUrl = originalUrl;
-
-            var updatedRawSelectExpand = updatedRawSelectExpandBuilder.ToString();
-            var expandSelectParam = selectExpandType.ConvertToString( false ).ToLower();
-
-            // if the original is Encoded
-            var replaceEncoded = expandSelectParam + "=" + Uri.EscapeDataString( originalRawSelectExpand );
-            var replaceWithEncoded = expandSelectParam + "=" + Uri.EscapeDataString( updatedRawSelectExpand );
-            updatedUrl = updatedUrl.Replace( replaceEncoded, replaceWithEncoded );
-
-            // if the original is Not Encoded
-            var replaceNotEncoded = expandSelectParam + "=" + originalRawSelectExpand;
-            var replaceWithNotEncoded = expandSelectParam + "=" + updatedRawSelectExpand;
-            updatedUrl = updatedUrl.Replace( replaceNotEncoded, replaceWithNotEncoded );
-
-            return updatedUrl;
-        }
-
-        internal static string ParseRawFilterFromOriginalUrl( string originalUrl, string rawFilter )
-        {
-            if ( rawFilter.IsNullOrWhiteSpace() )
-            {
-                return originalUrl;
-            }
-
             /* 10/14/2022 MDP
 
             ODataV4 has a breaking change regarding datetime and guid filters.
@@ -282,12 +195,12 @@ namespace Rock.Rest
 
             foreach ( Match match in dateTimeMatches )
             {
-                updatedUrl = ParseFilterMatch( updatedUrl, match, true );
+                updatedUrl = ParseMatch( updatedUrl, match, true );
             }
 
             foreach ( Match match in guidMatches )
             {
-                updatedUrl = ParseFilterMatch( updatedUrl, match );
+                updatedUrl = ParseMatch( updatedUrl, match );
             }
 
             return updatedUrl;
@@ -296,6 +209,7 @@ namespace Rock.Rest
         // Derived from https://github.com/OData/odata.net/blob/7dcad74478debcfe54e93c63f47b7cb57f2d2e67/src/PlatformHelper.cs#L325-L346
         private static string ToODataV4DateTimeOffsetFormat( string dateTimeText )
         {
+
             // The XML DateTime pattern is described here: http://www.w3.org/TR/xmlschema-2/#dateTime
             // If timezone is specified, the indicator will always be at the same place from the end of the string, so we can look there for the Z or +/-.
             //
@@ -329,7 +243,7 @@ namespace Rock.Rest
             return dateTimeText + offsetSuffix;
         }
 
-        private static string ParseFilterMatch( string updatedUrl, Match match, bool parseAsDateTimeOffset = false )
+        private static string ParseMatch( string updatedUrl, Match match, bool parseAsDateTimeOffset = false )
         {
             if ( match.Groups.Count < 2 )
             {
@@ -352,22 +266,20 @@ namespace Rock.Rest
                 parsedCapture = originalCapture;
             }
 
-            var replaceEncoded = Uri.EscapeDataString( v3Filter );
-            var replaceWithEncoded = Uri.EscapeDataString( parsedCapture );
+            var replace = Uri.EscapeDataString( v3Filter );
+            var replaceWith = Uri.EscapeDataString( parsedCapture );
 
-            if ( updatedUrl.Contains( replaceEncoded ) )
+
+            if ( updatedUrl.Contains( replace ) )
             {
                 // if the original is Encoded
-                updatedUrl = updatedUrl.Replace( replaceEncoded, replaceWithEncoded );
+                updatedUrl = updatedUrl.Replace( replace, replaceWith );
             }
 
-            var replaceNotEncoded = v3Filter;
-            var replaceWithNotEncoded = parsedCapture;
-
-            if ( updatedUrl.Contains( replaceNotEncoded ) )
+            if ( updatedUrl.Contains( v3Filter ) )
             {
                 // if the original is not Encoded
-                updatedUrl = updatedUrl.Replace( replaceNotEncoded, replaceWithNotEncoded );
+                updatedUrl = updatedUrl.Replace( v3Filter, parsedCapture );
             }
 
             return updatedUrl;
