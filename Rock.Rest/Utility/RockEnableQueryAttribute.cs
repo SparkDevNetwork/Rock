@@ -195,7 +195,7 @@ namespace Rock.Rest
 
             foreach ( Match match in dateTimeMatches )
             {
-                updatedUrl = ParseMatch( updatedUrl, match, true );
+                updatedUrl = ParseMatch( updatedUrl, match );
             }
 
             foreach ( Match match in guidMatches )
@@ -206,23 +206,7 @@ namespace Rock.Rest
             return updatedUrl;
         }
 
-        private static string ToODataV4DateTimeOffsetFormat( string dateTimeString )
-        {
-            if ( dateTimeString.IsNullOrWhiteSpace() )
-            {
-                return dateTimeString;
-            }
-
-            if ( DateTimeOffset.TryParse( dateTimeString, out DateTimeOffset dateTimeOffset ) )
-            {
-                return dateTimeOffset.ToString( "o" );
-            }
-
-            return dateTimeString;
-
-        }
-
-        private static string ParseMatch( string updatedUrl, Match match, bool parseAsDateTimeOffset = false )
+        private static string ParseMatch( string updatedUrl, Match match )
         {
             if ( match.Groups.Count < 2 )
             {
@@ -230,24 +214,10 @@ namespace Rock.Rest
             }
 
             var v3Filter = match.Groups[0].Value;
-            var originalCapture = match.Groups[1].Value;
-
-            string parsedCapture;
-
-            if ( parseAsDateTimeOffset )
-            {
-                // ODataV3 would let you have a DateTime filter that wasn't in ISO8601 format
-                // but ODataV4 requires it to be in ISO8601 format. 
-                parsedCapture = ToODataV4DateTimeOffsetFormat( originalCapture );
-            }
-            else
-            {
-                parsedCapture = originalCapture;
-            }
+            var capture = match.Groups[1].Value;
 
             var replace = Uri.EscapeDataString( v3Filter );
-            var replaceWith = Uri.EscapeDataString( parsedCapture );
-
+            var replaceWith = Uri.EscapeDataString( capture );
 
             if ( updatedUrl.Contains( replace ) )
             {
@@ -258,7 +228,7 @@ namespace Rock.Rest
             if ( updatedUrl.Contains( v3Filter ) )
             {
                 // if the original is not Encoded
-                updatedUrl = updatedUrl.Replace( v3Filter, parsedCapture );
+                updatedUrl = updatedUrl.Replace( v3Filter, capture );
             }
 
             return updatedUrl;
