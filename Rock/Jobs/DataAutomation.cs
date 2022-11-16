@@ -534,7 +534,7 @@ Update Family Status: {updateFamilyStatus}
                                 person.RecordStatusReasonValueId = inactiveReason.Id;
                                 person.InactiveReasonNote = $"Inactivated by the Data Automation Job on {dateStamp}";
                                 rockContext.SaveChanges();
-
+                                
                                 recordsUpdated++;
                             }
                         }
