@@ -358,11 +358,14 @@ namespace RockWeb.Blocks.Groups
                         return false;
                     }
 
-                    cvGroupMember.IsValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
-                    if ( !cvGroupMember.IsValid )
+                    if ( spouse != null )
                     {
-                        cvGroupMember.ErrorMessage = errorMessage;
-                        return false;
+                        cvGroupMember.IsValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
+                        if ( !cvGroupMember.IsValid )
+                        {
+                            cvGroupMember.ErrorMessage = errorMessage;
+                            return false;
+                        }
                     }
 
                     return true;
