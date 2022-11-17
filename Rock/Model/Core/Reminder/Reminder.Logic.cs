@@ -121,7 +121,13 @@ namespace Rock.Model
             this.RenewCurrentCount = 0;
             if ( this.ReminderDate < currentDate )
             {
-                this.ReminderDate = this.GetNextDate( currentDate ).Value;
+                var nextDate = this.GetNextDate( currentDate );
+                if ( nextDate == null )
+                {
+                    nextDate = currentDate;
+                }
+
+                this.ReminderDate = nextDate.Value;
             }
         }
 

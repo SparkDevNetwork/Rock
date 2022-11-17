@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Reminders
             }
 
             // This is a new reminder.
+            cbxComplete.Visible = false;
             using ( var rockContext = new RockContext() )
             {
                 IEntity entity = new EntityTypeService( rockContext ).GetEntity( entityTypeId, entityId );
@@ -128,6 +129,7 @@ namespace RockWeb.Blocks.Reminders
 
                 rddlReminderType.SelectedValue = reminder.ReminderTypeId.ToString();
                 rdpReminderDate.SelectedDate = reminder.ReminderDate;
+                cbxComplete.Checked = reminder.IsComplete;
                 rtbNote.Text = reminder.Note;
 
                 rnbRepeatDays.IntegerValue = reminder.RenewPeriodDays;
@@ -196,6 +198,15 @@ namespace RockWeb.Blocks.Reminders
                 reminder.Note = rtbNote.Text;
                 reminder.RenewPeriodDays = rnbRepeatDays.IntegerValue;
                 reminder.RenewMaxCount = rnbRepeatTimes.IntegerValue;
+
+                if ( reminder.IsComplete && !cbxComplete.Checked )
+                {
+                    reminder.ResetCompletedReminder();
+                }
+                else if ( !reminder.IsComplete && cbxComplete.Checked )
+                {
+                    reminder.CompleteReminder();
+                }
 
                 var person = new PersonService( rockContext ).Get( rppPerson.SelectedValue.Value );
                 reminder.PersonAliasId = person.PrimaryAliasId.Value;

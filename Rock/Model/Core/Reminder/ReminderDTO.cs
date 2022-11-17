@@ -71,6 +71,16 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
+        /// A value indicating whether or not this reminder is attached to a Person entity.
+        /// </summary>
+        public bool IsPersonReminder { get; set; }
+
+        /// <summary>
+        /// The entity identifier.
+        /// </summary>
+        public int EntityId { get; set; }
+
+        /// <summary>
         /// Initializes the <see cref="ReminderDTO"/> instance.
         /// </summary>
         /// <param name="reminder">The <see cref="Reminder"/>.</param>
@@ -85,6 +95,8 @@ namespace Rock.Model
             this.HighlightColor = reminder.ReminderType.HighlightColor;
             this.ReminderDate = reminder.ReminderDate.ToShortDateString();
             this.Note = reminder.Note;
+            this.IsPersonReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
+            this.EntityId = reminder.EntityId;
         }
     }
 }
