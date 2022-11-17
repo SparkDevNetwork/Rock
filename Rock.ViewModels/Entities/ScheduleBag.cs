@@ -120,6 +120,14 @@ namespace Rock.ViewModels.Entities
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating if this Schedule is public.
+        /// </summary>
+        /// <value>
+        ///  A System.Boolean that is true if this Schedule is public, otherwise false.
+        /// </value>
+        public bool? IsPublic { get; set; }
+
+        /// <summary>
         /// Gets or sets the Name of the Schedule. This property is required.
         /// </summary>
         /// <value>

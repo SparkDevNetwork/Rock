@@ -152,6 +152,14 @@
     <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
       <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211171611271_Rollup_20221117.cs" />
+    <Compile Include="Migrations\202211171611271_Rollup_20221117.designer.cs">
+      <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.cs" />
+    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.designer.cs">
+      <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1472,6 +1480,12 @@
     <EmbeddedResource Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
       <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211171611271_Rollup_20221117.resx">
+      <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211171644271_CodeGenerated_20221117.resx">
+      <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
     </EmbeddedResource>
@@ -2432,7 +2446,6 @@
     <Content Include="Migrations\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
       <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
     </Content>
-    <None Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql" />
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
     </Content>
@@ -2581,6 +2594,9 @@
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">
       <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
     </None>

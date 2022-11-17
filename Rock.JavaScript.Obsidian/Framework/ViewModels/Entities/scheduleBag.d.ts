@@ -79,6 +79,9 @@ export type ScheduleBag = {
     /** Gets or sets a flag indicating if this is an active schedule. This value is required. */
     isActive: boolean;
 
+    /** Gets or sets a value indicating if this Schedule is public. */
+    isPublic?: boolean | null;
+
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
