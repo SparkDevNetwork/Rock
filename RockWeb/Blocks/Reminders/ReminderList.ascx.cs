@@ -703,7 +703,7 @@ namespace RockWeb.Blocks.Reminders
                 var photoUrl = Person.GetPersonPhotoUrl( reminder.EntityId );
                 var litProfilePhoto = e.Item.FindControl( "litProfilePhoto" ) as Literal;
                 litProfilePhoto.Visible = true;
-                litProfilePhoto.Text = string.Format( litProfilePhoto.Text, reminder.EntityId, photoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                litProfilePhoto.Text = string.Format( litProfilePhoto.Text, photoUrl );
             }
         }
 

@@ -176,7 +176,7 @@
                                         <div class="note reminder-note">
                                             <div class="meta">
                                                 <asp:Literal ID="litProfilePhoto" runat="server" Visible="false"><div class="meta-figure">
-                                                    <div class="avatar avatar-lg"><img src="{1}&w=50"></div>
+                                                    <div class="avatar avatar-lg"><img src="{0}&w=50"></div>
                                                 </div></asp:Literal>
                                                 <div class="meta-body">
                                                     <span class="note-caption">
