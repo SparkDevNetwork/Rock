@@ -85,6 +85,9 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the Description of the Rock.Model.InteractiveExperience */
     description?: string | null;
 
+    /** Gets or sets the JSON representing the additional settings. */
+    experienceSettingsJson?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -114,6 +117,12 @@ export type InteractiveExperienceBag = {
 
     /** Gets or sets the Public Label of the InteractiveExperience. */
     publicLabel?: string | null;
+
+    /** Gets or sets the detail message of the push notification. */
+    pushNotificationDetail?: string | null;
+
+    /** Gets or sets the title of the push notification. */
+    pushNotificationTitle?: string | null;
 
     /** Gets or sets the push notification type. */
     pushNotificationType: number;

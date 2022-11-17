@@ -70,6 +70,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsActive { get; set; } = true;
 
+        /// <summary />
+        public bool? IsPublic { get; set; } = true;
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -132,6 +135,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.iCalendarContent = source.iCalendarContent;
             this.IsActive = source.IsActive;
+            this.IsPublic = source.IsPublic;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
