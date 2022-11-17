@@ -978,8 +978,6 @@ body.nav-open {
         float: right;
       }
     }
-
-
   }
 
   .navbar-toggle {
@@ -1901,6 +1899,13 @@ body.navbar-side-open {
   margin-left: 115px;
 }
 
+.avatar-lg {
+  &,
+  &::after {
+    border-radius: 6px;
+  }
+}
+
 .avatar-email {
   color: #0079b0 !important;
   background-color: #d9f2fe !important;
@@ -1977,6 +1982,18 @@ body.navbar-side-open {
         width: @input-width-xl;
       }
     }
+  }
+}
+
+.reminder-note {
+  max-width: 800px;
+}
+
+.success-on-hover {
+  color: @text-color;
+  transition: .2s color;
+  &:hover {
+    color: @brand-success;
   }
 }
 

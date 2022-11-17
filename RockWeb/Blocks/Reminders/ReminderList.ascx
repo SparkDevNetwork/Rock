@@ -11,17 +11,13 @@
                 </h1>
             </div>
 
-        <asp:Panel ID="pnlNotAuthenticated" runat="server" CssClass="panel-body" Visible="false">
-            <div class="panel-body">
+            <asp:Panel ID="pnlNotAuthenticated" runat="server" CssClass="panel-body" Visible="false">
                 <Rock:NotificationBox ID="nbNotAuthenticated" runat="server" NotificationBoxType="Warning" Text="Please log in to use Reminders." />
-            </div>
-        </asp:Panel>
+            </asp:Panel>
 
-        <asp:Panel ID="pnlNoReminders" runat="server" CssClass="panel-body" Visible="false">
-            <div class="panel-body">
+            <asp:Panel ID="pnlNoReminders" runat="server" CssClass="panel-body" Visible="false">
                 <Rock:NotificationBox ID="nbNoReminders" runat="server" NotificationBoxType="Warning" Text=" You do not have any reminders." />
-            </div>
-        </asp:Panel>
+            </asp:Panel>
 
             <asp:Panel ID="pnlView" runat="server" CssClass="panel-body">
                 <script type="text/javascript">
@@ -131,6 +127,7 @@
                                             EnabledSlidingDateRangeUnits="Week, Month, Year, Day, Hour"
                                             SlidingDateRangeMode="Current"
                                             TimeUnit="Year"
+                                            FormGroupCssClass="input-group-sm"
                                             Label="" />
                                     </div>
 
@@ -160,35 +157,41 @@
 
                     <asp:Repeater ID="rptReminders" runat="server" OnItemDataBound="rptReminders_ItemDataBound">
                         <ItemTemplate>
-                            <div class="d-flex flex-sm-wrap py-3 px-sm-4 py-sm-4 border-bottom border-panel" data-reminder-id="<%# Eval("Id") %>">
+                            <div class="d-flex flex-sm-wrap py-3 px-sm-4 py-sm-4 border-bottom border-panel cursor-pointer" data-reminder-id="<%# Eval("Id") %>">
                                 <div class="flex-grow-0">
-                                    <asp:LinkButton ID="lbComplete" runat="server" class="text-color" CommandArgument='<%# Eval("Id") %>' OnClick="lbComplete_Click">
+                                    <asp:LinkButton ID="lbComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="lbComplete_Click">
                                         <asp:Literal ID="litCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
                                         <asp:Literal ID="litCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-check-circle-o"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
-                                <div class="d-flex flex-wrap flex-fill">
+                                <div class="d-flex flex-wrap flex-eq">
                                     <div class="d-inline-flex align-items-center align-items-sm-start col-xs-6 col-sm flex-grow-0 text-nowrap js-reminder-edit-trigger">
                                         <span class="label label-default"><asp:Literal ID="lReminderDate" runat="server" Text='<%# Eval("ReminderDate", "{0: M/d/yyyy}") %>' /></span>
                                     </div>
                                     <div class="col-xs-12 col-sm order-3 order-sm-0 mt-2 mt-sm-0 js-reminder-edit-trigger">
-                                        <div class="d-flex">
-                                            <div>
-                                                <asp:Literal ID="litProfilePhoto" runat="server" Visible="false"><div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover" personid="{0}" data-original="{1}&w=50" style="background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;"></div></asp:Literal>
-                                                <span class="d-block font-weight-semibold">
-                                                    <asp:Literal ID="lEntity" runat="server" Text='<%# Eval("EntityDescription") %>' />
-                                                </span>
-                                                <span class="tag-flair text-sm">
-                                                    <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
-                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
-                                                </span>
+                                        <div class="note reminder-note">
+                                            <div class="meta">
+                                                <asp:Literal ID="litProfilePhoto" runat="server" Visible="false"><div class="meta-figure">
+                                                    <div class="avatar avatar-lg"><img src="{1}&w=50"></div>
+                                                </div></asp:Literal>
+                                                <div class="meta-body">
+                                                    <span class="note-caption">
+                                                        <asp:Literal ID="lEntity" runat="server" Text='<%# Eval("EntityDescription") %>' />
+                                                    </span>
+                                                    <span class="note-details">
+                                                        <span class="tag-flair">
+                                                            <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
+                                                            <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                                <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><div class="dropdown text-info ml-auto"><i class="fa fa-clock-o"></i></div></asp:Literal>
                                             </div>
 
-                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><span class="text-info ml-auto"><i class="fa fa-clock-o"></i></span></asp:Literal>
+                                            <div class="note-content">
+                                                <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
+                                            </div>
                                         </div>
-                                    
-                                    
-                                        <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
                                     </div>
                                     <div class="col-xs-6 col-sm flex-grow-0 text-nowrap text-right">
                                         <%-- This button is used to initiate a postback for editing, but should not be displayed to the user. --%>

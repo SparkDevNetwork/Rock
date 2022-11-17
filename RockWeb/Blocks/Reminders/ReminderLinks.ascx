@@ -140,20 +140,26 @@
                                         <div class="col-xs-6 col-sm flex-grow-0">
                                             <span class="label label-default"><asp:Literal ID="lReminderDate" runat="server" Text='<%# Eval("ReminderDate") %>' /></span>
                                         </div>
-                                        <div class="col flex-fill order-3 order-sm-2">
-                                            <div>
-                                                <span class="tag-flair text-sm">
-                                                    <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
-                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
-                                            </div>
+                                        <div class="col-xs-12 col-sm mw-100 order-3 order-sm-2">
+                                                <div class="note reminder-note">
+                                                    <div class="meta">
+                                                        <div class="meta-body">
+                                                            <span class="note-details">
+                                                                <span class="tag-flair">
+                                                                    <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
+                                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="note-content">
+                                                        <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
+                                                    </div>
+                                                </div>
                                         </div>
 
-                                        <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right">
-                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="fa fa-clock-o"></i></asp:Literal>
+                                        <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right text-nowrap">
+                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="fa fa-clock-o" title="Recurring Reminder"></i></asp:Literal>
 
                                             <div class="btn-group dropdown-right ml-1">
                                                 <button type="button" class="btn btn-link btn-overflow dropdown-toggle" data-toggle="dropdown">
