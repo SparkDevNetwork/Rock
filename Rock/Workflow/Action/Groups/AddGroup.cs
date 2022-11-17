@@ -60,6 +60,14 @@ namespace Rock.Workflow.Action.Groups
         Description = "When checked this will mark the Group as a Security Role even though it isn't a SecurityRole Group Type.",
         Order = 5 )]
 
+    [WorkflowAttribute(
+        "Group Attribute",
+        Description = "The workflow attribute to hold the group after it is created",
+        Key = AttributeKey.GroupAttribute,
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" },
+        Order = 6 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "BC236FD2-4BC1-4B1C-AB48-4DA43C5147D4" )]
     public class AddGroup : ActionComponent
     {
@@ -73,6 +81,7 @@ namespace Rock.Workflow.Action.Groups
             public const string Campus = "Campus";
             public const string GroupName = "GroupName";
             public const string GroupDescription = "GroupDescription";
+            public const string GroupAttribute = "GroupAttribute";
         }
 
         #endregion
@@ -162,6 +171,9 @@ namespace Rock.Workflow.Action.Groups
             rockContext.SaveChanges();
 
             action.AddLogEntry( $"{groupName} Group created." );
+
+            // If group attribute was specified, set the attribute's value
+            SetWorkflowAttributeValue( action, AttributeKey.GroupAttribute, group.Guid );
 
             return true;
         }
