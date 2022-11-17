@@ -22,7 +22,7 @@
                         <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbxComplete" runat="server" Label="Complete" />
+                        <Rock:RockCheckBox ID="cbxComplete" runat="server" Label="Complete" Help="Determines if the reminder should be considered complete." />
                     </div>
                 </div>
                 <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
