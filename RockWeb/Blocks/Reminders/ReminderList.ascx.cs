@@ -577,7 +577,7 @@ namespace RockWeb.Blocks.Reminders
                 rockContext.SaveChanges();
             }
 
-            NavigateToCurrentPageReference();
+            InitializeBlock();
         }
 
         /// <summary>

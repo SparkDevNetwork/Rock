@@ -21,6 +21,10 @@
 
             <asp:Panel ID="pnlView" runat="server" CssClass="panel-body">
                 <script type="text/javascript">
+                    if (typeof refreshReminderCount === "function") {
+                        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(refreshReminderCount);
+                    }
+
                     $(document).ready(function () {
                         var activeFilterSetting = $('#<%=hfActiveFilterSetting.ClientID %>').val();
                         if (activeFilterSetting == 'Custom Date Range') {
