@@ -110,7 +110,6 @@ namespace Rock.Model
                 var entityUrlMergeFields = new Dictionary<string, object>();
                 entityUrlMergeFields.Add( "Entity", entity );
                 this.EntityUrl = reminder.ReminderType.EntityType.LinkUrlLavaTemplate.ResolveMergeFields( entityUrlMergeFields );
-                this.EntityDescription = $"<a href=\"{this.EntityUrl}\">{this.EntityDescription}</a>";
             }
         }
     }

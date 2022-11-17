@@ -690,6 +690,14 @@ namespace RockWeb.Blocks.Reminders
         protected void rptReminders_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var reminder = e.Item.DataItem as ReminderDTO;
+
+            if ( reminder.EntityUrl.IsNotNullOrWhiteSpace() )
+            {
+                var entityUrl = ResolveUrl( reminder.EntityUrl );
+                var lEntity = e.Item.FindControl( "lEntity" ) as Literal;
+                lEntity.Text = $"<a href=\"{entityUrl}\">{reminder.EntityDescription}</a>";
+            }
+
             if ( reminder.IsPersonReminder )
             {
                 var photoUrl = Person.GetPersonPhotoUrl( reminder.EntityId );

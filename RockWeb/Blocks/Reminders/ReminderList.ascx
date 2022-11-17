@@ -180,7 +180,7 @@
                                                 </div></asp:Literal>
                                                 <div class="meta-body">
                                                     <span class="note-caption">
-                                                        <asp:Literal ID="lEntity" runat="server" Text='<%# Eval("EntityDescription") %>' />
+                                                        <asp:Literal ID="lEntity" runat="server" />
                                                     </span>
                                                     <span class="note-details">
                                                         <span class="tag-flair">
