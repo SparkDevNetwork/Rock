@@ -41,7 +41,7 @@ namespace Rock.Workflow.Action.Groups
 
     [WorkflowTextOrAttribute( "Group Name",
          "Group Name Attribute",
-        Description = "The group name or attribute that contains the value for the name. <span class='tip tip-lava'></span>",
+        Description = "The group name or attribute that contains the value for the name. <span class='tip tip-lava'></span>. The group name is required.",
         Key = AttributeKey.GroupName,
         IsRequired = true,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" },
@@ -153,8 +153,16 @@ namespace Rock.Workflow.Action.Groups
                 }
             }
 
-            var isSecurityRole = GetAttributeValue( action, AttributeKey.IsSecurityRole, true ).AsBoolean();
             var groupName = GetAttributeValue( action, AttributeKey.GroupName, true ).ResolveMergeFields( mergeFields );
+            if ( string.IsNullOrWhiteSpace( groupName ) )
+            {
+                var errorMessage = "A group name was not provided for the group.";
+                action.AddLogEntry( errorMessage );
+                errorMessages.Add( errorMessage );
+                return false;
+            }
+
+            var isSecurityRole = GetAttributeValue( action, AttributeKey.IsSecurityRole, true ).AsBoolean();
             var groupDescription = GetAttributeValue( action, AttributeKey.GroupDescription, true );
 
             var group = new Group()

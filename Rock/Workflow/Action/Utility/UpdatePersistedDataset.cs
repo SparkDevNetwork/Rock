@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Utility" )]
     [Description( "Updates the provided persisted dataset." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Update Persisted Dataset" )]
+    [ExportMetadata( "ComponentName", "Persisted Dataset Update" )]
 
     [TextField( "Persisted Data Access Key",
         Description = "The access key to the persisted dataset that should be updated <span class='tip tip-lava'></span>",
