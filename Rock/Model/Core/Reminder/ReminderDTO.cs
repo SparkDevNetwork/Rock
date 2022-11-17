@@ -71,6 +71,21 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
+        /// A value indicating whether or not this reminder is attached to a Person entity.
+        /// </summary>
+        public bool IsPersonReminder { get; set; }
+
+        /// <summary>
+        /// The entity identifier.
+        /// </summary>
+        public int EntityId { get; set; }
+
+        /// <summary>
+        /// The Entity URL.
+        /// </summary>
+        public string EntityUrl { get; set; }
+
+        /// <summary>
         /// Initializes the <see cref="ReminderDTO"/> instance.
         /// </summary>
         /// <param name="reminder">The <see cref="Reminder"/>.</param>
@@ -85,6 +100,17 @@ namespace Rock.Model
             this.HighlightColor = reminder.ReminderType.HighlightColor;
             this.ReminderDate = reminder.ReminderDate.ToShortDateString();
             this.Note = reminder.Note;
+            this.IsPersonReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
+            this.EntityId = reminder.EntityId;
+            this.EntityUrl = string.Empty;
+
+            var entityUrlPattern = reminder.ReminderType.EntityType.LinkUrlLavaTemplate;
+            if ( !string.IsNullOrWhiteSpace( entityUrlPattern ) )
+            {
+                var entityUrlMergeFields = new Dictionary<string, object>();
+                entityUrlMergeFields.Add( "Entity", entity );
+                this.EntityUrl = reminder.ReminderType.EntityType.LinkUrlLavaTemplate.ResolveMergeFields( entityUrlMergeFields );
+            }
         }
     }
 }

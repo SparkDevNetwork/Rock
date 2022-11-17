@@ -363,6 +363,7 @@ usernameTextbox.blur(function () {{
             usernameUnavailable.html(usernameFieldLabel + ' is not valid. ' + usernameValidCaption);
             usernameUnavailable.addClass('alert-warning');
             usernameUnavailable.removeClass('alert-success');
+            availabilityMessageRow.show();
         }} else {{
             $.ajax({{
                 type: 'GET',
@@ -381,9 +382,12 @@ usernameTextbox.blur(function () {{
                         usernameUnavailable.addClass('alert-warning');
                         usernameUnavailable.removeClass('alert-success');
                     }}
+                    availabilityMessageRow.show();
                 }},
                 error: function (xhr, status, error) {{
-                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                    if(xhr.status != 401) {{
+                        alert(status + ' [' + error + ']: ' + xhr.responseText);
+                    }}
                 }}
             }});
         }}
@@ -391,9 +395,8 @@ usernameTextbox.blur(function () {{
         usernameUnavailable.html(usernameFieldLabel + ' is required.');
         usernameUnavailable.addClass('alert-warning');
         usernameUnavailable.removeClass('alert-success');
+        availabilityMessageRow.show();
     }}
-
-    availabilityMessageRow.show();
     }});
 }});
 ",

@@ -463,7 +463,9 @@ Current Person's Campus Is: {{ campus.Name }}
 <h4>All Campuses</h4>
 <ul>
 {% for c in allCampuses %}
+    {% if c.Name == 'Main Campus' or c.Name == 'Stepping Stone' %}
     <li>{{ c.Name }} </li>
+    {% endif %}
 {% endfor %}
 </ul>
 ";

@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Reminders
             reminderType.Order = rtbOrder.Text.AsInteger();
             reminderType.EntityTypeId = retpEntityType.SelectedValueAsId().Value;
             reminderType.ShouldAutoCompleteWhenNotified = rcbShouldAutoComplete.Checked;
-            reminderType.HighlightColor = rtbHighlightColor.Text;
+            reminderType.HighlightColor = cpHighlightColor.Text;
 
             rockContext.SaveChanges();
             mdEditReminderType.Hide();
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Reminders
                 rtbOrder.Text = "0";
                 retpEntityType.SetValue( "0" );
                 rcbShouldAutoComplete.Checked = false;
-                rtbHighlightColor.Text = string.Empty;
+                cpHighlightColor.Text = string.Empty;
             }
             else
             {
@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Reminders
                 rtbOrder.Text = reminderType.Order.ToString();
                 retpEntityType.SetValue( reminderType.EntityType );
                 rcbShouldAutoComplete.Checked = reminderType.ShouldAutoCompleteWhenNotified;
-                rtbHighlightColor.Text = reminderType.HighlightColor;
+                cpHighlightColor.Text = reminderType.HighlightColor;
             }
 
             mdEditReminderType.Show();

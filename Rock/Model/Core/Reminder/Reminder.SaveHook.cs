@@ -81,7 +81,7 @@ namespace Rock.Model
                 {
                     // If an active reminder was added, increment the counter.
                     person.ReminderCount = reminderCount + 1;
-                    this.RockContext.SaveChanges();
+                    this.RockContext.SaveChanges( true );
                 }
             }
 

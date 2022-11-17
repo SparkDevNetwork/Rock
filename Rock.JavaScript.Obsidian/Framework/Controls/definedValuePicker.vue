@@ -168,9 +168,6 @@
             fetchValues();
 
             if (props.multiple) {
-                console.log(
-                    "ISARRAY:", Array.isArray(internalValue.value)
-                );
                 if (Array.isArray(internalValue.value)) {
                     internalValue.value.push(result.data);
                 }

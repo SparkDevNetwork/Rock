@@ -166,4 +166,55 @@ export class DefinedValueFieldType extends FieldTypeBase {
     public override getFilterComponent(): Component {
         return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
     }
+
+    public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
+        const clientValue = JSON.parse(value) as ClientValue;
+        const selectedValues = (filterValue.value ?? "").split(",").filter(v => v !== "").map(v => v.toLowerCase());
+        let comparisonType = filterValue.comparisonType;
+
+        if (comparisonType === ComparisonType.EqualTo) {
+            // Treat EqualTo as if it were Contains.
+            comparisonType = ComparisonType.Contains;
+        }
+        else if (comparisonType === ComparisonType.NotEqualTo) {
+            // Treat NotEqualTo as if it were DoesNotContain.
+            comparisonType = ComparisonType.DoesNotContain;
+        }
+
+        if (comparisonType === ComparisonType.IsBlank) {
+            return (clientValue.value ?? "") === "";
+        }
+        else if (comparisonType === ComparisonType.IsNotBlank) {
+            return (clientValue.value ?? "") !== "";
+        }
+
+        if (selectedValues.length > 0) {
+            const userValues = (clientValue.value ?? "").toLowerCase().split(",").filter(v => v !== "");
+
+            if (comparisonType === ComparisonType.Contains) {
+                let matchedCount = 0;
+
+                for (const userValue of userValues) {
+                    if (selectedValues.includes(userValue)) {
+                        matchedCount += 1;
+                    }
+                }
+
+                return matchedCount > 0;
+            }
+            else {
+                let matchedCount = 0;
+
+                for (const userValue of userValues) {
+                    if (selectedValues.includes(userValue)) {
+                        matchedCount += 1;
+                    }
+                }
+
+                return matchedCount !== selectedValues.length;
+            }
+        }
+
+        return false;
+    }
 }

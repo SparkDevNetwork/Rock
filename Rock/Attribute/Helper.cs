@@ -1821,9 +1821,185 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             }
         }
 
+        /// <summary>
+        /// Updates the computed columns (ValueAs...) of all attribute values
+        /// belonging to the specified attribute identifier that match the
+        /// given value.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier of the values to be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="rockContext">The database context to use when performing the update.</param>
+        /// <returns>The number of rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedColumns( int attributeId, string value, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue]
+SET [ValueAsBoolean] = @ValueAsBoolean,
+    [ValueAsDateTime] = @ValueAsDateTime,
+    [ValueAsNumeric] = @ValueAsNumeric,
+    [ValueAsPersonId] = @ValueAsPersonId
+WHERE [AttributeId] = @AttributeId
+  AND [ValueChecksum] = CHECKSUM(@Value)
+  AND [Value] = @Value",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                attributeIdParameter,
+                valueParameter );
+        }
+
+        /// <summary>
+        /// Updates the computed columns (ValueAs...) of all attribute values
+        /// that match the specified <paramref name="valueIds"/>.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier of the values to be updated.</param>
+        /// <param name="valueIds">The identifiers of the attribute values to be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="rockContext">The database context to use when performing the update.</param>
+        /// <returns>The number of rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedColumns( int attributeId, IEnumerable<int> valueIds, string value, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+
+            // Initialize the ValueId SQL parameter.
+            var attributeIdsTable = new DataTable();
+            attributeIdsTable.Columns.Add( "Id", typeof( int ) );
+
+            foreach ( var valueId in valueIds )
+            {
+                attributeIdsTable.Rows.Add( valueId );
+            }
+
+            var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
+            {
+                TypeName = "dbo.EntityIdList",
+                Value = attributeIdsTable
+            };
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AV
+SET [AV].[ValueAsBoolean] = @ValueAsBoolean,
+    [AV].[ValueAsDateTime] = @ValueAsDateTime,
+    [AV].[ValueAsNumeric] = @ValueAsNumeric,
+    [AV].[ValueAsPersonId] = @ValueAsPersonId
+FROM [AttributeValue] AS [AV]
+INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                valueIdParameter );
+        }
+
         #endregion
 
         #region Persisted Values
+
+        /// <summary>
+        /// Gets the persisted values from the field type. If an error occurs then
+        /// the placeholder value will be used instead. If even that fails then the
+        /// standard not supported message will be used.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Note:</strong> This does not check if the field supports
+        /// persisted values, only if an error occurs while getting them.
+        /// </remarks>
+        /// <param name="field">The field type to use when formatting the values.</param>
+        /// <param name="rawValue">The raw value to be formatted.</param>
+        /// <param name="configuration">The configuration of the field type.</param>
+        /// <param name="cache">A cache dictionary that can be used by the field type to store and retrieve data that would otherwise need a database hit.</param>
+        /// <returns>An instance of <see cref="Field.PersistedValues"/> that specifies all the values to be persisted.</returns>
+        internal static Field.PersistedValues GetPersistedValuesOrPlaceholder( Field.IFieldType field, string rawValue, Dictionary<string, string> configuration, IDictionary<string, object> cache )
+        {
+            try
+            {
+                return field.GetPersistedValues( rawValue, configuration, cache );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Unable to retrieve persisted values from field.", ex ) );
+
+                return GetPersistedValuePlaceholderOrDefault( field, configuration );
+            }
+        }
+
+        /// <summary>
+        /// Gets the persisted value placeholder from the field type. If an error
+        /// occurs then the standard not supported message will be used.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Note:</strong> This does not check if the field supports
+        /// persisted values, only if an error occurs while getting the placeholder.
+        /// </remarks>
+        /// <param name="field">The field type to use when formatting the values.</param>
+        /// <param name="configuration">The configuration of the field type.</param>
+        /// <returns>An instance of <see cref="Field.PersistedValues"/> that specifies all the placeholder values to be used.</returns>
+        internal static Field.PersistedValues GetPersistedValuePlaceholderOrDefault( Field.IFieldType field, Dictionary<string, string> configuration )
+        {
+            try
+            {
+                var placeholder = field.GetPersistedValuePlaceholder( configuration ) ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
+
+                return new Field.PersistedValues
+                {
+                    TextValue = placeholder,
+                    CondensedTextValue = placeholder,
+                    HtmlValue = placeholder,
+                    CondensedHtmlValue = placeholder
+                };
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Unable to retrieve placeholder values from field.", ex ) );
+
+                return new Field.PersistedValues
+                {
+                    TextValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    CondensedTextValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    HtmlValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    CondensedHtmlValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported
+                };
+            }
+        }
 
         /// <summary>
         /// Updates the attribute default persisted values to match the <see cref="Rock.Model.Attribute.DefaultValue"/>.
@@ -1836,7 +2012,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             if ( field != null && field.IsPersistedValueSupported( configuration ) )
             {
-                var persistedValues = field.GetPersistedValues( attribute.DefaultValue, configuration );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, configuration, null );
 
                 attribute.DefaultPersistedTextValue = persistedValues.TextValue;
                 attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
@@ -1899,25 +2075,19 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                         .Distinct()
                         .ToList();
 
+                    var cache = new Dictionary<string, object>();
+
                     foreach ( var value in distinctValues )
                     {
                         if ( field.IsPersistedValueSupported( configurationValues ) )
                         {
-                            var persistedValues = field.GetPersistedValues( value, configurationValues );
+                            var persistedValues = GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
                         else
                         {
-                            var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
-
-                            var persistedValues = new Field.PersistedValues
-                            {
-                                TextValue = placeholderValue,
-                                CondensedTextValue = placeholderValue,
-                                HtmlValue = placeholderValue,
-                                CondensedHtmlValue = placeholderValue
-                            };
+                            var persistedValues = GetPersistedValuePlaceholderOrDefault( field, configurationValues );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
@@ -1956,14 +2126,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
             var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
 
-            // Because AttributeValue has a trigger on it, the extra where clause is
-            // to prevent updates if no value actually changed is rather important.
-            // Without it we might be doing a non-change update which still triggers
-            // the database trigger.
-            // The custom COLLATE makes those value comparison case sensitive. This
-            // solves issues where the persisted value changed in case only, such as
-            // "Yes" to "YES" for a boolean field type.
-            int updatedCount = rockContext.Database.ExecuteSqlCommand( @"
+            return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue]
 SET [PersistedTextValue] = @TextValue,
     [PersistedHtmlValue] = @HtmlValue,
@@ -1973,21 +2136,13 @@ SET [PersistedTextValue] = @TextValue,
 WHERE [AttributeId] = @AttributeId
   AND [ValueChecksum] = CHECKSUM(@Value)
   AND [Value] = @Value
-  AND ([IsPersistedValueDirty] = 1
-       OR [PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
+  AND [IsPersistedValueDirty] = 1",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
                 valueParameter );
-
-            // Bit of a hack, but because of the trigger on AttributeValue it doubles
-            // the number of rows updated.
-            return updatedCount / 2;
         }
 
         /// <summary>
@@ -2027,14 +2182,7 @@ WHERE [AttributeId] = @AttributeId
                 Value = attributeIdsTable
             };
 
-            // Because AttributeValue has a trigger on it, the extra where clause is
-            // to prevent updates if no value actually changed is rather important.
-            // Without it we might be doing a non-change update which still triggers
-            // the database trigger.
-            // The custom COLLATE makes those value comparison case sensitive. This
-            // solves issues where the persisted value changed in case only, such as
-            // "Yes" to "YES" for a boolean field type.
-            var updatedCount = rockContext.Database.ExecuteSqlCommand( @"
+            return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE AV
 SET [AV].[PersistedTextValue] = @TextValue,
     [AV].[PersistedHtmlValue] = @HtmlValue,
@@ -2044,21 +2192,13 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND ([AV].[IsPersistedValueDirty] = 1
-       OR [AV].[PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [AV].[PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [AV].[PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [AV].[PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
+  AND [AV].[IsPersistedValueDirty] = 1",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
                 valueIdParameter );
-
-            // Bit of a hack, but because of the trigger on AttributeValue it doubles
-            // the number of rows updated.
-            return updatedCount / 2;
         }
 
         /// <summary>
@@ -2295,7 +2435,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
             if ( attribute.IsPersistedValueSupported && field != null )
             {
-                var persistedValues = field.GetPersistedValues( attributeValue.Value, attribute.ConfigurationValues );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attributeValue.Value, attribute.ConfigurationValues, null );
 
                 attributeValue.PersistedTextValue = persistedValues.TextValue;
                 attributeValue.PersistedHtmlValue = persistedValues.HtmlValue;
@@ -2348,7 +2488,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                 if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                 {
-                    persistedValues = field.GetPersistedValues( attribute.DefaultValue, attributeCache.ConfigurationValues );
+                    persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, attributeCache.ConfigurationValues, null );
                 }
                 else
                 {
@@ -2411,18 +2551,19 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             {
                 var attributeId = attributeGroup.Key;
                 var valueGroups = attributeGroup.GroupBy( ag => ag.Value );
+                var attributeCache = AttributeCache.Get( attributeId );
+                var field = attributeCache.FieldType.Field;
+                var cache = new Dictionary<string, object>();
 
                 foreach ( var valueGroup in valueGroups )
                 {
                     var value = valueGroup.Key;
-                    var attributeCache = AttributeCache.Get( attributeId );
-                    var field = attributeCache.FieldType.Field;
                     var attributeValueIds = valueGroup.Select( vg => vg.AttributeValueId );
                     Field.PersistedValues persistedValues;
 
                     if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                     {
-                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                        persistedValues = GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
                     }
                     else
                     {

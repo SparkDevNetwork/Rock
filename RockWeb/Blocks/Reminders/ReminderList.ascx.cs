@@ -185,8 +185,6 @@ namespace RockWeb.Blocks.Reminders
                 var reminderService = new ReminderService( rockContext );
 
                 entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value ).ToList();
-                rptEntityTypeList.DataSource = entityTypes;
-                rptEntityTypeList.DataBind();
 
                 reminderTypes = reminderService.GetReminderTypesByPerson( selectedEntityTypeId, CurrentPerson );
                 rptReminderType.DataSource = reminderTypes;
@@ -203,9 +201,7 @@ namespace RockWeb.Blocks.Reminders
             else if ( entityTypes.Count == 1 )
             {
                 // This user only has a reminder for a single entity type, so hide that dropdown.
-                lSelectedEntityType.Text = entityTypes[0].FriendlyName;
-                pnlEntityTypeSelection.CssClass = string.Empty;
-                pnlEntityTypeSelection.Attributes.Remove( "data-toggle" );
+                lSelectedEntityType.Text = entityTypes[0].FriendlyName.Pluralize();
             }
 
             BindEntityTypeList( entityTypes );
@@ -221,8 +217,8 @@ namespace RockWeb.Blocks.Reminders
             var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
             if ( selectedEntityTypeId == entityTypeId_Person )
             {
-                lSelectedEntityType.Text = "Person";
-                pnlPersonPicker.Visible = true;
+                lSelectedEntityType.Text = "People";
+                ppSelectedPerson.Visible = true;
                 if ( selectedEntityId.HasValue )
                 {
                     var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
@@ -235,14 +231,17 @@ namespace RockWeb.Blocks.Reminders
             var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
             if ( selectedEntityTypeId == entityTypeId_Group )
             {
-                lSelectedEntityType.Text = "Group";
-                pnlGroupPicker.Visible = true;
+                lSelectedEntityType.Text = "Groups";
+                gpSelectedGroup.Visible = true;
                 gpSelectedGroup.SetValue( selectedEntityId );
                 return;
             }
 
             var selectedEntityType = EntityTypeCache.Get( selectedEntityTypeId.Value );
-            lSelectedEntityType.Text = selectedEntityType.FriendlyName;
+            if ( selectedEntityType != null )
+            {
+                lSelectedEntityType.Text = selectedEntityType.FriendlyName.Pluralize();
+            }
         }
 
         /// <summary>
@@ -253,6 +252,7 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderTypeId">The reminder type identifier.</param>
         private void BindEntityTypeList( List<EntityType> entityTypes )
         {
+            entityTypes.Insert( 0, new EntityType() { FriendlyName = "All Reminders", Id = 0 } );
             rptEntityTypeList.DataSource = entityTypes;
             rptEntityTypeList.DataBind();
         }
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Reminders
                 }
             }
 
-            lReminderType.Text = "All";
+            lReminderType.Text = "All Reminder Types";
         }
 
         /// <summary>
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Reminders
         {
             var queryParams = new Dictionary<string, string>();
 
-            if ( entityTypeId.HasValue )
+            if ( entityTypeId.HasValue && entityTypeId != 0 )
             {
                 queryParams.Add( PageParameterKey.EntityTypeId, entityTypeId.ToString() );
             }
@@ -484,7 +484,7 @@ namespace RockWeb.Blocks.Reminders
         {
             var btnEntityType = e.Item.FindControl( "btnEntityType" ) as LinkButton;
             var entityType = ( EntityType ) e.Item.DataItem;
-            btnEntityType.Text = entityType.FriendlyName;
+            btnEntityType.Text = entityType.FriendlyName.Pluralize();
             btnEntityType.CommandArgument = entityType.Id.ToString();
         }
 
@@ -566,11 +566,18 @@ namespace RockWeb.Blocks.Reminders
             using ( var rockContext = new RockContext() )
             {
                 var reminder = new ReminderService( rockContext ).Get( reminderId.Value );
-                reminder.CompleteReminder();
+                if ( reminder.IsComplete )
+                {
+                    reminder.IsComplete = false;
+                }
+                else
+                {
+                    reminder.CompleteReminder();
+                }
                 rockContext.SaveChanges();
             }
 
-            NavigateToCurrentPageReference();
+            InitializeBlock();
         }
 
         /// <summary>
@@ -672,6 +679,31 @@ namespace RockWeb.Blocks.Reminders
                 SetBlockUserPreference( UserPreferenceKey.ActiveFilter, "Custom Date Range" );
                 SetBlockUserPreference( UserPreferenceKey.CustomDateRange, drpCustomDate.DelimitedValues );
                 RefreshPage();
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptReminders controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptReminders_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var reminder = e.Item.DataItem as ReminderDTO;
+
+            if ( reminder.EntityUrl.IsNotNullOrWhiteSpace() )
+            {
+                var entityUrl = ResolveUrl( reminder.EntityUrl );
+                var lEntity = e.Item.FindControl( "lEntity" ) as Literal;
+                lEntity.Text = $"<a href=\"{entityUrl}\">{reminder.EntityDescription}</a>";
+            }
+
+            if ( reminder.IsPersonReminder )
+            {
+                var photoUrl = Person.GetPersonPhotoUrl( reminder.EntityId );
+                var litProfilePhoto = e.Item.FindControl( "litProfilePhoto" ) as Literal;
+                litProfilePhoto.Visible = true;
+                litProfilePhoto.Text = string.Format( litProfilePhoto.Text, photoUrl );
             }
         }
 

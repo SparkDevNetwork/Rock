@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,8 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
+using System.Web.Http.OData;
 
 using Rock;
 using Rock.BulkExport;
@@ -441,7 +440,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [RockEnableQuery]
+        [EnableQuery]
         [System.Web.Http.Route( "api/FinancialTransactions/GetByGivingId/{givingId}" )]
         [Rock.SystemGuid.RestActionGuid( "6C883A6E-C9A2-4562-ABBB-019C2E34BD13" )]
         public IQueryable<FinancialTransaction> GetByGivingId( string givingId )

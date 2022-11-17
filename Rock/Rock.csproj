@@ -540,6 +540,7 @@
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
+    <Compile Include="Attribute\ReminderTypeFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
     <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
@@ -869,17 +870,20 @@
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
+    <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
+    <Compile Include="Jobs\PostV141UpdateValueAsColumns.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
+    <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />
@@ -952,6 +956,7 @@
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
     <Compile Include="Plugin\HotFixes\159_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
@@ -994,6 +999,7 @@
     <Compile Include="RealTime\TopicProxyFactory.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
+    <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
     <Compile Include="SystemGuid\EntityTypeGuidAttribute.cs" />
@@ -1531,6 +1537,7 @@
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
     <Compile Include="Tasks\UpdateGroupMember.cs" />
     <Compile Include="Tasks\UpdatePaymentStatusFinancialScheduledTransactions.cs" />
+    <Compile Include="Tasks\UpdatePersistedDataset.cs" />
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
     <Compile Include="Tasks\LaunchWorkflow.cs" />
@@ -1538,6 +1545,7 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Transactions\GroupIndexTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />
@@ -3868,6 +3876,7 @@
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceResultAdd.cs" />
+    <Compile Include="Workflow\Action\Groups\AddGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
@@ -3882,6 +3891,7 @@
     <Compile Include="Workflow\Action\Groups\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\AddPersonToFamily.cs" />
+    <Compile Include="Workflow\Action\People\AddReminder.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\InactivateFamily.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
@@ -3908,6 +3918,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />

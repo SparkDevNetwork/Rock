@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -30,8 +29,4 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("4339bdb6-9657-4f75-9ec3-e84b1023de19")]
-
-[assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
-[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
-[assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 

@@ -126,8 +126,8 @@
                                 </Rock:RockControlWrapper>
                                 <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members"
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
-                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing"
-                                    Help="Determines if groups of this type should be indexed." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Universal Search Indexing"
+                                    Help="Determines if groups of this type should be indexed for Universal Search." />
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"

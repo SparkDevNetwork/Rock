@@ -19,8 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
+using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +34,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <returns>A queryable collection of GroupMembers, including deceased, that match the provided query.</returns>
         [Authenticate, Secured]
-        [RockEnableQuery]
+        [EnableQuery]
         public override IQueryable<GroupMember> Get()
         {
             var queryString = Request.RequestUri.Query;

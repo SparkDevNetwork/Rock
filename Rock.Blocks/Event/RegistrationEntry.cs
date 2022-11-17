@@ -2375,6 +2375,7 @@ namespace Rock.Blocks.Event
 
             // Get forms with fields
             var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
+            var allAttributeFields = formModels.SelectMany( fm => fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true ) ).ToList();
 
             foreach ( var formModel in formModels )
             {
@@ -2400,13 +2401,51 @@ namespace Rock.Blocks.Event
 
                     field.VisibilityRules = fieldModel.FieldVisibilityRules
                         .RuleList
-                        .Where( vr => vr.ComparedToFormFieldGuid.HasValue )
-                        .Select( vr => new RegistrationEntryBlockVisibilityViewModel
+                        .Select( vr =>
                         {
-                            ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
-                            ComparedToValue = vr.ComparedToValue,
-                            ComparisonType = ( int ) vr.ComparisonType
-                        } );
+                            if ( !vr.ComparedToFormFieldGuid.HasValue )
+                            {
+                                return null;
+                            }
+
+                            var comparedToField = allAttributeFields.SingleOrDefault( f => f.Guid == vr.ComparedToFormFieldGuid );
+                            if ( comparedToField == null )
+                            {
+                                return null;
+                            }
+
+                            var filterValues = new List<string>();
+                            var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                            var fieldType = fieldAttribute?.FieldType?.Field;
+
+                            if ( fieldType == null )
+                            {
+                                return null;
+                            }
+
+                            var comparisonTypeValue = vr.ComparisonType.ConvertToString( false );
+                            if ( comparisonTypeValue != null )
+                            {
+                                // only add the comparisonTypeValue if it is specified, just like
+                                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                                filterValues.Add( comparisonTypeValue );
+                            }
+
+                            filterValues.Add( vr.ComparedToValue );
+
+                            var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
+
+                            return new RegistrationEntryBlockVisibilityViewModel
+                            {
+                                ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
+                                ComparisonValue = new PublicComparisonValueBag
+                                {
+                                    ComparisonType = ( int? ) comparisonValue.ComparisonType,
+                                    Value = comparisonValue.Value
+                                }
+                            };
+                        } )
+                        .Where( vr => vr != null );
 
                     fields.Add( field );
                 }

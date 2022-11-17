@@ -99,6 +99,8 @@
     <Compile Include="TestFramework\CollectionAssertExtensions.cs" />
     <Compile Include="TestFramework\FileAssertExtensions.cs" />
     <Compile Include="TestFramework\xUnitAssertExtensions.cs" />
+    <Compile Include="Utility\DateTimeTestHelper.cs" />
+    <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\TestConfigurationHelper.cs" />
     <Compile Include="Utility\SampleData.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />

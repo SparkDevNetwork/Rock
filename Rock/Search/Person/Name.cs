@@ -113,11 +113,11 @@ namespace Rock.Search.Person
             {
                 if ( disableCampusLabel )
                 {
-                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
+                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
                 }
                 else
                 {
-                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
                 }  
             }
 

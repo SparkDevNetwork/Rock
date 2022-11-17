@@ -21,7 +21,7 @@
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="EntityType" HeaderText="Entity Type" />
-                            <Rock:RockBoundField DataField="IsActive" HeaderText="Active" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gReminderTypes_Delete" />
                         </Columns>
@@ -37,7 +37,7 @@
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="EditReminderType" />
 
                 <asp:HiddenField ID="hfReminderTypeId" runat="server" Value="0" />
-                <div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="rtbName" runat="server" Label="Name" Required="true" ValidationGroup="EditReminderType" />
                     </div>
@@ -46,13 +46,9 @@
                     </div>
                 </div>
 
-                <div>
-                    <div class="col-md-12">
-                        <Rock:RockTextBox ID="rtbDescription" runat="server" Label="Description" TextMode="MultiLine" />
-                    </div>
-                </div>
+                <Rock:RockTextBox ID="rtbDescription" runat="server" Label="Description" TextMode="MultiLine" />
 
-                <div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="rddlNotificationType" runat="server" Label="Notification Type" Required="true" ValidationGroup="EditReminderType" AutoPostBack="true" OnSelectedIndexChanged="rddlNotificationType_SelectedIndexChanged" />
                     </div>
@@ -61,7 +57,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="rcbShouldShowNote" runat="server" Label="Should Show Note" />
                     </div>
@@ -69,19 +65,16 @@
                         <Rock:RockTextBox ID="rtbOrder" runat="server" Label="Order" />
                     </div>
                 </div>
+                
+                <Rock:EntityTypePicker ID="retpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
 
-                <div>
-                    <div class="col-md-12">
-                        <Rock:EntityTypePicker ID="retpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
-                    </div>
-                </div>
 
-                <div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="rcbShouldAutoComplete" runat="server" Label="Should Auto-Complete When Notified" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="rtbHighlightColor" runat="server" Label="Highlight Color" />
+                        <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highlight Color" />
                     </div>
                 </div>
             </Content>

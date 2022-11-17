@@ -38,6 +38,9 @@ namespace Rock.Client
         public Rock.Client.Enums.Event.InteractiveExperienceApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -62,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Response { get; set; }
+
+        /// <summary />
+        public string ResponseDataJson { get; set; }
 
         /// <summary />
         public DateTime ResponseDateTime { get; set; }
@@ -100,6 +106,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ApprovalStatus = source.ApprovalStatus;
+            this.CampusId = source.CampusId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionSessionId = source.InteractionSessionId;
@@ -108,6 +115,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
             this.Response = source.Response;
+            this.ResponseDataJson = source.ResponseDataJson;
             this.ResponseDateTime = source.ResponseDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -124,6 +132,12 @@ namespace Rock.Client
     /// </summary>
     public partial class InteractiveExperienceAnswer : InteractiveExperienceAnswerEntity
     {
+        /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
+        public InteractionSession InteractionSession { get; set; }
+
         /// <summary />
         public InteractiveExperienceAction InteractiveExperienceAction { get; set; }
 

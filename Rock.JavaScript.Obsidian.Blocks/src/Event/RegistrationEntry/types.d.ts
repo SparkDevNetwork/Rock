@@ -22,6 +22,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -164,8 +165,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
 
 export type RegistrationEntryBlockFormFieldRuleViewModel = {
     comparedToRegistrationTemplateFormFieldGuid: Guid;
-    comparisonType: ComparisonType;
-    comparedToValue: string;
+    comparisonValue: ComparisonValue;
 };
 
 export type RegistrantInfo = {

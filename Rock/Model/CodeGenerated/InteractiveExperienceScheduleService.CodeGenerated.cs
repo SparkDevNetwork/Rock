@@ -86,6 +86,7 @@ namespace Rock.Model
                 GroupId = model.GroupId,
                 InteractiveExperienceId = model.InteractiveExperienceId,
                 ScheduleId = model.ScheduleId,
+                ScheduleSettingsJson = model.ScheduleSettingsJson,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -161,6 +162,7 @@ namespace Rock.Model
             target.GroupId = source.GroupId;
             target.InteractiveExperienceId = source.InteractiveExperienceId;
             target.ScheduleId = source.ScheduleId;
+            target.ScheduleSettingsJson = source.ScheduleSettingsJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

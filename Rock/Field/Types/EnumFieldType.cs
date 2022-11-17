@@ -22,6 +22,8 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -176,6 +178,37 @@ namespace Rock.Field.Types
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
             var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                var selectedValues = values[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                if ( selectedValues.Count == 0 )
+                {
+                    return new ComparisonValue
+                    {
+                        Value = string.Empty
+                    };
+                }
+                else
+                {
+                    return new ComparisonValue
+                    {
+                        ComparisonType = ComparisonType.Contains,
+                        Value = selectedValues.Select( v => GetPublicEditValue( v, privateConfigurationValues ) ).JoinStrings( "," )
+                    };
+                }
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
         }
 
         /// <summary>

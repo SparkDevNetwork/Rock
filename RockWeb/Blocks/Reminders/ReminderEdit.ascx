@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-bell"></i> 
@@ -13,29 +13,28 @@
             </div>
 
             <div class="panel-body">
+                <asp:ValidationSummary ID="vsReminder" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
                 <asp:HiddenField ID="hfReminderId" runat="server" Value="0" />
-                <div>
-                    <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
-                </div>
 
-                <div>
-                    <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbxComplete" runat="server" Label="Complete" Help="Determines if the reminder should be considered complete." />
+                    </div>
                 </div>
+                <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
+                <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" Required="true" />
+                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" EnableSelfSelection="true" />
 
-                <div>
-                    <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" Required="true" />
-                </div>
-
-                <div>
-                    <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" EnableSelfSelection="true" />
-                </div>
-
-                <div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:NumberBox ID="rnbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinately." AppendText="times" />
+                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinitely." AppendText="times" />
                     </div>
                 </div>
 

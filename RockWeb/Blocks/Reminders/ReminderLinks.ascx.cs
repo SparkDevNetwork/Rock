@@ -125,12 +125,7 @@ namespace RockWeb.Blocks.Reminders
                 rppPerson.SetValue( CurrentPerson );
 
                 int reminderCount = CurrentPerson?.ReminderCount ?? 0;
-                if ( reminderCount > 0 )
-                {
-                    // Show reminder count on icon.
-                    lbReminders.CssClass = lbReminders.CssClass + " has-reminders";
-                    litReminderCount.Text = CurrentPerson.ReminderCount.Value.ToString();
-                }
+                hfReminderCount.Value = reminderCount.ToString();
 
                 SetContextEntityType();
             }
@@ -198,21 +193,6 @@ namespace RockWeb.Blocks.Reminders
                     mdAddReminder.Show();
                     break;
             }
-        }
-
-        /// <summary>
-        /// Hides the dialog.
-        /// </summary>
-        private void HideDialog()
-        {
-            switch ( hfActiveReminderDialog.Value )
-            {
-                case "ADDREMINDER":
-                    mdAddReminder.Hide();
-                    break;
-            }
-
-            hfActiveReminderDialog.Value = string.Empty;
         }
 
         /// <summary>
@@ -449,13 +429,7 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
-            var queryParams = new Dictionary<string, string>
-            {
-                { PageParameterKey.EntityTypeId, contextEntity.TypeId.ToString() },
-                { PageParameterKey.EntityId, contextEntity.Id.ToString() }
-            };
-
-            NavigateToLinkedPage( AttributeKey.ViewRemindersPage, queryParams );
+            NavigateToLinkedPage( AttributeKey.ViewRemindersPage );
         }
 
         /// <summary>

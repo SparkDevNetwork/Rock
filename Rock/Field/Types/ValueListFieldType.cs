@@ -43,14 +43,6 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDefinedtype = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
-            var newDefinedtype = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
-            return oldDefinedtype != newDefinedtype;
-        }
-
         #region Formatting
 
         /// <inheritdoc/>
@@ -92,6 +84,19 @@ namespace Rock.Field.Types
         public override bool HasFilterControl()
         {
             return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDefinedtype = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var newDefinedtype = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+
+            return oldDefinedtype != newDefinedtype;
         }
 
         #endregion

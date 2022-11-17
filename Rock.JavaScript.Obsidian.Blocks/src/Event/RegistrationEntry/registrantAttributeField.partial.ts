@@ -19,36 +19,30 @@ import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
 import Alert from "@Obsidian/Controls/alert.vue";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { areEqual } from "@Obsidian/Utility/guid";
 
-function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>): boolean {
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
     const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
     if (typeof value !== "string") {
         return false;
     }
 
-    const strVal = value.toLowerCase().trim();
-    const comparison = rule.comparedToValue.toLowerCase().trim();
-
-    if (!strVal) {
+    const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+    if (!comparedToFormField?.attribute?.fieldTypeGuid) {
         return false;
     }
 
-    switch (rule.comparisonType) {
-        case ComparisonType.EqualTo:
-            return strVal === comparison;
-        case ComparisonType.NotEqualTo:
-            return strVal !== comparison;
-        case ComparisonType.Contains:
-            return strVal.includes(comparison);
-        case ComparisonType.DoesNotContain:
-            return !strVal.includes(comparison);
+    const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+    if (!fieldType) {
+        return false;
     }
 
-    return false;
+    return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
 }
 
 export default defineComponent({
@@ -68,6 +62,11 @@ export default defineComponent({
         fieldValues: {
             type: Object as PropType<Record<Guid, unknown>>,
             required: true
+        },
+
+        formFields: {
+            type: Array as PropType<RegistrationEntryBlockFormFieldViewModel[]>,
+            required: true
         }
     },
 
@@ -75,27 +74,27 @@ export default defineComponent({
         const isVisible = computed(() => {
             switch (props.field.visibilityRuleType) {
                 case FilterExpressionType.GroupAll:
-                    return props.field.visibilityRules.every(vr => isRuleMet(vr, props.fieldValues));
+                    return props.field.visibilityRules.every(vr => isRuleMet(vr, props.fieldValues, props.formFields));
 
                 case FilterExpressionType.GroupAllFalse:
-                    return props.field.visibilityRules.every(vr => !isRuleMet(vr, props.fieldValues));
+                    return props.field.visibilityRules.every(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
 
                 case FilterExpressionType.GroupAny:
-                    return props.field.visibilityRules.some(vr => isRuleMet(vr, props.fieldValues));
+                    return props.field.visibilityRules.some(vr => isRuleMet(vr, props.fieldValues, props.formFields));
 
                 case FilterExpressionType.GroupAnyFalse:
-                    return props.field.visibilityRules.some(vr => !isRuleMet(vr, props.fieldValues));
+                    return props.field.visibilityRules.some(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
             }
 
             return true;
         });
 
         const attribute = ref(props.field.attribute);
-        const value = ref(props.fieldValues[props.field.guid] ?? "");
+        const value = ref<string>((props.fieldValues[props.field.guid] as string) ?? "");
 
         // Detect changes like switch from one person to another.
         watch(() => props.fieldValues[props.field.guid], () => {
-            value.value = props.fieldValues[props.field.guid];
+            value.value = props.fieldValues[props.field.guid] as string;
         });
 
         watch(value, () => {

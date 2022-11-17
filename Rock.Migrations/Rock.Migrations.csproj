@@ -68,6 +68,10 @@
     <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.cs" />
+    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.designer.cs">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.cs" />
     <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
@@ -131,6 +135,30 @@
     <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.cs" />
     <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.designer.cs">
       <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.cs" />
+    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.designer.cs">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.cs" />
+    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.designer.cs">
+      <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.cs" />
+    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.designer.cs">
+      <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs" />
+    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211171611271_Rollup_20221117.cs" />
+    <Compile Include="Migrations\202211171611271_Rollup_20221117.designer.cs">
+      <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.cs" />
+    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.designer.cs">
+      <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
@@ -1389,6 +1417,9 @@
     <EmbeddedResource Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211081600377_GroupSchedulingAcceptAll.resx">
+      <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </EmbeddedResource>
@@ -1436,6 +1467,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202211032103215_CodeGenerated_20221103.resx">
       <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.resx">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.resx">
+      <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211091822240_AddIsPublicToSchedule.resx">
+      <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
+      <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211171611271_Rollup_20221117.resx">
+      <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211171644271_CodeGenerated_20221117.resx">
+      <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -2545,6 +2594,9 @@
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
+      <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">
       <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
     </None>
