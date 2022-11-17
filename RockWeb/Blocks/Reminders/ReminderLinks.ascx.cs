@@ -113,6 +113,8 @@ namespace RockWeb.Blocks.Reminders
         {
             base.OnLoad( e );
 
+            if ( !Page.IsPostBack )
+            {
                 if ( !CurrentPersonAliasId.HasValue )
                 {
                     // If user is not logged in, do nothing.
@@ -123,15 +125,8 @@ namespace RockWeb.Blocks.Reminders
                 rppPerson.SetValue( CurrentPerson );
 
                 int reminderCount = CurrentPerson?.ReminderCount ?? 0;
-                if ( reminderCount > 0 )
-                {
-                    // Show reminder count on icon.
-                    lbReminders.CssClass = lbReminders.CssClass + " active has-reminders";
-                    litReminderCount.Text = "<span class='count-bottom'>" + CurrentPerson.ReminderCount.Value.ToString() + "</span>";
-                }
+                hfReminderCount.Value = reminderCount.ToString();
 
-            if ( !Page.IsPostBack )
-            {
                 SetContextEntityType();
             }
             else
@@ -434,13 +429,7 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
-            var queryParams = new Dictionary<string, string>
-            {
-                { PageParameterKey.EntityTypeId, contextEntity.TypeId.ToString() },
-                { PageParameterKey.EntityId, contextEntity.Id.ToString() }
-            };
-
-            NavigateToLinkedPage( AttributeKey.ViewRemindersPage, queryParams );
+            NavigateToLinkedPage( AttributeKey.ViewRemindersPage );
         }
 
         /// <summary>
