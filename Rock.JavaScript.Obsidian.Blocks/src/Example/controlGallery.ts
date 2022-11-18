@@ -1005,6 +1005,7 @@ const dropDownListGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
+
     <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
@@ -6105,7 +6106,7 @@ const contentDropDownPickerGallery = defineComponent({
     },
     setup() {
         const value = ref<string>("");
-        const innerLabel = computed<string>(() => value.value || "<i>No Value Selected</i>");
+        const innerLabel = computed<string>(() => value.value || "No Value Selected");
         const showPopup = ref(false);
         const isFullscreen = ref(false);
 
@@ -6115,18 +6116,6 @@ const contentDropDownPickerGallery = defineComponent({
         function onClear(): void {
             value.value = "";
         }
-
-        watch(showPopup, () => {
-            if (showPopup.value) {
-                isFullscreen.value = true;
-            }
-        });
-
-        watch(isFullscreen, () => {
-            if (!isFullscreen.value) {
-                showPopup.value = false;
-            }
-        });
 
         return {
             value,
@@ -6142,7 +6131,7 @@ const contentDropDownPickerGallery = defineComponent({
             exampleCode: `<ContentDropDownPicker
     label="Your Custom Picker"
     @primaryButtonClicked="selectValue"
-    @clearButtonClicked="clear"
+    @clearButtonClicked="clear"S
     :innerLabel="innerLabel"
     :showClear="!!value"
     iconCssClass="fa fa-cross" >
