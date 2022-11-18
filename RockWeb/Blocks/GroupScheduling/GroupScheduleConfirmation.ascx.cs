@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected class PageParameterKey
         {
-            public const string AttendanceId = "attendanceId";
-            public const string AttendanceIds = "attendanceIds";
-            public const string IsConfirmed = "isConfirmed";
+            public const string AttendanceId = "AttendanceId";
+            public const string AttendanceIds = "AttendanceIds";
+            public const string IsConfirmed = "IsConfirmed";
             public const string ReturnUrl = "ReturnUrl";
             public const string Person = "Person";
         }
