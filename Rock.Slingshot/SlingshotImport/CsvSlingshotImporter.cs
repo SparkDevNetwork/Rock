@@ -145,6 +145,8 @@ namespace Rock.Slingshot
             using ( StreamReader uploadedCSVFileStream = File.OpenText( SlingshotFileName ) )
             using ( CsvReader csvReader = new CsvReader( uploadedCSVFileStream ) )
             {
+                csvReader.Configuration.SkipEmptyRecords = true;
+
                 personCSVWriter.WriteHeader<SlingshotCore.Model.Person>();
                 personAddressCSVWriter.WriteHeader<SlingshotCore.Model.PersonAddress>();
                 personPhoneCSVWriter.WriteHeader<SlingshotCore.Model.PersonPhone>();
@@ -177,7 +179,7 @@ namespace Rock.Slingshot
                         {
                             csvEntryLookup.Values
                                 .ToList()
-                                .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ) );
+                                .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ?? "" ) );
                             uploadedPersonCsvErrorsWriter.WriteField( false );
                             uploadedPersonCsvErrorsWriter.WriteField( errorMessage );
                             uploadedPersonCsvErrorsWriter.NextRecord();
