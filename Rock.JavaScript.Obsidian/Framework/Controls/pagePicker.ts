@@ -335,18 +335,20 @@ export default defineComponent({
     <template #customPickerActions v-if="showSelectCurrentPage">
         <RockButton @click="selectCurrentPage" :btnSize="btnSize" :btnType="btnType" title="Select Current Page"><i class="fa fa-file-o"></i></RockButton>
     </template>
-</TreeItemPicker>
 
-<div v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
-    <small>{{ routeCountText }}</small>
-    <BaseAsyncPicker
-        :modelValue="internalRouteValue"
-        @update:modelValue="updateRoute"
-        showBlankItem
-        :lazyMode="isLazy"
-        :displayStyle="routePickerDisplayStyle"
-        :items="actualRouteItems"
-        :open="open" />
-</div>
+    <template #append>
+        <div v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
+            <small>{{ routeCountText }}</small>
+            <BaseAsyncPicker
+                :modelValue="internalRouteValue"
+                @update:modelValue="updateRoute"
+                showBlankItem
+                :lazyMode="isLazy"
+                :displayStyle="routePickerDisplayStyle"
+                :items="actualRouteItems"
+                :open="open" />
+        </div>
+    </template>
+</TreeItemPicker>
 `
 });
