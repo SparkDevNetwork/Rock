@@ -2117,7 +2117,7 @@ namespace Rock.Blocks.Event
             registrant.LoadAttributes();
             if ( UpdateRegistrantAttributes( registrant, registrantInfo, registrantChanges, context.RegistrationSettings ) )
             {
-                rockContext.SaveChanges();
+                registrant.SaveAttributeValues( rockContext );
             }
 
             // Save the signed document if we have one. We only process a document
