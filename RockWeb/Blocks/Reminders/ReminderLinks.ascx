@@ -97,11 +97,11 @@
     <%-- LinkButton inner html is set by checkReminders() function. --%>
     <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown" />
     <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
-        <li>
-            <asp:LinkButton runat="server" ID="lbViewReminders" OnClick="lbViewReminders_Click">View Reminders</asp:LinkButton>
-        </li>
         <li class="js-add-reminder d-none">
             <asp:LinkButton runat="server" ID="lbAddReminder" CssClass="" OnClick="lbAddReminder_Click">Add Reminder</asp:LinkButton>
+        </li>
+        <li>
+            <asp:LinkButton runat="server" ID="lbViewReminders" OnClick="lbViewReminders_Click">View Reminders</asp:LinkButton>
         </li>
     </asp:Panel>
 </div>
