@@ -337,8 +337,8 @@ export default defineComponent({
     </template>
 
     <template #append>
-        <div v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
-            <small>{{ routeCountText }}</small>
+        <div class="input-max-w-xl" v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
+            <span class="d-block small mt-1 mb-2">{{ routeCountText }}</span>
             <BaseAsyncPicker
                 :modelValue="internalRouteValue"
                 @update:modelValue="updateRoute"
