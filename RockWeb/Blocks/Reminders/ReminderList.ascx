@@ -73,9 +73,9 @@
                                 <div class="panel-toolbar panel-toolbar-right pr-0">
                                     <div>
                                         <!-- Filter for Groups/ChildGroups -->
-                                        <Rock:GroupPicker ID="gpSelectedGroup" runat="server" Label="" CssClass="occurrences-groups-picker" Visible="false" OnValueChanged="gpSelectedGroup_ValueChanged" />
+                                        <Rock:GroupPicker ID="gpSelectedGroup" runat="server" Label="" Placeholder="All Groups" CssClass="occurrences-groups-picker" Visible="false" OnValueChanged="gpSelectedGroup_ValueChanged" />
                                         <!-- Filter for Person -->
-                                        <Rock:PersonPicker ID="ppSelectedPerson" runat="server" Label="" CssClass="occurrences-groups-picker" Visible="false" OnValueChanged="ppSelectedPerson_ValueChanged" />
+                                        <Rock:PersonPicker ID="ppSelectedPerson" runat="server" Label="" Placeholder="All People" CssClass="occurrences-groups-picker" Visible="false" OnValueChanged="ppSelectedPerson_ValueChanged" />
                                     </div>
 
                                     <div class="btn-group">
