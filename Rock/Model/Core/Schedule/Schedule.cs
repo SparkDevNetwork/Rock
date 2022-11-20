@@ -168,12 +168,7 @@ namespace Rock.Model
         ///  A <see cref="System.Boolean"/> that is <c>true</c> if this Schedule is public, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsPublic
-        {
-            get { return _isPublic; }
-            set { _isPublic = value; }
-        }
-        private bool? _isPublic = true;
+        public bool? IsPublic { get; set; } = true;
 
         #endregion
 
