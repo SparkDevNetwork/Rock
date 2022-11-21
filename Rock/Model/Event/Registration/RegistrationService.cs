@@ -57,6 +57,19 @@ namespace Rock.Model
         /// Gets the generic context about the registration.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="errorMessage">The error result.</param>
+        /// <returns></returns>
+        [RockObsolete("1.14.1")]
+        [Obsolete( "Use GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )" )]
+        public RegistrationContext GetRegistrationContext( int registrationInstanceId, out string errorMessage )
+        {
+            return GetRegistrationContext( registrationInstanceId, null, out errorMessage );
+        }
+
+        /// <summary>
+        /// Gets the generic context about the registration.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
