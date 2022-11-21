@@ -131,26 +131,12 @@ namespace Rock.Chart
         }
 
         /// <summary>
-        /// Create the data structure for Chart.js parameter "data.datasets".
-        /// </summary>
-        /// <returns></returns>
-        public string GetChartDataJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
-        {
-            // Create the data structure for Chart.js parameter "data.datasets".
-            var chartData = this.GetChartDataJsonObjectForSpecificCategoryScale( args );
-            return SerializeJsonObject( chartData );
-        }
-
-        /// <summary>
         /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
         /// </summary>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
-        public virtual string GetJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
+        public string GetJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
         {
-            // Apply the argument settings.
-            this.SetChartStyle( args.ChartStyle );
-
             this.MaintainAspectRatio = args.MaintainAspectRatio;
             this.SizeToFitContainerWidth = args.SizeToFitContainerWidth;
 
@@ -175,7 +161,7 @@ namespace Rock.Chart
             var suggestedMax = Math.Ceiling( maxValue * 1.1M );
 
             // Create the data structure for Chart.js parameter "options".
-            var optionsLegend = this.GetLegendConfigurationObject();
+            var optionsLegend = this.GetLegendConfigurationObject( args.LegendPosition, args.LegendAlignment, args.DisplayLegend );
             var tooltipsConfiguration = this.GetTooltipsConfigurationObject( args.ContainerControlId, args.YValueFormatString );
             var optionsYaxis = this.GetYAxisConfigurationObject( args.YValueFormatString, suggestedMax, stepSize, isStacked );
 
@@ -196,24 +182,6 @@ namespace Rock.Chart
 
             // Return the JSON representation of the Chart.js data structure.
             return SerializeJsonObject( chartStructure );
-        }
-
-        /// <summary>
-        /// Serialize the specified object to JSON.
-        /// </summary>
-        /// <param name="jsonObject"></param>
-        /// <returns></returns>
-        protected string SerializeJsonObject( dynamic jsonObject )
-        {
-            var jsonSetting = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                NullValueHandling = NullValueHandling.Ignore
-            };
-
-            string jsonString = JsonConvert.SerializeObject( jsonObject, Formatting.None, jsonSetting );
-
-            return jsonString;
         }
 
         /// <summary>
@@ -373,6 +341,22 @@ namespace Rock.Chart
             }
 
             return maxValue;
+        }
+
+        #endregion
+
+        #region Obsolete
+
+        /// <summary>
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        [Obsolete( "Use the GetJson(ChartJsCategorySeriesDataFactory.GetJsonArgs args) method instead." )]
+        [RockObsolete( "1.14" )]
+        public string GetChartDataJson( ChartJsDataFactory.GetJsonArgs args )
+        {
+            return GetJson( ( ChartJsCategorySeriesDataFactory.GetJsonArgs ) args );
         }
 
         #endregion

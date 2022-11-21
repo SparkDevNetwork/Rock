@@ -1439,7 +1439,7 @@ namespace RockWeb.Blocks.Administration
             if ( singleDate )
             {
                 // Show a bar chart to summarize the data for a single date.
-                var chartDataByCategory = bcExceptions.GetCategorySeriesFromChartData( exceptions );
+                var chartDataByCategory = ChartDataFactory.GetCategorySeriesFromChartData( exceptions );
                 bcExceptions.SetChartDataItems( chartDataByCategory );
             }
             else

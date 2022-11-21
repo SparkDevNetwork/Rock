@@ -24,27 +24,103 @@ using Rock.Utility;
 namespace Rock.Chart
 {
     /// <summary>
-    /// Provides base functionality for factories that build a data model for a pie chart that can be rendered by the Chart.js library.
-    /// The pie chart shows the numerical propotion of the total represented by each category and value.
+    /// A factory that builds a data model for a pie chart that can be rendered by the Chart.js library.
+    /// The pie chart shows a numerical proportion of the total represented by each category and value.
     /// </summary>
     /// <remarks>
     /// Compatible with ChartJS v2.8.0.
     /// </remarks>
-    public class ChartJsPieChartDataFactory<TDataPoint> : ChartJsCategorySeriesDataFactory<TDataPoint>
-        where TDataPoint : IChartJsCategorySeriesDataPoint
+    public class ChartJsPieChartDataFactory : ChartJsDataFactory
     {
         /// <summary>
         /// Gets the Json data for a data structure that can be used by Chart.js to construct a pie chart.
         /// </summary>
+        /// <param name="dataset"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public string GetChartDataJson( ChartJsPieChartDataFactory.ChartJsonArgs args )
+        public string GetChartDataJson( ChartJsCategorySeriesDataset dataset, ChartJsonArgs args )
         {
-            // Apply the argument settings.
-            this.SetChartStyle( args.ChartStyle );
+            // Create the data structure for Chart.js parameter "data.datasets".
+            var chartData = GetChartDataJsonObject( dataset, args );
 
+            var json = GetChartDataJsonInternal( chartData, args );
+            return json;
+        }
+
+        /// <summary>
+        /// Gets the Json data for a data structure that can be used by Chart.js to construct a pie chart.
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public string GetChartDataJson( ChartJsTimeSeriesDataset dataset, ChartJsonArgs args )
+        {
+            // Quantize the dataset by dividing the time series into pie slices such as days/months/years.
+            var quantizedDataset = GetCategorySeriesFromTimeSeries( dataset, null );  
+            var chartData = GetChartDataJsonObject( quantizedDataset, args );
+
+            var json = GetChartDataJsonInternal( chartData, args );
+            return json;
+        }
+
+        /// <summary>
+        /// Create a category series suitable for display in a pie chart from a collection of Rock Chart Data Items.
+        /// </summary>
+        /// <param name="chartDataItems"></param>
+        /// <param name="defaultSeriesName"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public string GetChartDataJson( IEnumerable<IChartData> chartDataItems, string defaultSeriesName, ChartJsonArgs args )
+        {
+            if ( string.IsNullOrWhiteSpace( defaultSeriesName ) )
+            {
+                defaultSeriesName = "(unknown)";
+            }
+
+            var firstItem = chartDataItems.FirstOrDefault();
+            var isChartJsDataPoint = firstItem is IChartJsCategorySeriesDataPoint;
+            var isTimeSeries = chartDataItems.Any( x => x.DateTimeStamp != 0 );
+             
+            //var datasets = new List<ChartJsCategorySeriesDataset>();
+            var dataset = new ChartJsCategorySeriesDataset();
+            dataset.DataPoints = new List<IChartJsCategorySeriesDataPoint>();
+
+            if ( isTimeSeries )
+            {
+                // Create a time series from the data items, and quantize the data points to create time-based categories.
+                var timeDatasets = ChartDataFactory.GetTimeSeriesFromChartData( chartDataItems, defaultSeriesName );
+                // The pie chart can only represent one dataset, so get the first available.
+                var timeDataset = timeDatasets.FirstOrDefault();
+                dataset = ChartDataFactory.GetCategorySeriesFromTimeSeries( timeDataset );
+            }
+            else
+            {
+                var itemsBySeries = chartDataItems.GroupBy( k => k.SeriesName, v => v );
+                foreach ( var series in itemsBySeries )
+                {
+                    var categoryName = string.IsNullOrWhiteSpace( series.Key ) ? defaultSeriesName : series.Key;
+                    IChartJsCategorySeriesDataPoint dataPoint;
+                    // Each series represents a slice of the pie chart, so get the sum of datapoints for each series.
+                    dataPoint = new ChartJsCategorySeriesDataPoint
+                    {
+                        Category = categoryName,
+                        Value = chartDataItems.Where( x => x.SeriesName == series.Key ).Sum( i => i.YValue ?? 0 )
+                    };
+
+                    dataset.DataPoints.Add( dataPoint );
+                }
+            }
+
+            var chartData = GetChartDataJsonObject( dataset, args );
+
+            var json = GetChartDataJsonInternal( chartData, args );
+            return json;
+        }
+
+        private string GetChartDataJsonInternal( dynamic chartData, ChartJsonArgs args )
+        {
             // Adjust the legend position to the left or right of the pie chart.
-            var legendPosition = args.ChartStyle?.Legend?.Position;
+            var legendPosition = args.LegendPosition;
             if ( legendPosition == "nw" || legendPosition == "sw" )
             {
                 legendPosition = "left";
@@ -53,16 +129,13 @@ namespace Rock.Chart
             {
                 legendPosition = "right";
             }
-            this.LegendPosition = legendPosition;
 
+            // Apply the argument settings.
             this.MaintainAspectRatio = args.MaintainAspectRatio;
             this.SizeToFitContainerWidth = args.SizeToFitContainerWidth;
 
-            // Create the data structure for Chart.js parameter "data.datasets".
-            var chartData = GetChartDataJsonObjectForSpecificCategoryScale( args );
-
             // Create the data structure for Chart.js parameter "options".
-            var optionsLegend = this.GetLegendConfigurationObject();
+            var optionsLegend = this.GetLegendConfigurationObject( legendPosition, args.LegendAlignment, args.DisplayLegend );
             var tooltipsConfiguration = this.GetTooltipsConfigurationObject( args.ContainerControlId, args.YValueFormatString );
 
             // Set segment labels.
@@ -173,73 +246,185 @@ function (tooltipItem, data) {
         }
 
         /// <summary>
-        /// Get a JSON data structure that represents Chart.js options to show discrete Category categories on the X-axis.
+        /// Get a JSON data structure that represents Chart.js datapoints suitable for constructing a pie chart.
         /// </summary>
+        /// <param name="dataset"></param>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
         /// <remarks>
         /// Using discrete categories for the Category scale allows the data series to be padded with zero-values where no data is found.
         /// This often shows a more accurate representation of the data rather than allowing Chart.js to interpolate the empty intervals.
         /// </remarks>
-        protected dynamic GetChartDataJsonObjectForSpecificCategoryScale( ChartJsPieChartDataFactory.ChartJsonArgs args )
+        protected dynamic GetChartDataJsonObject( ChartJsCategorySeriesDataset dataset, ChartJsonArgs args )
         {
-            var categoryNames = this.Datasets.SelectMany( x => x.DataPoints ).Select( x => x.Category ).ToList();
+            var categoryNames = dataset.DataPoints.Select( x => x.Category ).ToList();
             var colorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
 
             var jsDatasets = new List<object>();
 
-            foreach ( var dataset in this.Datasets )
+            // Create a sequence of datapoints, ensuring there is a value for each of the categories.
+            dynamic dataValues;
+            dynamic jsDataset;
+
+            // For a pie chart, each data point represents a slice and therefore should have a different color.
+            var pieColorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
+            var pieColors = new List<string>();
+            var fillColors = new List<string>();
+            int fadePercentage = this.AreaFillOpacity.ToIntSafe() * 100;
+
+            for ( int i = 0; i < categoryNames.Count; i++ )
             {
-                // Create a sequence of datapoints, ensuring there is a value for each of the categories.
-                dynamic dataValues;
-                dynamic jsDataset;
+                var nextColor = pieColorGenerator.GetNextColor();
+                pieColors.Add( nextColor.ToRGBA() );
 
-                // For a pie chart, each data point represents a slice and therefore should have a different color.
-                var pieColorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
-                var pieColors = new List<string>();
-                var fillColors = new List<string>();
-                int fadePercentage = this.AreaFillOpacity.ToIntSafe() * 100;
-
-                for ( int i = 0; i < categoryNames.Count; i++ )
+                if ( fadePercentage > 0 )
                 {
-                    var nextColor = pieColorGenerator.GetNextColor();
-                    pieColors.Add( nextColor.ToRGBA() );
-
-                    if ( fadePercentage > 0 )
-                    {
-                        nextColor.FadeOut( fadePercentage );
-                        fillColors.Add( nextColor.ToRGBA() );
-                    }
+                    nextColor.FadeOut( fadePercentage );
+                    fillColors.Add( nextColor.ToRGBA() );
                 }
-
-                dataValues = GetDataPointsForAllCategories( dataset, categoryNames );
-
-                jsDataset = new
-                {
-                    label = dataset.Name,
-                    borderColor = pieColors,
-                    borderWidth = 2,
-                    backgroundColor = pieColors,
-                    fill = fadePercentage > 0 ? "origin" : "false",
-                    data = dataValues
-                };
-
-                jsDatasets.Add( jsDataset );
             }
+
+            dataValues = GetDataPointsForAllCategories( dataset, categoryNames );
+
+            jsDataset = new
+            {
+                label = dataset.Name,
+                borderColor = pieColors,
+                borderWidth = 2,
+                backgroundColor = pieColors,
+                fill = fadePercentage > 0 ? "origin" : "false",
+                data = dataValues
+            };
+
+            jsDatasets.Add( jsDataset );
 
             var chartData = new { datasets = jsDatasets, labels = categoryNames };
 
             return chartData;
         }
-    }
 
-    /// <summary>
-    /// Provides helper classes in a non-generic context for the generic factory ChartJsCategorySeriesDataFactory.
-    /// </summary>
-    public static class ChartJsPieChartDataFactory
-    {
         /// <summary>
-        /// Arguments for the methods that build the Chart Json data structures.
+        /// Get a sequence of datapoints corresponding to a specific category, ensuring there is a value for each of the categories.
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <param name="categoryNames"></param>
+        /// <returns></returns>
+        private List<decimal> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames )
+        {
+            var dataValues = new List<decimal>();
+
+            foreach ( var categoryName in categoryNames )
+            {
+                var datapoint = dataset.DataPoints.FirstOrDefault( x => x.Category == categoryName );
+
+                if ( datapoint == null )
+                {
+                    dataValues.Add( 0 );
+                }
+                else
+                {
+                    dataValues.Add( datapoint.Value );
+                }
+            }
+
+            return dataValues;
+        }
+
+        /// <summary>
+        /// Convert a collection of time series datasets to category-value datasets, where the categories represent discrete periods in the specified time scale.
+        /// </summary>
+        /// <remarks>
+        /// Quantizing the data points in this way will substantially improve the performance of Chart.js for large data sets.
+        /// </remarks>
+        private ChartJsCategorySeriesDataset GetCategorySeriesFromTimeSeries( ChartJsTimeSeriesDataset dataset, ChartJsTimeSeriesTimeScaleSpecifier? timeScale )
+        {
+            const string DateFormatStringMonthYear = "MMM yyyy";
+            const string DateFormatStringDayMonthYear = "d";
+
+            //var quantizedDatasets = new List<ChartJsCategorySeriesDataset>();
+
+            //foreach ( var dataset in datasets )
+            //{
+                var datapoints = dataset.DataPoints;
+
+                var datasetQuantized = new ChartJsCategorySeriesDataset();
+
+                datasetQuantized.Name = dataset.Name;
+                datasetQuantized.BorderColor = dataset.BorderColor;
+                datasetQuantized.FillColor = dataset.FillColor;
+
+                if ( timeScale == null )
+                {
+                    // Get the sum of all datapoints.
+                    var quantizedDataPoints = datapoints
+                        .Select( x => new ChartJsCategorySeriesDataPoint
+                        {
+                            Category = dataset.Name,
+                            Value = datapoints.Sum( y => y.Value ),
+                            SortKey = dataset.Name
+                        } )
+                        .ToList();
+
+                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+                }
+                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+                {
+                    var quantizedDataPoints = datapoints
+                        .GroupBy( x => new { Day = x.DateTime } )
+                        .Select( x => new ChartJsCategorySeriesDataPoint
+                        {
+                            Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
+                            Value = x.Sum( y => y.Value ),
+                            SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
+                        } )
+                        .OrderBy( x => x.SortKey )
+                        .ToList();
+
+                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+                }
+                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
+                {
+                    var quantizedDataPoints = datapoints
+                        .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
+                        .Select( x => new ChartJsCategorySeriesDataPoint
+                        {
+                            Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
+                            Value = x.Sum( y => y.Value ),
+                            SortKey = x.Key.Month.ToString( "yyyyMM" ),
+                        } )
+                        .OrderBy( x => x.SortKey )
+                        .ToList();
+
+                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+                }
+                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Year )
+                {
+                    var quantizedDataPoints = datapoints
+                        .GroupBy( x => new { Year = new DateTime( x.DateTime.Year, 1, 1 ) } )
+                        .Select( x => new ChartJsCategorySeriesDataPoint
+                        {
+                            Category = x.Key.Year.ToString( "yyyy" ),
+                            Value = x.Sum( y => y.Value ),
+                            SortKey = x.Key.Year.ToString( "yyyy" ),
+                        } )
+                        .OrderBy( x => x.SortKey )
+                        .ToList();
+
+                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+                }
+                else
+                {
+                    throw new NotImplementedException( "Timescale is not implemented" );
+                }
+
+                //quantizedDatasets.Add( datasetQuantized );
+            //}
+
+            return datasetQuantized;
+        }
+
+        /// <summary>
+        /// Arguments for the methods that build the Chart Json data structures for a pie chart.
         /// </summary>
         public sealed class ChartJsonArgs : ChartJsDataFactory.GetJsonArgs
         {

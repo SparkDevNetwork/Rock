@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Rock.Chart;
 
 namespace Rock.Web.UI.Controls
@@ -49,53 +48,58 @@ namespace Rock.Web.UI.Controls
         public bool ShowSegmentLabels { get; set; }
 
         /// <inheritdoc/>
-        protected override string OnGenerateChartJson( object dataSource )
+        protected override void OnInit( EventArgs e )
         {
-            var chartDataJson = string.Empty;
-            if ( dataSource is IEnumerable<IChartData> chartData )
-            {
-                chartDataJson = GetFromChartDataItems( chartData );
-            }
-            else if ( dataSource is List<ChartJsTimeSeriesDataset> datasets )
-            {
-                throw new Exception( "Time series data not implemented for Pie chart." );
-            }
-            else if ( dataSource is List<ChartJsCategorySeriesDataset> categoryDatasets )
-            {
-                var chartFactory = new ChartJsPieChartDataFactory<ChartJsCategorySeriesDataPoint>();
-                chartFactory.Datasets = categoryDatasets;
-                chartFactory.CustomTooltipScript = this.TooltipContentScript;
+            base.OnInit( e );
 
-                // Add client script to construct the chart.
-                var args = GetDataFactoryArgs();
-
-                chartDataJson = chartFactory.GetChartDataJson( args );
-            }
-
-            return chartDataJson;
+            this.ChartClickScript = $@"function (event, pos, item) {{
+    var activePoints = _chart.getElementsAtEvent(event);
+    var chartData = activePoints[0]['_chart'].config.data;
+    var dataset = chartData.datasets[activePoints[0]['_datasetIndex']];
+    var dataItem = dataset.data[activePoints[0]['_index']];
+    if (dataItem) {{
+        postbackArg = 'YValue=' + dataItem;
+    }}
+    else
+    {{
+        // no point was clicked
+        postbackArg =  'YValue=';
+    }}
+    window.location = ""javascript:__doPostBack('{ this.ChartContainerControl.UniqueID }', '"" +  postbackArg + ""')"";
+}}";
         }
 
-        private string GetFromChartDataItems( IEnumerable<IChartData> chartDataItems )
+        /// <inheritdoc/>
+        protected override string OnGenerateChartJson( object dataSource, string defaultSeriesName = null )
         {
-            var chartDataJson = string.Empty;
-            var isTimeSeries = chartDataItems.Any( x => x.DateTimeStamp != 0 );
-            if ( isTimeSeries )
+            var chartFactory = new ChartJsPieChartDataFactory();
+            chartFactory.CustomTooltipScript = this.TooltipContentScript;
+
+            var args = GetDataFactoryArgs();
+
+            string chartDataJson;
+            if ( dataSource is IEnumerable<IChartData> chartDataItems )
             {
-                throw new Exception( "Time series data not implemented for Pie chart." );
+                chartDataJson = chartFactory.GetChartDataJson( chartDataItems, defaultSeriesName, args );
             }
+            //else if ( dataSource is List<ChartJsTimeSeriesDataset> timeDatasets )
+            //{
+            //    chartDataJson = chartFactory.GetChartDataJson( timeDatasets, args );
+            //}
+            else if ( dataSource is ChartJsCategorySeriesDataset categoryDataset )
+            {
+                // For a single data set, each datapoint represents a pie slice.
+                chartDataJson = chartFactory.GetChartDataJson( categoryDataset, args );
+            }
+            //else if ( dataSource is List<ChartJsCategorySeriesDataset> categoryDatasets )
+            //{
+
+            //    chartDataJson = chartFactory.GetChartDataJson( categoryDatasets, args );
+            //}
             else
             {
-                var categoryDatasets = GetCategorySeriesFromChartData( chartDataItems );
-                var chartFactory = new ChartJsPieChartDataFactory<ChartJsCategorySeriesDataPoint>();
-
-                chartFactory.Datasets = categoryDatasets;
-                chartFactory.ChartStyle = ChartJsCategorySeriesChartStyleSpecifier.Pie;
-
-                // Add client script to construct the chart.
-                var args = GetDataFactoryArgs();
-                chartDataJson = chartFactory.GetChartDataJson( args );
+                throw new Exception( "Pie Chart unavailable. The data source is invalid." );
             }
-
             return chartDataJson;
         }
 
@@ -107,13 +111,14 @@ namespace Rock.Web.UI.Controls
         {
             var args = new ChartJsPieChartDataFactory.ChartJsonArgs();
 
-            args.ChartStyle = GetChartStyle();
             args.ContainerControlId = this.ClientID;
+            args.DisplayLegend = this.ShowLegend;
+            args.LegendPosition = this.LegendPosition;
             args.DisableAnimation = this.Page.IsPostBack;
             args.ShowSegmentLabels = this.ShowSegmentLabels;
 
             // Set the inner radius of the pie.
-            // Interpret a setting between 0 and 1 as a fraction, and 1.
+            // Interpret a setting between 0 and 1 as a fraction for backward compatibility.
             var innerRadius = ( decimal ) this.InnerRadius.GetValueOrDefault( 0 );
             if ( innerRadius > 0 && innerRadius < 1 )
             {
