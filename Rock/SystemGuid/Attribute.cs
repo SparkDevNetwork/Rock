@@ -707,6 +707,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
 
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWID = "890676BC-18D3-445F-A6FA-CC2F515F1930";
+
         #endregion Workflow Entry Block Attributes
 
         /// <summary>
