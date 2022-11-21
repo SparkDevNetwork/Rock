@@ -698,9 +698,11 @@
     <Compile Include="Chart\ChartJs\ChartJsConstants.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataset.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsPieChartDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartDataFactory.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
     <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
@@ -956,6 +958,7 @@
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
     <Compile Include="Plugin\HotFixes\159_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
@@ -996,6 +999,7 @@
     <Compile Include="RealTime\ITopicClients.cs" />
     <Compile Include="RealTime\AspNet\RealTimeHub.cs" />
     <Compile Include="RealTime\TopicProxyFactory.cs" />
+    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
@@ -1536,6 +1540,7 @@
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
     <Compile Include="Tasks\UpdateGroupMember.cs" />
     <Compile Include="Tasks\UpdatePaymentStatusFinancialScheduledTransactions.cs" />
+    <Compile Include="Tasks\UpdatePersistedDataset.cs" />
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
     <Compile Include="Tasks\LaunchWorkflow.cs" />
@@ -1543,6 +1548,7 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Transactions\GroupIndexTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />
@@ -1834,6 +1840,7 @@
     <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\Flot\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\IRockChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockPieChart.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
@@ -3183,7 +3190,7 @@
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
+    <Compile Include="Reporting\Dashboard\MetricChartDashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
@@ -3873,6 +3880,7 @@
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceResultAdd.cs" />
+    <Compile Include="Workflow\Action\Groups\AddGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
@@ -3914,6 +3922,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityAttribute.cs" />
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />

@@ -22,6 +22,12 @@
     }
   }
 
+  .input-group & {
+    &.ant-select-focused {
+      z-index: 3;
+    }
+  }
+
   &.ant-select-focused:not(.ant-select-disabled).form-control {
     border: 1px solid @input-border-focus;
     outline: none;

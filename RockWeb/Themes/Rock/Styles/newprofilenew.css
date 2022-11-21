@@ -1,9 +1,4 @@
-/* stylelint-disable */
-/* stylelint-enable */
-/*
-    The accent colors are deprecated and should not be used in new theme development. They will be
-    removed in Rock v 6.0.
-*/
+
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus,
@@ -42,10 +37,6 @@
   .flex-1 {
     min-width: fit-content;
   }
-}
-.avatar,
-.avatar::after {
-  border-radius: 6px !important;
 }
 .img-cover {
   width: 100%;

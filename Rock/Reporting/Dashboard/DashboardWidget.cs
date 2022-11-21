@@ -23,7 +23,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    /// A panel that displays content suitable for an element of a Rock dashboard.
     /// </summary>
     [TextField( "Title", "The title of the widget", false, Order = 0 )]
     [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]

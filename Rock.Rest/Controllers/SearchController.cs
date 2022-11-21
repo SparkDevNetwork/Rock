@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,11 +17,8 @@
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
-
+using System.Web.Http.OData;
 using Rock.Data;
-using Rock.Rest;
 using Rock.Rest.Filters;
 
 namespace Rock.Controllers
@@ -39,7 +36,7 @@ namespace Rock.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/search" )]
-        [RockEnableQuery]
+        [EnableQuery]
         [Rock.SystemGuid.RestActionGuid( "EBAEC60A-9C0A-45CD-954D-51E56B3BD162" )]
         public IQueryable<string> Get()
         {

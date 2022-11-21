@@ -27,9 +27,9 @@ using System.Linq;
 
 namespace Rock.Workflow.Action
 {
-    // <summary>
-    // Adds a reminder to a person's list.
-    // </summary>
+    /// <summary>
+    /// Adds a reminder to a person's list.
+    /// </summary>
     [ActionCategory( "People" )]
     [Description( "Adds a reminder to a person's list of reminders." )]
     [Export( typeof( ActionComponent ) )]

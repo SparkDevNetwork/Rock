@@ -93,6 +93,15 @@ namespace Rock.Model
         public int? InteractionSessionId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the <see cref="Campus"/> the answer
+        /// originated from.
+        /// </summary>
+        /// <value>
+        /// The identifier of the <see cref="Campus"/>.
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the approval status.
         /// </summary>
         /// <value>
@@ -100,6 +109,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public InteractiveExperienceApprovalStatus ApprovalStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom response data JSON. This will hold additional
+        /// information that does not need referential integrity.
+        /// </summary>
+        /// <value>
+        /// The custom response data JSON.
+        /// </value>
+        [DataMember]
+        public string ResponseDataJson { get; set; }
 
         #endregion
 
@@ -130,7 +149,25 @@ namespace Rock.Model
         /// The person alias.
         /// </value>
         [DataMember]
-        public virtual Rock.Model.PersonAlias PersonAlias { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="InteractionSession"/> that this answer
+        /// is associated with.
+        /// </summary>
+        /// <value>
+        /// The <see cref="InteractionSession"/> that this answer is associated with.</value>
+        [DataMember]
+        public virtual InteractionSession InteractionSession { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Campus"/> that this answer originated from.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Campus"/> that this answer originated from.
+        /// </value>
+        [DataMember]
+        public virtual Campus Campus { get; set; }
 
         #endregion
     }
@@ -150,6 +187,8 @@ namespace Rock.Model
             this.HasRequired( a => a.InteractiveExperienceOccurrence ).WithMany().HasForeignKey( a => a.InteractiveExperienceOccurrenceId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.InteractiveExperienceAction ).WithMany().HasForeignKey( a => a.InteractiveExperienceActionId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.InteractionSession ).WithMany().HasForeignKey( a => a.InteractionSessionId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( a => a.CampusId ).WillCascadeOnDelete( false );
         }
     }
 

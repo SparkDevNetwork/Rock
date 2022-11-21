@@ -22,8 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
+using System.Web.Http.OData;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -88,7 +87,7 @@ namespace Rock.Rest
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
-        [RockEnableQuery]
+        [EnableQuery]
         public virtual IQueryable<T> Get()
         {
             /*
@@ -141,7 +140,7 @@ namespace Rock.Rest
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
-        [RockEnableQuery]
+        [EnableQuery]
         public virtual T Get( [FromODataUri] int key )
         {
             /*
@@ -176,7 +175,7 @@ namespace Rock.Rest
         /// </exception>
         [Authenticate, Secured]
         [ActionName( "GetByAttributeValue" )]
-        [RockEnableQuery]
+        [EnableQuery]
         public virtual IQueryable<T> GetByAttributeValue( [FromUri] int? attributeId = null, [FromUri] string attributeKey = null, [FromUri] string value = null, [FromUri] bool caseSensitive = false )
         {
             /*
@@ -233,7 +232,7 @@ namespace Rock.Rest
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [ActionName( "GetByCampus" )]
-        [RockEnableQuery]
+        [EnableQuery]
         public virtual IQueryable<T> GetByCampus( [FromUri] int campusId )
         {
             /*
@@ -533,7 +532,7 @@ namespace Rock.Rest
         /// <returns></returns>
         [Authenticate, Secured]
         [ActionName( "DataView" )]
-        [RockEnableQuery]
+        [EnableQuery]
         public IQueryable<T> GetDataView( int id )
         {
             /*
@@ -564,7 +563,7 @@ namespace Rock.Rest
         /// <returns></returns>
         [Authenticate, Secured]
         [ActionName( "InDataView" )]
-        [RockEnableQuery]
+        [EnableQuery]
         [HttpGet]
         public bool InDataView( int dataViewId, int entityId )
         {
@@ -717,7 +716,7 @@ namespace Rock.Rest
         /// <returns></returns>
         [Authenticate, Secured]
         [ActionName( "FollowedItems" )]
-        [RockEnableQuery]
+        [EnableQuery]
         public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
         {
             /*

@@ -4,7 +4,7 @@
         <RockLabel :help="help">{{ label }}</RockLabel>
         <Loading :isLoading="isLoading" class="well">
             <Alert v-if="fetchError" alertType="danger">Error: {{ fetchError }}</Alert>
-            <Alert v-else-if="saveError" alertType="danger">Error: {{saveError}}</Alert>
+            <Alert v-else-if="saveError" alertType="danger">Error: {{ saveError }}</Alert>
 
             <RockForm v-else @submit="saveNewValue">
                 <TextBox label="Value" v-model="newValue" rules="required" />
@@ -19,9 +19,16 @@
     </template>
 
     <template v-else>
-        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" />
-        <RockButton v-if="allowAdd && multiple && !enhanceForLongLists" @click="showAddForm" :btnType="addItemButtonType">Add Item</RockButton>
-        <RockButton v-if="allowAdd && (!multiple || enhanceForLongLists)" @click="showAddForm" :btnType="plusButtonType" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource">
+            <template #inputGroupAppend v-if="allowAdd">
+                <span class="input-group-btn">
+                    <RockButton @click="showAddForm" :btnType="plusButtonType" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                </span>
+            </template>
+            <template #append="{ isInputGroupSupported }" v-if="allowAdd">
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="addItemButtonType">Add Item</RockButton>
+            </template>
+        </BaseAsyncPicker>
     </template>
 </template>
 

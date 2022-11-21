@@ -115,7 +115,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// </summary>
+        /// <summary>
         /// Sets the behavior mode of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to number.
         /// </summary>
         public override TextBoxMode TextMode
@@ -126,7 +126,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
         /// <summary>
         /// Renders the base control and allows a decimal keypad to show on mobile keyboards
         /// </summary>

@@ -86,6 +86,6 @@ export type AttributeValueBag = {
     /** Gets or sets the raw value */
     value?: string | null;
 
-    /** Gets the Value as a decimal (Computed on Save). */
+    /** Gets the Value as a decimal. This value is only updated on save. */
     valueAsNumeric?: number | null;
 };

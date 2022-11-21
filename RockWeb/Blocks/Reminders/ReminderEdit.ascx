@@ -13,8 +13,18 @@
             </div>
 
             <div class="panel-body">
+                <asp:ValidationSummary ID="vsReminder" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
                 <asp:HiddenField ID="hfReminderId" runat="server" Value="0" />
-                <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbxComplete" runat="server" Label="Complete" Help="Determines if the reminder should be considered complete." />
+                    </div>
+                </div>
                 <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
                 <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" Required="true" />
                 <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" EnableSelfSelection="true" />

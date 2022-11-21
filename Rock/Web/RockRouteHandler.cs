@@ -197,6 +197,10 @@ namespace Rock.Web
 
                                             string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
+                                            // Dummy interaction to get UTM source value from the Request/ShortLink url.
+                                            var interaction = new Interaction();
+                                            interaction.SetUTMFieldsFromURL( requestContext.HttpContext?.Request?.Url?.OriginalString );
+
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
                                                 PageShortLinkId = pageShortLink.Id,
@@ -206,7 +210,8 @@ namespace Rock.Web
                                                 IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
                                                 UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
                                                 UserName = requestContext.HttpContext.User?.Identity.Name,
-                                                VisitorPersonAliasIdKey = visitorPersonAliasIdKey
+                                                VisitorPersonAliasIdKey = visitorPersonAliasIdKey,
+                                                UtmSource = interaction.Source
                                             };
 
                                             addShortLinkInteractionMsg.Send();

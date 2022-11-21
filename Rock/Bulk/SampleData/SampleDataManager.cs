@@ -1111,6 +1111,7 @@ namespace Rock.Utility
         ///  
         /// </summary>
         /// <param name="elemRelationships"></param>
+        /// <param name="rockContext">The rock context.</param>
         private void AddRelationships( XElement elemRelationships, RockContext rockContext )
         {
             if ( elemRelationships == null )
@@ -1538,6 +1539,7 @@ namespace Rock.Utility
         /// <param name="locationGuid"></param>
         /// <param name="type"></param>
         /// <param name="name"></param>
+        /// <param name="isActive"></param>
         /// <param name="rockContext"></param>
         private void AddLocation( string parentLocationGuid, Guid locationGuid, string type, string name, bool isActive, RockContext rockContext )
         {
@@ -1876,7 +1878,7 @@ namespace Rock.Utility
         /// Adds a Weekly schedule to the given group.
         /// </summary>
         /// <param name="group"></param>
-        /// <param name="dow"></param>
+        /// <param name="dayOfWeekName"></param>
         /// <param name="time"></param>
         private void AddWeeklySchedule( Group group, string dayOfWeekName, string time )
         {
@@ -2710,6 +2712,7 @@ namespace Rock.Utility
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="altScheduleId">The alt schedule identifier.</param>
         /// <param name="attendanceData">The attendance data.</param>
+        /// <param name="rockContext">The rock context.</param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
             // for each weekend between the starting and ending date...
@@ -3090,6 +3093,8 @@ namespace Rock.Utility
         /// <param name="noteText"></param>
         /// <param name="noteDate">(optional) The date the note was created</param>
         /// <param name="byPersonGuid">(optional) The guid of the person who created the note</param>
+        /// <param name="isPrivate"></param>
+        /// <param name="isAlert"></param>
         /// <param name="rockContext"></param>
         private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, string isAlert, RockContext rockContext )
         {
@@ -3159,6 +3164,7 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
+        /// <param name="rockContext">The rock context.</param>
         private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes, RockContext rockContext )
         {
             // In order to add attributes to the person, you have to first load them all
@@ -3375,6 +3381,7 @@ namespace Rock.Utility
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="postalCode">The zip.</param>
+        /// <param name="country">The country.</param>
         /// <param name="rockContext">The rock context.</param>
         public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string postalCode, string country, RockContext rockContext )
         {

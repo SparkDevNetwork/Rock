@@ -29,6 +29,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -664,9 +665,6 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( pnlShowByChart.Visible )
             {
-                lcAttendance.StartDate = dateRange.Start;
-                lcAttendance.EndDate = dateRange.End;
-
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
                 double? chartDataWeekCount = null;
                 double? chartDataMonthCount = null;
@@ -724,7 +722,7 @@ namespace RockWeb.Blocks.CheckIn
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    var chartDataByCategory = bcAttendance.GetCategorySeriesFromChartData( chartData );
+                    var chartDataByCategory = ChartDataFactory.GetCategorySeriesFromChartData( chartData );
                     bcAttendance.SetChartDataItems( chartDataByCategory );
                 }
                 else

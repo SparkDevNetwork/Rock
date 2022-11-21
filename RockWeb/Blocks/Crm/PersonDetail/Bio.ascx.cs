@@ -845,7 +845,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
+            if ( !Person.IsDeceased && Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
             {
                 lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Humanize().Replace( "ago", "" )}</dt><dd>{Person.AnniversaryDate.Value.ToShortDateString()}</dd>";
             }

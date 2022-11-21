@@ -96,9 +96,6 @@ namespace Rock.Model
             }
 
             var updateSql = @"
-                -- Disable trigger before updating the table, or else SQL will update each column twice.
-                DISABLE TRIGGER [tgrAttributeValue_InsertUpdate] ON [AttributeValue];
-
                 -- Update the [ValueAsDateTime] field for every row that has a date value in the [Value] field, but has a NULL value in the [ValueAsDateTime] field.
                 UPDATE	[AttributeValue]
                 SET		[AttributeValue].[ValueAsDateTime] =
@@ -114,9 +111,6 @@ namespace Rock.Model
 	                AND	LEN([Value]) < 50
 	                AND	ISNUMERIC([Value]) = 0
 	                AND ([Value] LIKE '____-__-__T%__:__:%' OR TRY_CAST([Value] AS DATETIME) IS NOT NULL);
-
-                -- Reenable the trigger.
-                ENABLE TRIGGER [tgrAttributeValue_InsertUpdate] ON [AttributeValue];
             ";
 
             // Store current CommandTimeout setting and change it to 120 seconds.

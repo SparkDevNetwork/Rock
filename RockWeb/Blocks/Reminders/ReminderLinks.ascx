@@ -1,14 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReminderLinks.ascx.cs" Inherits="RockWeb.Blocks.Reminders.ReminderLinks" %>
 <%@ Import Namespace="Rock" %>
 
-<style>
-    /* This is a temporary workaround to hide the reminders button - REMOVE THIS when the feature is ready for public deployment. */
-    .js-rock-reminders { display:none; }
-</style>
-
 <script type="text/javascript">
     function clearActiveReminderDialog() {
         $('#<%=hfActiveReminderDialog.ClientID %>').val('');
+        refreshReminderCount();
     }
 
     function checkAddReminderVisibility() {
@@ -35,7 +31,37 @@
         }
     }
 
+    function refreshReminderCount() {
+        // use ajax to pull the updated reminder count.
+        var restUrl = Rock.settings.get('baseUrl') + 'api/Reminders/GetReminderCount';
+        $.ajax({
+            url: restUrl,
+            dataType: 'json',
+            success: function (data, status, xhr) {
+                $('#<%= hfReminderCount.ClientID %>').val(data);
+                checkReminders();
+            },
+            error: function (xhr, status, error) {
+                console.log('GetReminderCount status: ' + status + ' [' + error + ']: ' + xhr.reponseText);
+            }
+        });
+    }
+
+    function checkReminders() {
+        var reminderCount = $('#<%=hfReminderCount.ClientID %>').val();
+        var remindersButton = $('#<%=lbReminders.ClientID %>');
+        var buttonHtml = '<i class="fa fa-bell"></i>';
+
+        if (reminderCount != '' && reminderCount != "0") {
+            remindersButton.addClass('active has-reminders');
+            buttonHtml = buttonHtml + '<span class="count-bottom">' + reminderCount + "</span>";
+        }
+
+        remindersButton.html(buttonHtml);
+    }
+
     Sys.Application.add_load(function () {
+        checkReminders();
         var remindersButton = $('.js-rock-reminders');
 
         remindersButton.on('show.bs.dropdown', function () {
@@ -54,22 +80,23 @@
     }
 
     function remindersShowAdditionalOptions() {
-        $('#reminders_show_additional_options').addClass('d-none');
-        $('#reminders_additional_options').removeClass('d-none');
+        $('#reminders-show-additional-options').addClass('d-none');
+        $('#reminders-additional-options').removeClass('d-none');
     }
 </script>
 
+<asp:HiddenField ID="hfReminderCount" runat="server" Value="0" />
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <div class="dropdown js-rock-reminders">
-    <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark"
-        href="#" data-toggle="dropdown"><i class="fa fa-bell"></i><asp:Literal ID="litReminderCount" runat="server"></asp:Literal></asp:LinkButton>
+    <%-- LinkButton inner html is set by checkReminders() function. --%>
+    <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown" />
     <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
-        <li>
-            <asp:LinkButton runat="server" ID="lbViewReminders" OnClick="lbViewReminders_Click">View Reminders</asp:LinkButton>
-        </li>
         <li class="js-add-reminder d-none">
             <asp:LinkButton runat="server" ID="lbAddReminder" CssClass="" OnClick="lbAddReminder_Click">Add Reminder</asp:LinkButton>
+        </li>
+        <li>
+            <asp:LinkButton runat="server" ID="lbViewReminders" OnClick="lbViewReminders_Click">View Reminders</asp:LinkButton>
         </li>
     </asp:Panel>
 </div>
@@ -108,20 +135,26 @@
                                         <div class="col-xs-6 col-sm flex-grow-0">
                                             <span class="label label-default"><asp:Literal ID="lReminderDate" runat="server" Text='<%# Eval("ReminderDate") %>' /></span>
                                         </div>
-                                        <div class="col flex-fill order-3 order-sm-2">
-                                            <div>
-                                                <span class="tag-flair text-sm">
-                                                    <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
-                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
-                                            </div>
+                                        <div class="col-xs-12 col-sm mw-100 order-3 order-sm-2">
+                                                <div class="note reminder-note">
+                                                    <div class="meta">
+                                                        <div class="meta-body">
+                                                            <span class="note-details">
+                                                                <span class="tag-flair">
+                                                                    <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
+                                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="note-content">
+                                                        <asp:Literal ID="lNote" runat="server"  Text='<%# Eval("Note") %>' />
+                                                    </div>
+                                                </div>
                                         </div>
 
-                                        <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right">
-                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="fa fa-clock-o"></i></asp:Literal>
+                                        <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right text-nowrap">
+                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="fa fa-clock-o" title="Recurring Reminder"></i></asp:Literal>
 
                                             <div class="btn-group dropdown-right ml-1">
                                                 <button type="button" class="btn btn-link btn-overflow dropdown-toggle" data-toggle="dropdown">
@@ -152,11 +185,11 @@
                             <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
                             <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" ValidationGroup="AddReminder" Required="true" />
 
-                            <div id="reminders_show_additional_options">
+                            <div id="reminders-show-additional-options">
                                 <a href="javascript:remindersShowAdditionalOptions();">Additional Options</a>
                             </div>
 
-                            <div id="reminders_additional_options" class="d-none">
+                            <div id="reminders-additional-options" class="d-none">
                                 <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" ValidationGroup="AddReminder" EnableSelfSelection="true" />
 
                                 <div class="row">

@@ -57,6 +57,8 @@ export const enum ServiceJob {
     DataMigrations141UpdateCurrentSessions1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E",
     /** The Job to run Post v14.1 Data Migrations to add some missing indexes */
     DataMigrations141AddMissingIndexes = "B1970CD1-1DDD-46FC-B259-6D151D53374D",
+    /** The Job to run Post v14.1 Data Migrations to update the ValueAs___ columns after migration. */
+    DataMigrations141UpdateValueasAttributeValueColumns = "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2",
     /** The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId. */
     DataMigrations140CreateFkIndexes = "D96BD1F7-6A4A-4DC0-B10D-40031F709573",
     /** The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields. */

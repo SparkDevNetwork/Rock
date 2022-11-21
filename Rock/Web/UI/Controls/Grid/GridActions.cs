@@ -333,6 +333,7 @@ namespace Rock.Web.UI.Controls
                     if ( config is ICustomActionEventHandler configEvent )
                     {
                         linkButton.Click += configEvent.EventHandler;
+                        linkButton.CommandArgument = config.Route;
                     }
                     else
                     {
