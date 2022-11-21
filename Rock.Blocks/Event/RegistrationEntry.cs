@@ -3522,7 +3522,7 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
+            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
         }
 
         /// <summary>
