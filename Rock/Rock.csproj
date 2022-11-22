@@ -1548,7 +1548,6 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
-    <Compile Include="Transactions\GroupIndexTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />

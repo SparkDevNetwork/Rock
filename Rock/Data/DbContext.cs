@@ -29,6 +29,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
@@ -697,13 +698,8 @@ namespace Rock.Data
                     }
                     else
                     {
-                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                        {
-                            EntityTypeId = item.Entity.TypeId,
-                            EntityId = item.Entity.Id
-                        };
-
-                        processIndexMsgs.Add( processEntityTypeIndexMsg );
+                        var indexEntityTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = item.Entity.TypeId, EntityId = item.Entity.Id } );
+                        indexEntityTransaction.Enqueue();
                     }
                 }
 
