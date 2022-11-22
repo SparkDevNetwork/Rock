@@ -26,7 +26,7 @@
                     }
 
                     $(document).ready(function () {
-                        var activeFilterSetting = $('#<%=hfActiveFilterSetting.ClientID %>').val();
+                        var activeFilterSetting = $('#<%=hfDueFilterSetting.ClientID %>').val();
                         if (activeFilterSetting == 'Custom Date Range') {
                             $('#reminders-custom-date-range').removeClass('d-none');
                         }
@@ -87,7 +87,7 @@
                                         <ul class="dropdown-menu" role="menu">
 
                                                 <li>
-                                                    <asp:LinkButton ID="btnCompletion1" runat="server" Text="Incomplete" CommandArgument="Incomplete" OnClick="btnCompletion_Click" />
+                                                    <asp:LinkButton ID="btnCompletion1" runat="server" Text="Active" CommandArgument="Active" OnClick="btnCompletion_Click" />
                                                 </li>
                                                 <li>
                                                     <asp:LinkButton ID="btnCompletion2" runat="server" Text="Complete" CommandArgument="Complete" OnClick="btnCompletion_Click" />
@@ -102,29 +102,29 @@
                                     <div class="btn-group">
                                         <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                             <i class="fa fa-calendar-alt"></i>
-                                            <asp:Literal ID="lActiveFilter" runat="server" Text="Active" />
+                                            <asp:Literal ID="lDueFilter" runat="server" Text="Due" />
                                         </div>
 
                                         <ul class="dropdown-menu" role="menu">
                                         
                                                 <li>
-                                                    <asp:LinkButton ID="btnActive1" runat="server" Text="Active" CommandArgument="Active" OnClick="btnActive_Click" />
+                                                    <asp:LinkButton ID="btnDue1" runat="server" Text="Due" CommandArgument="Due" OnClick="btnDue_Click" />
                                                 </li>
                                                 <li>
-                                                    <asp:LinkButton ID="btnActive2" runat="server" Text="Active This Week" CommandArgument="Active This Week" OnClick="btnActive_Click" />
+                                                    <asp:LinkButton ID="btnDue2" runat="server" Text="Due This Week" CommandArgument="Due This Week" OnClick="btnDue_Click" />
                                                 </li>
                                                 <li>
-                                                    <asp:LinkButton ID="btnActive3" runat="server" Text="Active This Month" CommandArgument="Active This Month" OnClick="btnActive_Click" />
+                                                    <asp:LinkButton ID="btnDue3" runat="server" Text="Due This Month" CommandArgument="Due This Month" OnClick="btnDue_Click" />
                                                 </li>
                                                 <li>
-                                                    <asp:LinkButton ID="btnActive4" runat="server" Text="Custom Date Range" CommandArgument="Custom Date Range" OnClick="btnActive_Click" />
+                                                    <asp:LinkButton ID="btnDue4" runat="server" Text="Custom Date Range" CommandArgument="Custom Date Range" OnClick="btnDue_Click" />
                                                 </li>
                                         
                                         </ul>
                                     </div>
 
                                     <div id="reminders-custom-date-range" class="d-none">
-                                        <asp:HiddenField ID="hfActiveFilterSetting" runat="server" Value="Active" />
+                                        <asp:HiddenField ID="hfDueFilterSetting" runat="server" Value="Active" />
                                         <Rock:SlidingDateRangePicker ID="drpCustomDate" runat="server"
                                             OnSelectedDateRangeChanged="drpCustomDate_SelectedDateRangeChanged"
                                             EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
