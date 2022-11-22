@@ -365,6 +365,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\AddressControlGetConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />

@@ -75,7 +75,7 @@
     async function select(): Promise<void> {
         isLoading.value = true;
         const options: LocationAddressPickerValidateAddressOptionsBag = { ...controlValue.value };
-        const response = await post<LocationAddressPickerValidateAddressResultsBag>("/api/v2/Controls/LocationPickerValidateAddress", undefined, options);
+        const response = await post<LocationAddressPickerValidateAddressResultsBag>("/api/v2/Controls/LocationAddressPickerValidateAddress", undefined, options);
 
         if (response.isSuccess && response.data) {
             if (response.data.isValid) {
