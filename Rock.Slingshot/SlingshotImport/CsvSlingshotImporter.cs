@@ -216,6 +216,10 @@ namespace Rock.Slingshot
 
                         foreach ( SlingshotCore.Model.PersonPhone personPhone in personPhones )
                         {
+                            if ( personPhone.PhoneNumber.IsNullOrWhiteSpace() )
+                            {
+                                continue;
+                            }
                             if ( !dataValidator.ValidatePhoneNumber( personPhone, out string errorMessage ) )
                             {
                                 errorMessages.Add( errorMessage );

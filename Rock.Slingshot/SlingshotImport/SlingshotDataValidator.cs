@@ -118,11 +118,6 @@ namespace Rock.Slingshot
         internal bool ValidatePhoneNumber( SlingshotCore.Model.PersonPhone personPhone, out string errorMessage )
         {
             errorMessage = string.Empty;
-            if ( string.IsNullOrEmpty( personPhone.PhoneNumber ) )
-            {
-                errorMessage = $"{personPhone.PhoneType} : The Phone Number is Empty";
-                return false;
-            }
             bool isPhoneNumberValid = !string.IsNullOrEmpty( PhoneNumber.CleanNumber( personPhone.PhoneNumber ) );
             if ( !isPhoneNumberValid )
             {
