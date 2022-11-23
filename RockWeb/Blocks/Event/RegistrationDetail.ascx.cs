@@ -709,7 +709,7 @@ namespace RockWeb.Blocks.Event
                 historyRecord.ValueName = "Registration Instance";
                 historyRecord.ChangeType = "Moved";
                 historyRecord.OldValue = oldRegistrationInstanceName;
-                historyRecord.OldRawValue = registration.RegistrationInstance.Id.ToString();
+                historyRecord.OldRawValue = oldRegistrationInstanceId.ToStringSafe();
                 historyRecord.NewValue = newRegistrationInstance.Name;
                 historyRecord.NewRawValue = newRegistrationInstance.Id.ToString();
                 historyRecord.Caption = tbComment.Text;
