@@ -947,6 +947,7 @@ namespace RockWeb.Blocks.Examples
                                         attrState.Guid = formFieldElement.Attribute( "guid" ).Value.AsGuid();
                                         attrState.Name = formFieldElement.Attribute( "name" ).Value.Trim();
                                         attrState.Key = attrState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
+                                        attrState.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
                                         var type = formFieldElement.Attribute( "type" ).Value.Trim();
                                         var fieldType = FieldTypeCache.All().Where( f => f.Name == type ).FirstOrDefault();
                                         if ( fieldType != null )
