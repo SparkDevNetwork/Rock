@@ -152,7 +152,7 @@
                     <div class="panel-body">
                         <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week"  RepeatDirection="Horizontal" />
                         <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="Time of Day" />
-                        <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" />
+                        <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" Label="to" />
                     </div>
                 </asp:Panel>
                 <div class="actions">
