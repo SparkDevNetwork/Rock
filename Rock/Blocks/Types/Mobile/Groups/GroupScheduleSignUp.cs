@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -285,7 +285,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                             }
 
                             // Don't show groups that have scheduling requirements that the person hasn't met.
-                            if ( personDoesntMeetSchedulingRequirementGroupIds.Contains( personGroupLocation.GroupId ) )
+                            if ( personGroupLocation.Group.SchedulingMustMeetRequirements && personDoesntMeetSchedulingRequirementGroupIds.Contains( personGroupLocation.GroupId ) )
                             {
                                 continue;
                             }
