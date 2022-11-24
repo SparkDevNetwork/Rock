@@ -164,6 +164,10 @@
     <Compile Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.designer.cs">
       <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.cs" />
+    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.designer.cs">
+      <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1492,6 +1496,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.resx">
       <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.resx">
+      <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
