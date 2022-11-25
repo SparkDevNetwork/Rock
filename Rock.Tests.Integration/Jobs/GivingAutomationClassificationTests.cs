@@ -23,6 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
@@ -3407,6 +3408,8 @@ namespace Rock.Tests.Integration.Jobs
 
             people.ForEach( p => p.LoadAttributes() );
 
+
+
             var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4415,6 +4418,140 @@ namespace Rock.Tests.Integration.Jobs
             AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
             var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
             Assert.AreEqual( context.Now, lastClassified );
+        }
+
+        [TestMethod]
+        public void UpdateGivingUnitClassifications_ClassifiesTransactionsWithinWindowAsConsistent()
+        {
+            const int frequencyDefinedValueMonthlyId = 3;
+            const int frequencyDefinedValueErraticId = 5;
+
+            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
+
+            var personId = 1111;
+            var givingId = $"P{personId}";
+
+            var currencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
+            var sourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
+
+            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 27 );
+            var minDate = new DateTime( 2020, 1, 1 );
+
+            var context = new GivingAutomation.GivingAutomationContext()
+            {
+                PercentileLowerRange = new List<decimal>()
+            };
+
+            for ( var i = 0; i < 100; i++ )
+            {
+                context.PercentileLowerRange.Add( 200 * i );
+            }
+
+            var people = new List<Person>
+            {
+                new Person
+                {
+                    Id = personId,
+                    GivingGroupId = null
+                },
+            };
+
+            people.ForEach( p => p.LoadAttributes() );
+
+            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
+            var templateTransaction = new Rock.Jobs.GivingAutomation.TransactionView
+            {
+                CurrencyTypeValueId = currencyTypeValue.Id,
+                IsScheduled = false,
+                SourceTypeValueId = sourceTypeValue.Id,
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
+                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -10.0000000000m } }
+            };
+
+            // Create a set of giving transactions spanning a year:
+            // 1. Monthly on the 10th @ 20:00; and
+            // 2. Monthly on the 11th @ 08:00.
+            var currentDate = RockDateTime.Now;
+            var gift1StartDate = RockDateTime.New( currentDate.AddMonths( -12 ).Year, currentDate.AddMonths( -1 ).Month, 10 ).Value.AddHours( 20 );
+            var gift1Dates = GetDateTimeListWithMonthlyPattern( gift1StartDate, 12 );
+
+            var gift2StartDate = gift1StartDate.AddHours( 12 );
+            var gift2Dates = GetDateTimeListWithMonthlyPattern( gift2StartDate, 12 );
+
+            var giftDates = new List<DateTime>();
+            giftDates.AddRange( gift1Dates );
+            giftDates.AddRange( gift2Dates );
+            giftDates.Sort();
+
+            foreach ( var giftDate in giftDates )
+            {
+                transactions.Add( GetClonedTransactionViewForDate( templateTransaction, giftDate.ToISO8601DateString() ) );
+            }
+
+            // Update the giving classification with no transaction window specified,
+            // and verify that the giving classification is "Erratic".
+            context.TransactionWindowDurationHours = null;
+            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
+                people,
+                transactions,
+                mostRecentOldTransactionDate: null,
+                context,
+                minDate );
+
+            Assert.AreEqual( 0, context.Errors.Count );
+
+            var frequencyLabel1 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
+            Assert.AreEqual( frequencyDefinedValueErraticId, frequencyLabel1 );
+
+            // Update the giving classification with a transaction window specified,
+            // and verify that the giving classification is "Monthly".
+            context.TransactionWindowDurationHours = 24;
+            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
+                people,
+                transactions,
+                mostRecentOldTransactionDate: null,
+                context,
+                minDate );
+
+            Assert.AreEqual( 0, context.Errors.Count );
+
+            var frequencyLabel2 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
+            Assert.AreEqual( frequencyDefinedValueMonthlyId, frequencyLabel2 );
+        }
+
+        private List<DateTime> GetDateTimeListWithMonthlyPattern( DateTime startDateTime, int count )
+        {
+            var transactionDates = new List<DateTime>();
+            for ( int month = 0; month < count; month++ )
+            {
+                var addDate = startDateTime.AddMonths( month );
+                transactionDates.Add( addDate );
+            }
+            return transactionDates;
+        }
+
+        private TransactionView GetClonedTransactionViewForDate( TransactionView source, string dateTimeString )
+        {
+            var transaction = new TransactionView
+            {
+                TransactionDateTime = DateTime.Parse( dateTimeString ),
+                CurrencyTypeValueId = source.CurrencyTypeValueId,
+                IsScheduled = source.IsScheduled,
+                SourceTypeValueId = source.SourceTypeValueId,
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>(),
+                RefundDetails = new List<TransactionViewDetail>()
+            };
+
+            foreach ( var detail in source.TransactionViewDetailsBeforeRefunds )
+            {
+                transaction.TransactionViewDetailsBeforeRefunds.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
+            }
+            foreach ( var detail in source.RefundDetails )
+            {
+                transaction.RefundDetails.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
+            }
+
+            return transaction;
         }
 
         #endregion UpdateGivingUnitClassifications
