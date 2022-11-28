@@ -50,12 +50,12 @@ namespace Rock.ViewModels.Entities
         public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// The date and time when the last RSVP reminder sent.
+        /// The date and time when the last reminder was sent.
         /// </summary>
         /// <value>
-        /// The last RSVP reminder sent.
+        /// The last reminder was sent.
         /// </value>
-        public DateTime? LastRSVPReminderSentDateTime { get; set; }
+        public DateTime? LastReminderSentDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.Location identifier.

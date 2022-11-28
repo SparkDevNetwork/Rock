@@ -121,10 +121,16 @@ namespace Rock.Client
         public int? ParentGroupId { get; set; }
 
         /// <summary />
-        public int? RequiredSignatureDocumentTemplateId { get; set; }
+        public string ReminderAdditionalDetails { get; set; }
 
         /// <summary />
-        public string RSVPReminderAdditionalDetails { get; set; }
+        public int? ReminderOffsetDays { get; set; }
+
+        /// <summary />
+        public int? ReminderSystemCommunicationId { get; set; }
+
+        /// <summary />
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
         public int? RSVPReminderOffsetDays { get; set; }
@@ -205,8 +211,10 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
+            this.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
+            this.ReminderOffsetDays = source.ReminderOffsetDays;
+            this.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
-            this.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;

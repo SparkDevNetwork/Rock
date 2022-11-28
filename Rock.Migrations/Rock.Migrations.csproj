@@ -172,6 +172,10 @@
     <Compile Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.designer.cs">
       <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.cs" />
+    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.designer.cs">
+      <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1506,6 +1510,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.resx">
       <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.resx">
+      <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
