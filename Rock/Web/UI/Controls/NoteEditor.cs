@@ -800,15 +800,12 @@ $@"Rock.controls.noteEditor.initialize({{
 
             _mdEditWarning.RenderControl( writer );
 
-            if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+            // Don't show the security button when adding because the ID is not set.
+            if ( NoteOptions.DisplayType == NoteDisplayType.Full && NoteOptions.ShowSecurityButton && this.NoteId.IsNotNullOrZero() )
             {
-                // Don't show the security button when adding because the ID is not set.
-                if ( NoteOptions.ShowSecurityButton && this.NoteId != 0)
-                {
-                    _aSecurity.Attributes["data-title"] = this.Label;
-                    _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
-                    _aSecurity.RenderControl( writer );
-                }
+                _aSecurity.Attributes["data-title"] = this.Label;
+                _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
+                _aSecurity.RenderControl( writer );
             }
 
             if ( !NoteOptions.AddAlwaysVisible )
