@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -369,15 +369,6 @@ namespace Rock.Model
         public string GroupSalutationFull { get; set; }
 
         /// <summary>
-        /// Gets or sets the rsvp additional reminder details.
-        /// </summary>
-        /// <value>
-        /// The rsvp additional reminder details.
-        /// </value>
-        [DataMember]
-        public string RSVPReminderAdditionalDetails { get; set; }
-
-        /// <summary>
         /// Gets or sets the confirmation additional details.
         /// </summary>
         /// <value>
@@ -385,6 +376,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ConfirmationAdditionalDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending a reminder.
+        /// </summary>
+        /// <value>
+        /// The reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? ReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to an event date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? ReminderOffsetDays { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the reminder additional details.
+        /// </summary>
+        /// <value>
+        /// The reminder additional details.
+        /// </value>
+        [DataMember]
+        public string ReminderAdditionalDetails { get; set; }
 
         #endregion
 
