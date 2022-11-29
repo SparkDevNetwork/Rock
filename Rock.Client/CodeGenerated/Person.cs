@@ -92,6 +92,9 @@ namespace Rock.Client
         public int? GivingGroupId { get; set; }
 
         /// <summary />
+        public string GivingId { get; set; }
+
+        /// <summary />
         public int GivingLeaderId { get; set; }
 
         /// <summary>
@@ -243,6 +246,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
+            this.GivingId = source.GivingId;
             this.GivingLeaderId = source.GivingLeaderId;
             this.GradeOffset = source.GradeOffset;
             this.GraduationYear = source.GraduationYear;

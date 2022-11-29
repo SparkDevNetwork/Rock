@@ -53,7 +53,7 @@ namespace Rock.Jobs
             public const string LimitFullSyncToOnceADay = "LimitFullSyncToOnceADay";
         }
 
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization.
         /// </summary>
         public SyncMedia()
