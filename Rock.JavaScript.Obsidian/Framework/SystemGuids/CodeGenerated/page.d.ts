@@ -1652,6 +1652,11 @@ export const enum Page {
      */
     WorkflowEntry = "0550D2AA-A705-4400-81FF-AB124FDF83D7",
     /**
+     * Gets the external site's Workflow Entry page guid
+     * ParentPage: Workflows
+     */
+    ExternalWorkflowEntry = "C58861DF-2D82-4E7A-AA5B-04165D2D34C2",
+    /**
      * Gets the Workflow Trigger page guid
      * ParentPage: Workflow Triggers
      */

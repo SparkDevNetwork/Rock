@@ -52,4 +52,8 @@ export const enum PageRoute {
     SystemCommunicationPreview = "AAC42941-8B2C-4F20-923D-E74146D2E103",
     /** The Step Program Flow route 'steps/program/{ProgramId}/flow' */
     StepFlow = "4F75872B-EBE0-43FA-A8F3-ED716B45A1A6",
+    /** The external site Workflow Entry route 'WorkflowEntry/{WorkflowTypeGuid}/{WorkflowGuid}'. */
+    ExternalWorkflowEntryWithWorkflow = "D8031879-92FD-4782-9AEB-715D6D290434",
+    /** The external site Workflow Entry route 'WorkflowEntry/{WorkflowTypeGuid}'. */
+    ExternalWorkflowEntry = "ABDBED7B-93F5-4341-8B38-5E96F3009A1E",
 }
