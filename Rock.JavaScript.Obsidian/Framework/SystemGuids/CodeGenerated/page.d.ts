@@ -29,6 +29,11 @@ export const enum Page {
      */
     AbilityLevels = "9DD78A23-BE4B-474E-BCBC-F06AAABB67FA",
     /**
+     * Gets the Ability Select page guid
+     * ParentPage: Check-in
+     */
+    AbilitySelect = "A1CBDAA4-94DD-4156-8260-5A3781E39FD0",
+    /**
      * Gets the Account page guid
      * ParentPage: Rock Shop
      */
@@ -43,17 +48,6 @@ export const enum Page {
      * ParentPage: Administration
      */
     Accounts = "2B630A3B-E081-4204-A3E4-17BB3A5F063D",
-    /** The apple tv application detail */
-    AppleTvApplicationDetail = "ED4341EB-3846-48B4-96D3-444D3ABBF389",
-    /** The apple tv application screen detail */
-    AppleTvApplicationScreenDetail = "6CC8D008-8D30-416D-8A36-7D01B72A2518",
-    /** The apple tv apps */
-    AppleTvApps = "C8B81EBE-E98F-43EF-9E39-0491685145E2",
-    /**
-     * The financial account search guid
-     * ParentPage: Internal Homepage &gt; Finance &gt; Administration
-     */
-    FinancialAccountSearch = "7A36463B-8E63-4394-BE20-ECFC5970080C",
     /**
      * Gets the Achievement Type page guid
      * ParentPage: Rock.SystemGuid.Page.ENGAGEMENT
@@ -65,6 +59,11 @@ export const enum Page {
      */
     AddTransaction = "B1CA86DC-9890-4D26-8EBD-488044E1B3DD",
     /**
+     * Gets the Admin page guid
+     * ParentPage: Check-in
+     */
+    AdminCheckIn = "7B7207D0-B905-4836-800E-A24DDC6FE445",
+    /**
      * Gets the Admin Tools page guid
      * ParentPage: Internal Homepage
      */
@@ -74,6 +73,12 @@ export const enum Page {
      * ParentPage: Finance
      */
     AdministrationFinance = "18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C",
+    /** The apple tv application detail */
+    AppleTvApplicationDetail = "ED4341EB-3846-48B4-96D3-444D3ABBF389",
+    /** The apple tv application screen detail */
+    AppleTvApplicationScreenDetail = "6CC8D008-8D30-416D-8A36-7D01B72A2518",
+    /** The apple tv apps */
+    AppleTvApps = "C8B81EBE-E98F-43EF-9E39-0491685145E2",
     /**
      * Gets the Application Group Detail page guid
      * ParentPage: Application Groups
@@ -115,6 +120,16 @@ export const enum Page {
      */
     BackgroundCheckProviders = "53F1B7D9-806A-4541-93BC-4CCF5DFF90B3",
     /**
+     * Gets the Badge Detail page guid
+     * ParentPage: Person Profile Badges
+     */
+    BadgeDetail = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D",
+    /**
+     * Gets the Badges page guid
+     * ParentPage: General Settings
+     */
+    Badges = "26547B83-A92D-4D7E-82ED-691F403F16B6",
+    /**
      * Gets the Batches page guid
      * ParentPage: Functions
      */
@@ -135,6 +150,11 @@ export const enum Page {
      */
     BenevolencePersonPages = "15FA4176-1C8E-409D-8B47-85ADA35DE5D2",
     /**
+     * Gets the Benevolence Request Detail page guid
+     * ParentPage: Benevolence
+     */
+    BenevolenceRequestDetail = "648CA58C-EB12-4479-9994-F064070E3A32",
+    /**
      * Gets the Benevolence Types page guid
      * ParentPage: Benevolence
      */
@@ -144,11 +164,6 @@ export const enum Page {
      * ParentPage: Benevolence
      */
     BenevolenceTypesDetail = "DBFC432E-F0A4-457E-BA5B-572C49B899D1",
-    /**
-     * Gets the Benevolence Request Detail page guid
-     * ParentPage: Benevolence
-     */
-    BenevolenceRequestDetail = "648CA58C-EB12-4479-9994-F064070E3A32",
     /**
      * Gets the Block Properties page guid
      * ParentPage: System Dialogs
@@ -180,16 +195,6 @@ export const enum Page {
      */
     BulkUpdate = "B6BFDE54-0EFA-4499-847D-BE1259F83535",
     /**
-     * Gets the Business Detail page guid
-     * ParentPage: Businesses
-     */
-    BusinessDetail = "D2B43273-C64F-4F57-9AAE-9571E1982BAC",
-    /**
-     * Gets the Businesses page guid
-     * ParentPage: Administration
-     */
-    Businesses = "F4DF4899-2D44-4997-BA9B-9D2C64958A20",
-    /**
      * Gets the bus page guid
      * ParentPage: System Settings
      */
@@ -204,6 +209,16 @@ export const enum Page {
      * ParentPage: Bus
      */
     BusTransport = "10E34A5D-D967-457D-9DF1-A1D33DA9D100",
+    /**
+     * Gets the Business Detail page guid
+     * ParentPage: Businesses
+     */
+    BusinessDetail = "D2B43273-C64F-4F57-9AAE-9571E1982BAC",
+    /**
+     * Gets the Businesses page guid
+     * ParentPage: Administration
+     */
+    Businesses = "F4DF4899-2D44-4997-BA9B-9D2C64958A20",
     /**
      * Gets the Calendars page guid
      * ParentPage: Website
@@ -224,11 +239,6 @@ export const enum Page {
      * ParentPage: My Settings
      */
     ChangePasswordMySettings = "4508223C-2989-4592-B764-B3F372B6051B",
-    /**
-     * Gets the Check-in page guid
-     * ParentPage: Rock Settings
-     */
-    CheckInRockSettings = "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D",
     /**
      * Gets the Check-in Configuration page guid
      * ParentPage: Check-in
@@ -251,18 +261,16 @@ export const enum Page {
     CheckInManager = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B",
     /** The check in manager attendance detail */
     CheckInManagerAttendanceDetail = "758ECFCD-9E20-48B5-827B-973492E39C0D",
-    /** The check in manager person attendance change history */
-    CheckInManagerPersonAttendanceChangeHistory = "185BFEA9-9E95-4B8D-836B-87AF36BE6109",
+    /** The Check-in Manager En Route page */
+    CheckInManagerEnRoute = "F6466964-6593-4B20-A49B-D2386D8A260C",
     /** The Check-in Manager Live Metrics page */
     CheckInManagerLiveMetrics = "04F70D50-5D27-4C12-A76D-B25E6E4CB177",
     /** The Login page under the Check-in Manager page */
     CheckInManagerLogin = "31F51DBB-AC84-4724-9219-B46FADAB9CB2",
     /** The Logout page under the Check-in Manager page */
     CheckInManagerLogout = "9762DE9F-F431-4108-9F1A-AE88DFEB3289",
-    /** The Settings page under the Check-in Manager page (Where Check-in Configuration is selected) */
-    CheckInManagerSettings = "62C70118-0A6F-432A-9D84-A5296655CB9E",
-    /** The Check-in Manager search page */
-    CheckInManagerSearch = "5BB14114-BE20-4330-943A-5BC7E367116E",
+    /** The check in manager person attendance change history */
+    CheckInManagerPersonAttendanceChangeHistory = "185BFEA9-9E95-4B8D-836B-87AF36BE6109",
     /** The check in manager room list page */
     CheckInManagerRoomList = "CF03D854-AC02-412C-9B21-FB27B9F56BAB",
     /** The Check-in Manager room manager page */
@@ -271,153 +279,40 @@ export const enum Page {
     CheckInManagerRoomSettings = "0416FF62-3252-4A84-85DB-79F4CAE82C75",
     /** The Check-in Manager roster page */
     CheckInManagerRoster = "BA04BF01-5244-4637-B12D-7A962D2A9E77",
-    /** The Check-in Manager En Route page */
-    CheckInManagerEnRoute = "F6466964-6593-4B20-A49B-D2386D8A260C",
+    /** The Check-in Manager search page */
+    CheckInManagerSearch = "5BB14114-BE20-4330-943A-5BC7E367116E",
+    /** The Settings page under the Check-in Manager page (Where Check-in Configuration is selected) */
+    CheckInManagerSettings = "62C70118-0A6F-432A-9D84-A5296655CB9E",
     /**
-     * Gets the Check-in Type page guid
-     * ParentPage: 
+     * Gets the Check-in page guid
+     * ParentPage: Rock Settings
      */
-    CheckInType = "62C70118-0A6F-432A-9D84-A5296655CB9E",
-    /**
-     * Gets the Admin page guid
-     * ParentPage: Check-in
-     */
-    AdminCheckIn = "7B7207D0-B905-4836-800E-A24DDC6FE445",
-    /**
-     * Gets the Check-in Welcome page guid
-     * ParentPage: Check-in
-     */
-    Welcome = "432B615A-75FF-4B14-9C99-3E769F866950",
-    /**
-     * Gets the Search page guid
-     * ParentPage: Check-in
-     */
-    Search = "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F",
-    /**
-     * Gets the Family Select page guid
-     * ParentPage: Check-in
-     */
-    FamilySelect = "10C97379-F719-4ACB-B8C6-651957B660A4",
-    /**
-     * Gets the Person Select page guid
-     * ParentPage: Check-in
-     */
-    PersonSelect = "BB8CF87F-680F-48F9-9147-F4951E033D17",
-    /**
-     * Gets the Group Type Select page guid
-     * ParentPage: Check-in
-     */
-    GroupTypeSelect = "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C",
-    /**
-     * Gets the Ability Select page guid
-     * ParentPage: Check-in
-     */
-    AbilitySelect = "A1CBDAA4-94DD-4156-8260-5A3781E39FD0",
-    /**
-     * Gets the Group Select page guid
-     * ParentPage: Check-in
-     */
-    GroupSelect = "6F0CB22B-E05B-42F1-A329-9219E81F6C34",
-    /**
-     * Gets the Location Select page guid
-     * ParentPage: Check-in
-     */
-    LocationSelect = "043BB717-5799-446F-B8DA-30E575110B0C",
-    /**
-     * Gets the Time Select page guid
-     * ParentPage: Check-in
-     */
-    TimeSelect = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC",
-    /**
-     * Gets the Success page guid
-     * ParentPage: Check-in
-     */
-    Success = "E08230B8-35A4-40D6-A0BB-521418314DA9",
+    CheckInRockSettings = "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D",
     /**
      * Gets the Check-in page guid
      * ParentPage: 
      */
     CheckInRoot = "CDF2C599-D341-42FD-B7DC-CD402EA96050",
     /**
-     * Gets the Admin page guid
-     * ParentPage: Check-in
+     * Gets the Check-in Type page guid
+     * ParentPage: 
      */
-    CheckinAdmin = "7B7207D0-B905-4836-800E-A24DDC6FE445",
-    /**
-     * Gets the Welcome page guid
-     * ParentPage: Check-in
-     */
-    CheckinWelcome = "432B615A-75FF-4B14-9C99-3E769F866950",
-    /**
-     * Gets the Search page guid
-     * ParentPage: Check-in
-     */
-    CheckinSearch = "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F",
-    /**
-     * Gets the Family Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinFamilySelect = "10C97379-F719-4ACB-B8C6-651957B660A4",
-    /**
-     * Gets the Person Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinPersonSelect = "BB8CF87F-680F-48F9-9147-F4951E033D17",
+    CheckInType = "62C70118-0A6F-432A-9D84-A5296655CB9E",
     /**
      * Gets the Ability Select page guid
      * ParentPage: Check-in
      */
     CheckinAbilitySelect = "A1CBDAA4-94DD-4156-8260-5A3781E39FD0",
     /**
-     * Gets the Group Type Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinGroupTypeSelect = "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C",
-    /**
-     * Gets the Group Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinGroupSelect = "6F0CB22B-E05B-42F1-A329-9219E81F6C34",
-    /**
-     * Gets the Location Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinLocationSelect = "043BB717-5799-446F-B8DA-30E575110B0C",
-    /**
-     * Gets the Time Select page guid
-     * ParentPage: Check-in
-     */
-    CheckinTimeSelect = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC",
-    /**
-     * Gets the Success page guid
-     * ParentPage: Check-in
-     */
-    CheckinSuccess = "E08230B8-35A4-40D6-A0BB-521418314DA9",
-    /**
-     * Gets the Scheduled Locations page guid
-     * ParentPage: Check-in
-     */
-    CheckinScheduledLocations = "4E210ABB-65B3-4816-BD77-D2C876FC0FD5",
-    /**
-     * Gets the Person Select (Family Check-in) page guid
-     * ParentPage: Check-in
-     */
-    CheckinPersonSelectFamilyCheckIn = "D14154BA-2F2C-41C3-B380-F833252CBB13",
-    /**
-     * Gets the Time Select (Family Check-in) page guid
-     * ParentPage: Check-in
-     */
-    CheckinTimeSelectFamilyCheckIn = "67BD09B0-0C6E-44E7-A8EB-0E71551F3E6B",
-    /**
-     * Gets the Save Attendance (Family Check-in) page guid
-     * ParentPage: Check-in
-     */
-    CheckinSaveAttendanceFamilyCheckIn = "4AF7A0E1-E991-4AE5-A2B5-C440F67A2E6A",
-    /**
      * Gets the Action Select page guid
      * ParentPage: Check-in
      */
     CheckinActionSelect = "0586648B-9490-43C6-B18D-7F403458C080",
+    /**
+     * Gets the Admin page guid
+     * ParentPage: Check-in
+     */
+    CheckinAdmin = "7B7207D0-B905-4836-800E-A24DDC6FE445",
     /**
      * Gets the Check Out Person Select page guid
      * ParentPage: Check-in
@@ -429,22 +324,75 @@ export const enum Page {
      */
     CheckinCheckOutSuccess = "21A855BA-6D68-4504-97B4-D787452CEC29",
     /**
+     * Gets the Family Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinFamilySelect = "10C97379-F719-4ACB-B8C6-651957B660A4",
+    /**
+     * Gets the Group Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinGroupSelect = "6F0CB22B-E05B-42F1-A329-9219E81F6C34",
+    /**
+     * Gets the Group Type Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinGroupTypeSelect = "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C",
+    /**
+     * Gets the Location Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinLocationSelect = "043BB717-5799-446F-B8DA-30E575110B0C",
+    /**
+     * Gets the Person Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinPersonSelect = "BB8CF87F-680F-48F9-9147-F4951E033D17",
+    /**
+     * Gets the Person Select (Family Check-in) page guid
+     * ParentPage: Check-in
+     */
+    CheckinPersonSelectFamilyCheckIn = "D14154BA-2F2C-41C3-B380-F833252CBB13",
+    /**
+     * Gets the Save Attendance (Family Check-in) page guid
+     * ParentPage: Check-in
+     */
+    CheckinSaveAttendanceFamilyCheckIn = "4AF7A0E1-E991-4AE5-A2B5-C440F67A2E6A",
+    /**
+     * Gets the Scheduled Locations page guid
+     * ParentPage: Check-in
+     */
+    CheckinScheduledLocations = "4E210ABB-65B3-4816-BD77-D2C876FC0FD5",
+    /**
+     * Gets the Search page guid
+     * ParentPage: Check-in
+     */
+    CheckinSearch = "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F",
+    /**
+     * Gets the Success page guid
+     * ParentPage: Check-in
+     */
+    CheckinSuccess = "E08230B8-35A4-40D6-A0BB-521418314DA9",
+    /**
+     * Gets the Time Select page guid
+     * ParentPage: Check-in
+     */
+    CheckinTimeSelect = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC",
+    /**
+     * Gets the Time Select (Family Check-in) page guid
+     * ParentPage: Check-in
+     */
+    CheckinTimeSelectFamilyCheckIn = "67BD09B0-0C6E-44E7-A8EB-0E71551F3E6B",
+    /**
+     * Gets the Welcome page guid
+     * ParentPage: Check-in
+     */
+    CheckinWelcome = "432B615A-75FF-4B14-9C99-3E769F866950",
+    /**
      * Gets the ChildPages page guid
      * ParentPage: System Dialogs
      */
     Childpages = "D58F205E-E9CC-4BD9-BC79-F3DA86F6E346",
-    /**
-     * Gets the HtmlEditor RockFileBrowser Plugin Frame page guid
-     * ParentPage: System Dialogs
-     */
-    HtmleditorRockfilebrowserPluginFrame = "4A4995CA-24F6-4D33-B861-A24274F53AA6",
-    /** Gets the htmleditor RockAssetManager Plugin Frame page guid */
-    HtmleditorRockassetmanagerPluginFrame = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389",
-    /**
-     * Gets the HtmlEditor RockMergeField Plugin Frame page guid
-     * ParentPage: System Dialogs
-     */
-    HtmleditorRockmergefieldPluginFrame = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD",
     /**
      * Gets the CMS Configuration page guid
      * ParentPage: Rock Settings
@@ -501,28 +449,30 @@ export const enum Page {
      */
     Confirm = "D73F83B4-E20E-4F95-9A2C-511FB669F44C",
     /**
-     * Gets the Connections board page guid.
-     * ParentPage: Connections opportunity select
-     */
-    ConnectionsBoard = "4FBCEB52-8892-4035-BDEA-112A494BE81F",
-    /**
      * Gets the Connections opportunity select page guid.
      * ParentPage: Engagement
      */
     ConnectionOpportunitySelect = "2A0C135A-8421-4125-A484-83C8B4FB3D34",
+    /** The connection request detail page guid */
+    ConnectionRequestDetail = "50f04e77-8d3b-4268-80ab-bc15dd6cb262",
+    /** The connection requests bulk update page */
+    ConnectionRequestsBulkUpdate = "1F5D34CF-89C1-426C-A139-83D87905D669",
+    /**
+     * Connection Type Config Page
+     * ParentPage: Connections
+     */
+    ConnectionTypes = "9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6",
     /**
      * Gets the Connections page guid. This was the original connections root page that was replaced by
      * the connection opportunity select.
      * ParentPage: Connections opportunity select
      */
     Connections = "530860ED-BC73-4A43-8E7C-69533EF2B6AD",
-    /** The connection request detail page guid */
-    ConnectionRequestDetail = "50f04e77-8d3b-4268-80ab-bc15dd6cb262",
     /**
-     * Connection Type Config Page
-     * ParentPage: Connections
+     * Gets the Connections board page guid.
+     * ParentPage: Connections opportunity select
      */
-    ConnectionTypes = "9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6",
+    ConnectionsBoard = "4FBCEB52-8892-4035-BDEA-112A494BE81F",
     /**
      * Gets the Contact Us page guid
      * ParentPage: Connect
@@ -563,6 +513,8 @@ export const enum Page {
      * ParentPage: Content Channel Types
      */
     ContentTypeDetail = "91EAB2A2-4D44-4701-9ABE-37AE3E7A1B8F",
+    /** The Contribution Statement Page on the stock external site */
+    ContributionStatementPage = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA",
     /**
      * Gets the Contributions page guid
      * ParentPage: Person Pages
@@ -593,6 +545,8 @@ export const enum Page {
      * ParentPage: Reporting
      */
     DataViews = "4011CB37-28AA-46C4-99D5-826F4A9CADF5",
+    /** The dataview search results page */
+    DataviewSearchResults = "6C7AB3CA-E894-4E19-96AE-C67C4C69FEDE",
     /**
      * Gets the Defined Type Detail page guid
      * ParentPage: Defined Types
@@ -666,13 +620,6 @@ export const enum Page {
     /** Gets the Email Analytics page guid */
     EmailAnalytics = "DF014200-72A3-48A0-A953-E594E5410E36",
     /**
-     * Gets the Mass Push Notifications page guid
-     * ParentPage: Communications
-     */
-    MassPushNotifications = "3D97725E-5E17-411F-856C-F4B79B9BFF15",
-    /** The mobile site pages */
-    MobileSitePages = "37E21200-DF91-4426-89CC-7D067237A037",
-    /**
      * Gets the Email Preference page guid
      * ParentPage: Support Pages
      */
@@ -723,61 +670,6 @@ export const enum Page {
      */
     EventRegistration = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4",
     /**
-     * Gets the Registration Instance page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstance = "844DC54B-DAEC-47B3-A63A-712DD6D57793",
-    /**
-     * Gets the Registration Instance - Discounts page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceDiscounts = "6EE74759-D11B-4911-9BC8-CF23DE5534B2",
-    /**
-     * Gets the Registration Instance - Fees page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceFees = "B0576A70-CCB3-4E98-B6C4-3D758DD5F609",
-    /**
-     * Gets the Registration Instance - Linkages page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceLinkages = "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5",
-    /**
-     * Gets the Registration Instance - Payments page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstancePayments = "562D6252-D614-4ED4-B602-D8160066611D",
-    /**
-     * Gets the Registration Instance - Placement Groups page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstancePlacementGroups = "0CD950D7-033D-42B1-A53E-108F311DC5BF",
-    /**
-     * Gets the Registration Instance - Registrants page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceRegistrants = "6138DA76-BD9A-4373-A55C-F88F155E1B13",
-    /**
-     * Gets the Registration Instance - Registrations page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceRegistrations = "844DC54B-DAEC-47B3-A63A-712DD6D57793",
-    /**
-     * Gets the Registration Instance - Wait List page guid
-     * ParentPage: Event Registration
-     */
-    RegistrationInstanceWaitList = "E17883C2-6442-4AE5-B561-2C783F7F89C9",
-    /** The registration detail */
-    RegistrationDetail = "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4",
-    /** The registration instance linkage */
-    RegistrationInstanceLinkage = "DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E",
-    /** The registration send payment reminders */
-    RegistrationSendPaymentReminders = "2828BBCF-B3FC-4707-B063-086748853978",
-    /** The Registration Template Placement page guid */
-    RegistrationTemplatePlacement = "02E7D8EC-E0F1-4632-9641-77772144A4CA",
-    /** The registration wait list confirmation */
-    RegistrationWaitListConfirmation = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105",
-    /**
      * Gets the Exception Detail page guid
      * ParentPage: Exception List
      */
@@ -803,15 +695,15 @@ export const enum Page {
      */
     ExternalHomepage = "85F25819-E948-4960-9DDF-00F54D32444E",
     /**
-     * The web farm
-     * Parent page: System settings
+     * Gets the external site's Workflow Entry page guid
+     * ParentPage: Workflows
      */
-    WebFarm = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056",
+    ExternalWorkflowEntry = "C58861DF-2D82-4E7A-AA5B-04165D2D34C2",
     /**
-     * The web farm node
-     * Parent page: Web Farm
+     * Gets the Family Select page guid
+     * ParentPage: Check-in
      */
-    WebFarmNode = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2",
+    FamilySelect = "10C97379-F719-4ACB-B8C6-651957B660A4",
     /**
      * Gets the File Storage Providers page guid
      * ParentPage: System Settings
@@ -833,6 +725,11 @@ export const enum Page {
      */
     Finance = "7BEB7569-C485-40A0-A609-B0678F6F7240",
     /**
+     * The financial account search guid
+     * ParentPage: Internal Homepage &gt; Finance &gt; Administration
+     */
+    FinancialAccountSearch = "7A36463B-8E63-4394-BE20-ECFC5970080C",
+    /**
      * Gets the Financial Batch Detail page guid
      * ParentPage: Batches
      */
@@ -842,6 +739,8 @@ export const enum Page {
      * ParentPage: System Settings
      */
     FinancialGateways = "F65AA215-8B46-4E34-B709-FA956BF62C30",
+    /** The financial settings menu page on the internal Rock page */
+    FinancialSettings = "90723727-56EC-494D-9708-E188869D900C",
     /**
      * Gets the Following page guid
      * ParentPage: Manage
@@ -885,6 +784,11 @@ export const enum Page {
      */
     GlobalAttributes = "A2753E03-96B1-4C83-AA11-FCD68C631571",
     /**
+     * Gets the Group Attendance Detail page guid
+     * ParentPage: Group Attendance
+     */
+    GroupAttendanceDetail = "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7",
+    /**
      * Gets the Group Attendance page guid
      * ParentPage: Group Toolbox
      */
@@ -894,15 +798,8 @@ export const enum Page {
      * ParentPage: Group Viewer
      */
     GroupAttendanceGroupViewer = "7EA94B4F-013B-4A79-8D01-86994EB04604",
-    /**
-     * Gets the Group Attendance Detail page guid
-     * ParentPage: Group Attendance
-     */
-    GroupAttendanceDetail = "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7",
     /** The group history grid page guid */
     GroupHistoryGrid = "FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0",
-    /** The group member history page guid */
-    GroupMemberHistory = "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B",
     /**
      * Gets the Group Map page guid
      * ParentPage: Group Viewer
@@ -933,21 +830,23 @@ export const enum Page {
      * ParentPage: Security Roles Detail
      */
     GroupMemberDetailSecurityRolesDetail = "45899E6A-7CEC-44EC-8DBA-BD8850262C04",
+    /** The group member history page guid */
+    GroupMemberHistory = "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B",
     /**
      * Gets the Group Registration page guid
      * ParentPage: Small Groups
      */
     GroupRegistration = "7D24FE9A-710C-4B25-B1C7-76161ED78DB8",
     /**
-     * Gets the Group RSVP List page guid
-     * ParentPage:  Group Viewer
-     */
-    GroupRsvpList = "69285A6B-4DBB-43BB-8B0D-08DEBB860AEA",
-    /**
      * Gets the Group RSVP Detail page guid
      * ParentPage:  Group RSVP List
      */
     GroupRsvpDetail = "40E60703-CF52-4742-BDA6-65FB0CF198CB",
+    /**
+     * Gets the Group RSVP List page guid
+     * ParentPage:  Group Viewer
+     */
+    GroupRsvpList = "69285A6B-4DBB-43BB-8B0D-08DEBB860AEA",
     /**
      * Gets the Group RSVP Response page guid
      * ParentPage:  Support Pages (External Site)
@@ -959,6 +858,11 @@ export const enum Page {
      */
     GroupSearchResults = "9C9CAD94-095E-4CC9-BC29-24BDE30492B2",
     /**
+     * Gets the Group Select page guid
+     * ParentPage: Check-in
+     */
+    GroupSelect = "6F0CB22B-E05B-42F1-A329-9219E81F6C34",
+    /**
      * Gets the Group Toolbox page guid
      * ParentPage: My Account
      */
@@ -968,6 +872,11 @@ export const enum Page {
      * ParentPage: Group Types
      */
     GroupTypeDetail = "5CD8E024-710B-4EDE-8C8C-4C9E15E6AFAB",
+    /**
+     * Gets the Group Type Select page guid
+     * ParentPage: Check-in
+     */
+    GroupTypeSelect = "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C",
     /**
      * Gets the Group Types page guid
      * ParentPage: General Settings
@@ -998,6 +907,18 @@ export const enum Page {
      * ParentPage: Website
      */
     HtmlContentApproval = "9DF95EFF-88B4-401A-8F5F-E3B8DB02A308",
+    /** Gets the htmleditor RockAssetManager Plugin Frame page guid */
+    HtmleditorRockassetmanagerPluginFrame = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389",
+    /**
+     * Gets the HtmlEditor RockFileBrowser Plugin Frame page guid
+     * ParentPage: System Dialogs
+     */
+    HtmleditorRockfilebrowserPluginFrame = "4A4995CA-24F6-4D33-B861-A24274F53AA6",
+    /**
+     * Gets the HtmlEditor RockMergeField Plugin Frame page guid
+     * ParentPage: System Dialogs
+     */
+    HtmleditorRockmergefieldPluginFrame = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD",
     /**
      * Gets the Internal Homepage page guid
      * ParentPage: 
@@ -1044,6 +965,11 @@ export const enum Page {
      */
     LocationEditor = "47BFA50A-68D8-4841-849B-75AB3E5BCD6D",
     /**
+     * Gets the Location Select page guid
+     * ParentPage: Check-in
+     */
+    LocationSelect = "043BB717-5799-446F-B8DA-30E575110B0C",
+    /**
      * Gets the Location Services page guid
      * ParentPage: System Settings
      */
@@ -1068,6 +994,11 @@ export const enum Page {
      * ParentPage: Workflows
      */
     ManageWorkflows = "61E1B4B6-EACE-42E8-A2FB-37465E6D0004",
+    /**
+     * Gets the Mass Push Notifications page guid
+     * ParentPage: Communications
+     */
+    MassPushNotifications = "3D97725E-5E17-411F-856C-F4B79B9BFF15",
     /**
      * Gets the Merge People page guid
      * ParentPage: Manage
@@ -1108,6 +1039,8 @@ export const enum Page {
      * ParentPage: Reporting
      */
     Metrics = "78D84825-EB1A-43C6-9AD5-5F0F84CC9A53",
+    /** The mobile site pages */
+    MobileSitePages = "37E21200-DF91-4426-89CC-7D067237A037",
     /**
      * Gets the My Account page guid
      * ParentPage: Security
@@ -1148,6 +1081,18 @@ export const enum Page {
      * ParentPage: Manage
      */
     NewFamily = "6A11A13D-05AB-4982-A4C2-67A8B1950C74",
+    /** The oidc client detail page. */
+    OidcClientDetail = "41E6A833-1697-4463-9962-01DFD123D4C9",
+    /** The oidc clients page. */
+    OidcClientList = "0A18B520-915E-429B-AC49-7A7F73B19BAA",
+    /** The oidc give permission page. */
+    OidcGivePermission = "73941D90-4CA1-46F8-A5D1-5B4BD2E53B3D",
+    /** The oidc logout page. */
+    OidcLogout = "FC20F56F-A7FB-4B89-9C66-98BC43816C8F",
+    /** The oidc scope detail page. */
+    OidcScopeDetail = "55E70873-B882-4864-8B97-66F8ED3588C7",
+    /** The oidc scopes page. */
+    OidcScopeList = "06FA872A-18B0-431A-917E-6F7B2EA8ED95",
     /**
      * Gets the Org Chart page guid
      * ParentPage: Office Information
@@ -1219,25 +1164,22 @@ export const enum Page {
      */
     PersonProfilePersonPages = "08DBD8A5-2C35-4146-B4A8-0F7652348B25",
     /**
-     * Gets the Badge Detail page guid
-     * ParentPage: Person Profile Badges
-     */
-    BadgeDetail = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D",
-    /**
-     * Gets the Badges page guid
-     * ParentPage: General Settings
-     */
-    Badges = "26547B83-A92D-4D7E-82ED-691F403F16B6",
-    /**
      * Gets the Person Search page guid
      * ParentPage: Support Pages
      */
     PersonSearch = "5E036ADE-C2A4-4988-B393-DAC58230F02E",
     /**
+     * Gets the Person Select page guid
+     * ParentPage: Check-in
+     */
+    PersonSelect = "BB8CF87F-680F-48F9-9147-F4951E033D17",
+    /**
      * Gets the Person Viewed Detail page guid
      * ParentPage: Security
      */
     PersonViewedDetail = "48A9DF54-CC19-42FA-BDC6-97AF3E63029D",
+    /** The phone number lookup page. */
+    PhoneNumberLookup = "9F8D906F-ADB6-42AC-9777-D9712A5D097F",
     /**
      * Gets the Photo Opt-Out page guid
      * ParentPage: Support Pages
@@ -1268,23 +1210,23 @@ export const enum Page {
      * ParentPage: Functions
      */
     PledgeList = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867",
-    /** The PowerBI Account Registration Page */
-    PowerbiAccountRegistration = "BB65848A-3EBD-D181-4150-956A39FFE57E",
     /**
      * Gets the Power Tools page guid
      * ParentPage: Rock Settings
      */
     PowerTools = "7F1F4130-CB98-473B-9DE1-7A886D2283ED",
-    /**
-     * Gets the Prayer page guid
-     * ParentPage: Manage
-     */
-    PrayerManage = "1A3437C8-D4CB-4329-A366-8D6A4CBF79BF",
+    /** The PowerBI Account Registration Page */
+    PowerbiAccountRegistration = "BB65848A-3EBD-D181-4150-956A39FFE57E",
     /**
      * Gets the Prayer Categories page guid
      * ParentPage: General Settings
      */
     PrayerCategories = "FA2A1171-9308-41C7-948C-C9EBEA5BD668",
+    /**
+     * Gets the Prayer page guid
+     * ParentPage: Manage
+     */
+    PrayerManage = "1A3437C8-D4CB-4329-A366-8D6A4CBF79BF",
     /**
      * Gets the Prayer Request Detail page guid
      * ParentPage: Prayer
@@ -1300,11 +1242,68 @@ export const enum Page {
      * ParentPage: Rock Shop
      */
     Purchases = "6A163569-2826-4EF2-8208-879DDBDC0896",
+    /** The registration detail */
+    RegistrationDetail = "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4",
+    /**
+     * Gets the Registration Instance page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstance = "844DC54B-DAEC-47B3-A63A-712DD6D57793",
+    /**
+     * Gets the Registration Instance - Discounts page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceDiscounts = "6EE74759-D11B-4911-9BC8-CF23DE5534B2",
+    /**
+     * Gets the Registration Instance - Fees page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceFees = "B0576A70-CCB3-4E98-B6C4-3D758DD5F609",
+    /** The registration instance linkage */
+    RegistrationInstanceLinkage = "DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E",
+    /**
+     * Gets the Registration Instance - Linkages page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceLinkages = "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5",
+    /**
+     * Gets the Registration Instance - Payments page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstancePayments = "562D6252-D614-4ED4-B602-D8160066611D",
+    /**
+     * Gets the Registration Instance - Placement Groups page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstancePlacementGroups = "0CD950D7-033D-42B1-A53E-108F311DC5BF",
+    /**
+     * Gets the Registration Instance - Registrants page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceRegistrants = "6138DA76-BD9A-4373-A55C-F88F155E1B13",
+    /**
+     * Gets the Registration Instance - Registrations page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceRegistrations = "844DC54B-DAEC-47B3-A63A-712DD6D57793",
+    /**
+     * Gets the Registration Instance - Wait List page guid
+     * ParentPage: Event Registration
+     */
+    RegistrationInstanceWaitList = "E17883C2-6442-4AE5-B561-2C783F7F89C9",
+    /** The registration send payment reminders */
+    RegistrationSendPaymentReminders = "2828BBCF-B3FC-4707-B063-086748853978",
+    /** The Registration Template Placement page guid */
+    RegistrationTemplatePlacement = "02E7D8EC-E0F1-4632-9641-77772144A4CA",
+    /** The registration wait list confirmation */
+    RegistrationWaitListConfirmation = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105",
     /**
      * Gets the Report Detail page guid
      * ParentPage: Reports
      */
     ReportDetail = "DB58BC69-01FA-4F3E-832B-B1D0DE915C21",
+    /** The report search results page */
+    ReportSearchResults = "7DA4B63B-4407-47B2-8984-A54A543D8A69",
     /**
      * Gets the Reporting page guid
      * ParentPage: Tools
@@ -1408,6 +1407,11 @@ export const enum Page {
      */
     SchedulesGeneralSettings = "F5D6D7DD-FD5F-494C-83DC-E2AF63C705D1",
     /**
+     * Gets the Search page guid
+     * ParentPage: Check-in
+     */
+    Search = "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F",
+    /**
      * Gets the Search Services page guid
      * ParentPage: System Settings
      */
@@ -1430,11 +1434,6 @@ export const enum Page {
      */
     SecurityRockSettings = "91CCB1C9-5F9F-44F5-8BE2-9EC3A3CFD46F",
     /**
-     * Gets the Security page guid
-     * ParentPage: System Dialogs
-     */
-    SecuritySystemDialogs = "86D5E33E-E351-4CA5-9925-849C6C467257",
-    /**
      * Gets the Security Roles page guid
      * ParentPage: Security
      */
@@ -1444,6 +1443,11 @@ export const enum Page {
      * ParentPage: Security Roles
      */
     SecurityRolesDetail = "48AAD428-A9C9-4BBB-A80F-B85F28D31240",
+    /**
+     * Gets the Security page guid
+     * ParentPage: System Dialogs
+     */
+    SecuritySystemDialogs = "86D5E33E-E351-4CA5-9925-849C6C467257",
     /**
      * Gets the Send Photo Requests page guid
      * ParentPage: Communications
@@ -1475,30 +1479,25 @@ export const enum Page {
      */
     SqlCommand = "03C49950-9C4C-4668-9C65-9A0DF43D1B33",
     /**
-     * Gets the Step Programs page guid
+     * Gets the Step Flow page guid
      * ParentPage: Engagement
      */
-    StepPrograms = "F5E8A369-4856-42E5-B187-276DFCEB1F3F",
+    StepFlow = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC",
     /**
      * Gets the Step Program Detail page guid
      * ParentPage: Step Programs
      */
     StepProgramDetail = "6E46BC35-1FCB-4619-84F0-BB6926D2DDD5",
     /**
-     * Gets the Step Flow page guid
+     * Gets the Step Programs page guid
      * ParentPage: Engagement
      */
-    StepFlow = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC",
+    StepPrograms = "F5E8A369-4856-42E5-B187-276DFCEB1F3F",
     /**
      * Gets the Streak page guid
      * ParentPage: Streak Type Detail
      */
     Streak = "488BE67C-EDA0-489E-8D80-8CC67F5854D4",
-    /**
-     * Gets the Streak Types page guid
-     * ParentPage: Engagement
-     */
-    StreakTypes = "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3",
     /**
      * Gets the Streak Type Detail page guid
      * ParentPage: Streak Types
@@ -1510,15 +1509,37 @@ export const enum Page {
      */
     StreakTypeExclusionDetail = "68EF459F-5D23-4930-8EA8-80CDF986BB94",
     /**
-     * Gets the Support Pages page guid (internal site)
-     * ParentPage: Internal Homepage
+     * Gets the Streak Types page guid
+     * ParentPage: Engagement
      */
-    SupportPagesInternalHomepage = "936C90C4-29CF-4665-A489-7C687217F7B8",
+    StreakTypes = "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3",
+    /**
+     * Gets the Success page guid
+     * ParentPage: Check-in
+     */
+    Success = "E08230B8-35A4-40D6-A0BB-521418314DA9",
     /**
      * Gets the Support Pages page guid (external site)
      * ParentPage: External Site
      */
     SupportPagesExternalSite = "EBAA5140-4B8F-44B8-B1E8-C73B654E4B22",
+    /**
+     * Gets the Support Pages page guid (internal site)
+     * ParentPage: Internal Homepage
+     */
+    SupportPagesInternalHomepage = "936C90C4-29CF-4665-A489-7C687217F7B8",
+    /**
+     * Gets the System Communications page guid
+     * ParentPage: Communications
+     */
+    SystemCommunicationDetail = "2FE2D59E-2737-49C8-AF1B-4366A8371A8E",
+    /**
+     * Gets the System Communications page guid
+     * ParentPage: Communications
+     */
+    SystemCommunicationList = "14D8F894-F70F-44F7-9F0C-2545F87256FF",
+    /** The system communication preview internal page. */
+    SystemCommunicationPreview = "FD8E0C71-9543-4CAB-9918-76A67EFE5093",
     /**
      * Gets the System Configuration page guid
      * ParentPage: System Settings
@@ -1549,16 +1570,6 @@ export const enum Page {
      * ParentPage: Communications
      */
     SystemEmails = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E",
-    /**
-     * Gets the System Communications page guid
-     * ParentPage: Communications
-     */
-    SystemCommunicationList = "14D8F894-F70F-44F7-9F0C-2545F87256FF",
-    /**
-     * Gets the System Communications page guid
-     * ParentPage: Communications
-     */
-    SystemCommunicationDetail = "2FE2D59E-2737-49C8-AF1B-4366A8371A8E",
     /**
      * Gets the System Information page guid
      * ParentPage: System Dialogs
@@ -1591,6 +1602,11 @@ export const enum Page {
     TagsManage = "2654EBE9-F585-4E64-93F3-102357F89660",
     /** Gets the Text To Give Setup page guid */
     TextToGiveSetup = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1",
+    /**
+     * Gets the Time Select page guid
+     * ParentPage: Check-in
+     */
+    TimeSelect = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC",
     /**
      * Gets the Tools page guid
      * ParentPage: Internal Homepage
@@ -1627,10 +1643,25 @@ export const enum Page {
      */
     VerifyPhotos = "07E4BA19-614A-42D0-9D75-DFB31374844D",
     /**
+     * The web farm
+     * Parent page: System settings
+     */
+    WebFarm = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056",
+    /**
+     * The web farm node
+     * Parent page: Web Farm
+     */
+    WebFarmNode = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2",
+    /**
      * Gets the Website page guid
      * ParentPage: Tools
      */
     Website = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F",
+    /**
+     * Gets the Check-in Welcome page guid
+     * ParentPage: Check-in
+     */
+    Welcome = "432B615A-75FF-4B14-9C99-3E769F866950",
     /**
      * Gets the Workflow page guid
      * ParentPage: Tools
@@ -1651,11 +1682,6 @@ export const enum Page {
      * ParentPage: Workflows
      */
     WorkflowEntry = "0550D2AA-A705-4400-81FF-AB124FDF83D7",
-    /**
-     * Gets the external site's Workflow Entry page guid
-     * ParentPage: Workflows
-     */
-    ExternalWorkflowEntry = "C58861DF-2D82-4E7A-AA5B-04165D2D34C2",
     /**
      * Gets the Workflow Trigger page guid
      * ParentPage: Workflow Triggers
@@ -1681,30 +1707,4 @@ export const enum Page {
      * ParentPage: System Dialogs
      */
     Zoneblocks = "9F36531F-C1B5-4E23-8FA3-18B6DAFF1B0B",
-    /** The phone number lookup page. */
-    PhoneNumberLookup = "9F8D906F-ADB6-42AC-9777-D9712A5D097F",
-    /** The oidc scopes page. */
-    OidcScopeList = "06FA872A-18B0-431A-917E-6F7B2EA8ED95",
-    /** The oidc clients page. */
-    OidcClientList = "0A18B520-915E-429B-AC49-7A7F73B19BAA",
-    /** The oidc give permission page. */
-    OidcGivePermission = "73941D90-4CA1-46F8-A5D1-5B4BD2E53B3D",
-    /** The oidc logout page. */
-    OidcLogout = "FC20F56F-A7FB-4B89-9C66-98BC43816C8F",
-    /** The oidc scope detail page. */
-    OidcScopeDetail = "55E70873-B882-4864-8B97-66F8ED3588C7",
-    /** The oidc client detail page. */
-    OidcClientDetail = "41E6A833-1697-4463-9962-01DFD123D4C9",
-    /** The financial settings menu page on the internal Rock page */
-    FinancialSettings = "90723727-56EC-494D-9708-E188869D900C",
-    /** The Contribution Statement Page on the stock external site */
-    ContributionStatementPage = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA",
-    /** The system communication preview internal page. */
-    SystemCommunicationPreview = "FD8E0C71-9543-4CAB-9918-76A67EFE5093",
-    /** The connection requests bulk update page */
-    ConnectionRequestsBulkUpdate = "1F5D34CF-89C1-426C-A139-83D87905D669",
-    /** The dataview search results page */
-    DataviewSearchResults = "6C7AB3CA-E894-4E19-96AE-C67C4C69FEDE",
-    /** The report search results page */
-    ReportSearchResults = "7DA4B63B-4407-47B2-8984-A54A543D8A69",
 }

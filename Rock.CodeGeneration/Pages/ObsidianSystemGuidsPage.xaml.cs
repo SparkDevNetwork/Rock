@@ -146,7 +146,7 @@ namespace Rock.CodeGeneration.Pages
                     // Generate each file that will provide SystemGuid
                     // information to Obsidian.
                     var generator = new TypeScriptViewModelGenerator();
-                    foreach ( var type in GetSelectedTypes() )
+                    foreach ( var type in selectedTypes )
                     {
                         var source = generator.GenerateSystemGuidForType( type );
                         files.Add( new GeneratedFile( GetFileNameForType( type ), GetPath(), source ) );
