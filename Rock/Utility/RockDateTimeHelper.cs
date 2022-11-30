@@ -320,5 +320,30 @@ WHERE SundayDate IS NULL
 
             return result;
         }
+
+        internal static string ConvertDateRangeDelimitedValueToRoundTripFormat( string value )
+        {
+            if ( value.IsNotNullOrWhiteSpace() )
+            {
+                string[] splitValues = value.Split( '|' );
+                if ( splitValues.Length == 5 )
+                {
+                    var slidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+
+                    if ( slidingDateRangeMode == SlidingDateRangeType.DateRange )
+                    {
+                        var startDateTime = splitValues[3].AsDateTime();
+                        var endDateTime = splitValues[4].AsDateTime();
+
+                        var startDateTimeString = startDateTime.HasValue ? startDateTime.Value.ToString( "o" ) : splitValues[3];
+                        var endDateTimeString = endDateTime.HasValue ? endDateTime.Value.ToString( "o" ) : splitValues[4];
+
+                        return $"{slidingDateRangeMode}|{splitValues[1]}|{splitValues[2]}|{startDateTimeString}|{endDateTimeString}";
+                    }
+                }
+            }
+
+            return value;
+        }
     }
 }
