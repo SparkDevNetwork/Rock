@@ -62,7 +62,7 @@ import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import ListBox from "@Obsidian/Controls/listBox";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
-import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
+import AddressControl from "@Obsidian/Controls/addressControl.vue";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import Switch from "@Obsidian/Controls/switch";
 import Toggle from "@Obsidian/Controls/toggle";
@@ -1847,7 +1847,7 @@ const addressControlGallery = defineComponent({
     setup() {
         return {
             value: ref({}),
-            importCode: getControlImportPath("addressControl"),
+            importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
     },

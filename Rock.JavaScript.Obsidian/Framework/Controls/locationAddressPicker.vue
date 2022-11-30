@@ -30,7 +30,8 @@
     import { PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.vue";
-    import AddressControl, { AddressControlValue } from "./addressControl";
+    import AddressControl from "./addressControl.vue";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { post } from "@Obsidian/Utility/http";
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation";
@@ -45,13 +46,13 @@
          * Geographical Point or Polygon coordinates in Well Known Text format
          */
         modelValue: {
-            type: Object as PropType<AddressControlValue>,
+            type: Object as PropType<AddressControlBag>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: AddressControlValue): void
+        (e: "update:modelValue", value: AddressControlBag): void
     }>();
 
     // #region Values
@@ -80,8 +81,8 @@
         if (response.isSuccess && response.data) {
             if (response.data.isValid) {
                 errors.value = [];
-                pickerValue.value = { ...response.data.address } as AddressControlValue;
-                controlValue.value = { ...response.data.address } as AddressControlValue;
+                pickerValue.value = { ...response.data.address } as AddressControlBag;
+                controlValue.value = { ...response.data.address } as AddressControlBag;
                 pickerLabel.value = response.data.addressString ?? "";
                 showPopup.value = false;
             }

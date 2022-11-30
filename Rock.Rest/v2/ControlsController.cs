@@ -207,7 +207,7 @@ namespace Rock.Rest.v2
                 postalCodeRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
             }
 
-            return Ok( new
+            return Ok( new AddressControlConfigurationBag
             {
                 ShowCountrySelection = showCountrySelection,
                 DefaultCountry = defaultCountryCode,
@@ -223,12 +223,12 @@ namespace Rock.Rest.v2
                 StateLabel = stateLabel,
                 PostalCodeLabel = postalCodeLabel,
 
-                AddressLine1Requirement = addressLine1Requirement,
-                AddressLine2Requirement = addressLine2Requirement,
-                CityRequirement = cityRequirement,
-                LocalityRequirement = localityRequirement,
-                StateRequirement = stateRequirement,
-                PostalCodeRequirement = postalCodeRequirement,
+                AddressLine1Requirement = (RequirementLevel) addressLine1Requirement,
+                AddressLine2Requirement = ( RequirementLevel ) addressLine2Requirement,
+                CityRequirement = (RequirementLevel) cityRequirement,
+                LocalityRequirement = (RequirementLevel) localityRequirement,
+                StateRequirement = (RequirementLevel) stateRequirement,
+                PostalCodeRequirement = (RequirementLevel) postalCodeRequirement,
             } );
         }
 

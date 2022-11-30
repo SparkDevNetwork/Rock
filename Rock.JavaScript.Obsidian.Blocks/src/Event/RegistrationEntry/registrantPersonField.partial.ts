@@ -17,7 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType } from "vue";
-import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
+import AddressControl from "@Obsidian/Controls/addressControl.vue";
+import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";

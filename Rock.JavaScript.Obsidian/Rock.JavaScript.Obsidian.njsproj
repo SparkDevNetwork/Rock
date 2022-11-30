@@ -33,6 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
+    <Content Include="Framework\Controls\addressControl.vue" />
     <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\buttonGroup.vue" />
     <Content Include="Framework\Controls\cacheabilityPicker.vue" />
@@ -261,6 +262,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\buttonOptions.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\requirementLevel.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\rockCacheabilityType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\notificationClassification.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\segmentCriteria.d.ts" />
@@ -838,6 +840,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assessmentTypePickerGetAssessmentTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assetStorageProviderPickerGetAssetStorageProvidersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\auditDetailGetAuditDetailsOptionsBag.d.ts" />

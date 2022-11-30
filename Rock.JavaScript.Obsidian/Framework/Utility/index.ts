@@ -1,3 +1,4 @@
+export * as Address from "./address";
 export * as AspDateFormat from "./aspDateFormat";
 export * as ArrayUtils from "./arrayUtils";
 export * as Block from "./block";
