@@ -686,7 +686,10 @@ namespace RockWeb.Blocks.WorkFlow
                             if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
                             {
                                 _activity = activity;
-                                _activity.LoadAttributes();
+                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                                {
+                                    _activity.LoadAttributes();
+                                }
 
                                 _action = action;
                                 _actionType = _action.ActionTypeCache;
@@ -697,7 +700,10 @@ namespace RockWeb.Blocks.WorkFlow
                             if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature && action.IsCriteriaValid )
                             {
                                 _activity = activity;
-                                _activity.LoadAttributes();
+                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                                {
+                                    _activity.LoadAttributes();
+                                }
 
                                 _action = action;
                                 _actionType = _action.ActionTypeCache;
