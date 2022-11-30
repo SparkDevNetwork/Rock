@@ -207,7 +207,6 @@
     <TypeScriptCompile Include="Framework\Controls\remoteAuthsPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
-    <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\categoryPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldTypeEditor.ts" />
