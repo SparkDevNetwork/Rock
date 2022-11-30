@@ -223,10 +223,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
 
-
             if ( financialScheduledTransaction.IsActive )
             {
-
                 btnScheduledTransactionInactivate.Visible = true;
             }
             else
@@ -254,21 +252,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
 
-
             if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
                 pnlCreditCardInfo.Visible = true;
                 lOtherCurrencyTypeInfo.Visible = false;
-                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
-                {
-                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                    lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
-                }
-                else
-                {
-                    lScheduledTransactionCardTypeLast4.Text = creditCardType;
-                }
-
+                lScheduledTransactionCardTypeLast4.Text = FormatAccountTypeWithLast4( creditCardType, accountNumberMasked );
                 lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
@@ -428,6 +416,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lSavedAccountName.Text = financialPersonSavedAccount.Name;
             var financialPaymentDetail = financialPersonSavedAccount.FinancialPaymentDetail;
 
+            string currencyType = financialPaymentDetail?.CurrencyTypeValue.Value;
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
             if ( financialPaymentDetail?.CreditCardTypeValueId != null )
@@ -435,30 +424,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
             }
 
+            // Collect the currency types that are allowed to be listed with saved account name and expiration date.
             var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            var currencyTypeIdApplePay = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            var currencyTypeIdAndroidPay = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
 
             if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
                 pnlCreditCardInfo.Visible = true;
                 lOtherCurrencyTypeInfo.Visible = false;
-
-                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
-                {
-                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                    lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
-                }
-                else
-                {
-                    lSavedAccountCardTypeLast4.Text = creditCardType;
-                }
-
+                lSavedAccountCardTypeLast4.Text = FormatAccountTypeWithLast4( creditCardType, accountNumberMasked );
+                lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
+            }
+            else if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdApplePay
+                        || financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdAndroidPay )
+            {
+                // If the currency type is Apple Pay or Android Pay, use the currency type value.
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+                lSavedAccountCardTypeLast4.Text = FormatAccountTypeWithLast4( currencyType, accountNumberMasked );
                 lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
             {
                 pnlCreditCardInfo.Visible = false;
                 lOtherCurrencyTypeInfo.Visible = true;
-                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
+                lOtherCurrencyTypeInfo.Text = currencyType;
             }
 
             var cardIsExpired = financialPaymentDetail.CardExpirationDate.HasValue && financialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now;
@@ -691,8 +682,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-
-
             if ( Person.GivingGroupId.HasValue )
             {
                 // Person contributes with family
@@ -812,6 +801,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptContributionStatementsYYYY.DataBind();
 
             pnlStatement.Visible = statementYears.Any();
+        }
+
+        private string FormatAccountTypeWithLast4( string type, string accountNumberMasked )
+        {
+            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            {
+                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                return $"{type} - {last4}";
+            }
+            else
+            {
+                return type;
+            }
         }
 
         #endregion Methods
