@@ -114,6 +114,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS = "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2";
 
         /// <summary>
+        /// The Job to run Post v14.1 Data Migrations for Update AttributeValues of type SlidingDateRangeFieldType to RoundTrip format.
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_SLIDING_DATE_RANGE_VALUE = "59D32B1D-5D9A-4B1E-836A-43BBE89BA004";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";

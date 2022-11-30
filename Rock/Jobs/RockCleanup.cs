@@ -275,6 +275,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
+            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -2301,6 +2303,29 @@ SELECT @@ROWCOUNT
             }
 
             return updateCount;
+        }
+
+        /// <summary>
+        /// Removes older unused versions of the chrome engine
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveOlderChromeEngines()
+        {
+            var options = new PuppeteerSharp.BrowserFetcherOptions()
+            {
+                Product = PuppeteerSharp.Product.Chrome,
+                Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
+            };
+
+            var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
+            var olderVersions = browserFetcher.LocalRevisions().Where( r => r != PuppeteerSharp.BrowserFetcher.DefaultChromiumRevision );
+
+            foreach ( var version in olderVersions )
+            {
+                browserFetcher.Remove( version );
+            }
+
+            return olderVersions.Count();
         }
 
         /// <summary>
