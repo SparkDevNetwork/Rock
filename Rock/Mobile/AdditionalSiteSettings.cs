@@ -282,6 +282,15 @@ namespace Rock.Mobile
         public int? CommunicationViewPageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the page that will display interactive
+        /// experience occurrences to the individual.
+        /// </summary>
+        /// <value>
+        /// The interactive experience page identifier.
+        /// </value>
+        public int? InteractiveExperiencePageId { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to enable notifications automatically.
         /// </summary>
         /// <value>

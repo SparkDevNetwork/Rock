@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -273,6 +273,34 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Checks if the campus geofence contains the specified point.
+        /// </summary>
+        /// <param name="latitude">The latitude of the point.</param>
+        /// <param name="longitude">The longitude of the point.</param>
+        /// <returns><c>true</c> if the campus has a geofence and it contains the point; otherwise <c>false</c>.</returns>
+        internal bool ContainsGeoPoint( double latitude, double longitude )
+        {
+            var geoPoint = DbGeography.FromText( $"POINT({longitude} {latitude})" );
+
+            return ContainsGeoPoint( geoPoint );
+        }
+
+        /// <summary>
+        /// Checks if the campus geofence contains the specified point.
+        /// </summary>
+        /// <param name="geoPoint">The point to be checked.</param>
+        /// <returns><c>true</c> if the campus has a geofence and it contains the point; otherwise <c>false</c>.</returns>
+        internal bool ContainsGeoPoint( DbGeography geoPoint )
+        {
+            if ( Location?.GeoFence == null )
+            {
+                return false;
+            }
+
+            return geoPoint.Intersects( Location.GeoFence );
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -463,6 +491,14 @@ namespace Rock.Web.Cache
             public double? Longitude { get; private set; }
 
             /// <summary>
+            /// Gets the geofence defined for the campuses location.
+            /// </summary>
+            /// <value>
+            /// The geofence defined for the campuses location.
+            /// </value>
+            internal System.Data.Entity.Spatial.DbGeography GeoFence { get; }
+
+            /// <summary>
             /// Gets or sets the URL for the image.
             /// </summary>
             /// <value>
@@ -477,7 +513,10 @@ namespace Rock.Web.Cache
             /// <param name="locationModel">The location model.</param>
             public CampusLocation( Location locationModel )
             {
-                if ( locationModel == null ) return;
+                if ( locationModel == null )
+                {
+                    return;
+                }
 
                 Street1 = locationModel.Street1;
                 Street2 = locationModel.Street2;
@@ -491,10 +530,13 @@ namespace Rock.Web.Cache
                     ImageUrl = locationModel.Image.Url;
                 }
 
-                if ( locationModel.GeoPoint == null ) return;
+                if ( locationModel.GeoPoint != null )
+                {
+                    Latitude = locationModel.GeoPoint.Latitude;
+                    Longitude = locationModel.GeoPoint.Longitude;
+                }
 
-                Latitude = locationModel.GeoPoint.Latitude;
-                Longitude = locationModel.GeoPoint.Longitude;
+                GeoFence = locationModel.GeoFence;
             }
         }
 

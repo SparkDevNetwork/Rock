@@ -22,7 +22,15 @@
 		"volar.completion.preferredAttrNameCase": "camel",
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
-		"html.format.wrapLineLength": 0
+		"html.format.wrapLineLength": 0,
+		"eslint.validate": [
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact",
+			"vue"
+		],
+		"css.format.spaceAroundSelectorSeparator": true
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -30,7 +38,7 @@
 			{
 				"label": "Build Obsidian Components",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true
@@ -46,7 +54,7 @@
 			{
 				"label": "Build Obsidian Blocks",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true

@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="blockErrorMessage"
+           alertType="warning">
+        {{ blockErrorMessage }}
+    </Alert>
+
+    <Panel v-else-if="isPanelVisible" type="block" :title="experienceName">
+        <SectionHeader description="There are multiple experience occurrences happening right now. Please select the one you would like to manage." />
+
+        <a v-for="occurrence in occurrences" class="d-flex rounded overflow-hidden mb-2 align-items-stretch border border-gray-400" :href="getOccurrenceLink(occurrence)">
+            <div class="p-2 d-flex align-items-center align-self-stretch bg-info text-white">
+                <span>
+                    <i class="fa fa-calendar-alt"></i>
+                </span>
+            </div>
+
+            <div class="p-2 d-flex align-items-center align-self-stretch flex-grow-1 text-body">
+                {{ occurrence.text }}
+            </div>
+
+            <div class="p-2 mr-2 d-flex align-items-center align-self-stretch text-info">
+                <span>
+                    <i class="fa fa-arrow-circle-right"></i>
+                </span>
+            </div>
+        </a>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
+    import Panel from "@Obsidian/Controls/panel";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { ExperienceManagerOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManagerOccurrences/experienceManagerOccurrencesInitializationBox";
+    import { computed, ref } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NavigationUrlKey } from "./ExperienceManagerOccurrences/types";
+
+    const config = useConfigurationValues<ExperienceManagerOccurrencesInitializationBox>();
+
+    // #region Values
+
+    const isPanelVisible = ref(true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    const occurrences = computed((): ListItemBag[] => {
+        return config.occurrences ?? [];
+    });
+
+    const experienceName = computed((): string => {
+        return config.experienceName ?? "Experience";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getOccurrenceLink(occurrence: ListItemBag): string {
+        const urlTemplate = config.navigationUrls?.[NavigationUrlKey.ExperienceManagerPage];
+
+        if (!urlTemplate || !occurrence.value) {
+            return "#";
+        }
+
+        return urlTemplate.replace("((Id))", occurrence.value);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // If only one occurrence, redirect to the manager page. This should be
+    // replaced with a server-side redirect once that is possible.
+    if (occurrences.value.length === 1) {
+        isPanelVisible.value = false;
+
+        window.location.href = getOccurrenceLink(occurrences.value[0]);
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

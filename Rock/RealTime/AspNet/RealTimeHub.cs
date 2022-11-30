@@ -112,6 +112,19 @@ namespace Rock.RealTime.AspNet
             }
         }
 
+        /// <summary>
+        /// Determines whether this connection is still valid. A connection can
+        /// become invalid if the Rock server restarts. In this case the SignalR
+        /// connection resumes as a reconnect without ever calling the
+        /// <see cref="OnConnected"/> method. This also means all connection
+        /// state is lost.
+        /// </summary>
+        /// <returns><c>true</c> if the connection is valid; otherwise <c>false</c>.</returns>
+        public Task<bool> IsConnectionValid()
+        {
+            return Task.FromResult( RealTimeHelper.Engine.HasConnectionState<EngineConnectionState>( Context.ConnectionId ) );
+        }
+
         /// <inheritdoc/>
         public override async Task OnConnected()
         {

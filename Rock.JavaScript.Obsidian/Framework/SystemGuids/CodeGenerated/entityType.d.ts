@@ -121,6 +121,18 @@ export const enum EntityType {
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for Rock.Model.Interaction */
     Interaction = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7",
+    /** The EntityType Guid for Rock.Model.InteractiveExperience */
+    InteractiveExperience = "3D90E693-476E-4DFC-B958-A28D1DD370BF",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceAction */
+    InteractiveExperienceAction = "8635E7E7-3576-47FF-92DE-30A69EB5D011",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceAnswer */
+    InteractiveExperienceAnswer = "D11DA9D4-8887-4EC2-B396-78556926DE89",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceOccurrence */
+    InteractiveExperienceOccurrence = "2D1263A1-A3E7-4568-AA4B-C1234824188D",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceSchedule */
+    InteractiveExperienceSchedule = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus */
+    InteractiveExperienceScheduleCampus = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
     /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
     LavaShortcode = "7574A473-3326-4973-8DF6-C7BF5F64EB36",
     /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */

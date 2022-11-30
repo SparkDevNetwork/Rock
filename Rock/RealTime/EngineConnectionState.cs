@@ -17,6 +17,8 @@
 
 using System.Collections.Concurrent;
 
+using Rock.Net;
+
 namespace Rock.RealTime
 {
     /// <summary>
@@ -31,5 +33,16 @@ namespace Rock.RealTime
         /// </summary>
         /// <value>The topics this connection has connected to.</value>
         public ConcurrentDictionary<string, bool> ConnectedTopics { get; } = new ConcurrentDictionary<string, bool>();
+
+        /// <summary>
+        /// Gets or sets the request representing the original connection.
+        /// </summary>
+        /// <remarks>
+        /// If the client temporarily reconnects (via timeout on websocket or
+        /// if they are using long-polling requests) then this request will
+        /// still represent the initial request.
+        /// </remarks>
+        /// <value>The request representing the original connection.</value>
+        public RockRequestContext Request { get; set; }
     }
 }

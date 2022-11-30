@@ -78,7 +78,7 @@ export default defineComponent({
         });
 
         const controlContainerClass = computed((): string => {
-            return isInputGroup.value ? "input-group" : "";
+            return isInputGroup.value ? `input-group ${props.inputGroupClasses}` : "";
         });
 
         const computedRules = computed((): ValidationRule[] => {

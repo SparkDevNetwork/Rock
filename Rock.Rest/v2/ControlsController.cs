@@ -389,6 +389,41 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Campus Picker
+
+        /// <summary>
+        /// Gets the campuses that can be displayed in the campus picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="CampusPickerItemBag"/> objects that represent the binary file types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CampusPickerGetCampuses" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "3D2E0AF9-9E1A-47BD-A1C5-008B6D2A5B22" )]
+        public IHttpActionResult CampusPickerGetCampuses( [FromBody] CampusPickerGetCampusesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new CampusService( rockContext )
+                    .Queryable()
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .Select( c => new CampusPickerItemBag
+                    {
+                        Value = c.Guid.ToString(),
+                        Text = c.Name,
+                        IsActive = c.IsActive ?? true,
+                        CampusStatus = c.CampusStatusValue.Guid,
+                        CampusType = c.CampusTypeValue.Guid
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Category Picker
 
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );

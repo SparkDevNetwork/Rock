@@ -191,6 +191,9 @@ namespace Rock.RealTime
         /// <param name="connectionIdentifier">The connection identifier.</param>
         public virtual Task ClientConnectedAsync( object realTimeHub, string connectionIdentifier )
         {
+            // Force the creation of the connection state.
+            GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
             return Task.CompletedTask;
         }
 
@@ -252,6 +255,24 @@ namespace Rock.RealTime
         {
             return ( TState ) _clientStates.GetOrAdd( connectionIdentifier, _ => new ConcurrentDictionary<Type, object>() )
                 .GetOrAdd( typeof( TState ), _ => new TState() );
+        }
+
+        /// <summary>
+        /// Determines whether the connection has state <typeparamref name="TState"/>.
+        /// This check is performed without actually creating the state if it does
+        /// not already exist.
+        /// </summary>
+        /// <typeparam name="TState">The type of state object.</typeparam>
+        /// <param name="connectionIdentifier">The connection identifier that the state object should be checked on.</param>
+        /// <returns><c>true</c> if the state object exists on the connection; otherwise, <c>false</c>.</returns>
+        public bool HasConnectionState<TState>( string connectionIdentifier )
+        {
+            if ( !_clientStates.TryGetValue( connectionIdentifier, out var clientState ) )
+            {
+                return false;
+            }
+
+            return clientState.ContainsKey( typeof( TState ) );
         }
 
         /// <summary>

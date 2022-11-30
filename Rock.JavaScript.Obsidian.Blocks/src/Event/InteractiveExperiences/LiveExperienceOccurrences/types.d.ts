@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,19 +15,5 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
-namespace Rock.ViewModels.Blocks
-{
-    /// <summary>
-    /// Interface IValidPropertiesBox
-    /// </summary>
-    public interface IValidPropertiesBox
-    {
-        /// <summary>
-        /// Gets the valid properties.
-        /// </summary>
-        /// <value>The valid properties.</value>
-        List<string> ValidProperties { get; }
-    }
+export const enum NavigationUrlKey {
 }

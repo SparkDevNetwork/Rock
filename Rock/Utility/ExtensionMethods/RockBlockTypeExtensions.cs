@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.Blocks;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -84,7 +85,49 @@ namespace Rock
         /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
         public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
         {
-            var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), queryParams != null ? new Dictionary<string, string>( queryParams ) : null );
+            var parameters = queryParams != null ? new Dictionary<string, string>( queryParams ) : new Dictionary<string, string>();
+
+            // Add in the original page parameters if they have not already
+            // been set in the new query parameters.
+            foreach ( var qp in block.RequestContext.GetPageParameters() )
+            {
+                // Skip any page parameters that are internal usage.
+                if ( qp.Key == "PageId" )
+                {
+                    continue;
+                }
+
+                parameters.AddOrIgnore( qp.Key, qp.Value );
+            }
+
+            var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Builds and returns the URL for the standard login <see cref="Rock.Model.Page"/>
+        /// for a block along with the return URL parameter.
+        /// </summary>
+        /// <param name="block">The block to get instance data from.</param>
+        /// <param name="returnUrl">The URL to be redirected to after login.</param>
+        /// <returns>A string representing the URL to the login <see cref="Rock.Model.Page"/>.</returns>
+        public static string GetLoginPageUrl( this RockBlockType block, string returnUrl )
+        {
+            var site = SiteCache.Get( block.PageCache.SiteId );
+            var pageReference = new Rock.Web.PageReference( site.LoginPageReference );
+
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                pageReference.QueryString["returnurl"] = returnUrl;
+            }
 
             if ( pageReference.PageId > 0 )
             {

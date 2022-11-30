@@ -18,19 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tasks;
 using Rock.Utility;
-using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Net
 {
@@ -80,7 +75,7 @@ namespace Rock.Net
         internal virtual int? CurrentVisitorId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the root URL path of this request, e.g. https://www.rocksolidchurchdemo.com/
+        /// Gets or sets the root URL path of this request, e.g. <c>https://www.rocksolidchurchdemo.com</c>.
         /// </summary>
         /// <remarks>
         /// May be empty if the request came from a non-web source.
@@ -89,6 +84,15 @@ namespace Rock.Net
         /// The root URL path.
         /// </value>
         public virtual string RootUrlPath { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the request URI that initiated this request.
+        /// </summary>
+        /// <remarks>
+        /// May be null if the request came from a non-web source.
+        /// </remarks>
+        /// <value>The request URI that initiated this request.</value>
+        public virtual Uri RequestUri { get; protected set; }
 
         /// <summary>
         /// Gets the client information related to the client sending the request.
@@ -175,8 +179,8 @@ namespace Rock.Net
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
-            var uri = new Uri( request.UrlProxySafe().ToString() );
-            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
+            RequestUri = request.UrlProxySafe();
+            RootUrlPath = GetRootUrlPath( RequestUri );
 
             ClientInformation = new ClientInformation( request );
 
@@ -216,35 +220,34 @@ namespace Rock.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
-        /// <param name="request">The request from an API call that we will initialize from.</param>
-        internal RockRequestContext( HttpRequestMessage request )
+        /// <param name="request">The request that we will initialize from.</param>
+        internal RockRequestContext( IRequest request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
-            request.Headers.GetCookies();
 
-            var uri = request.RequestUri;
-            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
+            RequestUri = request.UrlProxySafe();
+            RootUrlPath = GetRootUrlPath( RequestUri );
 
             ClientInformation = new ClientInformation( request );
 
-            // Setup the page parameters, only use query string for now. Route
-            // parameters don't make a lot of sense with an API call.
-            QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+            // Setup the page parameters.
+            QueryString = new NameValueCollection( request.QueryString );
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-            foreach ( var kvp in request.GetQueryNameValuePairs() )
+            foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
-                PageParameters.AddOrReplace( kvp.Key, kvp.Value );
-                QueryString.Add( kvp.Key, kvp.Value );
+                PageParameters.AddOrReplace( key, request.QueryString[key] );
             }
 
             // Setup the headers.
-            Headers = request.Headers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+            Headers = request.Headers.AllKeys
+                .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
+                .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
 
             // Setup the cookies.
             Cookies = new Dictionary<string, string>();
-            foreach ( var cookie in request.Headers.GetCookies().SelectMany( c => c.Cookies ) )
+            foreach ( var cookieName in request.Cookies.Keys )
             {
-                Cookies.AddOrReplace( cookie.Name, cookie.Value );
+                Cookies.AddOrReplace( cookieName, request.Cookies[cookieName] );
             }
 
             // Initialize any context entities found.
@@ -281,6 +284,24 @@ namespace Rock.Net
             }
 
             AddContextEntitiesForPage( _pageCache );
+        }
+
+        /// <summary>
+        /// Gets the root URL path from the given URI. This is effectively just
+        /// the scheme and hostname without any path or query string.
+        /// </summary>
+        /// <param name="uri">The URL to extract the root from.</param>
+        /// <returns>A string that represents the root url path, such as <c>https://rock.rocksolidchurch.com</c>.</returns>
+        private static string GetRootUrlPath( Uri uri )
+        {
+            var url = $"{uri.Scheme}://{uri.Host}";
+
+            if ( !uri.IsDefaultPort )
+            {
+                url += $":{uri.Port}";
+            }
+
+            return url;
         }
 
         /// <summary>

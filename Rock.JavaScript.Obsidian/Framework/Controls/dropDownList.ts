@@ -24,7 +24,7 @@ import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
 /** The type definition for a select option, since the ones from the library are wrong. */
-type SelectOption = {
+export type SelectOption = {
     value?: string;
 
     label: string;
@@ -267,7 +267,7 @@ export default defineComponent({
         /**
          * Determines if a single option should be included during a search
          * operation.
-         * 
+         *
          * @param input The search string typed by the individual.
          * @param option The option to be filtered.
          *

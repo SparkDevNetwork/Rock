@@ -157,6 +157,7 @@
     <Compile Include="Controllers\CodeGenerated\RequestFiltersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
+    <Compile Include="HttpRequestMessageWrapper.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />

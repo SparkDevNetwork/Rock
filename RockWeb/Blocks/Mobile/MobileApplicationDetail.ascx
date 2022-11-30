@@ -291,10 +291,17 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
+                            <Rock:PagePicker ID="ppEditInteractiveExperiencePage" runat="server" Label="Interactive Experience Page" Help="If you are using interactive experiences then set this page to the mobile page that contains the Live Experience block." />
                         </div>
+
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppCommunicationViewPage" runat="server" Label="Communication View Page" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
                         </div>
                     </div>
 

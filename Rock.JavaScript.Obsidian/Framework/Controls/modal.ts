@@ -63,12 +63,67 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
+        // #region Values
+
         const internalModalVisible = ref(props.modelValue);
         const container = ref(document.fullscreenElement ?? document.body);
         const validationErrors = ref<FormError[]>([]);
 
         /** Used to determine if shaking should be currently performed. */
         const isShaking = ref(false);
+
+        // These values are used to automatically resize the modal if an absolute
+        // popup like a DataView picker is used inside the modal body.
+        const modalBodyElement = ref<HTMLElement | null>(null);
+        const modalBodyPaddingElement = ref<HTMLElement | null>(null);
+        let legacyOverflowTimer: NodeJS.Timeout | undefined;
+        const overflowMutationObserver: MutationObserver | undefined = MutationObserver ? new MutationObserver(onOverflowMutation) : undefined;
+        const overflowResizeObserver: ResizeObserver | undefined = ResizeObserver ? new ResizeObserver(onOverflowResize) : undefined;
+
+        // #endregion
+
+        // #region Functions
+
+        /**
+         * Adjusts the height of the modal to fit the content. This handles
+         * cases where something like a DataViewPicker is opened up that has
+         * an inner popup.
+         */
+        function adjustOverflowPadding(): void {
+            if (modalBodyElement.value && modalBodyPaddingElement.value) {
+                if (modalBodyElement.value.scrollHeight !== modalBodyElement.value.clientHeight) {
+                    let existingPadding = 0;
+                    try {
+                        existingPadding = parseFloat(window.getComputedStyle(modalBodyPaddingElement.value, null).getPropertyValue("padding-bottom"));
+                    }
+                    catch {
+                        existingPadding = 0;
+                    }
+
+                    const totalPadding = modalBodyElement.value.scrollHeight - modalBodyElement.value.clientHeight;
+
+                    if (existingPadding !== totalPadding) {
+                        modalBodyPaddingElement.value.style.paddingBottom = `${totalPadding}px`;
+                    }
+                }
+                else if (modalBodyPaddingElement.value.style.paddingBottom !== "") {
+                    modalBodyPaddingElement.value.style.paddingBottom = "";
+                }
+            }
+        }
+
+        /**
+         * Timer callback when the observers are not supported by the browser.
+         * Check the overflow padding to see if it needs to be adjusted.
+         */
+        function detectLegacyOverflow(): void {
+            adjustOverflowPadding();
+            legacyOverflowTimer = setTimeout(detectLegacyOverflow, 250);
+        }
+
+        // #endregion
+
+        // #region Event Handlers
 
         /**
          * Event handler for when one of the close buttons is clicked.
@@ -99,17 +154,45 @@ export default defineComponent({
         /**
          * Event handler for when the visible validation errors have changed.
          * This should trigger us showing these errors in the modal.
-         * 
+         *
          * @param errors The errors that should be displayed.
          */
         const onVisibleValidationChanged = (errors: FormError[]): void => {
             validationErrors.value = errors;
         };
 
-        // If we are starting visible, then update the modal tracking.
-        if (internalModalVisible.value) {
-            trackModalState(true);
+        /**
+         * Called when the mutation observer has noticed that the DOM inside
+         * our modal has been modified. Update the resize observer to watch
+         * those nodes for size changes.
+         *
+         * @param mutations The mutations that happened since we were last called.
+         */
+        function onOverflowMutation(mutations: MutationRecord[]): void {
+            for (const mutation of mutations) {
+                mutation.addedNodes.forEach(node => {
+                    if (node instanceof Element) {
+                        overflowResizeObserver?.observe(node);
+                    }
+                });
+
+                mutation.removedNodes.forEach(node => {
+                    if (node instanceof Element) {
+                        overflowResizeObserver?.unobserve(node);
+                    }
+                });
+            }
         }
+
+        /**
+         * Called when the resize observer has noticed that the size of any child
+         * nodes have changed. Check if we need to adjust our padding.
+         */
+        function onOverflowResize(): void {
+            adjustOverflowPadding();
+        }
+
+        // #endregion
 
         // Watch for changes in our visiblity.
         watch(() => props.modelValue, () => {
@@ -129,16 +212,66 @@ export default defineComponent({
             emit("update:modelValue", internalModalVisible.value);
         });
 
+        // Watch for changes to the body element reference. When it becomes
+        // available start observing for changes.
+        watch(modalBodyElement, () => {
+            if (overflowMutationObserver && overflowResizeObserver) {
+                if (modalBodyElement.value) {
+                    overflowMutationObserver.observe(modalBodyElement.value, {
+                        subtree: true,
+                        childList: true
+                    });
+
+                    // Start observing initial children.
+                    modalBodyElement.value.querySelectorAll("*").forEach(node => {
+                        if (node instanceof Element) {
+                            overflowResizeObserver.observe(node);
+                        }
+                    });
+                }
+                else {
+                    overflowMutationObserver?.disconnect();
+                    overflowResizeObserver?.disconnect();
+                }
+            }
+            else {
+                if (modalBodyElement.value) {
+                    legacyOverflowTimer = setTimeout(detectLegacyOverflow, 250);
+                }
+                else if (legacyOverflowTimer) {
+                    clearTimeout(legacyOverflowTimer);
+                    legacyOverflowTimer = undefined;
+                }
+            }
+        });
+
         onBeforeUnmount(() => {
             if (internalModalVisible.value) {
                 trackModalState(false);
             }
+
+            if (overflowMutationObserver && overflowResizeObserver) {
+                overflowMutationObserver.disconnect();
+                overflowResizeObserver.disconnect();
+            }
+
+            if (legacyOverflowTimer) {
+                clearTimeout(legacyOverflowTimer);
+                legacyOverflowTimer = undefined;
+            }
         });
+
+        // If we are starting visible, then update the modal tracking.
+        if (internalModalVisible.value) {
+            trackModalState(true);
+        }
 
         return {
             container,
             internalModalVisible,
             isShaking,
+            modalBodyElement,
+            modalBodyPaddingElement,
             onClose,
             onScrollableClick,
             onSubmit,
@@ -150,7 +283,9 @@ export default defineComponent({
     template: `
 <teleport :to="container" v-if="modelValue">
     <div>
-        <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1060;">
+        <div class="modal-backdrop" style="z-index: 1050;"></div>
+
+        <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
             <div @click.stop
                 class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
                 :class="{'animated shake': isShaking}"
@@ -171,7 +306,11 @@ export default defineComponent({
                     <div class="modal-body">
                         <RockValidation :errors="validationErrors" />
 
+                        <div ref="modalBodyElement">
                         <slot />
+                        </div>
+
+                        <div ref="modalBodyPaddingElement" style="transition: 0.15s padding-bottom"></div>
                     </div>
 
                     <div class="modal-footer">
@@ -182,8 +321,6 @@ export default defineComponent({
                 </RockForm>
             </div>
         </div>
-
-        <div class="modal-backdrop" style="z-index: 1050;"></div>
     </div>
 </teleport>
 `
