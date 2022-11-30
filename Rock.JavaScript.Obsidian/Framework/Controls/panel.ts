@@ -348,6 +348,10 @@ export default defineComponent({
             </div>
         </div>
 
+        <template v-if="$slots.preBody">
+            <slot name="preBody" />
+        </template>
+
         <TransitionVerticalCollapse>
             <div v-show="isPanelOpen" class="panel-body">
                 <slot />

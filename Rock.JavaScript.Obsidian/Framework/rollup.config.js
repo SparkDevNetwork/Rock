@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 //import babel from "@rollup/plugin-babel";
 import postcss from "rollup-plugin-postcss";
+import { terser } from "rollup-plugin-terser";
 import cssnano from "cssnano";
 import ttypescript from "ttypescript";
 import copy from "rollup-plugin-copy";
@@ -176,12 +177,12 @@ function generateBundle(srcPath, outPath) {
     };
 }
 
-function generateAutoBundles(srcPath, outPath, alwaysBundleExternals) {
+function generateAutoBundles(srcPath, outPath, alwaysBundleExternals, minify) {
     const files = glob.sync(srcPath + "/**/*.@(js)")
         .map(f => path.normalize(f).substring(cwd.length + 1))
         .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.js"));
 
-    return {
+    const config = {
         input: files,
 
         output: {
@@ -247,12 +248,18 @@ function generateAutoBundles(srcPath, outPath, alwaysBundleExternals) {
             commonjs()
         ]
     };
+
+    if (minify) {
+        config.plugins.push(terser());
+    }
+
+    return config;
 }
 
 
 const cwd = process.cwd();
 
-const libsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Libs"), path.join(cwd, "dist", "FrameworkBundled", "Libs"), true);
+const libsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Libs"), path.join(cwd, "dist", "FrameworkBundled", "Libs"), true, true);
 const utilityConfig = generateBundle(path.join(cwd, "dist", "Framework", "Utility"), path.join(cwd, "dist", "FrameworkBundled", "Utility.js"));
 const validationRulesConfig = generateBundle(path.join(cwd, "dist", "Framework", "ValidationRules"), path.join(cwd, "dist", "FrameworkBundled", "ValidationRules.js"));
 const pageStateConfig = generateBundle(path.join(cwd, "dist", "Framework", "PageState"), path.join(cwd, "dist", "FrameworkBundled", "PageState.js"));

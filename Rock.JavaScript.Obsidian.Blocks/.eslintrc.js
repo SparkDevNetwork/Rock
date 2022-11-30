@@ -104,5 +104,14 @@ module.exports = {
 
         // Make unwanted white-space inside parenthesis an error.
         "space-in-parens": ["error", "never"]
-    }
+    },
+    overrides: [
+        {
+            "files": ["src/**/*.ts", "src/**/*.vue"],
+            "rules": {
+                // Disable undefined use warnings, TypeScript will tell us.
+                "no-undef": 0
+            }
+        }
+    ]
 };

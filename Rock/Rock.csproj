@@ -672,6 +672,8 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
@@ -864,6 +866,17 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceToken.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExtensionMethods.cs" />
+    <Compile Include="Event\InteractiveExperiences\ValidOccurrencesResult.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
@@ -916,14 +929,23 @@
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswerService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrenceService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceScheduleService.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
+    <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
+    <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -965,11 +987,14 @@
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
     <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
+    <Compile Include="RealTime\AspNet\SignalRRequestWrapper.cs" />
     <Compile Include="RealTime\EngineConnectionState.cs" />
     <Compile Include="RealTime\IContextExtensions.cs" />
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
     <Compile Include="RealTime\RealTimeException.cs" />
+    <Compile Include="RealTime\Topics\IInteractiveExperienceParticipant.cs" />
+    <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -1810,6 +1835,8 @@
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />

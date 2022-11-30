@@ -77,6 +77,18 @@
     <Compile Include="Blocks\CustomSettingsBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
     <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\ExperienceManagerOccurrencesInitializationBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceManager\ExperienceManagerInitializationBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceVisualizer\ExperienceVisualizerInitializationBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceVisualizer\VisualizerOccurrenceBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceActionBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceActionTypeBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceScheduleBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceVisualizerTypeBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\LiveExperiencesOccurrencesInitializationBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperience\LiveExperienceInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
@@ -90,7 +102,17 @@
     <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
-    <Compile Include="Blocks\IValidPropertiesBox.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionRenderConfigurationBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceActionStyleBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceAnswerBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceOccurrenceStateBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperiencePlaceholderStyleBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceSettingsBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceVisualizerStyleBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Utility\IValidPropertiesBox.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />
@@ -120,6 +142,7 @@
     <Compile Include="Cms\ContentCollectionFilterSettingsBag.cs" />
     <Compile Include="Cms\ObsidianBlockConfigBag.cs" />
     <Compile Include="Cms\BlockCustomActionBag.cs" />
+    <Compile Include="Controls\CampusPickerItemBag.cs" />
     <Compile Include="Controls\SlidingDateRangeBox.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
@@ -366,6 +389,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CampusPickerGetCampusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerSaveNewValueOptionsBag.cs" />
@@ -444,6 +468,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\TypeScriptTypeAttribute.cs" />
     <Compile Include="Utility\EntityBagBase.cs" />
+    <Compile Include="Utility\ValidPropertiesBox.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">

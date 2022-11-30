@@ -144,7 +144,7 @@ export default defineComponent({
             }
 
             let total = 0;
-            this.lineItems.forEach(li => total += (li.minPayment < li.discountedCost ? li.minPayment : li.discountedCost));
+            this.lineItems.forEach(li => total += (Math.min(li.minPayment,li.discountedCost)));
             return total;
         },
 

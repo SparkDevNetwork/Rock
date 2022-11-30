@@ -166,6 +166,24 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Adds or updates a <see cref="Rock.Model.Attribute" /> item for the field attribute.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the attribute was created or updated; <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// If a <paramref name="rockContext"/> value is included, this method will save any previous changes made to the context
+        /// </remarks>
+
+        internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
+        {
+            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
+        }
+
+        /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
         /// <param name="property">The property.</param>
