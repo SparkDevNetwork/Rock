@@ -31,20 +31,20 @@ export const enum NoteType {
     FundraisingOpportunityComment = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95",
     /** Group Member Note */
     GroupmemberNote = "FFFC3644-60CD-4D14-A714-E8DCC202A0E1",
-    /** Person note */
-    PersonTimelineNote = "66A1B9D7-7EFA-40F3-9415-E54437977D60",
-    /** Person event registration */
-    PersonEventRegistration = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045",
-    /** Generic prayer comment note type */
-    PrayerComment = "0EBABD75-0890-4756-A9EE-62626282BB5D",
-    /** Generic workflow note type */
-    WorkflowNote = "A6CE445C-3B49-4401-82E6-312BF7946A6B",
-    /** Generic scheduled transaction note type */
-    ScheduledTransactionNote = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588",
-    /** The workflow change log note */
-    WorkflowChangeLogNote = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6",
     /** The pastoral note type. */
     PastoralNote = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42",
     /** The Note to display the errors particular to the profile that occurred while importing the people CSV. */
     PersonCsvImportErrorNote = "4E22E9DA-06A7-45DB-9EB3-BFCB7A2A7F21",
+    /** Person event registration */
+    PersonEventRegistration = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045",
+    /** Person note */
+    PersonTimelineNote = "66A1B9D7-7EFA-40F3-9415-E54437977D60",
+    /** Generic prayer comment note type */
+    PrayerComment = "0EBABD75-0890-4756-A9EE-62626282BB5D",
+    /** Generic scheduled transaction note type */
+    ScheduledTransactionNote = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588",
+    /** The workflow change log note */
+    WorkflowChangeLogNote = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6",
+    /** Generic workflow note type */
+    WorkflowNote = "A6CE445C-3B49-4401-82E6-312BF7946A6B",
 }

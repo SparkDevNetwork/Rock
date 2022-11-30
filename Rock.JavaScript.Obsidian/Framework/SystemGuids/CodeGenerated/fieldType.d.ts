@@ -65,10 +65,10 @@ export const enum FieldType {
     CodeEditor = "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5",
     /** Color field type */
     Color = "D747E6AE-C383-4E22-8846-71518E3DD06F",
-    /** Communication Template field type */
-    CommunicationTemplate = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9",
     /** Communication Preference field type */
     CommunicationPreferenceType = "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
+    /** Communication Template field type */
+    CommunicationTemplate = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9",
     /** Comparison field type */
     Comparison = "3C742B81-3C55-48B8-A7CD-E7762EA5BB91",
     /** Component field type */
@@ -101,16 +101,16 @@ export const enum FieldType {
     Currency = "3EE69CBC-35CE-4496-88CC-8327A447603F",
     /** A measure of necessity and/or availability of a data entry field. */
     DataEntryRequirementLevel = "0E989D0D-E07F-4460-B405-807588B36347",
-    /** Date field type */
-    Date = "6B6AA175-4758-453F-8D83-FCD8044B5F36",
-    /** Date Time field type */
-    DateTime = "FE95430C-322D-4B67-9C77-DFD1D4408725",
     /** DataView field type */
     DataView = "BD72BBF1-0269-407E-BDBE-EEED4F1F207F",
     /** DataViews field type */
     Dataviews = "F739BF5D-3FDC-45EC-A03C-1AE7C47E3883",
+    /** Date field type */
+    Date = "6B6AA175-4758-453F-8D83-FCD8044B5F36",
     /** Date Range field type */
     DateRange = "9C7D431C-875C-4792-9E76-93F3A32BB850",
+    /** Date Time field type */
+    DateTime = "FE95430C-322D-4B67-9C77-DFD1D4408725",
     /** Day Of Week field type */
     DayOfWeek = "7EDFA2DE-FDD3-4AC1-B356-1F5BFC231DAE",
     /** Days Of Week field type */
@@ -255,10 +255,10 @@ export const enum FieldType {
     SocialMediaAccount = "92C0E3A1-9F63-49D4-B23B-73624AC42546",
     /** Social Security Number */
     Ssn = "4722C99A-C078-464A-968F-13AB5E8E318F",
-    /** System Email field type */
-    SystemEmail = "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF",
     /** System Communication field type */
     SystemCommunication = "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",
+    /** System Email field type */
+    SystemEmail = "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF",
     /** Text field type */
     Text = "9C204CD0-1233-41C5-818A-C5DA439445AA",
     /** Time field type */

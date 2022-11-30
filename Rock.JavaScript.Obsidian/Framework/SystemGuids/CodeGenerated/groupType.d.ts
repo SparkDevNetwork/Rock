@@ -23,38 +23,38 @@
 
 /** System Group Types */
 export const enum GroupType {
-    /** Security Role group type guid */
-    GrouptypeSecurityRole = "AECE949F-704C-483E-A4FB-93D5E4720C4C",
-    /** Family group type guid */
-    GrouptypeFamily = "790E3215-3B10-442B-AF69-616C0DCB998E",
-    /** Event Attendees group type guid */
-    GrouptypeEventattendees = "3311132B-268D-44E9-811A-A56A0835E50A",
-    /** Know relationship group type guid */
-    GrouptypeKnownRelationships = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF",
-    /** Peer network group type guid */
-    GrouptypePeerNetwork = "8C0E5852-F08F-4327-9AA5-87800A6AB53E",
-    /** Serving Team group type guid */
-    GrouptypeServingTeam = "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4",
-    /** Small Group Section group type guid */
-    GrouptypeSmallGroupSection = "FAB75EC6-0402-456A-BE34-252097DE4F20",
-    /** Small Group group type guid */
-    GrouptypeSmallGroup = "50FCFB30-F51A-49DF-86F4-2B176EA1820B",
     /** Application Group group type guid */
     GrouptypeApplicationGroup = "3981CF6D-7D15-4B57-AACE-C0E25D28BD49",
-    /** Organization Unit group type guid */
-    GrouptypeOrganizationUnit = "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C",
-    /** Organization Unit group type guid */
-    GrouptypeWeeklyServiceCheckinArea = "FEDD389A-616F-4A53-906C-63D8255631C5",
+    /** Campus Team group type guid */
+    GrouptypeCampusTeam = "BADD7A6C-1FB3-4E11-A721-6D1377C6958C",
+    /** Communication List group type guid */
+    GrouptypeCommunicationlist = "D1D95777-FFA3-CBB3-4A6D-658706DAED33",
+    /** Event Attendees group type guid */
+    GrouptypeEventattendees = "3311132B-268D-44E9-811A-A56A0835E50A",
+    /** Family group type guid */
+    GrouptypeFamily = "790E3215-3B10-442B-AF69-616C0DCB998E",
     /** Fundraising Opportunity group type guid */
     GrouptypeFundraisingopportunity = "4BE7FC44-332D-40A8-978E-47B7035D7A0C",
     /** General group type guid */
     GrouptypeGeneral = "8400497B-C52F-40AE-A529-3FCCB9587101",
-    /** Communication List group type guid */
-    GrouptypeCommunicationlist = "D1D95777-FFA3-CBB3-4A6D-658706DAED33",
+    /** Know relationship group type guid */
+    GrouptypeKnownRelationships = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF",
+    /** Organization Unit group type guid */
+    GrouptypeOrganizationUnit = "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C",
+    /** Peer network group type guid */
+    GrouptypePeerNetwork = "8C0E5852-F08F-4327-9AA5-87800A6AB53E",
+    /** Security Role group type guid */
+    GrouptypeSecurityRole = "AECE949F-704C-483E-A4FB-93D5E4720C4C",
     /** The Service Attendance group type guid */
     GrouptypeServiceAttendance = "77713830-AE5E-4B1A-94FA-E145DFF85035",
     /** The Services group type guid */
     GrouptypeServices = "235BAE2B-5760-4763-AADF-3938F34BA100",
-    /** Campus Team group type guid */
-    GrouptypeCampusTeam = "BADD7A6C-1FB3-4E11-A721-6D1377C6958C",
+    /** Serving Team group type guid */
+    GrouptypeServingTeam = "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4",
+    /** Small Group group type guid */
+    GrouptypeSmallGroup = "50FCFB30-F51A-49DF-86F4-2B176EA1820B",
+    /** Small Group Section group type guid */
+    GrouptypeSmallGroupSection = "FAB75EC6-0402-456A-BE34-252097DE4F20",
+    /** Organization Unit group type guid */
+    GrouptypeWeeklyServiceCheckinArea = "FEDD389A-616F-4A53-906C-63D8255631C5",
 }
