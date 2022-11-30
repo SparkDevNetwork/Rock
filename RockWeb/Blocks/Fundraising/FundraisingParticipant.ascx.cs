@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Fundraising
         "Workflow Entry Page",
         Description = "Page used to launch a new workflow of the selected type.",
         Key = AttributeKey.WorkflowEntryPage,
-        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY,
+        DefaultValue = Rock.SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY,
         Order = 13 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1" )]

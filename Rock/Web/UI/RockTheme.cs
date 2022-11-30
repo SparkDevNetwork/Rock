@@ -122,7 +122,9 @@ namespace Rock.Web.UI
             DateTime newestRockWebStyleFileDateTimeUTC;
             if ( rockWebStyleFiles.Any() )
             {
-                newestRockWebStyleFileDateTimeUTC = rockWebStyleFiles.Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                var latestModifiedDateTime = rockWebStyleFiles.Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                var latestCreatedDateTime = rockWebStyleFiles.Select( a => File.GetCreationTimeUtc( a ) ).Max();
+                newestRockWebStyleFileDateTimeUTC = DateTime.Compare( latestCreatedDateTime, latestModifiedDateTime ) > 0 ? latestCreatedDateTime : latestModifiedDateTime;
             }
             else
             {
@@ -167,8 +169,9 @@ namespace Rock.Web.UI
 
                 if ( themeFilesList.Any() )
                 {
-                    newestThemeFileDateTimeUTC = themeFilesList
-                        .Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                    var latestModifiedDateTime = themeFilesList.Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                    var latestCreatedDateTime = themeFilesList.Select( a => File.GetCreationTimeUtc( a ) ).Max();
+                    newestThemeFileDateTimeUTC = DateTime.Compare( latestCreatedDateTime, latestModifiedDateTime ) > 0 ? latestCreatedDateTime : latestModifiedDateTime;
                 }
                 else
                 {
@@ -183,7 +186,9 @@ namespace Rock.Web.UI
                     var cssFileName = file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" );
                     if ( onlyCompileIfNeeded && File.Exists( cssFileName ) )
                     {
-                        var cssFileDateTimeUTC = File.GetLastWriteTimeUtc( cssFileName );
+                        var cssFileCreatedDateTimeUtc = File.GetCreationTime( cssFileName );
+                        var cssFileModifiedDateTimeUtc = File.GetLastWriteTimeUtc( cssFileName );
+                        var cssFileDateTimeUTC = DateTime.Compare( cssFileCreatedDateTimeUtc, cssFileModifiedDateTimeUtc ) > 0 ? cssFileCreatedDateTimeUtc : cssFileModifiedDateTimeUtc;
                         if ( cssFileDateTimeUTC > newestThemeFileDateTimeUTC && cssFileDateTimeUTC > newestRockWebStyleFileDateTimeUTC )
                         {
                             var skippedCompileMessage = $"{this.Name}: Skipped compiling {file.Name}. CSS File is already up to date.";

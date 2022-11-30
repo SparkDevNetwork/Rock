@@ -59,6 +59,14 @@ namespace Rock.ViewModels.Entities
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets whether using a read-only Rock Context is disabled.
+        /// </summary>
+        /// <value>
+        ///   true if [disable use of read-only]; otherwise, false.
+        /// </value>
+        public bool DisableUseOfReadOnlyContext { get; set; }
+
+        /// <summary>
         /// Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on.
         /// </summary>
         /// <value>

@@ -461,7 +461,7 @@ btnCopyToClipboard.ClientID );
                       This will hide the group picker if there is a GroupId in the query string.
                       If there is a GroupIds query string parm. This will not lock the group selection.
                      */
-                    gpPickedGroups.Enabled = !GetAttributeValue(AttributeKey.DisallowGroupSelectionIfSpecified).AsBoolean() || pageParameterGroupIds.Any();
+                    gpPickedGroups.Enabled = !GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() || pageParameterGroupIds.Any();
                     selectedGroupId = pageParameterGroupId.Value;
                     if ( !pageParameterGroupIds.Contains( selectedGroupId.Value ) )
                     {
@@ -2045,7 +2045,7 @@ btnCopyToClipboard.ClientID );
 
             if ( sendMessageResult.Warnings.Any() )
             {
-                if( alertType != ModalAlertType.Alert )
+                if ( alertType != ModalAlertType.Alert )
                 {
                     alertType = ModalAlertType.Warning;
                 }

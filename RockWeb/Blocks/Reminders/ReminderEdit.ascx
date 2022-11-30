@@ -27,7 +27,7 @@
                 </div>
                 <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
                 <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" Required="true" />
-                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" EnableSelfSelection="true" />
+                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Assign Reminder To" Required="true" EnableSelfSelection="true" />
 
                 <div class="row">
                     <div class="col-md-6">

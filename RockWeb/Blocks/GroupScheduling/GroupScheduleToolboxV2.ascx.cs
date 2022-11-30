@@ -1389,9 +1389,12 @@ $('#{0}').tooltip();
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
                     a.IsActive
-                    && a.IsPublic.HasValue && a.IsPublic.Value &&
-                    !configuredScheduleIds.Contains( a.Id )
-                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    && a.IsPublic.HasValue
+                    && a.IsPublic.Value
+                    && !configuredScheduleIds.Contains( a.Id )
+                    || ( selectedScheduleId.HasValue
+                        && a.Id == selectedScheduleId.Value ) )
+                 .ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,6 +81,13 @@ namespace Rock.Model
         [DataMember]
         public string QualifierValue { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets Connection Status Id used to filter workflows with manual trigger.
+        /// </summary>
+        [DataMember]
+        public int? ManualTriggerFilterConnectionStatusId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -112,6 +119,12 @@ namespace Rock.Model
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionStatus"/>.
+        /// </summary>
+        [LavaVisible]
+        public virtual ConnectionStatus ManualTriggerFilterConnectionStatus { get; set; }
+
         #endregion
     }
 
@@ -130,7 +143,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionWorkflows ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionWorkflows ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
-
+            this.HasOptional( p => p.ManualTriggerFilterConnectionStatus ).WithMany().HasForeignKey( p => p.ManualTriggerFilterConnectionStatusId ).WillCascadeOnDelete( false );
         }
     }
 

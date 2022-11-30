@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using Rock.Extension;
+using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Communication
 {
@@ -146,6 +148,50 @@ namespace Rock.Communication
         public static bool HasActivePushTransport()
         {
             return MediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
+        }
+
+        /// <summary>
+        /// Determines whether a transport is active for the specified unique identifier and authorized to view for the person.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active transport exists for the specified unique identifier and authorized to view for the person; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveAndAuthorizerdTransport( Guid guid, Person person )
+        {
+            return MediumContainer.GetActiveMediumComponentsWithActiveTransports().Any( a => a.EntityType.Guid == guid && a.IsAuthorized( Authorization.VIEW, person ) );
+        }
+
+        /// <summary>
+        /// Determines whether an active SMS transport exists and authorized to view for the person.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active SMS transport exists and authorized to view for the person; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveAndAuthorizerdSmsTransport( Person person )
+        {
+            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), person );
+        }
+
+        /// <summary>
+        /// Determines whether an active email transport exists and authorized to view for the person.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active email transport exists and authorized to view for the person; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveAndAuthorizerdEmailTransport( Person person )
+        {
+            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), person );
+        }
+
+        /// <summary>
+        /// Determines whether an active push transport exists and authorized to view for the person.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active push transport exists and authorized to view for the person; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveAndAuthorizerdPushTransport( Person person )
+        {
+            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), person );
         }
     }
 }

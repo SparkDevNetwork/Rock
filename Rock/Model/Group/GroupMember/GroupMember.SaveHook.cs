@@ -402,7 +402,8 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( this.Entity.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled && this.Entity.Group.IsActive )
                 {
-                    var groupIndexTransaction = new GroupIndexTransaction( new GroupIndexInfo() { GroupId = this.Entity.GroupId, GroupTypeId = groupType.Id } );
+                    var GroupTypeEntityId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
+                    var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupTypeEntityId.Value, EntityId = this.Entity.GroupId } );
                     groupIndexTransaction.Enqueue();
                 }
 

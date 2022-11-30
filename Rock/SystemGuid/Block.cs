@@ -165,5 +165,10 @@ namespace Rock.SystemGuid
         /// The Fundraising Transaction Entry block.
         /// </summary>
         public const string FUNDRAISING_TRANSACTION_ENTRY = "1BAD904E-2F79-4488-B8BE-EECD67AE2925";
+
+        /// <summary>
+        /// The External site Workflow Entry block.
+        /// </summary>
+        public const string EXTERNAL_WORKFLOW_ENTRY = "88B901B3-4DA5-4302-A638-5EF447D5792F";
     }
 }

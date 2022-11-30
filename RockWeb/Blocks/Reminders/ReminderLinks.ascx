@@ -190,7 +190,7 @@
                             </div>
 
                             <div id="reminders-additional-options" class="d-none">
-                                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" ValidationGroup="AddReminder" EnableSelfSelection="true" />
+                                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Assign Reminder To" Required="true" ValidationGroup="AddReminder" EnableSelfSelection="true" />
 
                                 <div class="row">
                                     <div class="col-md-6">

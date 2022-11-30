@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Reminders
         private static class UserPreferenceKey
         {
             public const string CompletionFilter = "CompletionFilter";
-            public const string ActiveFilter = "ActiveFilter";
+            public const string DueFilter = "DueFilter";
             public const string CustomDateRange = "CustomDateRange";
         }
 
@@ -282,16 +282,16 @@ namespace RockWeb.Blocks.Reminders
             var reminderDTOs = new List<ReminderDTO>();
 
             var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
-            var activeFilter = GetBlockUserPreference( UserPreferenceKey.ActiveFilter );
+            var dueFilter = GetBlockUserPreference( UserPreferenceKey.DueFilter );
 
             if ( completionFilter.IsNullOrWhiteSpace() )
             {
-                completionFilter = "Incomplete";
+                completionFilter = "Active";
             }
 
-            if ( activeFilter.IsNullOrWhiteSpace() )
+            if ( dueFilter.IsNullOrWhiteSpace() )
             {
-                activeFilter = "Active";
+                dueFilter = "Due";
             }
 
             using ( var rockContext = new RockContext() )
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Reminders
 
                 // Filter for completion status.
                 lCompletionFilter.Text = completionFilter;
-                if ( completionFilter == "Incomplete" )
+                if ( completionFilter == "Active")
                 {
                     reminders = reminders.Where( r => !r.IsComplete );
                 }
@@ -311,21 +311,21 @@ namespace RockWeb.Blocks.Reminders
                     reminders = reminders.Where( r => r.IsComplete );
                 }
 
-                // Filter for active status.
-                lActiveFilter.Text = activeFilter;
-                hfActiveFilterSetting.Value = activeFilter;
-                if ( activeFilter == "Active" )
+                // Filter for overdue timeframe.
+                lDueFilter.Text = dueFilter;
+                hfDueFilterSetting.Value = dueFilter;
+                if ( dueFilter == "Due")
                 {
                     var currentDate = RockDateTime.Now;
                     reminders = reminders.Where( r => r.ReminderDate <= currentDate );
                 }
-                else if ( activeFilter == "Active This Week" )
+                else if ( dueFilter == "Due This Week")
                 {
                     var nextWeekStartDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 1 );
                     var startOfWeek = nextWeekStartDate.AddDays( -7 );
                     reminders = reminders.Where( r => r.ReminderDate >= startOfWeek && r.ReminderDate < nextWeekStartDate );
                 }
-                else if ( activeFilter == "Active This Month" )
+                else if ( dueFilter == "Due This Month")
                 {
                     var startOfMonth = RockDateTime.Now.StartOfMonth();
                     var nextMonthDate = RockDateTime.Now.AddMonths( 1 );
@@ -339,8 +339,8 @@ namespace RockWeb.Blocks.Reminders
                     if ( selectedDateRange.IsNotNullOrWhiteSpace() )
                     {
                         drpCustomDate.DelimitedValues = selectedDateRange;
-                        lActiveFilter.Text = "Custom Date Range";
-                        hfActiveFilterSetting.Value = "Custom Date Range";
+                        lDueFilter.Text = "Custom Date Range";
+                        hfDueFilterSetting.Value = "Custom Date Range";
                         var dateRange = new TimePeriod( selectedDateRange ).GetDateRange();
                         var startDate = dateRange.Start;
                         var endDate = dateRange.End;
@@ -660,10 +660,10 @@ namespace RockWeb.Blocks.Reminders
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnActive_Click( object sender, EventArgs e )
+        protected void btnDue_Click( object sender, EventArgs e )
         {
-            var btnActive = sender as LinkButton;
-            SetBlockUserPreference( UserPreferenceKey.ActiveFilter, btnActive.CommandArgument );
+            var btnDue = sender as LinkButton;
+            SetBlockUserPreference( UserPreferenceKey.DueFilter, btnDue.CommandArgument );
             RefreshPage();
         }
 
@@ -676,7 +676,7 @@ namespace RockWeb.Blocks.Reminders
         {
             if ( Page.IsPostBack )
             {
-                SetBlockUserPreference( UserPreferenceKey.ActiveFilter, "Custom Date Range" );
+                SetBlockUserPreference( UserPreferenceKey.DueFilter, "Custom Date Range" );
                 SetBlockUserPreference( UserPreferenceKey.CustomDateRange, drpCustomDate.DelimitedValues );
                 RefreshPage();
             }

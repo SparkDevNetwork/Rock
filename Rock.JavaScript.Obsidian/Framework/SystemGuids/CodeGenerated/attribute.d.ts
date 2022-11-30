@@ -269,6 +269,8 @@ export const enum Attribute {
     WorkflowActionSendEmailSaveCommunicationHistory = "65E69B78-37D8-4A88-B8AC-71893D2F75EF",
     /** The Workflow Entry Block Attribute that disables passing the WorkflowTypeID. */
     WorkflowEntryBlockDisablePassingWorkflowtypeid = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB",
+    /** The Workflow Entry Block Attribute that disables passing the WorkflowID. */
+    WorkflowEntryBlockDisablePassingWorkflowid = "890676BC-18D3-445F-A6FA-CC2F515F1930",
     /** The defined value logging domains to log */
     DefinedValueLoggingDomainsToLog = "9BEA544F-0636-485E-8772-B63180E529F9",
     /** The defined value log system settings */

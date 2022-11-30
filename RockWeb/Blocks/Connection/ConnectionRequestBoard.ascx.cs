@@ -2112,6 +2112,7 @@ namespace RockWeb.Blocks.Connection
         private void BindManualWorkflows()
         {
             var connectionOpportunity = GetConnectionOpportunity();
+            var connectionRequest = GetConnectionRequest();
 
             if ( connectionOpportunity == null )
             {
@@ -2122,7 +2123,8 @@ namespace RockWeb.Blocks.Connection
             var manualWorkflows = connectionWorkflows
                 .Where( w =>
                     w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
-                    w.WorkflowType != null )
+                    w.WorkflowType != null &&
+                    ( w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
                 .OrderBy( w => w.WorkflowType.Name )
                 .Distinct();
 

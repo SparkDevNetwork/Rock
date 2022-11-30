@@ -81,4 +81,6 @@ export const enum Block {
     ReportSearchResults = "2DA8AA89-0DAA-4A50-B65B-CA721932B8A9",
     /** The Fundraising Transaction Entry block. */
     FundraisingTransactionEntry = "1BAD904E-2F79-4488-B8BE-EECD67AE2925",
+    /** The External site Workflow Entry block. */
+    ExternalWorkflowEntry = "88B901B3-4DA5-4302-A638-5EF447D5792F",
 }

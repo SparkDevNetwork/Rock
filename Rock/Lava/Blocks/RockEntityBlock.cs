@@ -149,7 +149,7 @@ namespace Rock.Lava.Blocks
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].ToString() );
+                        selectionParms.Add( parms["id"].AsInteger().ToString() );
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );
