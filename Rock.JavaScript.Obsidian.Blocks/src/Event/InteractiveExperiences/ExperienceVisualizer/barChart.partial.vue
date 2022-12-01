@@ -26,7 +26,7 @@
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .visualizer-title {
-    color: var(--visualizer-primary-color);
+    color: var(--experience-visualizer-primary-color);
     text-align: center;
     font-size: 36px;
     margin-bottom: 12px;
@@ -285,7 +285,7 @@
      * @returns The chart configuration data that can be passed to Chart.JS.
      */
     function getChartConfig(style: CSSStyleDeclaration): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
-        const axisDefaultColor = getStyleValue(style, "visualizer-primary-color", "#000");
+        const axisDefaultColor = getStyleValue(style, "experience-visualizer-primary-color", "#000");
         const xAxisFontSize = getStyleFontSize(style, "major-axis-font-size", 24);
         const yAxisFontSize = getStyleFontSize(style, "minor-axis-font-size", 36);
         const xAxisColor = getStyleValue(style, "major-axis-color", axisDefaultColor);

@@ -19,7 +19,7 @@
 }
 
 .experience-visualizer-type-dc35f0f7-83e5-47d8-aa27-b448962b60dd .visualizer-title {
-    color: var(--visualizer-primary-color);
+    color: var(--experience-visualizer-primary-color);
     text-align: center;
     font-size: 36px;
     margin-bottom: 12px;
