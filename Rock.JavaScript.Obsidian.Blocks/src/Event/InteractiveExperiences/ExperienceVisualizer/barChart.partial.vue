@@ -1,0 +1,418 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="experience-visualizer experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d" :class="additionalVisualizerClasses">
+        <div v-if="renderConfiguration.title" class="visualizer-title">{{ renderConfiguration.title }}</div>
+        <div class="chart-container">
+            <canvas ref="canvasElement"></canvas>
+        </div>
+    </div>
+</template>
+
+<!--
+    Available CSS variable names that can be set. The major axis
+    is considered the one with the titles on it.
+
+    --major-axis-color = The color of the axis with the titles.
+    --major-axis-font-size = The font size of the axis with the titles.
+    --minor-axis-color = The color of the axis with the values.
+    --minor-axis-font-size = The font size of the axis with the values.
+
+-->
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d {
+    display: flex;
+    flex-direction: column;
+}
+
+.experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .visualizer-title {
+    color: var(--experience-visualizer-primary-color);
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .chart-container {
+    flex-grow: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref, watch } from "vue";
+    import { visualizerProps } from "./util.partial";
+    import { Chart, ChartConfiguration, ChartData, ChartTypeRegistry, ScaleOptions } from "@Obsidian/Libs/chart";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    type Rgba = {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+    };
+
+    const props = defineProps(visualizerProps);
+
+    // #region Values
+
+    const canvasElement = ref<HTMLCanvasElement | null>(null);
+    const colorConsumer = createSequentialConsumer(getColors(), 0);
+    let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const additionalVisualizerClasses = computed((): string => {
+        return `experience-visualizer-${props.renderConfiguration.actionGuid}`;
+    });
+
+    const borderWidth = computed((): number => {
+        const value = toNumber(props.renderConfiguration.configurationValues?.borderWidth || "4");
+
+        return Math.min(100, Math.max(0, value));
+    });
+
+    const fillOpacity = computed((): number => {
+        const value = toNumber(props.renderConfiguration.configurationValues?.fillOpacity || "0.5");
+
+        return Math.min(1.0, Math.max(0, value));
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getColors(): Rgba[] {
+        let barColors = (props.renderConfiguration.configurationValues?.colors ?? "")
+        .split(",")
+        .map(c => c.trim())
+        .filter(c => c !== "");
+
+        if (barColors.length === 0) {
+            barColors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68", "#968e8b", "#489b98", "#b18772", "#d67493"];
+        }
+
+        return barColors.map(c => parseCssColor(c));
+    }
+
+    /**
+     * Parses a CSS color string into the individual RGBA components. This
+     * supports any color string that can be used in a CSS property.
+     *
+     * @param str The CSS color string to be parsed.
+     *
+     * @returns An object that contains the individual red, green, blue and alpha components.
+     */
+    function parseCssColor(str: string): Rgba {
+        const div = document.createElement("div");
+        document.body.appendChild(div);
+        div.style.color = str;
+
+        const res = getComputedStyle(div).color.match(/[.\d]+/g)?.map(Number);
+        div.remove();
+
+        if (!res) {
+            return { r: 0, g: 0, b: 0, a: 0 };
+        }
+
+        return res.length === 3
+            ? { r: res[0], g: res[1], b: res[2], a: 1 }
+            : { r: res[0], g: res[1], b: res[2], a: res[3] };
+    }
+
+    /**
+     * Creates a consumer in the form of a function that will take the next
+     * item in the list of values each time it is called. When the end is
+     * reached then it starts over from the beginning.
+     *
+     * @param values The values to be sequentially consumed.
+     * @param seed The starting index to use when creating the consumer.
+     */
+    function createSequentialConsumer<T>(values: T[], seed: number): (() => T) {
+        const items: T[] = [...values];
+        let index = seed % items.length;
+
+        return (): T => {
+            if (items.length === 0) {
+                throw new Error("No values were provided to consumer.");
+            }
+
+            if (index >= items.length) {
+                index = 0;
+            }
+
+            return items[index++];
+        };
+    }
+
+    /**
+     * Gets a font size that is scaled to match the screen. If the baseSize
+     * is 18 and the screen is 3840 pixels wide then the returned value is 36.
+     *
+     * @param baseSize The base font size to use if the screen is 1920 pixels wide.
+     *
+     * @returns The font size scaled to match the screen.
+     */
+    function getScaledFontSize(baseSize: number): number {
+        const ratio = document.body.clientWidth / 1920.0;
+
+        return baseSize * ratio;
+    }
+
+    /**
+     * Gets the value of a CSS variable or returns the default value if it
+     * couldn't be determined.
+     *
+     * @param style The style object that should be searched.
+     * @param variableName The CSS variable name, without the double hyphen prefix.
+     * @param defaultValue The value to use if the CSS variable wasn't found.
+     *
+     * @returns The CSS variable value or the default value.
+     */
+    function getStyleValue(style: CSSStyleDeclaration, variableName: string, defaultValue?: undefined | string): string | undefined {
+        const value = style.getPropertyValue(`--${variableName}`);
+
+        if (value !== "") {
+            return value;
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Gets the font size of a CSS variable ore returns the scaled default value.
+     *
+     * @param style The style object that should be searched.
+     * @param variableName The CSS variabl ename, without the double hyphen prefix.
+     * @param defaultSize The default font size to use if the CSS variable wasn't found.
+     *
+     * @returns The CSS variable font size or the scaled font size from the default size.
+     */
+    function getStyleFontSize(style: CSSStyleDeclaration, variableName: string, defaultSize: number): number {
+        const value = style.getPropertyValue(`--${variableName}`);
+
+        if (value !== "" && !isNaN(parseFloat(value))) {
+            return parseFloat(value);
+        }
+
+        return getScaledFontSize(defaultSize);
+    }
+
+    /**
+     * Converts the response data into an array of objects that contain the
+     * response text and the number of times it has appeared.
+     *
+     * @returns An array of response counts.
+     */
+    function getResponseData(): { text: string, count: number }[] {
+        const words: Record<string, number> = {};
+
+        for (const response of props.responses) {
+            if (!response.response) {
+                continue;
+            }
+
+            if (typeof words[response.response] === "undefined") {
+                words[response.response] = 1;
+            }
+            else {
+                words[response.response] += 1;
+            }
+        }
+
+        return Object.keys(words)
+            .map(k => ({ text: k, count: words[k] }))
+            .sort((a, b) => a.text.localeCompare(b.text));
+    }
+
+    /**
+     * Converts an RGBA value into a CSS rgba(r,g,b,a) string. If the alphaAdjust
+     * is supplied then the RGBA alpha value is multiplied by the alphaAdjust
+     * to get the final alpha value.
+     *
+     * @param color The RGBA color values.
+     * @param alphaAdjust The adjustment value to be multiplied with the RGBA alpha component.
+     *
+     * @returns A string that represents the RGBA value as a CSS string.
+     */
+    function toCssRgba(color: Rgba, alphaAdjust?: undefined | number): string {
+        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a * (alphaAdjust ?? 1)})`;
+    }
+
+    /**
+     * Gets the initial chart data to be used when building the chart for the
+     * first time.
+     *
+     * @returns The chart data object for Chart.JS.
+     */
+    function getChartData(): ChartData<keyof ChartTypeRegistry, number[]> {
+        const backgroundColors: string[] = [];
+        const borderColors: string[] = [];
+        const values: number[] = [];
+        const labels: string[] = [];
+
+        const words = getResponseData();
+
+        for (const word of words) {
+            const color = colorConsumer();
+
+            labels.push(word.text);
+            values.push(word.count);
+            backgroundColors.push(toCssRgba(color, fillOpacity.value));
+            borderColors.push(toCssRgba(color));
+        }
+
+        const data: ChartData<keyof ChartTypeRegistry, number[]> = {
+            labels: labels,
+            datasets: [
+                {
+                    data: values,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: fillOpacity.value < 1 ? borderWidth.value : 0
+                }
+            ]
+        };
+
+        return data;
+    }
+
+    /**
+     * Gets the configuration data that will be used to draw the chart.
+     *
+     * @param style The style declaration that will be used to resolve CSS variables.
+     *
+     * @returns The chart configuration data that can be passed to Chart.JS.
+     */
+    function getChartConfig(style: CSSStyleDeclaration): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
+        const axisDefaultColor = getStyleValue(style, "experience-visualizer-primary-color", "#000");
+        const xAxisFontSize = getStyleFontSize(style, "major-axis-font-size", 24);
+        const yAxisFontSize = getStyleFontSize(style, "minor-axis-font-size", 36);
+        const xAxisColor = getStyleValue(style, "major-axis-color", axisDefaultColor);
+        const yAxisColor = getStyleValue(style, "minor-axis-color", axisDefaultColor);
+        const isHorizontal = props.renderConfiguration.configurationValues?.orientation === "horizontal";
+
+        const majorScale: ScaleOptions = {
+            grid: {
+                display: false
+            },
+            ticks: {
+                color: yAxisColor,
+                font: {
+                    size: xAxisFontSize
+                }
+            }
+        };
+
+        const minorScale: ScaleOptions = {
+            type: "linear",
+            beginAtZero: true,
+            grid: {
+                display: false
+            },
+            ticks: {
+                color: xAxisColor,
+                font: {
+                    size: yAxisFontSize
+                },
+                precision: 0
+            }
+        };
+
+        const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
+            type: "bar",
+            data: getChartData(),
+            options: {
+                indexAxis: isHorizontal ? "y" : "x",
+                maintainAspectRatio: false,
+                responsive: true,
+                animation: {
+                    duration: 350
+                },
+                scales: {
+                    x: isHorizontal ? minorScale : majorScale,
+                    y: isHorizontal ? majorScale : minorScale
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        };
+
+        return config;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the responses property has changed.
+     */
+    function onResponsesChanged(): void {
+        if (!chart || !chart.data.labels) {
+            return;
+        }
+
+        const responses = getResponseData();
+
+        // Update or add any responses.
+        for (const response of responses) {
+            const existingIndex = chart.data.labels.indexOf(response.text);
+
+            if (existingIndex !== -1) {
+                chart.data.datasets[0].data[existingIndex] = response.count;
+            }
+            else {
+                let insertIndex: number;
+                const color = colorConsumer();
+
+                // Find the position in the chart to insert this new response
+                // in alphabetical order.
+                for (insertIndex = 0; insertIndex < chart.data.labels.length; insertIndex++) {
+                    if (response.text.localeCompare((chart.data.labels as string[])[insertIndex]) < 0) {
+                        break;
+                    }
+                }
+
+                chart.data.labels.splice(insertIndex, 0, response.text);
+                chart.data.datasets[0].data.splice(insertIndex, 0, response.count);
+                (chart.data.datasets[0].backgroundColor as string[]).splice(insertIndex, 0, toCssRgba(color, 0.5));
+                (chart.data.datasets[0].borderColor as string[]).splice(insertIndex, 0, toCssRgba(color));
+            }
+        }
+
+        // Find any responses in the chart that need to be removed.
+        const validResponseTexts = responses.map(r => r.text);
+        for (let index = 0; index < chart.data.labels.length;) {
+            if (validResponseTexts.includes((chart.data.labels as string[])[index])) {
+                index++;
+                continue;
+            }
+
+            chart.data.labels.splice(index, 1);
+            chart.data.datasets[0].data.splice(index, 1);
+            (chart.data.datasets[0].backgroundColor as string[]).splice(index, 1);
+            (chart.data.datasets[0].borderColor as string[]).splice(index, 1);
+        }
+
+        chart.update();
+    }
+
+    // #endregion
+
+    watch(() => props.responses, onResponsesChanged);
+
+    onMounted(() => {
+        if (!canvasElement.value) {
+            return;
+        }
+
+        const style = window.getComputedStyle(canvasElement.value);
+        chart = new Chart(canvasElement.value, getChartConfig(style));
+    });
+
+    onResponsesChanged();
+</script>

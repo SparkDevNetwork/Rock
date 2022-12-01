@@ -281,33 +281,42 @@ export default defineComponent({
                     width: 8px;
                     background-color: #bbb;
                 }
+                .picker-label.has-ig-prepend {
+                    border-bottom-left-radius: 0;
+                    border-top-left-radius: 0;
+                }
             </v-style>
 
-            <div class="picker picker-select rollover-container">
-                <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
-                    <i :class="pickerIconClass"></i>
-                    <span class="selected-names">{{ selectedNames }}</span>
-                    <b class="fa fa-caret-down pull-right"></b>
-                </a>
+            <slot name="prepend" :isInputGroupSupported="true" />
+            <div :class="{'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend}">
+                <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                <div class="picker picker-select rollover-container">
+                    <a class="picker-label" href="#" @click.prevent.stop="onPickerClick" :class="{'has-ig-prepend': $slots.inputGroupPrepend}">
+                        <i :class="pickerIconClass"></i>
+                        <span class="selected-names">{{ selectedNames }}</span>
+                        <b class="fa fa-caret-down pull-right"></b>
+                    </a>
 
-                <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
-                    <i class="fa fa-times"></i>
-                </a>
+                    <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
+                        <i class="fa fa-times"></i>
+                    </a>
 
-                <div v-show="showPopup" class="picker-menu dropdown-menu" style="display: block;">
-                    <div class="scrollbar-thin" style="height: 200px; overflow-y: scroll; overflow-x: hidden;">
-                        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
-                    </div>
+                    <div v-show="showPopup" class="picker-menu dropdown-menu" style="display: block;">
+                        <div class="scrollbar-thin" style="height: 200px; overflow-y: scroll; overflow-x: hidden;">
+                            <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
+                        </div>
 
-                    <div class="picker-actions">
-                        <a class="btn btn-xs btn-primary picker-btn" @click.prevent.stop="onSelect">Select</a>
-                        <a class="btn btn-xs btn-link picker-cancel" @click.prevent.stop="onCancel">Cancel</a>
-                        <div v-if="$slots.customPickerActions" class="pull-right">
-                            <slot name="customPickerActions" />
+                        <div class="picker-actions">
+                            <a class="btn btn-xs btn-primary picker-btn" @click.prevent.stop="onSelect">Select</a>
+                            <a class="btn btn-xs btn-link picker-cancel" @click.prevent.stop="onCancel">Cancel</a>
+                            <div v-if="$slots.customPickerActions" class="pull-right">
+                                <slot name="customPickerActions" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <slot name="append" :isInputGroupSupported="true" />
         </div>
     </template>
 </RockFormField>

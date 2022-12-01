@@ -141,6 +141,7 @@ export default defineComponent({
     template: `
 <RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
+        <slot name="prepend" :isInputGroupSupported="false" />
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
@@ -159,6 +160,7 @@ export default defineComponent({
                 </template>
             </span>
         </div>
+        <slot name="append" :isInputGroupSupported="false" />
     </div>
 </RockFormField>`
 });

@@ -1161,6 +1161,17 @@ namespace Rock.Web.UI
             return RockPage.GetClientIpAddress();
         }
 
+        /// <summary>
+        /// Triggers a notification that the block configuration has been updated.
+        /// </summary>
+        protected void NotifyBlockUpdated()
+        {
+            if ( BlockUpdated != null )
+            {
+                BlockUpdated( this, new BlockUpdatedEventArgs( this.BlockId ) );
+            }
+        }
+
         #region User Preferences
 
         /// <summary>

@@ -2117,7 +2117,7 @@ namespace Rock.Blocks.Event
             registrant.LoadAttributes();
             if ( UpdateRegistrantAttributes( registrant, registrantInfo, registrantChanges, context.RegistrationSettings ) )
             {
-                rockContext.SaveChanges();
+                registrant.SaveAttributeValues( rockContext );
             }
 
             // Save the signed document if we have one. We only process a document
@@ -3522,7 +3522,7 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
+            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
         }
 
         /// <summary>

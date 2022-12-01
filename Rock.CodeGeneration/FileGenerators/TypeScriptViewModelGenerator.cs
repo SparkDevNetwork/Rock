@@ -164,6 +164,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             // Get all the values to be included.
             var values = type.GetFields( BindingFlags.Static | BindingFlags.Public )
+                .OrderBy( f => f.Name )
                 .Select( f => new
                 {
                     Field = f,

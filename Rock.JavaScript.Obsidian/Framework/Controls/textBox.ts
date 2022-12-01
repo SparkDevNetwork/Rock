@@ -89,7 +89,7 @@ export default defineComponent({
         });
 
         const isInputGroup = computed((): boolean => {
-            return !!ctx.slots.prepend || !!ctx.slots.append;
+            return !!ctx.slots.inputGroupPrepend || !!ctx.slots.inputGroupAppend;
         });
 
         const controlContainerClass = computed((): string => {
@@ -116,12 +116,14 @@ export default defineComponent({
     </template>
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
+            <slot name="prepend" :isInputGroupSupported="true" />
             <div :class="controlContainerClass">
-                <slot name="prepend" />
+                <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                 <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
                 <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
-                <slot name="append" />
+                <slot name="inputGroupAppend" :isInputGroupSupported="true" />
             </div>
+            <slot name="append" :isInputGroupSupported="true" />
         </div>
     </template>
 </RockFormField>`

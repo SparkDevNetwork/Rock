@@ -7,8 +7,12 @@
     "sourceMap": true,
     "strict": true,
     "rootDir": "src",
+    "isolatedModules": true,
     "esModuleInterop": true
   },
+  "include": [
+    "./src/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

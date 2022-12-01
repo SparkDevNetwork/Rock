@@ -129,7 +129,7 @@ namespace Rock.Jobs
 
             RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Processing {activeReminderList.Count} reminders for notifications." );
 
-            foreach ( var activeReminder in activeReminders.ToList() )
+            foreach ( var activeReminder in activeReminderList )
             {
                 RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Processing Reminder {activeReminder.Id} for notifications." );
 

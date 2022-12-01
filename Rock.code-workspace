@@ -36,6 +36,7 @@
 		"[vue]": {
 		  "editor.defaultFormatter": "Vue.volar"
 		},
+		"css.format.spaceAroundSelectorSeparator": true
 	},
 	"tasks": {
 		"version": "2.0.0",

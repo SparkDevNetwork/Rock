@@ -160,6 +160,38 @@
     <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.designer.cs">
       <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs" />
+    <Compile Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.designer.cs">
+      <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.cs" />
+    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.designer.cs">
+      <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs" />
+    <Compile Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.designer.cs">
+      <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.cs" />
+    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.designer.cs">
+      <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.cs" />
+    <Compile Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.designer.cs">
+      <DependentUpon>202211300749398_UpdateSlidingDateRangeValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs" />
+    <Compile Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.designer.cs">
+      <DependentUpon>202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212011956416_Rollup_20221201.cs" />
+    <Compile Include="Migrations\202212011956416_Rollup_20221201.designer.cs">
+      <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212012101266_CodeGenerated_20221201.cs" />
+    <Compile Include="Migrations\202212012101266_CodeGenerated_20221201.designer.cs">
+      <DependentUpon>202212012101266_CodeGenerated_20221201.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -1486,6 +1518,30 @@
     <EmbeddedResource Include="Migrations\202211171644271_CodeGenerated_20221117.resx">
       <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.resx">
+      <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.resx">
+      <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.resx">
+      <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.resx">
+      <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.resx">
+      <DependentUpon>202211300749398_UpdateSlidingDateRangeValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.resx">
+      <DependentUpon>202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212011956416_Rollup_20221201.resx">
+      <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212012101266_CodeGenerated_20221201.resx">
+      <DependentUpon>202212012101266_CodeGenerated_20221201.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
     </EmbeddedResource>
@@ -2445,6 +2501,12 @@
     </Content>
     <Content Include="Migrations\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
       <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202212011956416_Rollup_20221201_chartupdate.sql">
+      <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022.sql">
+      <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>

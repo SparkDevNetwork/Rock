@@ -417,12 +417,12 @@ export default defineComponent({
         <div ref="searchContainerElement" class="content">
             <div class="search-fulltext">
                 <TextBox v-model="query" placeholder="What can we help you find?">
-                    <template #prepend>
+                    <template #inputGroupPrepend>
                         <div class="input-group-addon">
                             <i class="fa fa-search"></i>
                         </div>
                     </template>
-                    <template #append>
+                    <template #inputGroupAppend>
                         <div v-if="query" class="input-group-addon">
                             <i class="fa fa-times clickable" @click="onClearClick"></i>
                         </div>

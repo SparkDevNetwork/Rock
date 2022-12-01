@@ -22,11 +22,11 @@
 //
 
 export const enum FinancialAccount {
+    /** Gets the Event Registration Account Guid */
+    EventRegistration = "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5",
     /**
      * Gets the General Fund Guid
      * Note:  Rock ships with the General Fund, but it could be deleted, so it isn't guaranteed to be there
      */
     GeneralFund = "4410306F-3FB5-4A57-9A80-09A3F9D40D0C",
-    /** Gets the Event Registration Account Guid */
-    EventRegistration = "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5",
 }

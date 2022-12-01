@@ -93,7 +93,6 @@ namespace Rock.Model
         [DataMember]
         public int? CurrentlyShownActionId { get; set; }
 
-
         /// <summary>
         /// Gets or sets the state json. This is used to store general state
         /// information about this occurrence that will be defined later.

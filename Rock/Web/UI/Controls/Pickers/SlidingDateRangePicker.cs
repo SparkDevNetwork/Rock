@@ -733,10 +733,10 @@ namespace Rock.Web.UI.Controls
                 return string.Format(
                     "{0}|{1}|{2}|{3}|{4}",
                     this.SlidingDateRangeMode,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?)null,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?)null,
-                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart : null,
-                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd : null );
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?) null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?) null,
+                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart.Value.ToString( "o" ) : null,
+                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd.Value.ToString( "o" ) : null );
             }
 
             set

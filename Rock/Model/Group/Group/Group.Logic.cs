@@ -106,10 +106,10 @@ namespace Rock.Model
             var rockContext = new RockContext();
 
             // return people
-            var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
-                                .Where( g =>
-                                     g.IsActive == true
-                                     && g.GroupType.IsIndexEnabled == true );
+            var groups = new GroupService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( g => g.IsActive == true && g.GroupType.IsIndexEnabled == true );
 
             int recordCounter = 0;
 

@@ -69,6 +69,7 @@
 
   .panel.panel-block > .panel-heading {
     display: inherit;
+    line-height: 1.1;
   }
 
   .panel.panel-block > .panel-body {
@@ -715,6 +716,14 @@
 
 .board-column-title {
   font-weight: @font-weight-semibold;
+  white-space: nowrap;
+}
+
+.board-column-schedule-name {
+  margin-left: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .occurrence-column {

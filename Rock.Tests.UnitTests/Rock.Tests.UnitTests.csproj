@@ -122,7 +122,6 @@
     <Compile Include="Rock\Security\EncryptionTests.cs" />
     <Compile Include="Rock\Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Rock\Slingshot\PersonPhoneCsvMapperTest.cs" />
-    <Compile Include="Rock\Slingshot\PersonNoteCsvMapperTest.cs" />
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />

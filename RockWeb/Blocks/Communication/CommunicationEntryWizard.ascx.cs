@@ -184,9 +184,9 @@ namespace RockWeb.Blocks.Communication
 
         private const string CATEGORY_COMMUNICATION_TEMPLATE = "CategoryCommunicationTemplate";
 
-        private bool _smsTransportEnabled = MediumContainer.HasActiveSmsTransport();
-        private bool _emailTransportEnabled = MediumContainer.HasActiveEmailTransport();
-        private bool _pushTransportEnabled = MediumContainer.HasActivePushTransport();
+        private bool _smsTransportEnabled = false;
+        private bool _emailTransportEnabled = false;
+        private bool _pushTransportEnabled = false;
         #endregion
 
         #region Properties
@@ -246,6 +246,10 @@ namespace RockWeb.Blocks.Communication
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
             Page.Response.Cache.SetNoStore();
+
+            _smsTransportEnabled = MediumContainer.HasActiveAndAuthorizerdSmsTransport( CurrentPerson );
+            _emailTransportEnabled = MediumContainer.HasActiveAndAuthorizerdEmailTransport( CurrentPerson );
+            _pushTransportEnabled = MediumContainer.HasActiveAndAuthorizerdPushTransport( CurrentPerson );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -1392,7 +1396,7 @@ function onTaskCompleted( resultData )
             }
 
             // Only add recipient preference if at least two options exists.
-            if ( recipientPreferenceEnabled )
+            if ( recipientPreferenceEnabled && ( emailTransportEnabled || smsTransportEnabled ) )
             {
                 rblCommunicationMedium.Items.Add( new ListItem( "Recipient Preference", CommunicationType.RecipientPreference.ConvertToInt().ToString() ) );
             }

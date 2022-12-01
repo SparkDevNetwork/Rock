@@ -240,20 +240,36 @@ namespace Rock.ViewModels.Entities
         public int? ParentGroupId { get; set; }
 
         /// <summary>
+        /// Gets or sets the reminder additional details.
+        /// </summary>
+        /// <value>
+        /// The reminder additional details.
+        /// </value>
+        public string ReminderAdditionalDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to an event date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        public int? ReminderOffsetDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending a reminder.
+        /// </summary>
+        /// <value>
+        /// The reminder system communication identifier.
+        /// </value>
+        public int? ReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the required signature document type identifier.
         /// </summary>
         /// <value>
         /// The required signature document type identifier.
         /// </value>
         public int? RequiredSignatureDocumentTemplateId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rsvp additional reminder details.
-        /// </summary>
-        /// <value>
-        /// The rsvp additional reminder details.
-        /// </value>
-        public string RSVPReminderAdditionalDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.

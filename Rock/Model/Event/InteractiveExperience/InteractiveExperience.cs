@@ -15,15 +15,16 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Event;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,7 +35,7 @@ namespace Rock.Model
     [Table( "InteractiveExperience" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "3D90E693-476E-4DFC-B958-A28D1DD370BF" )]
-    public partial class InteractiveExperience : Model<InteractiveExperience>, IHasActiveFlag
+    public partial class InteractiveExperience : Model<InteractiveExperience>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 
@@ -57,7 +58,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public Boolean IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the Description of the <see cref="Rock.Model.InteractiveExperience"/>
@@ -405,6 +406,21 @@ namespace Rock.Model
             set { _interactiveExperienceActions = value; }
         }
         private ICollection<InteractiveExperienceAction> _interactiveExperienceActions;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="string" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
 
         #endregion
     }

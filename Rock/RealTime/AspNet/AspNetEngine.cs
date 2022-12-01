@@ -71,6 +71,17 @@ namespace Rock.RealTime
         #region Methods
 
         /// <inheritdoc/>
+        public override Task ClientConnectedAsync( object realTimeHub, string connectionIdentifier )
+        {
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            var requestWrapper = new SignalRRequestWrapper( ( realTimeHub as RealTimeHub ).Context.Request );
+            state.Request = new Net.RockRequestContext( requestWrapper );
+
+            return base.ClientConnectedAsync( realTimeHub, connectionIdentifier );
+        }
+
+        /// <inheritdoc/>
         protected override TopicConfiguration GetTopicConfiguration( Type topicType )
         {
             var topicConfiguration = new TopicConfigurationAspNet( _rockHubContext, topicType, _proxyFactory );
