@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+/**
+ * Class ExperienceVisualizerInitializationBox.
+ * Implements the Rock.ViewModels.Blocks.BlockBox
+ */
 export type ExperienceVisualizerInitializationBox = {
     /**
      * Gets or sets the error message. A non-empty value indicates that

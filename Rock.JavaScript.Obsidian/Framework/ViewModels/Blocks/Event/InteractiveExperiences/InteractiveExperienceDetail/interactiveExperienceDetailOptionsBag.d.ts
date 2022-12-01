@@ -24,6 +24,7 @@
 import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
 import { InteractiveExperienceVisualizerTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceVisualizerTypeBag";
 
+/** Class InteractiveExperienceDetailOptionsBag. */
 export type InteractiveExperienceDetailOptionsBag = {
     /** Gets or sets the action types that are available. */
     actionTypes?: InteractiveExperienceActionTypeBag[] | null;

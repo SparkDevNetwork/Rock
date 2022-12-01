@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+/**
+ * Class LiveExperienceOccurrencesInitializationBox.
+ * Implements the Rock.ViewModels.Blocks.BlockBox
+ */
 export type LiveExperienceOccurrencesInitializationBox = {
     /**
      * Gets a value that indicates if the device location should always be requested

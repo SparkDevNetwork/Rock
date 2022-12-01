@@ -28,6 +28,10 @@ import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Ev
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class InteractiveExperienceBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type InteractiveExperienceBag = {
     /** Gets or sets the background color of the action. */
     actionBackgroundColor?: string | null;
