@@ -151,8 +151,12 @@
                     </div>
                     <div class="panel-body">
                         <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week"  RepeatDirection="Horizontal" />
-                        <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="Time of Day" />
-                        <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" Label="to" />
+                        <label class="control-label">Time of Day</label>
+                        <div class="form-control-group">
+                            <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="" />
+                            <div class="input-group form-control-static"> to </div>
+                            <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" Label="" />
+                        </div>
                     </div>
                 </asp:Panel>
                 <div class="actions">
