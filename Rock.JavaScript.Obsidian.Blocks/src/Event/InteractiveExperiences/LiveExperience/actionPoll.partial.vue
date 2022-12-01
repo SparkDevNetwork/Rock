@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="experience-action experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e">
+    <div class="experience-action experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e">
         <div class="question">
             {{ questionText }}
         </div>
@@ -21,53 +21,53 @@
 
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .question::before {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .question::before {
     content: 'Q:';
     display: block;
     font-size: 3em;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
     content: 'A:';
     display: block;
     font-size: 3em;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers {
     margin-top: 12px;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio {
     padding-left: 0px;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::before,
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::after {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::before,
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::after {
     display: none;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers label {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers label {
     display: block;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input {
     display: none;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .label-text {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .label-text {
     display: block;
-    border: 2px solid var(--action-secondary-button-color);
+    border: 2px solid var(--experience-action-secondary-button-color);
     border-radius: var(--border-radius-base);
     padding: 6px 12px;
     transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input:checked + .label-text {
-    background-color: var(--action-secondary-button-color);
-    color: var(--action-secondary-button-text-color);
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input:checked + .label-text {
+    background-color: var(--experience-action-secondary-button-color);
+    color: var(--experience-action-secondary-button-text-color);
 }
 
-.experience-action-9256a5b7-480d-4ffa-86d1-03b8aefc254e .submit {
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .submit {
     margin-top: 18px;
 }
 </style>

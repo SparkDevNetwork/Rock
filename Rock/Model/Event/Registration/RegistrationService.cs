@@ -186,8 +186,9 @@ namespace Rock.Model
         /// Gets the active registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
+        /// <returns>RegistrationInstance.</returns>
         private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId, int? registrationId, out string errorMessage )
         {
             errorMessage = string.Empty;

@@ -46,6 +46,9 @@ export type DataViewBag = {
     /** Gets or sets the user defined description of the DataView */
     description?: string | null;
 
+    /** Gets or sets whether using a read-only Rock Context is disabled. */
+    disableUseOfReadOnlyContext: boolean;
+
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on. */
     entityTypeId?: number | null;
 

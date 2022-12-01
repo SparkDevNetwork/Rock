@@ -46,6 +46,9 @@ export type ConnectionWorkflowBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets Connection Status Id used to filter workflows with manual trigger. */
+    manualTriggerFilterConnectionStatusId?: number | null;
+
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 

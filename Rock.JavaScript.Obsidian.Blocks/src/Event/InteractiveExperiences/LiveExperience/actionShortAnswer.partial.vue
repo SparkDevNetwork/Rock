@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="experience-action experience-action-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210">
+    <div class="experience-action experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210">
         <div class="question">
             {{ questionText }}
         </div>
@@ -21,19 +21,19 @@
 
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
-.experience-action-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before {
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before {
     content: 'Q:';
     display: block;
     font-size: 3em;
 }
 
-.experience-action-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
     content: 'A:';
     display: block;
     font-size: 3em;
 }
 
-.experience-action-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .submit {
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .submit {
     margin-top: 18px;
 }
 </style>

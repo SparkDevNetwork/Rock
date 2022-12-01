@@ -7,7 +7,6 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Family
 GO
 
--- EXECUTE [dbo].[spAnalytics_ETL_Family] 
 CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
 AS
 BEGIN
@@ -121,8 +120,8 @@ BEGIN
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
             SELECT CASE max(convert(INT, CASE 
- WHEN av.ValueAsBoolean IS NULL
-                                    THEN 0
+     WHEN av.ValueAsBoolean IS NULL
+                         THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
                     WHEN 1

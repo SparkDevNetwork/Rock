@@ -51,26 +51,26 @@ body {
     top: 0px;
     bottom: 0px;
     padding: 18px;
-    background-color: var(--action-background-color, inherit);
-    background-image: var(--action-background-image, initial);
-    color: var(--action-text-color, inherit);
+    background-color: var(--experience-action-bg-color, inherit);
+    background-image: var(--experience-action-bg-image, initial);
+    color: var(--experience-action-text-color, inherit);
 }
 
 .live-experience-body .btn-primary,
 .live-experience-body .btn-primary:hover,
 .live-experience-body .btn-primary:focus {
-    background-color: var(--action-primary-button-color);
-    border-color: var(--action-primary-button-color);
-    color: var(--action-primary-button-text-color);
+    background-color: var(--experience-action-primary-button-color);
+    border-color: var(--experience-action-primary-button-color);
+    color: var(--experience-action-primary-button-text-color);
     box-shadow: none;
 }
 
 .live-experience-body .btn-secondary,
 .live-experience-body .btn-secondary:hover,
 .live-experience-body .btn-secondary:focus {
-    background-color: var(--action-secondary-button-color);
-    border-color: var(--action-secondary-button-color);
-    color: var(--action-secondary-button-text-color);
+    background-color: var(--experience-action-secondary-button-color);
+    border-color: var(--experience-action-secondary-button-color);
+    color: var(--experience-action-secondary-button-text-color);
 }
 
 .live-experience-body .welcome-header {
@@ -187,46 +187,46 @@ body {
         }
 
         if (config.style?.action?.backgroundColor) {
-            styles["--action-background-color"] = config.style.action.backgroundColor;
+            styles["--experience-action-bg-color"] = config.style.action.backgroundColor;
         }
 
         if (config.style?.action?.backgroundImage) {
-            styles["--action-background-image"] = `url('${config.style.action.backgroundImage}')`;
+            styles["--experience-action-bg-image"] = `url('${config.style.action.backgroundImage}')`;
         }
 
         if (config.style?.action?.primaryButtonColor) {
-            styles["--action-primary-button-color"] = config.style.action.primaryButtonColor;
+            styles["--experience-action-primary-button-color"] = config.style.action.primaryButtonColor;
         }
         else {
-            styles["--action-primary-button-color"] = "var(--brand-primary)";
+            styles["--experience-action-primary-button-color"] = "var(--brand-primary)";
         }
 
         if (config.style?.action?.primaryButtonTextColor) {
-            styles["--action-primary-button-text-color"] = config.style.action.primaryButtonTextColor;
+            styles["--experience-action-primary-button-text-color"] = config.style.action.primaryButtonTextColor;
         }
         else {
-            styles["--action-primary-button-text-color"] = "#fff";
+            styles["--experience-action-primary-button-text-color"] = "#fff";
         }
 
         if (config.style?.action?.secondaryButtonColor) {
-            styles["--action-secondary-button-color"] = config.style.action.secondaryButtonColor;
+            styles["--experience-action-secondary-button-color"] = config.style.action.secondaryButtonColor;
         }
         else {
-            styles["--action-secondary-button-color"] = "var(--brand-info)";
+            styles["--experience-action-secondary-button-color"] = "var(--brand-info)";
         }
 
         if (config.style?.action?.secondaryButtonTextColor) {
-            styles["--action-secondary-button-text-color"] = config.style.action.secondaryButtonTextColor;
+            styles["--experience-action-secondary-button-text-color"] = config.style.action.secondaryButtonTextColor;
         }
         else {
-            styles["--action-secondary-button-text-color"] = "#fff";
+            styles["--experience-action-secondary-button-text-color"] = "#fff";
         }
 
         if (config.style?.action?.textColor) {
-            styles["--action-text-color"] = config.style.action.textColor;
+            styles["--experience-action-text-color"] = config.style.action.textColor;
         }
         else {
-            styles["--action-text-color"] = "var(--text-color)";
+            styles["--experience-action-text-color"] = "var(--text-color)";
         }
 
         return styles;

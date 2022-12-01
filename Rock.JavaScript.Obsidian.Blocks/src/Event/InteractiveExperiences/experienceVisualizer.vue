@@ -21,9 +21,9 @@
     top: 0px;
     bottom: 0px;
     padding: 18px;
-    background-color: var(--visualizer-background-color, inherit);
-    background-image: var(--visualizer-background-image, initial);
-    color: var(--visualizer-text-color);
+    background-color: var(--experience-visualizer-bg-color, inherit);
+    background-image: var(--experience-visualizer-bg-image, initial);
+    color: var(--experience-visualizer-text-color);
 }
 
 .experience-visualizer-body .experience-visualizer {
@@ -147,39 +147,39 @@
         const styles: Record<string, string> = {};
 
         if (style?.visualizer?.backgroundColor) {
-            styles["--visualizer-background-color"] = style.visualizer.backgroundColor;
+            styles["--experience-visualizer-bg-color"] = style.visualizer.backgroundColor;
         }
 
         if (style?.visualizer?.backgroundImage) {
-            styles["--visualizer-background-image"] = `url('${style.visualizer.backgroundImage}')`;
+            styles["--experience-visualizer-bg-image"] = `url('${style.visualizer.backgroundImage}')`;
         }
 
         if (style?.visualizer?.textColor) {
-            styles["--visualizer-text-color"] = style.visualizer.textColor;
+            styles["--experience-visualizer-text-color"] = style.visualizer.textColor;
         }
         else {
-            styles["--visualizer-text-color"] = "var(--text-color)";
+            styles["--experience-visualizer-text-color"] = "var(--text-color)";
         }
 
         if (style?.visualizer?.primaryColor) {
-            styles["--visualizer-primary-color"] = style.visualizer.primaryColor;
+            styles["--experience-visualizer-primary-color"] = style.visualizer.primaryColor;
         }
         else {
-            styles["--visualizer-primary-color"] = "var(--brand-primary)";
+            styles["--experience-visualizer-primary-color"] = "var(--brand-primary)";
         }
 
         if (style?.visualizer?.secondaryColor) {
-            styles["--visualizer-secondary-color"] = style.visualizer.secondaryColor;
+            styles["--experience-visualizer-secondary-color"] = style.visualizer.secondaryColor;
         }
         else {
-            styles["--visualizer-secondary-color"] = "var(--brand-success)";
+            styles["--experience-visualizer-secondary-color"] = "var(--brand-success)";
         }
 
         if (style?.visualizer?.accentColor) {
-            styles["--visualizer-accent-color"] = style.visualizer.accentColor;
+            styles["--experience-visualizer-accent-color"] = style.visualizer.accentColor;
         }
         else {
-            styles["--visualizer-accent-color"] = "var(--brand-info)";
+            styles["--experience-visualizer-accent-color"] = "var(--brand-info)";
         }
 
         return styles;
