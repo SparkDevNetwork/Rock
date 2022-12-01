@@ -225,11 +225,11 @@ namespace RockWeb.Blocks.GroupScheduling
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the btnSubmit control.
+        /// Handles the Click event of the btnSubmitDeclineReason control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSubmit_Click( object sender, EventArgs e )
+        protected void btnSubmitDeclineReason_Click( object sender, EventArgs e )
         {
             if ( this.Page.IsValid )
             {
@@ -246,6 +246,10 @@ namespace RockWeb.Blocks.GroupScheduling
                 if ( PageParameter( PageParameterKey.ReturnUrl ).IsNotNullOrWhiteSpace() )
                 {
                     NavigateToPage( PageParameter( PageParameterKey.ReturnUrl ).AsGuid(), null );
+                }
+                else
+                {
+                    nbSaveDeclineReasonMessage.Visible = true;
                 }
             }
         }
@@ -488,7 +492,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             // block setting drives if required
             ddlDeclineReason.Required = GetAttributeValue( AttributeKey.RequireDeclineReasons ).AsBoolean();
-            this.btnSubmit.Visible = true;
+            this.btnSubmitDeclineReason.Visible = true;
 
             // decline Note
             dtbDeclineReasonNote.Label = GetAttributeValue( AttributeKey.DeclineNoteTitle ).ToString();
@@ -508,7 +512,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 {
                     nbError.Visible = true;
                 }
-                else if ( CurrentPerson != null && _selectedPerson != CurrentPerson )
+                else if ( CurrentPerson != null && _selectedPerson.Guid != CurrentPerson.Guid )
                 {
                     nbError.Visible = true;
                     nbError.Title = "Note:";
