@@ -156,7 +156,7 @@ namespace Rock.Communication
         /// <returns>
         ///   <c>true</c> if an active transport exists for the specified unique identifier and authorized to view for the person; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveAndAuthorizerdTransport( Guid guid, Person person )
+        public static bool HasActiveAndAuthorizedTransport( Guid guid, Person person )
         {
             return MediumContainer.GetActiveMediumComponentsWithActiveTransports().Any( a => a.EntityType.Guid == guid && a.IsAuthorized( Authorization.VIEW, person ) );
         }
@@ -167,9 +167,9 @@ namespace Rock.Communication
         /// <returns>
         ///   <c>true</c> if an active SMS transport exists and authorized to view for the person; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveAndAuthorizerdSmsTransport( Person person )
+        public static bool HasActiveAndAuthorizedSmsTransport( Person person )
         {
-            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), person );
+            return MediumContainer.HasActiveAndAuthorizedTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), person );
         }
 
         /// <summary>
@@ -178,9 +178,9 @@ namespace Rock.Communication
         /// <returns>
         ///   <c>true</c> if an active email transport exists and authorized to view for the person; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveAndAuthorizerdEmailTransport( Person person )
+        public static bool HasActiveAndAuthorizedEmailTransport( Person person )
         {
-            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), person );
+            return MediumContainer.HasActiveAndAuthorizedTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), person );
         }
 
         /// <summary>
@@ -189,9 +189,9 @@ namespace Rock.Communication
         /// <returns>
         ///   <c>true</c> if an active push transport exists and authorized to view for the person; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveAndAuthorizerdPushTransport( Person person )
+        public static bool HasActiveAndAuthorizedPushTransport( Person person )
         {
-            return MediumContainer.HasActiveAndAuthorizerdTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), person );
+            return MediumContainer.HasActiveAndAuthorizedTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), person );
         }
     }
 }
