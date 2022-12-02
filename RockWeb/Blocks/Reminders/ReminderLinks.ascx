@@ -54,7 +54,7 @@
 
         if (reminderCount != '' && reminderCount != "0") {
             remindersButton.addClass('active has-reminders');
-            buttonHtml = buttonHtml + '<span class="count-bottom">' + reminderCount + "</span>";
+            buttonHtml = buttonHtml + '<span class="count-bottom">' + new Intl.NumberFormat().format(reminderCount) + "</span>";
         }
 
         remindersButton.html(buttonHtml);
@@ -89,8 +89,8 @@
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <div class="dropdown js-rock-reminders">
-    <%-- LinkButton inner html is set by checkReminders() function. --%>
-    <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown" />
+    <%-- LinkButton inner html is updated by checkReminders() function. --%>
+    <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="fa fa-bell"></i></asp:LinkButton>
     <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
         <li class="js-add-reminder d-none">
             <asp:LinkButton runat="server" ID="lbAddReminder" CssClass="" OnClick="lbAddReminder_Click">Add Reminder</asp:LinkButton>

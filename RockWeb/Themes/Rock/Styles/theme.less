@@ -1868,9 +1868,31 @@ body.navbar-side-open {
     background-color: rgba(255, 255, 255, .1);
   }
 
+  .count-bottom {
+    position: absolute;
+    bottom: 0;
+    right: 2px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    text-shadow: -1px -1px 0 mix(@white, @brand-primary, 75%),  
+    1px -1px 0 mix(@white, @brand-primary, 75%),
+    -1px 1px 0 mix(@white, @brand-primary, 75%),
+     1px 1px 0 mix(@white, @brand-primary, 75%);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
   &:hover,
   &:active {
     color: fade(@white, 50%);
+
+    .count-bottom {
+      text-shadow: -1px -1px 0 mix(@white, @brand-primary, 50%),  
+      1px -1px 0 mix(@white, @brand-primary, 50%),
+      -1px 1px 0 mix(@white, @brand-primary, 50%),
+       1px 1px 0 mix(@white, @brand-primary, 50%);
+    }
   }
 
   &.active {
@@ -1883,14 +1905,7 @@ body.navbar-side-open {
     }
   }
 
-  .count-bottom {
-    position: absolute;
-    bottom: 0;
-    right: 2px;
-    text-align: right;
-    font-size: 12px;
-    font-weight: 700;
-  }
+
 }
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
