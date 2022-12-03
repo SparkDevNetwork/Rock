@@ -2,9 +2,14 @@
 <!-- 
   ║▌║█║▌│║▌▌│║▌█
   This file format is intended for internal use only.  There is no DTD which defines its 
-  specification yet.  It's purpose is to give us a way to quickly load some sample/play
-  data using the SampleData block.  The data in this file and it's specification is
+  specification yet.  Its purpose is to give us a way to quickly load some sample/play
+  data using the SampleData block.  The data in this file and its specification is
   not only subject to change, it will certainly change quite often.
+
+  When updating this data file, be sure to upload it to the cloud storage provider
+  where it is hosted, otherwise no one will get the change.
+  Once uploaded, the host may take several minutes to propagate the update
+  before the SampleData block can download the updated version.
 -->
 <data>
   <families>
