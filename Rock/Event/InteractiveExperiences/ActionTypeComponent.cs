@@ -165,6 +165,7 @@ namespace Rock.Event.InteractiveExperiences
         {
             var configuration = new ActionRenderConfigurationBag
             {
+                ActionId = action.Id,
                 ActionTypeGuid = EntityType.Guid,
                 ConfigurationValues = new Dictionary<string, string>()
             };

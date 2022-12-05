@@ -35,13 +35,13 @@ namespace Rock.ViewModels.Event.InteractiveExperiences
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the action this visualizer
-        /// is displayed results for.
+        /// Gets or sets the action identifier.
         /// </summary>
-        /// <value>
-        /// The unique identifier of the action.
-        /// </value>
-        public Guid ActionGuid { get; set; }
+        /// <remarks>
+        /// This should only be used when setting the CSS class name.
+        /// </remarks>
+        /// <value>The action identifier.</value>
+        public int ActionId { get; set; }
 
         /// <summary>
         /// Gets or sets the visualizer type unique identifier.

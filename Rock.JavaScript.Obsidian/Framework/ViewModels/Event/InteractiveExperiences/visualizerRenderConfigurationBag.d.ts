@@ -25,11 +25,8 @@ import { Guid } from "@Obsidian/Types";
 
 /** The configuration required to display a visualizer. */
 export type VisualizerRenderConfigurationBag = {
-    /**
-     * Gets or sets the unique identifier of the action this visualizer
-     * is displayed results for.
-     */
-    actionGuid?: Guid | null;
+    /** Gets or sets the action identifier. */
+    actionId: number;
 
     /** Gets or sets the configuration values for the visualizer type. */
     configurationValues?: Record<string, string> | null;
