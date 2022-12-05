@@ -229,7 +229,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             if ( box.ValidProperties == null )
             {
                 return false;
-            }{% for property in Properties %}
+            }{% for property in Properties %}{% if property.Name == "IsSystem" %}{% continue %}{% endif %}
 
             box.IfValidProperty( nameof( box.Entity.{{ property.Name }} ),
                 () => entity.{{ property.Name }}{% if property.IsEntity == true %}Id{% endif %} = box.Entity.{{ property.ConvertFromBagCode }} );{% endfor %}
