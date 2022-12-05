@@ -25,6 +25,9 @@ import { Guid } from "@Obsidian/Types";
 
 /** The configuration required to display an action. */
 export type ActionRenderConfigurationBag = {
+    /** Gets or sets the action identifier. */
+    actionId: number;
+
     /** Gets or sets the action type unique identifier. */
     actionTypeGuid?: Guid | null;
 

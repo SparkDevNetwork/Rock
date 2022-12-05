@@ -26,6 +26,15 @@ namespace Rock.ViewModels.Event.InteractiveExperiences
     public class ActionRenderConfigurationBag
     {
         /// <summary>
+        /// Gets or sets the action identifier.
+        /// </summary>
+        /// <remarks>
+        /// This should only be used when setting the CSS class name.
+        /// </remarks>
+        /// <value>The action identifier.</value>
+        public int ActionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the action type unique identifier.
         /// </summary>
         /// <value>The action type unique identifier.</value>

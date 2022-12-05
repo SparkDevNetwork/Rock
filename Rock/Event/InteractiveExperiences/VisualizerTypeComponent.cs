@@ -143,7 +143,7 @@ namespace Rock.Event.InteractiveExperiences
             var configuration = new VisualizerRenderConfigurationBag
             {
                 Title = actionComponent?.GetDisplayTitle( action ),
-                ActionGuid = action.Guid,
+                ActionId = action.Id,
                 VisualizerTypeGuid = EntityType.Guid,
                 ConfigurationValues = new Dictionary<string, string>()
             };

@@ -63,7 +63,7 @@
     // #region Computed Values
 
     const additionalVisualizerClasses = computed((): string => {
-        return `experience-visualizer-${props.renderConfiguration.actionGuid}`;
+        return `experience-visualizer-${props.renderConfiguration.actionId}`;
     });
 
     const borderWidth = computed((): number => {

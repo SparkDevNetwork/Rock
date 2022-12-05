@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="experience-action experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210">
+    <div class="experience-action experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210" :class="additionalActionClasses">
         <div class="question">
             {{ questionText }}
         </div>
@@ -52,6 +52,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const additionalActionClasses = computed((): string => {
+        return `experience-action-${props.renderConfiguration.actionId}`;
+    });
 
     const questionText = computed((): string => {
         return props.renderConfiguration.configurationValues?.["question"] ?? "";
