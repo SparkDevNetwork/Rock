@@ -6085,7 +6085,7 @@ const geoPickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" :showPopup="true" />
+    <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" />
 
     <template #settings>
         <div class="row">
