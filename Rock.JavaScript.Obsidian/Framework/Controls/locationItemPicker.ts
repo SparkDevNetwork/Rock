@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, watch } from "vue";
 import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.vue";
 
 export default defineComponent({
     name: "LocationPicker",
@@ -76,7 +76,20 @@ export default defineComponent({
     formGroupClasses="location-item-picker"
     iconCssClass="fa fa-home"
     :provider="itemProvider"
-    :multiple="multiple"
-/>
+    :multiple="multiple">
+
+    <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
+        <slot name="pickerContentSuperHeader" />
+    </template>
+    <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+        <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+    </template>
+    <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+        <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+    </template>
+    <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+        <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+    </template>
+</TreeItemPicker>
 `
 });

@@ -23,6 +23,19 @@
         <template #primaryButtonLabel>
             <Loading :isLoading="isLoading">Select</Loading>
         </template>
+
+        <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
+            <slot name="pickerContentSuperHeader" />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
     </ContentDropDownPicker>
 </template>
 

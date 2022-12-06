@@ -163,6 +163,8 @@
             useCountryAbbreviation: props.useCountryAbbreviation,
             countryCode: props.modelValue.country
         };
+
+        // TODO: At some point, we should find some way to cache this
         const result = await post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
 
         if (result.isSuccess && result.data) {

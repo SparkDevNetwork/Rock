@@ -102,7 +102,7 @@ import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import LocationPicker from "@Obsidian/Controls/locationPicker";
+import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
@@ -183,8 +183,10 @@ import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
 import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
+import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.vue";
 import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
 import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.vue";
+import LocationPicker from "@Obsidian/Controls/locationPicker.vue";
 
 // #region Gallery Support
 
@@ -2828,20 +2830,20 @@ const categoryPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates location picker */
-const locationPickerGallery = defineComponent({
-    name: "LocationPickerGallery",
+/** Demonstrates location item picker */
+const locationItemPickerGallery = defineComponent({
+    name: "LocationItemPickerGallery",
     components: {
         GalleryAndResult,
         CheckBox,
-        LocationPicker
+        LocationItemPicker
     },
     setup() {
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("locationPicker"),
-            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+            importCode: getControlImportPath("locationItemPicker"),
+            exampleCode: `<LocationItemPicker label="Location" v-model="value" :multiple="false" />`
         };
     },
     template: `
@@ -2850,7 +2852,7 @@ const locationPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+    <LocationItemPicker label="Location" v-model="value" :multiple="multiple" />
 
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
@@ -6083,7 +6085,7 @@ const geoPickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" />
+    <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" :showPopup="true" />
 
     <template #settings>
         <div class="row">
@@ -6227,12 +6229,76 @@ const locationAddressPickerGallery = defineComponent({
     <LocationAddressPicker label="Location Address Picker" v-model="value" />
 
     <template #settings>
-        <div class="row">
-
-        </div>
-
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates location picker */
+const locationPickerGallery = defineComponent({
+    name: "LocationPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        LocationPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("locationPicker"),
+            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+
+    <template #settings>
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates Geo picker map */
+const geoPickerMapGallery = defineComponent({
+    name: "GeoPickerMapGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GeoPickerMap
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("geoPickerMap"),
+            exampleCode: `<GeoPickerMap label="Geo" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <GeoPickerMap label="Geo" v-model="value" drawingMode="Point" />
+
+    <template #settings>
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -6286,7 +6352,7 @@ const controlGalleryComponents: Record<string, Component> = [
     sectionHeaderGallery,
     sectionContainerGallery,
     categoryPickerGallery,
-    locationPickerGallery,
+    locationItemPickerGallery,
     copyButtonGallery,
     entityTagListGallery,
     followingGallery,
@@ -6356,6 +6422,7 @@ const controlGalleryComponents: Record<string, Component> = [
     geoPickerGallery,
     contentDropDownPickerGallery,
     locationAddressPickerGallery,
+    locationPickerGallery, geoPickerMapGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

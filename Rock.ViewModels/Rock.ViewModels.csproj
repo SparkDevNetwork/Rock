@@ -377,6 +377,7 @@
     <Compile Include="Rest\Controls\GeoPickerGetGoogleMapSettingsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationAddressPickerValidateAddressResultsBag.cs" />
     <Compile Include="Rest\Controls\LocationAddressPickerValidateAddressOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LocationItemPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowActionTypePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />
@@ -420,7 +421,6 @@
     <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
     <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
     <Compile Include="Rest\Controls\FollowingSetFollowingOptionsBag.cs" />
-    <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />

@@ -20,7 +20,7 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
-import LocationPicker from "@Obsidian/Controls/locationPicker";
+import LocationPicker from "@Obsidian/Controls/locationItemPicker";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";

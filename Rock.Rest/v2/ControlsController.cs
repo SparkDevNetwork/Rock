@@ -2175,7 +2175,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Location Picker
+        #region Location Item Picker
 
         /// <summary>
         /// Gets the child locations, excluding inactive items.
@@ -2184,9 +2184,9 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "LocationPickerGetActiveChildren" )]
+        [System.Web.Http.Route( "LocationItemPickerGetActiveChildren" )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
-        public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptionsBag options )
+        public IHttpActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
             IQueryable<Location> qry;
 

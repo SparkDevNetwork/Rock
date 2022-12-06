@@ -13,7 +13,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
     import { WorkflowActionTypeTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-    import TreeItemPicker from "./treeItemPicker";
+    import TreeItemPicker from "./treeItemPicker.vue";
 
     const props = defineProps({
         modelValue: {
