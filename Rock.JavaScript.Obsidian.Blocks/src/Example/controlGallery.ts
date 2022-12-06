@@ -6246,7 +6246,6 @@ const locationPickerGallery = defineComponent({
     },
     setup() {
         return {
-            multiple: ref(false),
             value: ref(null),
             importCode: getControlImportPath("locationPicker"),
             exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
@@ -6262,47 +6261,10 @@ const locationPickerGallery = defineComponent({
     <LocationPicker label="Location" v-model="value" :multiple="multiple" />
 
     <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
-
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
 </GalleryAndResult>`
 });
-
-
-/** Demonstrates Geo picker map */
-const geoPickerMapGallery = defineComponent({
-    name: "GeoPickerMapGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        GeoPickerMap
-    },
-    setup() {
-        return {
-            multiple: ref(false),
-            value: ref(null),
-            importCode: getControlImportPath("geoPickerMap"),
-            exampleCode: `<GeoPickerMap label="Geo" v-model="value" :multiple="false" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <GeoPickerMap label="Geo" v-model="value" drawingMode="Point" />
-
-    <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
-
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-    </template>
-</GalleryAndResult>`
-});
-
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6422,7 +6384,7 @@ const controlGalleryComponents: Record<string, Component> = [
     geoPickerGallery,
     contentDropDownPickerGallery,
     locationAddressPickerGallery,
-    locationPickerGallery, geoPickerMapGallery
+    locationPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
