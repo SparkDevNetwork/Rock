@@ -67,16 +67,8 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override bool Authenticate( UserLogin user, string password )
         {
-            string username = user.UserName;
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
-            {
-                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), username );
-            }
-
             var serverName = GetAttributeValue( "Server" );
-
-            var context = new PrincipalContext( ContextType.Domain, serverName );
-            using ( context )
+            using ( var context = new PrincipalContext( ContextType.Domain, serverName ) )
             {
                 /* 09/29/2022 MDP 
 
@@ -92,14 +84,13 @@ namespace Rock.Security.Authentication
                 // First see if ValidateCredentials returns false. If so, we know for sure that the password is invalid.
                 // However, if ValidateCredentials returns true, we need to make sure it isn't a false-positive, so we'll use
                 // FindByIdentity to make sure the username and password is actually valid.
-                var validateCredentials = context.ValidateCredentials( username, password );
+                var validateCredentials = context.ValidateCredentials( user.UserName, password );
                 if ( !validateCredentials )
                 {
-                    // Definitely an invalid username/password, so we can safely return false here.
+                    // Invalid username/password so return false.
                     return false;
                 }
 
-               
                 UserPrincipal userPrincipal;
 
                 try
@@ -112,8 +103,11 @@ namespace Rock.Security.Authentication
 
                      */
 
-                    var findByIdentityContext = new PrincipalContext( ContextType.Domain, serverName, username, password );
-                    userPrincipal = UserPrincipal.FindByIdentity( findByIdentityContext, username );
+                    using ( var findByIdentityContext = new PrincipalContext( ContextType.Domain, serverName, user.UserName, password ) )
+                    {
+                        userPrincipal = UserPrincipal.FindByIdentity( findByIdentityContext, user.UserName );
+                    }
+
                 }
                 catch ( Exception )
                 {
@@ -132,16 +126,8 @@ namespace Rock.Security.Authentication
                     userPrincipal = null;
                 }
 
-                if ( userPrincipal != null )
-                {
-                    // User exists, and password is valid, so return true.
-                    return true;
-                }
-                else
-                {
-                    // FindByIdentity either discovered that password is actually invalid, or that the user doesn't exist, so return false.
-                    return false;
-                }
+                // If the userPrincipal is not null then FindByIdentity discovered the user exists and the password is valid, so return true. Otherwise return false.
+                return userPrincipal != null;
             }
         }
 

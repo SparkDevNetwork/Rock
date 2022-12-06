@@ -39,7 +39,7 @@
                     </div>
 
                     <div class="col-md-9">
-
+                        <Rock:NotificationBox ID="nbAccountProtectionProfile" runat="server" />
                         <div class="well form-well">
                             <fieldset>
 
