@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( SecurityActionKey.EditSMS, "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
     [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected person." )]
-    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view protection profile for the selected person." )]
+    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view the protection profile alert for the selected person." )]
 
     #region Block Attributes
 
@@ -821,22 +821,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
             {
                 nbAccountProtectionProfile.Visible = Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low;
+                var messageSuffix = "Ensure you trust the source of the request to update their email address and/or mobile phone number as this could be used to grant access to their account.";
                 if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.Medium )
                 {
-                    nbAccountProtectionProfile.Text = "Use care when editing this record as the individual has a login. " +
-                        "Ensure you trust the source of the request to update their email address and/or mobile phone number as this could be used to grant access to their account.";
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual has a login. {messageSuffix}";
                     nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Warning;
                 }
                 else if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.High )
                 {
-                    nbAccountProtectionProfile.Text = "Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensative security role. " +
-                        "Ensure you trust the source of the request to update their email address and/or mobile phone number as this could be used to grant access to their account.";
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensitive security role. {messageSuffix}";
                     nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Danger;
                 }
                 else if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.Extreme )
                 {
-                    nbAccountProtectionProfile.Text = "Use care when editing this record as the individual is in a sensitive security role. " +
-                        "Ensure you trust the source of the request to update their email address and/or mobile phone number as this could be used to grant access to their account.";
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual is in a sensitive security role. {messageSuffix}";
                     nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Danger;
                 }
             }

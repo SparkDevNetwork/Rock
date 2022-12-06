@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view protection profile for the selected person." )]
+    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view the protection profile alert for the selected person." )]
 
     #region Block Attributes
 
