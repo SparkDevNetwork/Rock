@@ -1226,6 +1226,36 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Event Calendar Picker
+
+        /// <summary>
+        /// Gets the event calendars that can be displayed in the event calendar picker.
+        /// </summary>
+        /// <param name="options">The options that describe which calendars to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event calendars.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EventCalendarPickerGetEventCalendars" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "92d88be0-2971-441a-b582-eec304ce4bc9" )]
+        public IHttpActionResult EventCalendarPickerGetEventCalendars( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+
+                var calendars = EventCalendarCache.All();
+                var calendarList = new List<ListItemBag>();
+
+                foreach ( EventCalendarCache eventCalendar in calendars )
+                {
+                    calendarList.Add( new ListItemBag { Text = eventCalendar.Name, Value = eventCalendar.Guid.ToString() } );
+                }
+
+                return Ok( calendarList );
+            }
+        }
+
+        #endregion
+
         #region Event Item Picker
 
         /// <summary>

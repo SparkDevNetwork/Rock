@@ -187,6 +187,7 @@ import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
 import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
 import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
 import WordCloud from "@Obsidian/Controls/wordCloud.vue";
+import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.vue";
 
 // #region Gallery Support
 
@@ -6197,9 +6198,6 @@ const geoPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         GeoPicker,
-        DropDownList,
-        CheckBox,
-        TextBox,
         Toggle
     },
     setup() {
@@ -6450,6 +6448,37 @@ const wordCloudGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Event Calendar Picker */
+const eventCalendarPickerGallery = defineComponent({
+    name: "EventCalendarPickerGallery",
+    components: {
+        GalleryAndResult,
+        EventCalendarPicker
+    },
+    setup() {
+
+        return {
+            value: ref(null),
+            importCode: getSfcControlImportPath("eventCalendarPicker"),
+            exampleCode: `<EventCalendarPicker label="Event Calendar" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <EventCalendarPicker label="Event Calendar" v-model="value" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6570,7 +6599,8 @@ const controlGalleryComponents: Record<string, Component> = [
     geoPickerGallery,
     contentDropDownPickerGallery,
     scheduleBuilderGallery,
-    wordCloudGallery
+    wordCloudGallery,
+    eventCalendarPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
