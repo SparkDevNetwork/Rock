@@ -1,16 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="live-questions">
-        <div class="d-md-flex">
-            <div class="mb-2">
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 mb-2">
                 <DropDownList v-model="selectedAction"
                               :showBlankItem="false"
                               :items="actionItems" />
             </div>
 
-            <div class="flex-md-grow-1"></div>
-
-            <div class="mb-2" style="min-width:200px;">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 mb-2 ml-md-auto">
                 <CampusPicker v-model="selectedCampus"
                               forceVisible
                               showBlankItem
@@ -18,33 +16,31 @@
             </div>
         </div>
 
-        <table class="grid-table table table-condensed table-light">
-            <thead>
-                <tr align="left">
-                    <th>Name</th>
-                    <th>Campus</th>
-                    <th>Response</th>
-                </tr>
-            </thead>
+        <div class="table-responsive">
+            <table class="grid-table table table-condensed table-light">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Campus</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                <tr v-for="row in filteredAnswers" align="left">
-                    <td>{{ row.submitterName }}</td>
-                    <td>{{ row.campusName }}</td>
-                    <td>{{ row.response }}</td>
-                </tr>
+                <tbody>
+                    <tr v-for="row in filteredAnswers">
+                        <td>{{ row.submitterName }}</td>
+                        <td>{{ row.campusName }}</td>
+                        <td>{{ row.response }}</td>
+                    </tr>
 
-                <tr v-if="!filteredAnswers.length" align="left">
-                    <td colspan="3">No matching responses.</td>
-                </tr>
-            </tbody>
-        </table>
+                    <tr v-if="!filteredAnswers.length">
+                        <td colspan="3">No matching responses.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
-
-<style scoped>
-
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, reactive, ref, watch } from "vue";

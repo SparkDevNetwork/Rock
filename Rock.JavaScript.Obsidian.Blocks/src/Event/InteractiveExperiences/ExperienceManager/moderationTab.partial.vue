@@ -28,55 +28,53 @@
             </div>
         </div>
 
-        <table class="grid-table table table-condensed table-light table-hover">
-            <thead>
-                <tr align="left">
-                    <th></th>
-                    <th>Response</th>
-                    <th>Campus</th>
-                    <th>Status</th>
-                    <th class="grid-columncommand">Approve</th>
-                    <th class="grid-columncommand">Reject</th>
-                    <th class="grid-columncommand"></th>
-                </tr>
-            </thead>
+        <div class="table-responsive">
+            <table class="grid-table table table-condensed table-light table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Response</th>
+                        <th>Campus</th>
+                        <th>Status</th>
+                        <th class="grid-columncommand">Approve</th>
+                        <th class="grid-columncommand">Reject</th>
+                        <th class="grid-columncommand"></th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                <tr v-for="row in filteredAnswers" align="left">
-                    <td style="width: 1px;">
-                        <span class="badge badge-default">{{ row.actionIndex }}</span>
-                    </td>
-                    <td>{{ row.response }}</td>
-                    <td>{{ row.campusName }}</td>
-                    <td v-html="getStatusLabelHtml(row.status)"></td>
-                    <td class="grid-columncommand" align="center">
-                        <a v-if="row.status !== approvedStatus" class="btn btn-success btn-sm grid-approve-button" @click.prevent="onApproveAnswer(row)">
-                            <i class="fa fa-thumbs-up"></i>
-                        </a>
-                    </td>
-                    <td class="grid-columncommand" align="center">
-                        <a v-if="row.status !== rejectedStatus" class="btn btn-danger btn-sm grid-reject-button" @click.prevent="onRejectAnswer(row)">
-                            <i class="fa fa-thumbs-down"></i>
-                        </a>
-                    </td>
-                    <td class="grid-columncommand" align="center">
-                        <a class="btn btn-danger btn-sm grid-delete-button" @click.prevent="onDeleteAnswer(row)">
-                            <i class="fa fa-times"></i>
-                        </a>
-                    </td>
-                </tr>
+                <tbody>
+                    <tr v-for="row in filteredAnswers">
+                        <td style="width: 1px;">
+                            <span class="badge badge-default">{{ row.actionIndex }}</span>
+                        </td>
+                        <td>{{ row.response }}</td>
+                        <td>{{ row.campusName }}</td>
+                        <td v-html="getStatusLabelHtml(row.status)"></td>
+                        <td class="grid-columncommand" align="center">
+                            <a v-if="row.status !== approvedStatus" class="btn btn-success btn-sm btn-square grid-approve-button" @click.prevent="onApproveAnswer(row)">
+                                <i class="fa fa-thumbs-up"></i>
+                            </a>
+                        </td>
+                        <td class="grid-columncommand" align="center">
+                            <a v-if="row.status !== rejectedStatus" class="btn btn-danger btn-sm btn-square grid-reject-button" @click.prevent="onRejectAnswer(row)">
+                                <i class="fa fa-thumbs-down"></i>
+                            </a>
+                        </td>
+                        <td class="grid-columncommand" align="center">
+                            <a class="btn btn-danger btn-sm btn-square grid-delete-button" @click.prevent="onDeleteAnswer(row)">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </td>
+                    </tr>
 
-                <tr v-if="!filteredAnswers.length" align="left">
-                    <td colspan="7">No matching responses.</td>
-                </tr>
-            </tbody>
-        </table>
+                    <tr v-if="!filteredAnswers.length" align="left">
+                        <td colspan="7">No matching responses.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
-
-<style scoped>
-
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, reactive, ref, watch } from "vue";

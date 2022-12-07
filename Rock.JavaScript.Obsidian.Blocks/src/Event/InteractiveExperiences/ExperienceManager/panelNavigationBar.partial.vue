@@ -15,8 +15,8 @@
 
 <style scoped>
 .panel-navigation-bar {
-    background-color: var(--panel-bg);
     overflow-x: clip;
+    background-color: var(--panel-bg);
 }
 </style>
 

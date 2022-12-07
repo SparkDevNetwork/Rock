@@ -87,7 +87,7 @@
 
             <table class="grid-table table table-condensed table-light">
                 <thead>
-                    <tr align="left">
+                    <tr>
                         <th>Schedule</th>
                         <th>Campus</th>
                         <th>Data View</th>
@@ -98,7 +98,7 @@
                 </thead>
 
                 <tbody>
-                    <tr v-for="row in schedules" align="left">
+                    <tr v-for="row in schedules">
                         <td>{{ row.schedule?.text }}</td>
                         <td>{{ getScheduleCampusNames(row) }}</td>
                         <td>{{ row.dataView?.text }}</td>
@@ -115,7 +115,7 @@
                         </td>
                     </tr>
 
-                    <tr v-if="!schedules.length" align="left">
+                    <tr v-if="!schedules.length">
                         <td colspan="6">No schedules defined.</td>
                     </tr>
                 </tbody>

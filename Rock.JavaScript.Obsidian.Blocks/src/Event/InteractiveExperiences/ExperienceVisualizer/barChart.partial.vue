@@ -26,10 +26,10 @@
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .visualizer-title {
+    margin-bottom: 12px;
+    font-size: 36px;
     color: var(--experience-visualizer-primary-color);
     text-align: center;
-    font-size: 36px;
-    margin-bottom: 12px;
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .chart-container {

@@ -4,7 +4,7 @@
         <SectionHeader :title="actionHeaderTitle"
                        :description="actionHeaderDescription">
             <template #actions>
-                <a class="btn btn-default btn-sm" href="#" @click.prevent="onAddActionClick">
+                <a class="btn btn-default btn-sm btn-square" href="#" @click.prevent="onAddActionClick">
                     <i class="fa fa-plus"></i>
                 </a>
             </template>
@@ -14,30 +14,28 @@
              v-dragTarget="dragOptions"
              class="actions-list">
             <div v-for="(action, index) in internalValue" class="action-item" :key="action.guid!">
-                <div>{{ index + 1 }}</div>
-                <div>
+                <div class="action-item-count">{{ index + 1 }}</div>
+                <div class="action-item-body">
                     <span class="reorder-handle">
                         <i class="fa fa-bars"></i>
                     </span>
-                </div>
-                <div class="action-item-icon">
-                    <span class="icon">
+                
+                    <div class="action-item-icon">
                         <i :class="getActionTypeIconClass(action)"></i>
-                    </span>
-                </div>
-                <div class="action-item-content">
-                    <div class="title text-lg">{{ action.title }}</div>
-                    <div class="subtitle text-sm text-muted">Subtitle: {{ getActionTypeName(action) }}</div>
-                </div>
-                <div>
-                    <a href="#" class="action-icon" @click.prevent="onEditActionClick(action)">
-                        <i class="fa fa-pencil"></i>
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="action-icon action-icon-danger" @click.prevent="onActionRemoveClick(action)">
-                        <i class="fa fa-times"></i>
-                    </a>
+                    </div>
+                    <div class="action-item-content">
+                        <div class="title text-lg">{{ action.title }}</div>
+                        <div class="subtitle text-sm text-muted">{{ getActionTypeName(action) }}</div>
+                    </div>
+                    <div class="grid-columncommand">
+                        <a href="#" class="btn btn-default btn-sm btn-square mr-2" @click.prevent="onEditActionClick(action)">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+
+                        <a href="#" class="btn btn-danger btn-sm btn-square" @click.prevent="onActionRemoveClick(action)">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,71 +94,74 @@
     display: flex;
     align-items: stretch;
     margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid #c4c4c4;
+    border-radius: 8px;
 }
-
-.action-item > * {
+.action-item-count {
     display: flex;
     align-items: center;
-    align-self: stretch;
-    padding: 8px 12px;
-    border-top: 1px solid #c4c4c4;
-    border-bottom: 1px solid #c4c4c4;
-}
-
-.action-item > *:first-child {
-    border-left: 1px solid #c4c4c4;
-    border-radius: 8px 0px 0px 8px;
-    background-color: var(--brand-info);
-    color: white;
     justify-content: center;
-    padding: 8px 0px;
     min-width: 35px;
+    padding: 8px 0;
+    color: #fff;
+    background-color: var(--brand-info);
 }
 
-.action-item > *:last-child {
-    border-right: 1px solid #c4c4c4;
-    border-radius: 0px 8px 8px 0px;
+.action-item-body {
+    display: flex;
+    flex: 1 0 0;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.action-item-body > * {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.action-item-body > *:last-child {
+    display: block;
     padding-right: 16px;
 }
 
-.action-item > .action-item-icon {
-    padding-left: 0px;
-}
-
-.action-item > .action-item-icon > .icon {
-    background-color: var(--brand-info);
-    color: white;
+.action-item .action-item-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 35px;
-    height: 35px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: #fff;
+    background-color: var(--brand-info);
     border-radius: 50%;
 }
 
-.action-item > .action-item-content {
+.action-item .action-item-content {
     flex: 1 0;
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     justify-content: center;
-    padding-left: 0px;
 }
 
 .action-item .reorder-handle {
     cursor: grab;
 }
 
-.action-item .action-icon {
-    color: var(--text-color);
-    display: none;
+.action-item .grid-columncommand {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .2s ease-in-out;
 }
 
-.action-item:hover .action-icon {
-    display: initial;
+.action-item .title {
+    font-weight: 600;
 }
 
-.action-item:hover .action-icon.action-icon-danger {
-    color: var(--brand-danger);
+.action-item:hover .grid-columncommand {
+    visibility: visible;
+    opacity: 1;
 }
 </style>
 

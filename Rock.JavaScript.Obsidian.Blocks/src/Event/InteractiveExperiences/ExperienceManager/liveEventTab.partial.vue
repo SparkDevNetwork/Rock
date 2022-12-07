@@ -18,42 +18,42 @@
             This experience event has ended.
         </Alert>
 
-        <div class="experience-body" :class="{ inactive: isExperienceInactive }">
-            <div class="experience-actions-panel">
-                <div class="experience-actions-panel-header">
-                    <span class="title">Experience Actions</span>
-                    <a v-if="isNotificationAvailable" href="#" :class="notificationStateClass" @click.prevent="onNotificationStateClick">
-                        <i :class="notificationStateIconClass"></i>
-                    </a>
-                </div>
-
-                <div class="experience-actions-panel-body">
-                    <ExperienceActionButtons :modelValue="activeAction"
-                                             :actions="experienceActions"
-                                             @update:modelValue="onUpdateActiveAction" />
+        <div class="experience-body row d-flex flex-wrap" :class="{ inactive: isExperienceInactive }">
+            <div class="col-xs-12 col-sm-6 col-lg-7">
+                <div class="experience-actions-panel panel panel-section h-100 mb-sm-0">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Experience Actions</h4>
+                        <a v-if="isNotificationAvailable" href="#" :class="notificationStateClass" @click.prevent="onNotificationStateClick">
+                            <i :class="notificationStateIconClass"></i>
+                        </a>
+                    </div>
+                    <div class="panel-body">
+                        <ExperienceActionButtons :modelValue="activeAction"
+                                                 :actions="experienceActions"
+                                                 @update:modelValue="onUpdateActiveAction" />
+                    </div>
                 </div>
             </div>
 
-            <div class="preview-panel">
-                <iframe v-if="previewPageUrl" class="invisible" :src="previewPageUrl" @load="onPreviewLoad" />
-                <Alert v-else alertType="info">
-                    Live experience preview has not been configured.
-                </Alert>
-
-                <div>
-                    <RockLabel>Visualizer</RockLabel>
-
-                    <div class="d-flex">
-                        <div class="mr-3">
-                            <InlineCheckBox v-model="isVisualizerAutomatic" label="Automatic" />
-                        </div>
-
-                        <div class="flex-grow-1">
-                            <DropDownList :modelValue="activeVisualizer"
-                                          @update:modelValue="onUpdateActiveVisualizer"
-                                          :items="visualizerItems"
-                                          showBlankItem
-                                          :disabled="isVisualizerAutomatic" />
+            <div class="col-xs-12 col-xm-6 col-lg-5">
+                <div class="preview-panel">
+                    <iframe v-if="previewPageUrl" class="invisible" :src="previewPageUrl" @load="onPreviewLoad" />
+                    <Alert v-else alertType="info">
+                        Live experience preview has not been configured.
+                    </Alert>
+                    <div>
+                        <RockLabel>Visualizer</RockLabel>
+                        <div class="d-flex">
+                            <div class="mr-3">
+                                <InlineCheckBox v-model="isVisualizerAutomatic" label="Automatic" />
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <DropDownList :modelValue="activeVisualizer"
+                                              @update:modelValue="onUpdateActiveVisualizer"
+                                              :items="visualizerItems"
+                                              showBlankItem
+                                              :disabled="isVisualizerAutomatic" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -63,61 +63,27 @@
 </template>
 
 <style scoped>
-.experience-body {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0px -18px;
-}
-
-.experience-body.inactive > * {
-    opacity: 0.5;
+.experience-body.inactive {
     cursor: not-allowed;
-}
-
-.experience-body.inactive > * > * {
+    opacity: .5;
     pointer-events: none;
 }
 
 .experience-actions-panel {
-    flex-grow: 1;
-    min-width: 320px;
-    min-height: 480px;
-    margin: 0px 18px 18px 18px;
     background-color: var(--panel-heading-bg);
-    border: 1px solid #c4c4c4;
-    border-radius: var(--border-radius-base);
-}
-
-.experience-actions-panel-header {
-    display: flex;
-    padding: 8px 12px;
-    border-bottom: 1px solid #c4c4c4;
-    align-items: center;
-}
-
-.experience-actions-panel-header > .title {
-    flex-grow: 1;
-}
-
-.experience-actions-panel-body {
-    padding: 12px;
 }
 
 .preview-panel {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    margin: 0px 18px 18px 18px;
-    min-width: 320px;
-    max-width: 640px;
     min-height: 480px;
 }
 
 .preview-panel iframe {
     flex-grow: 1;
-    border: 1px solid #c4c4c4;
-    border-radius: var(--border-radius-base);
     overflow: hidden;
+    border: 1px solid #dfe0e1;
+    border-radius: 4px;
 }
 </style>
 

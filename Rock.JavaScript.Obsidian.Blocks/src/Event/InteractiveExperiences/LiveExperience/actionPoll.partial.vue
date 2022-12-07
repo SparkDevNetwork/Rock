@@ -21,16 +21,17 @@
 
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
-.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .question::before {
-    content: 'Q:';
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .question::before,
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
     display: block;
+    margin-bottom: 4px;
     font-size: 3em;
+    line-height: 1.2;
+    content: 'Q:';
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
     content: 'A:';
-    display: block;
-    font-size: 3em;
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers {
@@ -38,7 +39,7 @@
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio {
-    padding-left: 0px;
+    padding-left: 0;
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::before,
@@ -56,15 +57,15 @@
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .label-text {
     display: block;
-    border: 2px solid var(--experience-action-secondary-button-color);
-    border-radius: var(--border-radius-base);
     padding: 6px 12px;
-    transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+    border: 2px solid var(--experience-action-secondary-btn-bg);
+    border-radius: var(--border-radius-base);
+    transition: background-color .25s ease-in-out, color .25s ease-in-out;
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input:checked + .label-text {
-    background-color: var(--experience-action-secondary-button-color);
-    color: var(--experience-action-secondary-button-text-color);
+    color: var(--experience-action-secondary-btn-color);
+    background-color: var(--experience-action-secondary-btn-bg);
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .submit {
