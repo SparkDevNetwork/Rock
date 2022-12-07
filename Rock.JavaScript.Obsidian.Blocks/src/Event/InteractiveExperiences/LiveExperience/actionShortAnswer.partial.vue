@@ -22,15 +22,15 @@
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
 .experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before {
-    content: 'Q:';
     display: block;
     font-size: 3em;
+    content: 'Q:';
 }
 
 .experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
-    content: 'A:';
     display: block;
     font-size: 3em;
+    content: 'A:';
 }
 
 .experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .submit {
