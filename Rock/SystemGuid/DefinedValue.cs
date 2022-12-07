@@ -126,6 +126,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_GROUPS_GROUP_FINDER = "1B6D540A-2E40-44F6-8AE9-2857DE913459";
 
         /// <summary>
+        /// The block template for the live experience occurrences block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_LIVE_EXPERIENCE_OCCURRENCES = "95837896-BB45-47FA-8517-F1C0EFE2A89C";
+
+        /// <summary>
         /// The block template for mobile my prayer requests.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";
