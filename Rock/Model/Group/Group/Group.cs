@@ -405,6 +405,15 @@ namespace Rock.Model
         [DataMember]
         public string ReminderAdditionalDetails { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        [DataMember]
+        public ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; set; }
+
         #endregion
 
         #region Navigation Properties

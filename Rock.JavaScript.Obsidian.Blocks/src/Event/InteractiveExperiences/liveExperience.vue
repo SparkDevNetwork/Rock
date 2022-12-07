@@ -30,18 +30,6 @@
     </div>
 </template>
 
-<!--
-We might need to add this so that things look and behave right on mobile:
-
-<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-
-<style>
-body {
-    touch-action: none;
-}
-</style>
--->
-
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
 .live-experience-body {
@@ -75,6 +63,10 @@ body {
 
 .live-experience-body .welcome-header {
     background-image: var(--welcome-header-image, initial);
+}
+
+body {
+    touch-action: none;
 }
 </style>
 
@@ -270,6 +262,14 @@ body {
     }
 
     // #endregion
+
+    // Add viewport meta tag if it doesn't exist.
+    if (document.querySelector("meta[name='viewport']") === null) {
+        const metaNode = document.createElement("meta");
+        metaNode.name = "viewport";
+        metaNode.content = "width=device-width, initial-scale=1";
+        document.head.appendChild(metaNode);
+    }
 
     onConfigurationValuesChanged(useReloadBlock());
 

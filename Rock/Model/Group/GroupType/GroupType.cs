@@ -657,6 +657,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsCapacityRequired { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        [DataMember]
+        public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
