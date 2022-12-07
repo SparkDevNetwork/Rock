@@ -237,7 +237,6 @@ namespace RockWeb.Blocks.Administration
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_RACE_LABEL, rtbPersonRaceLabel.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_ETHNICITY_LABEL, rtbPersonEthnicityLabel.Text );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_GENDER_LABEL, rtbPersonGenderLabel.Text );
 
             nbUiSettings.NotificationBoxType = NotificationBoxType.Success;
             nbUiSettings.Title = string.Empty;
@@ -440,7 +439,6 @@ namespace RockWeb.Blocks.Administration
         {
             rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL, "Race" );
             rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
-            rtbPersonGenderLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_GENDER_LABEL, "Gender" );
         }
 
         #endregion

@@ -833,9 +833,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( raceAndEthnicity.Count > 0 )
             {
+                var title = $"{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )}/{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )}";
                 lRaceAndEthnicity.Text =
-                    $@"<dt title=""Race/Ethnicity"">{raceAndEthnicity.AsDelimited("/")}</dt>
-                    <dd class=""d-none"">Race/Ethnicity</dd>";
+                    $@"<dt title=""{title}"">{raceAndEthnicity.AsDelimited("/")}</dt>
+                    <dd class=""d-none"">{title}</dd>";
             }
 
             if ( Person.BirthDate.HasValue )
@@ -873,7 +874,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
-                lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                if ( !string.IsNullOrWhiteSpace( Person.GradeFormatted ) )
+                {
+                    lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                }
+
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
                     lGraduation.Text = Person.HasGraduated.Value ? $@"<dt>Graduated {Person.GraduationYear.Value}</dt>" : $@"<dd>Graduates {Person.GraduationYear.Value}</dd>";

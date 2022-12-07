@@ -34,9 +34,14 @@
                 <Rock:PanelWidget ID="pwUiSettings" runat="server" Title="UI Settings" Expanded="false">
                     <Rock:NotificationBox ID="nbUiSettings" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
-                    <Rock:RockTextBox ID="rtbPersonRaceLabel" runat="server" Label="Race Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Race field is used."></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="rtbPersonEthnicityLabel" runat="server" Label="Ethnicity Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Ethnicity field is used."></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="rtbPersonGenderLabel" runat="server" Label="Gender Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Gender field is used."></Rock:RockTextBox>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbPersonRaceLabel" runat="server" Label="Race Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Race field is used."></Rock:RockTextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbPersonEthnicityLabel" runat="server" Label="Ethnicity Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Ethnicity field is used."></Rock:RockTextBox>
+                        </div>
+                    </div>
 
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnUiSettingSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnUiSettingSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="UISettings"></Rock:BootstrapButton>
