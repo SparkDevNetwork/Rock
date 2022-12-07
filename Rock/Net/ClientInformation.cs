@@ -137,7 +137,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            UserAgent = request.Headers.GetValues( "USER-AGENT" ).FirstOrDefault() ?? string.Empty;
+            UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
             _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 
