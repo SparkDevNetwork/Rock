@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -656,6 +656,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsCapacityRequired { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        [DataMember]
+        public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
         #endregion Entity Properties
 
