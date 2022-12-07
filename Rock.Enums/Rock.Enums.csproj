@@ -54,6 +54,7 @@
     <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
     <Compile Include="Event\InteractiveExperienceCampusBehavior.cs" />
     <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />
+    <Compile Include="Group\ScheduleConfirmationLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
   </ItemGroup>

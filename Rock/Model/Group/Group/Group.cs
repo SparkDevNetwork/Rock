@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
 using Rock.UniversalSearch;
