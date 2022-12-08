@@ -1163,7 +1163,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( hostedGatewayComponent == null )
             {
-                ShowConfigurationMessage( NotificationBoxType.Warning, "Unsupported Gateway", "This block only support Gateways that have a hosted payment interface." );
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Unsupported Gateway", "This block only supports Gateways that have a hosted payment interface." );
                 pnlTransactionEntry.Visible = false;
                 return false;
             }
