@@ -893,7 +893,7 @@ namespace RockWeb.Blocks.Finance
             if ( !gatewaySupportsUnhostedPayment )
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block does only supports Gateways that have a un-hosted payment interface." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block only supports Gateways that have a un-hosted payment interface." );
                 return;
             }
 
