@@ -36,11 +36,13 @@
     position: absolute;
     top: 0;
     right: 0;
+    bottom: 0;
     left: 0;
     padding: 18px;
     color: var(--experience-action-color, inherit);
     background-color: var(--experience-action-bg, inherit);
     background-image: var(--experience-action-bg-image, initial);
+    overflow: auto;
 }
 
 .live-experience-body .btn-primary,
@@ -148,7 +150,6 @@ body {
             setupActionComponent(response.currentActionIdKey, response.currentActionConfiguration);
         }
 
-        
         setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
     }
 
