@@ -126,6 +126,7 @@
     <Compile Include="Group\MeetsGroupRequirement.cs" />
     <Compile Include="Group\ParticipationType.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
+    <Compile Include="Group\ScheduleConfirmationLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />

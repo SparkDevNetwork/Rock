@@ -93,7 +93,7 @@ namespace Rock.Jobs
         /// <returns>System.String.</returns>
         public string GetAttributeValue( string key )
         {
-            return ServiceJob.GetAttributeValue( key );
+            return ServiceJob?.GetAttributeValue( key );
         }
 
         /// <summary>
