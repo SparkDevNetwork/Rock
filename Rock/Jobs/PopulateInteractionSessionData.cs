@@ -531,7 +531,7 @@ namespace Rock.Jobs
                 return string.Empty;
             }
 
-            return $"<i class='fa fa-circle text-success'></i> Updated IP location on {recordsUpdated} {"interaction session".PluralizeIf( recordsUpdated != 1 )} with {totalRecordsProcessed} unique IP addresses using {ipAddressSessionKeyValue.Count} lookup credits (others were found in the database) in {stopwatch.Elapsed.TotalSeconds:0.00}s. {warningMsg}";
+            return $"<i class='fa fa-circle text-success'></i> Updated IP location on {recordsUpdated} {"interaction session".PluralizeIf( recordsUpdated != 1 )} with {totalRecordsProcessed} total interaction sessions using {ipAddressSessionKeyValue.Count} lookup credits (others were found in the database) in {stopwatch.Elapsed.TotalSeconds:0.00}s. {warningMsg}";
         }
 
         /// <summary>
@@ -575,7 +575,7 @@ namespace Rock.Jobs
                     !s.InteractionSessionLocationId.HasValue
                     && s.IpAddress != null
                     && s.IpAddress != string.Empty && s.IpAddress != "::1" && !s.IpAddress.StartsWith( "192.168" )
-                        && !s.IpAddress.StartsWith( "10." ) && s.IpAddress != "127.0.0.1"
+                        && !s.IpAddress.StartsWith( "10." ) && !s.IpAddress.StartsWith( "169.254" ) && s.IpAddress != "127.0.0.1"
                     && s.Interactions.Any( i => interactionQry.Contains( i.Id ) )
                     && s.Id > minId )
                 .OrderBy( s => s.Id )

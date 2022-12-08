@@ -194,18 +194,46 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Checks the discount code.
+        /// Checks the discount code provided. If a null/blank string is used then checks for AutoApplied discounts.
         /// </summary>
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                RegistrationTemplateDiscountWithUsage discount = null;
+
+                // If the code isn't provided then check for an auto apply discount.
+                if ( code.IsNullOrWhiteSpace() )
+                {
+                    var registrationTemplateDiscountCodes = registrationTemplateDiscountService
+                        .GetDiscountsForRegistrationInstance( registrationInstanceId )
+                        .Where( d => d.AutoApplyDiscount )
+                        .OrderBy( d => d.Order )
+                        .Select( d => d.Code )
+                        .ToList();
+
+                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    {
+                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
+
+                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        {
+                            continue;
+                        }
+
+                        // use the first discount that is valid
+                        break;
+                    }
+                }
+                else
+                {
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
 
                 if ( discount == null )
                 {
