@@ -5145,6 +5145,7 @@ const rockButtonGallery = defineComponent({
             autoLoading: ref(false),
             autoDisable: ref(false),
             isLoading: ref(false),
+            isSquare: ref(false),
             loadingText: ref("Loading..."),
             importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
             exampleCode: `<RockButton
@@ -5166,7 +5167,10 @@ const rockButtonGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText">Click Here to Fire Async Operation</RockButton>
+    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText" :isSquare="isSquare">
+        <i class="fa fa-cross" v-if="isSquare"></i>
+        <template v-else>Click Here to Fire Async Operation</template>
+    </RockButton>
 
     <template #settings>
         <div class="row">
@@ -5177,6 +5181,7 @@ const rockButtonGallery = defineComponent({
         </div>
         <div class="row">
             <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
+            <CheckBox formGroupClasses="col-md-3" label="Square" v-model="isSquare" />
             <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
         </div>
     </template>
