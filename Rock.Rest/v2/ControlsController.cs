@@ -1793,6 +1793,54 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Type Picker
+
+        /// <summary>
+        /// Gets the group types that can be displayed in the group type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
+        public IHttpActionResult GroupTypePickerGetGroupTypes( GroupTypePickerGetGroupTypesOptionsBag options )
+        {
+            var groupTypes = new List<GroupTypeCache>();
+            var results = new List<ListItemBag>();
+
+            if (options.GroupTypes == null || options.GroupTypes.Count < 1)
+            {
+                groupTypes = GroupTypeCache.All();
+            }
+            else
+            {
+                foreach ( var groupTypeGuid in options.GroupTypes )
+                {
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
+                    groupTypes.Add( groupType );
+                }
+            }
+
+            if ( options.IsSortedByName )
+            {
+                groupTypes = groupTypes.OrderBy( gt => gt.Name ).ToList();
+            }
+            else
+            {
+                groupTypes = groupTypes.OrderBy( gt => gt.Order ).ThenBy( gt => gt.Name ).ToList();
+            }
+
+            foreach(var gt in groupTypes)
+            {
+                results.Add( new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } );
+            }
+
+            return Ok( results );
+        }
+
+        #endregion
+
         #region Group Picker
 
         /// <summary>
@@ -1808,14 +1856,14 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var groupService = new GroupService(rockContext);
+                var groupService = new GroupService( rockContext );
 
                 List<int> includedGroupTypeIds = options.IncludedGroupTypeGuids
                     .Select( ( guid ) =>
                     {
                         var gt = GroupTypeCache.Get( guid );
 
-                        if (gt != null)
+                        if ( gt != null )
                         {
                             return gt.Id;
                         }
@@ -1842,7 +1890,7 @@ namespace Rock.Rest.v2
 
                 var person = GetPerson();
 
-                if (parentGroup == null)
+                if ( parentGroup == null )
                 {
                     parentGroup = rootGroup;
                 }

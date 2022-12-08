@@ -44,6 +44,7 @@
     <Content Include="Framework\Controls\eventCalendarPicker.vue" />
     <Content Include="Framework\Controls\geoPicker.vue" />
     <Content Include="Framework\Controls\geoPickerMap.vue" />
+    <Content Include="Framework\Controls\groupTypePicker.vue" />
     <Content Include="Framework\Controls\intervalPicker.vue" />
     <Content Include="Framework\Controls\kpi.vue" />
     <Content Include="Framework\Controls\monthDayPicker.vue" />
@@ -912,6 +913,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypePickerGetGroupTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />

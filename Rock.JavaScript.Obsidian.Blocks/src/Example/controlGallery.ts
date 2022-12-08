@@ -188,6 +188,7 @@ import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
 import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
 import WordCloud from "@Obsidian/Controls/wordCloud.vue";
 import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.vue";
+import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.vue";
 
 // #region Gallery Support
 
@@ -6479,6 +6480,48 @@ const eventCalendarPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Group Type Picker */
+const groupTypePickerGallery = defineComponent({
+    name: "GroupTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        GroupTypePicker,
+        CheckBox
+    },
+    setup() {
+
+        return {
+            value: ref(null),
+            isSortedByName: ref(false),
+            multiple: ref(false),
+            importCode: getSfcControlImportPath("groupTypePicker"),
+            exampleCode: `<GroupTypePicker label="Group Type" v-model="value" :groupTypes="[...groupTypeGuids]" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <GroupTypePicker label="Group Type" v-model="value" :isSortedByName="isSortedByName" :multiple="multiple" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="isSortedByName" label="Sort by Name" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox v-model="multiple" label="Multiple" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6601,6 +6644,7 @@ const controlGalleryComponents: Record<string, Component> = [
     scheduleBuilderGallery,
     wordCloudGallery,
     eventCalendarPickerGallery,
+    groupTypePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
