@@ -22,7 +22,6 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
-import { debug } from "util";
 
 type CheckDiscountCodeResult = {
     discountCode: string;
@@ -107,8 +106,7 @@ export default defineComponent({
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput,
-                    registrantCount: this.registrationEntryState.registrants.length,
-                    args: this.getRegistrationEntryBlockArgs()
+                    registrantCount: this.registrationEntryState.registrants.length
                 });
 
                 if (result.isError || !result.data) {

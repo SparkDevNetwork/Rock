@@ -199,7 +199,7 @@ namespace Rock.Blocks.Event
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code, int registrantCount, RegistrationEntryBlockArgs args )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
         {
             using ( var rockContext = new RockContext() )
             {
