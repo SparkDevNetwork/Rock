@@ -907,22 +907,6 @@ namespace RockWeb.Blocks.Connection
         #region Helper Methods
 
         /// <summary>
-        /// Gets the email link markup.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="emailAddress">The email address.</param>
-        /// <returns></returns>
-        private string GetEmailLinkMarkup( int? personId, string emailAddress )
-        {
-            if ( !personId.HasValue || emailAddress.IsNullOrWhiteSpace() )
-            {
-                return string.Empty;
-            }
-
-            return string.Format( @"<a href=""/Communication?person={0}"">{1}</a>", personId, emailAddress );
-        }
-
-        /// <summary>
         /// Gets the status icon HTML.
         /// </summary>
         /// <returns></returns>
@@ -995,7 +979,7 @@ namespace RockWeb.Blocks.Connection
             divRequestModalViewModePhoto.Attributes["style"] = string.Format( "background-image: url( '{0}' );", viewModel.PersonPhotoUrl );
             lRequestModalViewModeStatusIcons.Text = GetStatusIconHtml( viewModel );
             lRequestModalViewModePersonFullName.Text = viewModel.PersonFullname;
-            lRequestModalViewModeEmail.Text = GetEmailLinkMarkup( viewModel.PersonId, viewModel.PersonEmail );
+            lRequestModalViewModeEmail.Text = requesterPerson.GetEmailTag( ResolveRockUrl( "/" ) );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
 
