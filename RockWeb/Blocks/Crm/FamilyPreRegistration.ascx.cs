@@ -1836,8 +1836,14 @@ usernameTextbox.blur(function () {{
             // Set First Adult's Values
             hfAdultGuid1.Value = adult1 != null ? adult1.Id.ToString() : string.Empty;
 
+            lFirstName1.Visible = adult1 != null;
+            lFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
+
             tbFirstName1.Visible = adult1 == null;
             tbFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
+
+            lLastName1.Visible = adult1 != null;
+            lLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
 
             tbLastName1.Visible = adult1 == null;
             tbLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
@@ -1853,8 +1859,14 @@ usernameTextbox.blur(function () {{
             // Set Second Adult's Values
             hfAdultGuid2.Value = adult2 != null ? adult2.Guid.ToString() : string.Empty;
 
+            lFirstName2.Visible = adult2 != null;
+            lFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
+
             tbFirstName2.Visible = adult2 == null;
             tbFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
+
+            lLastName2.Visible = adult2 != null;
+            lLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
 
             tbLastName2.Visible = adult2 == null;
             tbLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
