@@ -187,6 +187,7 @@ namespace Rock.Tests.Integration.TestData
 
         public static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
         public static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
+        public static string SecondaryCampusName = "Stepping Stone";
 
         public static Campus GetOrAddCampusSteppingStone( RockContext rockContext )
         {
@@ -202,8 +203,11 @@ namespace Rock.Tests.Integration.TestData
                 campusService.Add( campus2 );
             }
 
-            campus2.Name = "Stepping Stone";
+            campus2.Name = SecondaryCampusName;
             campus2.Guid = SecondaryCampusGuidString.AsGuid();
+            campus2.IsActive = true;
+            campus2.CampusStatusValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN.AsGuid() );
+            campus2.CampusTypeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL.AsGuid() );
 
             rockContext.SaveChanges();
 
