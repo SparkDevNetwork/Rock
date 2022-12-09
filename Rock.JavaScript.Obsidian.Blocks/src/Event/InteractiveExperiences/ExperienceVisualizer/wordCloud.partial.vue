@@ -23,6 +23,7 @@
     font-size: 36px;
     color: var(--experience-visualizer-primary-color);
     text-align: center;
+    font-weight: 700;
 }
 
 .experience-visualizer-type-dc35f0f7-83e5-47d8-aa27-b448962b60dd .rock-word-cloud {

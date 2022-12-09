@@ -21,18 +21,21 @@
 
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
-.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before {
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before,
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
     display: block;
+    margin-bottom: 4px;
     font-size: 3em;
+    font-weight: 700;
+    line-height: 1.2;
     content: 'Q:';
 }
 
 .experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
-    display: block;
-    font-size: 3em;
     content: 'A:';
 }
 
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer,
 .experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .submit {
     margin-top: 18px;
 }

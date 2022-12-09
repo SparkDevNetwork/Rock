@@ -30,6 +30,7 @@
     font-size: 36px;
     color: var(--experience-visualizer-primary-color);
     text-align: center;
+    font-weight: 700;
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .chart-container {

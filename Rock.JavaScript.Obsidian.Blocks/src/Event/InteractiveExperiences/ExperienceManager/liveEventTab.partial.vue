@@ -2,7 +2,7 @@
 <template>
     <div class="live-event">
         <div class="row">
-            <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="col-xs-12 col-md-4 col-lg-3 col-md-4">
                 <Kpi class="ml-0"
                      color="blue"
                      :colorShade="600"
@@ -19,7 +19,7 @@
         </Alert>
 
         <div class="experience-body row d-flex flex-wrap" :class="{ inactive: isExperienceInactive }">
-            <div class="col-xs-12 col-sm-6 col-lg-7">
+            <div class="col-xs-12 col-md-6 col-lg-7 mb-3 mb-md-0">
                 <div class="experience-actions-panel panel panel-section h-100 mb-sm-0">
                     <div class="panel-heading">
                         <h4 class="panel-title">Experience Actions</h4>
@@ -35,7 +35,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-12 col-xm-6 col-lg-5">
+            <div class="col-xs-12 col-md-6 col-lg-5">
                 <div class="preview-panel">
                     <iframe v-if="previewPageUrl" class="invisible" :src="previewPageUrl" @load="onPreviewLoad" />
                     <Alert v-else alertType="info">
