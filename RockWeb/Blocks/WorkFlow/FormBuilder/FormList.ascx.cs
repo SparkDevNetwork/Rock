@@ -422,6 +422,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             personAttribute.IsSystem = false;
             personAttribute.Name = "Person";
             personAttribute.Key = "Person";
+            personAttribute.IsGridColumn = true;
+            personAttribute.Order = 0;
             personAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
             newAttributesState.Add( personAttribute );
             var personQualifier = new AttributeQualifier();
@@ -438,6 +440,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             spouseAttribute.IsSystem = false;
             spouseAttribute.Name = "Spouse";
             spouseAttribute.Key = "Spouse";
+            spouseAttribute.Order = 1;
             spouseAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
             newAttributesState.Add( spouseAttribute );
             var spouseQualifier = new AttributeQualifier();
@@ -454,6 +457,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             familyAttribute.IsSystem = false;
             familyAttribute.Name = "Family";
             familyAttribute.Key = "Family";
+            familyAttribute.Order = 2;
             familyAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.GROUP ).Id;
             newAttributesState.Add( familyAttribute );
 
