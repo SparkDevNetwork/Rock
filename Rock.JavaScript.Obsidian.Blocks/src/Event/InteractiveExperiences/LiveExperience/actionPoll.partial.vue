@@ -26,6 +26,7 @@
     display: block;
     margin-bottom: 4px;
     font-size: 3em;
+    font-weight: 700;
     line-height: 1.2;
     content: 'Q:';
 }
@@ -35,11 +36,12 @@
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers {
-    margin-top: 12px;
+    margin-top: 18px;
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio {
     padding-left: 0;
+    margin-bottom: 12px;
 }
 
 .experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::before,
@@ -59,7 +61,7 @@
     display: block;
     padding: 6px 12px;
     border: 2px solid var(--experience-action-secondary-btn-bg);
-    border-radius: var(--border-radius-base);
+    border-radius: var(--border-radius-base, 4px);
     transition: background-color .25s ease-in-out, color .25s ease-in-out;
 }
 

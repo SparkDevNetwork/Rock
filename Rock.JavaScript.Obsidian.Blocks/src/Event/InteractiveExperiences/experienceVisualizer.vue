@@ -19,6 +19,7 @@
     top: 0;
     right: 0;
     left: 0;
+    bottom: 0;
     padding: 18px;
     color: var(--experience-visualizer-color);
     background-color: var(--experience-visualizer-bg, inherit);

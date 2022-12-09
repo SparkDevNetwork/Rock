@@ -1,37 +1,38 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="live-experience-body" :style="experienceStyles">
-        <Alert v-if="isExperienceInactive" alertType="warning">
-            This experience has ended.
-        </Alert>
-
-        <div v-if="isWelcomeContentVisible" class="welcome">
-            <div class="welcome-header">
-                <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
+    <div class="styled-scroll">
+        <div class="live-experience-body" :style="experienceStyles">
+            <Alert v-if="isExperienceInactive" alertType="warning">
+                This experience has ended.
+            </Alert>
+            <div v-if="isWelcomeContentVisible" class="welcome">
+                <div class="welcome-header">
+                    <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
+                </div>
+                <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
             </div>
-
-            <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
-        </div>
-
-        <div v-if="isNoActionContentVisible" class="no-action">
-            <div class="no-action-header">
-                <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
+            <div v-if="isNoActionContentVisible" class="no-action">
+                <div class="no-action-header">
+                    <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
+                </div>
+                <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
             </div>
-
-            <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
+            <component v-if="activeActionComponent"
+                       :is="activeActionComponent"
+                       :eventId="eventId"
+                       :actionId="activeActionId"
+                       :renderConfiguration="activeActionRenderConfiguration"
+                       :realTimeTopic="realTimeTopic" />
         </div>
-
-        <component v-if="activeActionComponent"
-                   :is="activeActionComponent"
-                   :eventId="eventId"
-                   :actionId="activeActionId"
-                   :renderConfiguration="activeActionRenderConfiguration"
-                   :realTimeTopic="realTimeTopic" />
     </div>
 </template>
 
 <!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
+body {
+    touch-action: none;
+}
+
 .live-experience-body {
     position: absolute;
     top: 0;
@@ -42,6 +43,7 @@
     color: var(--experience-action-color, inherit);
     background-color: var(--experience-action-bg, inherit);
     background-image: var(--experience-action-bg-image, initial);
+    background-size: cover;
     overflow: auto;
 }
 
@@ -64,10 +66,12 @@
 
 .live-experience-body .welcome-header {
     background-image: var(--welcome-header-image, initial);
+    background-size: cover;
 }
 
-body {
-    touch-action: none;
+.live-experience-body .no-action-header {
+    background-image: var(--no-action-header-image, initial);
+    background-size: cover;
 }
 </style>
 
@@ -172,11 +176,11 @@ body {
         const styles: Record<string, string> = {};
 
         if (config.style?.welcome?.headerImage) {
-            styles["--welcome-header-image"] = config.style.welcome.headerImage;
+            styles["--welcome-header-image"] = `url('${config.style.welcome.headerImage}')`;
         }
 
         if (config.style?.noAction?.headerImage) {
-            styles["--no-action-header-image"] = config.style.noAction.headerImage;
+            styles["--no-action-header-image"] = `url('${config.style.noAction.headerImage}')`;
         }
 
         if (config.style?.action?.backgroundColor) {
