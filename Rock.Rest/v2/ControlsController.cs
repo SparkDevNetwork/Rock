@@ -1231,8 +1231,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the event calendars that can be displayed in the event calendar picker.
         /// </summary>
-        /// <param name="options">The options that describe which calendars to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event calendars.</returns>
+        /// <returns>A List of <see cref="ListItemBag" /> objects that represent the event calendars.</returns>
         [HttpPost]
         [System.Web.Http.Route( "EventCalendarPickerGetEventCalendars" )]
         [Authenticate]
