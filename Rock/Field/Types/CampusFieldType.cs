@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -49,24 +51,9 @@ namespace Rock.Field.Types
         private const string SELECTABLE_CAMPUSES_KEY = "SelectableCampusIds";
         private const string VALUES_PUBLIC_KEY = "values";
         private const string SELECTABLE_CAMPUSES_PUBLIC_KEY = "selectableCampuses";
-
         private const string CAMPUSES_PROPERTY_KEY = "campuses";
         private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
         private const string CAMPUS_STATUSES_PROPERTY_KEY = "campusStatuses";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( INCLUDE_INACTIVE_KEY );
-            configKeys.Add( FILTER_CAMPUS_TYPES_KEY );
-            configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
-            configKeys.Add( SELECTABLE_CAMPUSES_KEY );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -180,6 +167,237 @@ namespace Rock.Field.Types
             privateConfigurationValues[FILTER_CAMPUS_STATUS_KEY] = ConvertDelimitedGuidsToIds( campusStatus, v => DefinedValueCache.Get( v )?.Id );
 
             return privateConfigurationValues;
+        }
+
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => k.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetListSource( Dictionary<string, string> configurationValues )
+        {
+            var allCampuses = CampusCache.All();
+
+            if ( configurationValues == null )
+            {
+                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
+
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].SplitDelimitedValues( false ).AsIntegerList()
+                : null;
+
+            var campusList = allCampuses
+                .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
+                .ToList();
+
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
+            var campus = CampusCache.Get( value.AsGuid() );
+
+            return campus?.Name ?? string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var campusGuids = value.SplitDelimitedValues().AsGuidList();
+
+            var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
+            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
+        }
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public override string GetEqualToCompareValue()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new CampusService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the cached entities as a list.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var guids = value.SplitDelimitedValues().AsGuidList();
+            var result = new List<IEntityCache>();
+
+            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
+
+            return result;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var campusId = CampusCache.GetId( guid.Value );
+
+            if ( !campusId.HasValue )
+            {
+                return null;
+            }
+
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Campus>().Value, campusId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Campus and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( FILTER_CAMPUS_TYPES_KEY );
+            configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
+            configKeys.Add( SELECTABLE_CAMPUSES_KEY );
+            return configKeys;
         }
 
         /// <summary>
@@ -366,66 +584,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the list source.
-        /// </summary>
-        /// <value>
-        /// The list source.
-        /// </value>
-        private Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => k.Value ) );
-        }
-
-        /// <summary>
-        /// Gets the list source.
-        /// </summary>
-        /// <value>
-        /// The list source.
-        /// </value>
-        private Dictionary<string, string> GetListSource( Dictionary<string, string> configurationValues )
-        {
-            var allCampuses = CampusCache.All();
-
-            if ( configurationValues == null )
-            {
-                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
-            }
-
-            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
-            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].IsNotNullOrWhiteSpace()
-                ? configurationValues[SELECTABLE_CAMPUSES_KEY].SplitDelimitedValues( false ).AsIntegerList()
-                : null;
-
-            var campusList = allCampuses
-                .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
-                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
-                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
-                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
-                .ToList();
-
-            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
-        }
-
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            if ( value == null )
-            {
-                return string.Empty;
-            }
-
-            var campus = CampusCache.Get( value.AsGuid() );
-
-            return campus?.Name ?? string.Empty;
-        }
-
-        /// <summary>
         /// Returns the formatted selected campus. If there is only one campus then nothing is returned.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -438,10 +596,6 @@ namespace Rock.Field.Types
             // Never use the condensed value for webforms blocks.
             return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -541,10 +695,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -599,35 +749,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var campusGuids = value.SplitDelimitedValues().AsGuidList();
-
-            var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
-            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
-        }
-
-        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
-        /// </summary>
-        /// <returns></returns>
-        public override string GetEqualToCompareValue()
         {
             return null;
         }
@@ -644,7 +771,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -678,7 +805,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -686,44 +813,36 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the filters expression.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( filterValues.Count == 1 )
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
             {
-                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                int valueCount = selectedValues.Count();
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                if ( valueCount == 0 )
+                var selectedValues = values[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                if ( selectedValues.Count == 0 )
                 {
-                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
-                    return new NoAttributeFilterExpression();
-                }
-                else if ( valueCount == 1 )
-                {
-                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
-                    ComparisonType comparisonType = ComparisonType.EqualTo;
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                    return new ComparisonValue
+                    {
+                        Value = string.Empty
+                    };
                 }
                 else
                 {
-                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
-                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                    return new ComparisonValue
+                    {
+                        ComparisonType = ComparisonType.Contains,
+                        Value = selectedValues.Select( v => GetPublicEditValue( v, privateConfigurationValues ) ).JoinStrings( "," )
+                    };
                 }
             }
-
-            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
         }
-
-        #endregion
-
-        #region Entity Methods
 
         /// <summary>
         /// Gets the edit value as the IEntity.Id
@@ -735,7 +854,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = CampusCache.Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>
@@ -756,89 +875,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new CampusService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the cached entities as a list.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public List<IEntityCache> GetCachedEntities( string value )
-        {
-            var guids = value.SplitDelimitedValues().AsGuidList();
-            var result = new List<IEntityCache>();
-
-            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
-
-            return result;
-        }
-
-        #endregion
-
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            var campusId = CampusCache.GetId( guid.Value );
-
-            if ( !campusId.HasValue )
-            {
-                return null;
-            }
-
-
-            return new List<ReferencedEntity>
-            {
-                new ReferencedEntity( EntityTypeCache.GetId<Campus>().Value, campusId.Value )
-            };
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Campus and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
-            };
-        }
-
+#endif
         #endregion
 
         internal class CampusItemViewModel

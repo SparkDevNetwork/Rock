@@ -583,12 +583,22 @@ namespace Rock.Tests.Integration.Lava
         /// <param name="testMethod"></param>
         public void ExecuteForActiveEngines( Action<ILavaEngine> testMethod )
         {
-            var engines = GetActiveTestEngines();
+            var engines = GetActiveTestEngineTypes();
+            ExecuteForEngines( engines, testMethod );
+        }
 
+        /// <summary>
+        /// For each of the specified Lava Engines, process the specified action.
+        /// </summary>
+        /// <param name="engines"></param>
+        /// <param name="testMethod"></param>
+        public void ExecuteForEngines( List<Type> engines, Action<ILavaEngine> testMethod )
+        {
             var exceptions = new List<Exception>();
 
-            foreach ( var engine in engines )
+            foreach ( var engineType in engines )
             {
+                var engine = GetEngineInstance( engineType );
                 LavaService.SetCurrentEngine( engine );
 
                 Debug.Print( $"\n**\n** Lava Render Test: {engine.EngineName}\n**\n" );
@@ -644,6 +654,12 @@ namespace Rock.Tests.Integration.Lava
             return _activeEngines;
         }
 
+        private List<Type> GetActiveTestEngineTypes()
+        {
+            var engineTypes = GetActiveTestEngines().Select( e => e.GetType() ).ToList();
+            return engineTypes;
+        }
+
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
@@ -651,7 +667,13 @@ namespace Rock.Tests.Integration.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
         {
-            ExecuteForActiveEngines( ( engine ) =>
+            var engines = options?.LavaEngineTypes ?? new List<Type>();
+            if ( !engines.Any() )
+            {
+                engines = GetActiveTestEngineTypes();
+            }
+
+            ExecuteForEngines( engines, ( engine ) =>
             {
                 AssertTemplateOutput( engine, expectedOutput, inputTemplate, options );
             } );
@@ -1072,6 +1094,8 @@ namespace Rock.Tests.Integration.Lava
         public LavaTestOutputMatchTypeSpecifier OutputMatchType = LavaTestOutputMatchTypeSpecifier.Equal;
 
         public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy;
+
+        public List<Type> LavaEngineTypes = new List<Type>();
     }
 
     public enum LavaTestOutputMatchTypeSpecifier

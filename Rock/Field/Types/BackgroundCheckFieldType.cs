@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
@@ -36,103 +37,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BACKGROUNDCHECK )]
     public class BackgroundCheckFieldType : BinaryFileFieldType, IEntityReferenceFieldType
     {
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            return base.ConfigurationControls();
-        }
-
         #region Edit Control
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            Guid? binaryFileTypeGuid = null;
-            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
-            {
-                binaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
-            }
-
-            var control = new BackgroundCheckDocument()
-            {
-                ID = id,
-                BinaryFileTypeGuid = binaryFileTypeGuid
-            };
-
-            return control;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var backgroundCheckDocument = control as BackgroundCheckDocument;
-            if ( backgroundCheckDocument != null )
-            {
-                int? binaryFileId = backgroundCheckDocument.BinaryFileId;
-                if ( binaryFileId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => (Guid?)a.Guid ).FirstOrDefault();
-                        if ( binaryFileGuid.HasValue )
-                        {
-                            return binaryFileGuid?.ToString();
-                        }
-                    }
-                }
-                else
-                {
-                    return backgroundCheckDocument.Text;
-                }
-
-                return string.Empty;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value where value is BinaryFile.Guid as a string (or null)
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var backgroundCheckDocument = control as BackgroundCheckDocument;
-            if ( backgroundCheckDocument != null )
-            {
-                Guid? binaryFileGuid = value.AsGuidOrNull();
-                if ( binaryFileGuid.HasValue )
-                {
-                    int? binaryFileId = null;
-                    using ( var rockContext = new RockContext() )
-                    {
-                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => (int?)a.Id ).FirstOrDefault();
-                    }
-
-                    backgroundCheckDocument.BinaryFileId = binaryFileId;
-                }
-                else
-                {
-                    backgroundCheckDocument.Text = value;
-                }
-            }
-        }
 
         #endregion
 
@@ -220,22 +125,6 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            // For compatibility reasons condensed value is always the text value encoded for HTML.
-            return !condensed
-                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
-        }
-
         #endregion
 
         #region IEntityReferenceFieldType
@@ -275,6 +164,125 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            return base.ConfigurationControls();
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            Guid? binaryFileTypeGuid = null;
+            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
+            {
+                binaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
+            }
+
+            var control = new BackgroundCheckDocument()
+            {
+                ID = id,
+                BinaryFileTypeGuid = binaryFileTypeGuid
+            };
+
+            return control;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var backgroundCheckDocument = control as BackgroundCheckDocument;
+            if ( backgroundCheckDocument != null )
+            {
+                int? binaryFileId = backgroundCheckDocument.BinaryFileId;
+                if ( binaryFileId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        if ( binaryFileGuid.HasValue )
+                        {
+                            return binaryFileGuid?.ToString();
+                        }
+                    }
+                }
+                else
+                {
+                    return backgroundCheckDocument.Text;
+                }
+
+                return string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value where value is BinaryFile.Guid as a string (or null)
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var backgroundCheckDocument = control as BackgroundCheckDocument;
+            if ( backgroundCheckDocument != null )
+            {
+                Guid? binaryFileGuid = value.AsGuidOrNull();
+                if ( binaryFileGuid.HasValue )
+                {
+                    int? binaryFileId = null;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    }
+
+                    backgroundCheckDocument.BinaryFileId = binaryFileId;
+                }
+                else
+                {
+                    backgroundCheckDocument.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // For compatibility reasons condensed value is always the text value encoded for HTML.
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
+        }
+
+#endif
         #endregion
     }
 }

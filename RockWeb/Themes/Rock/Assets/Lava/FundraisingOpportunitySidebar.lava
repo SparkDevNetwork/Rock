@@ -1,5 +1,5 @@
 ﻿{% if RegistrationInstance %}
-<div class='well margin-t-md'>
+<div class="well margin-t-md">
     {% assign daysTillStartDate = 'Now' | DateDiff:RegistrationInstance.StartDateTime,'m' %}
     {% assign daysTillEndDate = 'Now' | DateDiff:RegistrationInstance.EndDateTime,'m' %}
     {% assign showRegistration = true %}
@@ -33,12 +33,12 @@
 
     {% if showRegistration %}
       {% if registrationFull and waitListEnabled != true %}
-        <div class='label label-default text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Full</div>
+        <div class="label label-default text-center" style="display: block; padding: 8px; margin-bottom: 12px;">Registration Full</div>
       {% else %}
-        <div class='label label-success text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Open</div>
+        <div class="label label-success text-center" style="display: block; padding: 8px; margin-bottom: 12px;">Registration Open</div>
       {% endif %}
     {% else %}
-      <div class='label label-default text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Closed</div>
+      <div class="label label-default text-center" style="display: block; padding: 8px; margin-bottom: 12px;">Registration Closed</div>
     {% endif %}
 
     {% if RegistrationInstance.ContactPersonAliasId != null or RegistrationInstance.ContactEmail != '' or RegistrationInstance.ContactPhone != '' %}

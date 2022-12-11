@@ -28,9 +28,9 @@ export type LandingPageContentBag = {
     /** Gets or sets the XAML content. */
     content?: string | null;
 
-    /** Gets or sets a boolean representing whether or not to skip the landing page. */
-    skipPage: boolean;
-
     /** Gets or sets the selected group Guid, only used if SkipPage is true. */
     groupGuid?: Guid | null;
+
+    /** Gets or sets a boolean representing whether or not to skip the landing page. */
+    skipPage: boolean;
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' style='color: black;'><i class='fa fa-file-signature'></i></a>";
-        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
 
@@ -206,6 +206,7 @@ namespace RockWeb.Blocks.Event
 
             gRegistrants.EmptyDataText = "No Registrants Found";
             gRegistrants.DataKeyNames = new string[] { "Id" };
+            gRegistrants.PersonIdField = "PersonAlias.PersonId";
             gRegistrants.Actions.ShowAdd = true;
             gRegistrants.Actions.AddClick += gRegistrants_AddClick;
             gRegistrants.RowDataBound += gRegistrants_RowDataBound;
@@ -369,6 +370,24 @@ namespace RockWeb.Blocks.Event
                                 if ( tbHomePhoneFilter != null )
                                 {
                                     fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_HomePhone, tbHomePhoneFilter.Text );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Race:
+                                var rpRaceFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_RACE_ID ) as RacePicker;
+                                if ( rpRaceFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Race, rpRaceFilter.SelectedValue );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Ethnicity:
+                                var epEthnicityFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ETHNICITY_ID ) as EthnicityPicker;
+                                if ( epEthnicityFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Ethnicity, epEthnicityFilter.SelectedValue );
                                 }
 
                                 break;
@@ -770,11 +789,28 @@ namespace RockWeb.Blocks.Event
                 if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var document = _signatureDocuments[registrant.PersonId.Value];
-                    lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                    if ( document.Status == SignatureDocumentStatus.Signed )
+                    {
+                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                    }
+                    else
+                    {
+                        string message;
+                        if ( document.LastInviteDate.HasValue )
+                        {
+                            message = $"A signed {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been received for {registrant.NickName}. The last request was sent {document.LastInviteDate.Value.ToElapsedString()}.";
+                        }
+                        else
+                        {
+                            message = $"The required {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been sent to {registrant.NickName} for signing.";
+                        }
+
+                        lSignedDocument.Text = string.Format( SIGNATURE_NOT_SIGNED_INDICATOR, message );
+                    }
                 }
                 else
                 {
-                    lSignedDocument.Text = SIGNATURE_NOT_SIGNED_INDICATOR;
+                    lSignedDocument.Text = string.Format( SIGNATURE_NOT_SIGNED_INDICATOR, "Document not signed" );
                 }
             }
 
@@ -860,6 +896,34 @@ namespace RockWeb.Blocks.Event
                     {
                         workPhoneField.Text = workPhoneNumber.IsUnlisted ? "Unlisted" : workPhoneNumber.NumberFormatted;
                     }
+                }
+            }
+
+            // Set the registrant race
+            var lRace= e.Row.FindControl( "lRace" ) as Literal;
+            if ( lRace != null )
+            {
+                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
+                {
+                    lRace.Text = registrant.PersonAlias.Person.RaceValue?.Value;
+                }
+                else
+                {
+                    lRace.Text = string.Empty;
+                }
+            }
+
+            // Set the registrant ethnicity
+            var lEthnicity = e.Row.FindControl( "lEthnicity" ) as Literal;
+            if ( lEthnicity != null )
+            {
+                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
+                {
+                    lEthnicity.Text = registrant.PersonAlias.Person.EthnicityValue?.Value;
+                }
+                else
+                {
+                    lEthnicity.Text = string.Empty;
                 }
             }
         }
@@ -1573,6 +1637,36 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
+
+                            case RegistrationPersonFieldType.Race:
+                                var rpRaceFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_RACE_ID ) as RacePicker;
+                                if ( rpRaceFilter != null )
+                                {
+                                    var raceValueId = rpRaceFilter.SelectedValue.AsIntegerOrNull();
+                                    if ( raceValueId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                           r.PersonAlias.Person.RaceValueId.HasValue &&
+                                           r.PersonAlias.Person.RaceValueId.Value == raceValueId.Value );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Ethnicity:
+                                var epEthnicityPicker = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ETHNICITY_ID ) as EthnicityPicker;
+                                if ( epEthnicityPicker != null )
+                                {
+                                    var ethnicityValueId = epEthnicityPicker.SelectedValue.AsIntegerOrNull();
+                                    if ( ethnicityValueId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                           r.PersonAlias.Person.EthnicityValueId.HasValue &&
+                                           r.PersonAlias.Person.EthnicityValueId.Value == ethnicityValueId.Value );
+                                    }
+                                }
+
+                                break;
                         }
                     }
 
@@ -1826,8 +1920,6 @@ namespace RockWeb.Blocks.Event
                     .Queryable().AsNoTracking()
                     .Where( d =>
                         d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                        d.Status == SignatureDocumentStatus.Signed &&
-                        d.BinaryFileId.HasValue &&
                         d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
                     .OrderByDescending( d => d.LastStatusDate )
                     .ToList();

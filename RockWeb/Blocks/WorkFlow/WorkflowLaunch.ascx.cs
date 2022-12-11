@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -684,7 +686,7 @@ namespace RockWeb.Blocks.WorkFlow
                            ?? string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id ) ).ToStringSafe()
                 } );
             }
-            else if ( theType.GetProperty( "Person" ) != null )
+            else if ( theType.GetProperty( "Person" ) != null && theType.GetProperty( "Person" ).GetCustomAttribute( typeof( NotMappedAttribute ) ) == null )
             {
                 // If there is a Person property then use the person's name with the entity id underneath
                 viewModels = entityQuery.Include( "Person" ).ToList().Select( e => new RepeaterViewModel
@@ -694,7 +696,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id ) )
                 } );
             }
-            else if ( theType.GetProperty( "PersonAlias" ) != null )
+            else if ( theType.GetProperty( "PersonAlias" ) != null && theType.GetProperty( "PersonAlias" ).GetCustomAttribute( typeof( NotMappedAttribute ) ) == null )
             {
                 // If there is a PersonAlias property then use the person's name with the entity id underneath
                 viewModels = entityQuery.Include( "PersonAlias.Person" ).ToList().Select( e => new RepeaterViewModel

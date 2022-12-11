@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string GroupIds = "GroupIds";
             public const string FamilyId = "FamilyId";
             public const string CameraIndex = "CameraIndex";
+            public const string Theme = "Theme";
         }
 
         #endregion PageParameterKeys
@@ -202,6 +203,7 @@ namespace RockWeb.Blocks.CheckIn
                 nbGeoMessage.Text = "Manual configuration is not currently enabled.";
             }
 
+            // Load the themes selector and set the active theme.
             ddlTheme.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
@@ -209,15 +211,20 @@ namespace RockWeb.Blocks.CheckIn
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
             }
 
-            if ( !string.IsNullOrWhiteSpace( LocalDeviceConfig.CurrentTheme ) )
+            // If a theme has been specified in the URL, prefer it.
+            // If not, use the local device configuration cookie or the default theme for the site.
+            var activeTheme = PageParameter( PageParameterKey.Theme ).ToLower();
+            if ( string.IsNullOrWhiteSpace( activeTheme ) )
             {
-                ddlTheme.SetValue( LocalDeviceConfig.CurrentTheme );
-                SetSelectedTheme( LocalDeviceConfig.CurrentTheme );
+                activeTheme = LocalDeviceConfig.CurrentTheme;
             }
-            else
+            if ( string.IsNullOrWhiteSpace( activeTheme ) )
             {
-                ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
+                activeTheme = RockPage.Site.Theme.ToLower();
             }
+
+            ddlTheme.SetValue( activeTheme );
+            SetSelectedTheme( activeTheme );
 
             int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
 

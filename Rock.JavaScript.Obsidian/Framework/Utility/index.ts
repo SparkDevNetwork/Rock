@@ -11,6 +11,7 @@ export * as Email from "./email";
 export * as FieldTypes from "./fieldTypes";
 export * as Form from "./form";
 export * as Fullscreen from "./fullscreen";
+export * as Geo from "./geo";
 export * as Guid from "./guid";
 export * as Http from "./http";
 export * as Linq from "./linq";

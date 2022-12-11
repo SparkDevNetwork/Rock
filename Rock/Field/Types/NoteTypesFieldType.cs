@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -40,6 +41,103 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS = "repeatColumns";
 
         #region Configuration
+
+        #endregion Configuration
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var names = new List<string>();
+
+                foreach ( string guidString in privateValue.SplitDelimitedValues() )
+                {
+                    Guid? guid = guidString.AsGuidOrNull();
+                    if ( guid.HasValue )
+                    {
+                        var noteType = NoteTypeCache.Get( guid.Value );
+                        if ( noteType != null )
+                        {
+                            names.Add( noteType.Name );
+                        }
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            // The parent is CategoryFieldType. CategoryFieldType's FormatValue expects a list of category guids, so we should not call the base FormatValue.
+            return formattedValue;
+        }
+
+        #endregion
+
+        #region EditControl
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var referencedEntities = new List<ReferencedEntity>();
+            var noteTypeEntityTypeId = EntityTypeCache.GetId<Rock.Model.NoteType>().Value;
+
+            foreach ( string guidString in privateValue.SplitDelimitedValues() )
+            {
+                Guid? guid = guidString.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    var noteTypeId = NoteTypeCache.GetId( guid.Value );
+                    if ( noteTypeId != null )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( noteTypeEntityTypeId, noteTypeId.Value ) );
+                    }
+                }
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a NoteType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<NoteType>().Value, nameof( NoteType.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -81,7 +179,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
             string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             // NOTE: Indicies 0-2 come from the base class CategoryFieldType.
             if ( controls != null && controls.Count > 3 )
@@ -110,39 +208,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion Configuration
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                var names = new List<string>();
-
-                foreach( string guidString in privateValue.SplitDelimitedValues() )
-                {
-                    Guid? guid = guidString.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        var noteType = NoteTypeCache.Get( guid.Value );
-                        if ( noteType != null )
-                        {
-                            names.Add( noteType.Name );
-                        }
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            // The parent is CategoryFieldType. CategoryFieldType's FormatValue expects a list of category guids, so we should not call the base FormatValue.
-            return formattedValue;
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -155,10 +220,6 @@ namespace Rock.Field.Types
         {
             return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region EditControl
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -270,61 +331,7 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.ContainsFilterComparisonTypes;
-            }
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var referencedEntities = new List<ReferencedEntity>();
-            var noteTypeEntityTypeId = EntityTypeCache.GetId<Rock.Model.NoteType>().Value;
-
-            foreach ( string guidString in privateValue.SplitDelimitedValues() )
-            {
-                Guid? guid = guidString.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    var noteTypeId = NoteTypeCache.GetId( guid.Value );
-                    if ( noteTypeId != null )
-                    {
-                        referencedEntities.Add( new ReferencedEntity( noteTypeEntityTypeId, noteTypeId.Value ) );
-                    }
-                }
-            }
-
-            return referencedEntities;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a NoteType and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<NoteType>().Value, nameof( NoteType.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

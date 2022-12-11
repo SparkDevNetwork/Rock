@@ -645,8 +645,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="privateValue">The raw value.</param>
         /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <param name="cache">An extremely short term cache that can be used to store and retrieve data instead of hitting the database. This value may be null if no cache should be used.</param>
         /// <returns>An instance of <see cref="PersistedValues"/> that contains all the values to be persisted.</returns>
-        PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues );
+        PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache );
 
         #endregion
     }

@@ -362,6 +362,40 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the parent entity type identifier.
+        /// </summary>
+        /// <value>The parent entity type identifier.</value>
+        public int? ParentEntityTypeId
+        {
+            get
+            {
+                return ViewState["ParentEntityTypeId"] as int?;
+            }
+
+            set
+            {
+                ViewState["ParentEntityTypeId"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the parent entity identifier.
+        /// </summary>
+        /// <value>The parent entity identifier.</value>
+        public int? ParentEntityId
+        {
+            get
+            {
+                return ViewState["ParentEntityId"] as int?;
+            }
+
+            set
+            {
+                ViewState["ParentEntityId"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the uploaded content file path.
         /// </summary>
         /// <value>
@@ -812,45 +846,32 @@ namespace Rock.Web.UI.Controls
             var postBackRemovedScript = this.FileRemoved != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileRemoved" ), true ) : "";
             postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
 
-            var script = string.Format(
-@"
-Rock.controls.fileUploader.initialize({{
-    controlId: '{0}',
-    fileId: '{1}',
-    fileTypeGuid: '{2}',
-    hfFileId: '{3}',
-    aFileName: '{4}',
-    aRemove: '{5}',
-    postbackScript: '{6}',
-    fileType: 'file',
-    isBinaryFile: '{7}',
-    rootFolder: '{8}',
-    uploadUrl: '{9}',
-    submitFunction: function (e, data) {{
-        {10}
-    }},
-    doneFunction: function (e, data) {{
-        {11}
-    }},
-    postbackRemovedScript: '{12}',
-    maxUploadBytes: {13},
-    isTemporary: '{14}',
-}});",
-                _fileUpload.ClientID, // 0
-                this.BinaryFileId, // 1
-                this.BinaryFileTypeGuid, // 2
-                _hfBinaryFileId.ClientID, // 3
-                _aFileName.ClientID, // 4
-                _aRemove.ClientID, // 5
-                postBackScript, // 6
-                this.IsBinaryFile ? "T" : "F", // 7
-                Rock.Security.Encryption.EncryptString( this.RootFolder ), // 8
-                this.UploadUrl, // 9
-                this.SubmitFunctionClientScript, // 10
-                this.DoneFunctionClientScript, // 11
-                postBackRemovedScript, // 12
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // 13
-                this.UploadAsTemporary ? "T" : "F" ); // {14}
+            var script = $@"
+                Rock.controls.fileUploader.initialize({{
+                    controlId: '{_fileUpload.ClientID}',
+                    fileId: '{this.BinaryFileId}',
+                    fileTypeGuid: '{this.BinaryFileTypeGuid}',
+                    hfFileId: '{_hfBinaryFileId.ClientID}',
+                    aFileName: '{_aFileName.ClientID}',
+                    aRemove: '{_aRemove.ClientID}',
+                    postbackScript: '{postBackScript}',
+                    fileType: 'file',
+                    isBinaryFile: '{(this.IsBinaryFile ? "T" : "F")}',
+                    rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
+                    uploadUrl: '{this.UploadUrl}',
+                    submitFunction: function (e, data) {{
+                        {this.SubmitFunctionClientScript}
+                    }},
+                    doneFunction: function (e, data) {{
+                        {this.DoneFunctionClientScript}
+                    }},
+                    postbackRemovedScript: '{postBackRemovedScript}',
+                    maxUploadBytes: {(maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null")},
+                    isTemporary: '{(this.UploadAsTemporary ? "T" : "F")}',
+                    parentEntityTypeId: '{( this.ParentEntityTypeId.HasValue ? this.ParentEntityTypeId.Value.ToString() : "null")}',
+                    parentEntityId: '{( this.ParentEntityId.HasValue ? this.ParentEntityId.ToString() : "null" )}',
+                }});";
+
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 

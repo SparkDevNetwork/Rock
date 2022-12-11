@@ -57,22 +57,6 @@ namespace Rock.Web.UI.Controls
         public List<NumberUpDown> NumberUpDownControls { get; set; } = new List<NumberUpDown>();
 
         /// <summary>
-        /// Gets or sets the collection of NumberUpDown objects.
-        /// </summary>
-        /// <value>
-        /// The control group.
-        /// </value>
-        [System.Obsolete( "Use NumberUpDownControls Instead", true )]
-        [RockObsolete( "1.9" )]
-        public List<NumberUpDown> ControlGroup
-        {
-            get
-            {
-                return NumberUpDownControls;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the label.
         /// </summary>
         /// <value>

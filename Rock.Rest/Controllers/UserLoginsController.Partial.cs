@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
         [System.Web.Http.Route( "api/userlogins/available" )]
         [Rock.SystemGuid.RestActionGuid( "037C3806-0A80-4029-ACAE-269DFC702EA8" )]
+        [Authenticate, Secured]
         public bool Available( string username )
         {
             return ( ( UserLoginService ) Service ).Exists( username ) == false;

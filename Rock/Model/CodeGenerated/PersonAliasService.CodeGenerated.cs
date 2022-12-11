@@ -1892,6 +1892,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperienceOccurrence>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceOccurrence.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractiveExperienceOccurrence>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceOccurrence.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<InteractiveExperienceSchedule>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractiveExperienceSchedule.FriendlyTypeName );
@@ -2635,6 +2647,30 @@ namespace Rock.Model
             if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RelatedEntity.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Reminder>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Reminder.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Reminder>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Reminder.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ReminderType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ReminderType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ReminderType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ReminderType.FriendlyTypeName );
                 return false;
             }
 

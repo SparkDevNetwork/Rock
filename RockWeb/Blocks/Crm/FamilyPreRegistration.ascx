@@ -85,6 +85,12 @@
                                         <asp:ListItem Text="SMS" Value="2" />
                                     </Rock:RockRadioButtonList>
                                 </asp:Panel>
+                                <asp:Panel ID="pnlRace1" runat="server">
+                                    <Rock:RacePicker ID="rpRace1" runat="server" />
+                                </asp:Panel>
+                                <asp:Panel ID="pnlEthnicity1" runat="server">
+                                    <Rock:EthnicityPicker ID="epEthnicity1" runat="server" />
+                                </asp:Panel>
                             </div>
 
                         <div class="row">
@@ -134,6 +140,8 @@
                             <asp:HiddenField ID="hfEmailRequired" runat="server" />
                             <asp:HiddenField ID="hfProfileRequired" runat="server" />
                             <asp:HiddenField ID="hfCreateFirstAdultAccountIsRequired" runat="server" />
+                            <asp:HiddenField ID="hfRaceIsRequired" runat="server" />
+                            <asp:HiddenField ID="hfEthnicityIsRequired" runat="server" />
 
                             <div class="row">
                                 <div class="<%= GetColumnStyle(3) %>">
@@ -165,6 +173,12 @@
                                         <asp:ListItem Text="Email" Value="1" />
                                         <asp:ListItem Text="SMS" Value="2" />
                                     </Rock:RockRadioButtonList>
+                                </asp:Panel>
+                                <asp:Panel ID="pnlRace2" runat="server">
+                                    <Rock:RacePicker ID="rpRace2" runat="server" />
+                                </asp:Panel>
+                                <asp:Panel ID="pnlEthnicity2" runat="server">
+                                    <Rock:EthnicityPicker ID="epEthnicity2" runat="server" />
                                 </asp:Panel>
                             </div>
 

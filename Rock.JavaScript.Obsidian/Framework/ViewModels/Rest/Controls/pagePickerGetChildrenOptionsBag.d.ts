@@ -35,23 +35,23 @@ export type PagePickerGetChildrenOptionsBag = {
     guid?: Guid | null;
 
     /**
-     * Gets or sets the unique identifier of the root page whose
-     * children are to be enumerated.
-     */
-    rootPageGuid?: Guid | null;
-
-    /** Gets or sets the site type to filter results by. */
-    siteType?: number | null;
-
-    /**
      * Gets or sets the list of unique identifiers of pages that should
      * be excluded from the results
      */
     hidePageGuids?: Guid[] | null;
 
     /**
+     * Gets or sets the unique identifier of the root page whose
+     * children are to be enumerated.
+     */
+    rootPageGuid?: Guid | null;
+
+    /**
      * Gets or sets the security grant token to use when performing
      * authorization checks.
      */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the site type to filter results by. */
+    siteType?: number | null;
 };

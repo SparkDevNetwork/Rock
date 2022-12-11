@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -32,7 +34,7 @@ namespace Rock.Field.Types
     /// Stored as "Channel.Guid|Component.Guid"
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "299F8444-BB47-4B6C-B523-235156BF96DC")]
+    [Rock.SystemGuid.FieldTypeGuid( "299F8444-BB47-4B6C-B523-235156BF96DC" )]
     public class InteractionChannelInteractionComponentFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Keys
@@ -51,77 +53,6 @@ namespace Rock.Field.Types
         #endregion Keys
 
         #region Configuration
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            return new List<string>
-            {
-                ConfigKey.DefaultInteractionChannelGuid
-            };
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var channelPicker = new InteractionChannelPicker
-            {
-                Label = "Default Interaction Channel",
-                Help = "The default interaction channel selection"
-            };
-
-            InteractionChannelPicker.LoadDropDownItems( channelPicker, true );
-            return new List<Control> { channelPicker };
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            var configurationValues = new Dictionary<string, ConfigurationValue>
-            {
-                { ConfigKey.DefaultInteractionChannelGuid, new ConfigurationValue( "Default Interaction Channel Guid", "The default interaction channel.", string.Empty ) }
-            };
-
-            if ( controls != null && controls.Count == 1 )
-            {
-                var channelPicker = controls[0] as InteractionChannelPicker;
-
-                if ( channelPicker != null )
-                {
-                    configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value = channelPicker.SelectedValue;
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultInteractionChannelGuid ) )
-            {
-                var channelPicker = controls[0] as InteractionChannelPicker;
-
-                if ( channelPicker != null )
-                {
-                    channelPicker.SelectedValue = configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value;
-                }
-            }
-        }
 
         #endregion Configuration
 
@@ -147,113 +78,9 @@ namespace Rock.Field.Types
             return formattedValue;
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion Formatting
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var editControl = new InteractionChannelInteractionComponentPicker { ID = id };
-
-            if ( configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultInteractionChannelGuid ) )
-            {
-                var channelGuid = configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value.AsGuidOrNull();
-
-                if ( channelGuid.HasValue )
-                {
-                    var channel = InteractionChannelCache.Get( channelGuid.Value );
-                    editControl.DefaultInteractionChannelId = channel?.Id;
-                }
-            }
-
-            return editControl;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field ( as Guid )
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var interactionChannelInteractionComponentPicker = control as InteractionChannelInteractionComponentPicker;
-
-            if ( interactionChannelInteractionComponentPicker != null )
-            {
-                var rockContext = new RockContext();
-                Guid? interactionChannelGuid = null;
-                Guid? interactionComponentGuid = null;
-
-                if ( interactionChannelInteractionComponentPicker.InteractionChannelId.HasValue )
-                {
-                    var channel = InteractionChannelCache.Get( interactionChannelInteractionComponentPicker.InteractionChannelId.Value );
-
-                    if ( channel != null )
-                    {
-                        interactionChannelGuid = channel.Guid;
-                    }
-                }
-
-                if ( interactionChannelInteractionComponentPicker.InteractionComponentId.HasValue )
-                {
-                    var component = InteractionComponentCache.Get( interactionChannelInteractionComponentPicker.InteractionComponentId.Value );
-
-                    if ( component != null )
-                    {
-                        interactionComponentGuid = component.Guid;
-                    }
-                }
-
-                if ( interactionChannelGuid.HasValue || interactionComponentGuid.HasValue )
-                {
-                    return string.Format( "{0}|{1}", interactionChannelGuid, interactionComponentGuid );
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value. ( as Guid )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var interactionChannelInteractionComponentPicker = control as InteractionChannelInteractionComponentPicker;
-
-            if ( interactionChannelInteractionComponentPicker != null )
-            {
-                GetModelsFromAttributeValue( value, out var interactionChannel, out var interactionComponent );
-                interactionChannelInteractionComponentPicker.InteractionChannelId = interactionChannel?.Id;
-                interactionChannelInteractionComponentPicker.InteractionComponentId = interactionComponent?.Id;
-            }
-        }
 
         #endregion Edit Control
 
@@ -363,6 +190,187 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            return new List<string>
+            {
+                ConfigKey.DefaultInteractionChannelGuid
+            };
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var channelPicker = new InteractionChannelPicker
+            {
+                Label = "Default Interaction Channel",
+                Help = "The default interaction channel selection"
+            };
+
+            InteractionChannelPicker.LoadDropDownItems( channelPicker, true );
+            return new List<Control> { channelPicker };
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = new Dictionary<string, ConfigurationValue>
+            {
+                { ConfigKey.DefaultInteractionChannelGuid, new ConfigurationValue( "Default Interaction Channel Guid", "The default interaction channel.", string.Empty ) }
+            };
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                var channelPicker = controls[0] as InteractionChannelPicker;
+
+                if ( channelPicker != null )
+                {
+                    configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value = channelPicker.SelectedValue;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultInteractionChannelGuid ) )
+            {
+                var channelPicker = controls[0] as InteractionChannelPicker;
+
+                if ( channelPicker != null )
+                {
+                    channelPicker.SelectedValue = configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var editControl = new InteractionChannelInteractionComponentPicker { ID = id };
+
+            if ( configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultInteractionChannelGuid ) )
+            {
+                var channelGuid = configurationValues[ConfigKey.DefaultInteractionChannelGuid].Value.AsGuidOrNull();
+
+                if ( channelGuid.HasValue )
+                {
+                    var channel = InteractionChannelCache.Get( channelGuid.Value );
+                    editControl.DefaultInteractionChannelId = channel?.Id;
+                }
+            }
+
+            return editControl;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field ( as Guid )
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var interactionChannelInteractionComponentPicker = control as InteractionChannelInteractionComponentPicker;
+
+            if ( interactionChannelInteractionComponentPicker != null )
+            {
+                var rockContext = new RockContext();
+                Guid? interactionChannelGuid = null;
+                Guid? interactionComponentGuid = null;
+
+                if ( interactionChannelInteractionComponentPicker.InteractionChannelId.HasValue )
+                {
+                    var channel = InteractionChannelCache.Get( interactionChannelInteractionComponentPicker.InteractionChannelId.Value );
+
+                    if ( channel != null )
+                    {
+                        interactionChannelGuid = channel.Guid;
+                    }
+                }
+
+                if ( interactionChannelInteractionComponentPicker.InteractionComponentId.HasValue )
+                {
+                    var component = InteractionComponentCache.Get( interactionChannelInteractionComponentPicker.InteractionComponentId.Value );
+
+                    if ( component != null )
+                    {
+                        interactionComponentGuid = component.Guid;
+                    }
+                }
+
+                if ( interactionChannelGuid.HasValue || interactionComponentGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}", interactionChannelGuid, interactionComponentGuid );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value. ( as Guid )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var interactionChannelInteractionComponentPicker = control as InteractionChannelInteractionComponentPicker;
+
+            if ( interactionChannelInteractionComponentPicker != null )
+            {
+                GetModelsFromAttributeValue( value, out var interactionChannel, out var interactionComponent );
+                interactionChannelInteractionComponentPicker.InteractionChannelId = interactionChannel?.Id;
+                interactionChannelInteractionComponentPicker.InteractionComponentId = interactionComponent?.Id;
+            }
+        }
+
+#endif
         #endregion
     }
 }

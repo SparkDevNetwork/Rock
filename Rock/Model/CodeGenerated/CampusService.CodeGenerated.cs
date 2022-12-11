@@ -110,6 +110,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperienceOccurrence>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, InteractiveExperienceOccurrence.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<InteractiveExperienceScheduleCampus>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, InteractiveExperienceScheduleCampus.FriendlyTypeName );

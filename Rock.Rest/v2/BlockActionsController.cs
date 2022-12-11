@@ -229,7 +229,7 @@ namespace Rock.Rest.v2
                     actionParameters.AddOrReplace( q.Key, JToken.FromObject( q.Value.ToString() ) );
                 }
 
-                requestContext.AddContextEntitiesForPage( pageCache );
+                requestContext.PrepareRequestForPage( pageCache );
 
                 return await InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
             }
@@ -392,6 +392,15 @@ namespace Rock.Rest.v2
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
+            var defaultContentNegotiator = new System.Net.Http.Formatting.DefaultContentNegotiator();
+            var validFormatters = new List<System.Net.Http.Formatting.MediaTypeFormatter>()
+            {
+                new Rock.Rest.Utility.ApiPickerJsonMediaTypeFormatter(),
+                new System.Net.Http.Formatting.JsonMediaTypeFormatter(),
+                new System.Net.Http.Formatting.FormUrlEncodedMediaTypeFormatter(),
+                new System.Web.Http.ModelBinding.JQueryMvcFormUrlEncodedFormatter()
+            };
+
             // Handle the result type.
             if ( result is IHttpActionResult httpActionResult )
             {
@@ -403,11 +412,11 @@ namespace Rock.Rest.v2
 
                 if ( isErrorStatusCode && actionResult.Content is string )
                 {
-                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ), controller );
+                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ), defaultContentNegotiator, controller.Request, validFormatters );
                 }
                 else if ( actionResult.Error != null )
                 {
-                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Error ), controller );
+                    return new NegotiatedContentResult<HttpError>( actionResult.StatusCode, new HttpError( actionResult.Error ), defaultContentNegotiator, controller.Request, validFormatters );
                 }
                 else if ( actionResult.Content is HttpContent httpContent )
                 {
@@ -431,7 +440,7 @@ namespace Rock.Rest.v2
             }
             else
             {
-                return new OkNegotiatedContentResult<object>( result, controller );
+                return new OkNegotiatedContentResult<object>( result, defaultContentNegotiator, controller.Request, validFormatters );
             }
         }
 

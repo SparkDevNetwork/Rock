@@ -671,7 +671,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="filterField">The filter field.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No Longer Needed" )]
+        [Obsolete( "No Longer Needed", true )]
         public static void RegisterJavascriptInclude( FilterField filterField )
         {
             // no longer needed since the required javascript is now bundled
@@ -820,7 +820,7 @@ namespace Rock.Reporting
             /// The filter list.
             /// </value>
             [RockObsolete( "1.10" )]
-            [Obsolete( "Changed to internal property" )]
+            [Obsolete( "Changed to internal property", true )]
             public List<FilterInfo> FilterList
             {
                 get => AllFilterList;
@@ -862,7 +862,7 @@ namespace Rock.Reporting
             /// From other data view.
             /// </value>
             [RockObsolete( "1.10" )]
-            [Obsolete( "Use FromOtherDataViewName instead" )]
+            [Obsolete( "Use FromOtherDataViewName instead", true )]
             public string FromOtherDataView
             {
                 get => FromDataView?.Name;

@@ -38,7 +38,11 @@ namespace DotLiquid
 			List<Hash> environments = new List<Hash>();
 			if (LocalVariables != null)
 				environments.Add(LocalVariables);
-			if (template.IsThreadSafe)
+
+            registers = Registers;
+            filters = Filters;
+
+            if (template.IsThreadSafe)
             {
                 /*
                  * 2020-03-11 - JPH
@@ -58,9 +62,16 @@ namespace DotLiquid
                 Hash rockRegisters = new Hash();
 
                 var enabledCommandsKey = "EnabledCommands";
+
+                // If the template has a set of default EnabledCommands, apply them.
                 if ( template.Registers != null && template.Registers.ContainsKey( enabledCommandsKey ) )
                 {
                     rockRegisters[enabledCommandsKey] = template.Registers[enabledCommandsKey];
+                }
+                // If the current context specifies a set of EnabledCommands, give them precedence.
+                if ( registers != null && registers.ContainsKey( enabledCommandsKey ) )
+                {
+                    rockRegisters[enabledCommandsKey] = registers[enabledCommandsKey];
                 }
 
                 context = new Context(environments, new Hash(), rockRegisters, RethrowErrors);
@@ -71,8 +82,7 @@ namespace DotLiquid
                 context = new Context(environments, template.InstanceAssigns, template.Registers, RethrowErrors);
             }
             context.ValueTypeTransformers = ValueTypeTransformers;
-			registers = Registers;
-			filters = Filters;
+
 		}
 
 		public static RenderParameters FromContext(Context context)

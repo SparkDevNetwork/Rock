@@ -28,11 +28,11 @@ import { Guid } from "@Obsidian/Types";
  * the EntityTagList control.
  */
 export type EntityTagListCreatePersonalTagOptionsBag = {
-    /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
-
     /** Gets or sets the category unique identifier that the tag should be associated with. */
     categoryGuid?: Guid | null;
+
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 
     /** Gets or sets the name of the tag to be created. */
     name?: string | null;

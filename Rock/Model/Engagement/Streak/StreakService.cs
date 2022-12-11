@@ -54,7 +54,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakId"></param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the HandlePostSaveChanges method instead.", false )]
+        [Obsolete( "Use the HandlePostSaveChanges method instead.", true )]
         public static void HandlePostSaveChangesAsync( int streakId )
         {
             Task.Run( () => HandlePostSaveChanges( streakId ) );

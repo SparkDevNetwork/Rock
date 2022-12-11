@@ -502,6 +502,7 @@ namespace Rock.Tests.Integration.Jobs
 	                , [IsNotified]
 	                , [IsArchived]
 	                , [CommunicationPreference]
+                    , [GroupTypeId]
                 ) VALUES (
 	                0 --IsSystem
 	                , {group.Id}--GroupId
@@ -512,6 +513,7 @@ namespace Rock.Tests.Integration.Jobs
 	                , 0--IsNotified
 	                , 0--IsArchived
 	                , 0--CommunicationPreference
+                    , 1 --GroupTypeId
                 )";
                 rockContext.Database.ExecuteSqlCommand( createGroupMemeberScript );
             }

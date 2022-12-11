@@ -229,9 +229,18 @@ namespace RockWeb.Blocks.Fundraising
             }
             else
             {
-                var groupMember = new GroupMemberService( new RockContext() ).Get( hfGroupMemberId.Value.AsInteger() );
+                var rockContext = new RockContext();
+                var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
                 if ( groupMember != null )
                 {
+                    // Set the requirements values only if there are requirements for this group / group type.
+                    if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+                    {
+                        gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                        gmrcRequirements.Visible = true;
+                        SetRequirementStatuses( rockContext );
+                    }
                     CreateDynamicControls( groupMember );
                 }
             }
@@ -572,10 +581,10 @@ namespace RockWeb.Blocks.Fundraising
                 // Set the requirements values only if there are requirements for this group / group type.
                 if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
                 {
-                    gmrcRequirements.GroupMemberId = groupMemberId;
                     gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
                     gmrcRequirements.Visible = true;
-                    gmrcRequirements.DataBind();
+                    SetRequirementStatuses( rockContext );
+
                     var participantLavaTemplate = this.GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate );
                     lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
                 }
@@ -741,6 +750,22 @@ namespace RockWeb.Blocks.Fundraising
                 SetActiveTab( "Contributions" );
                 btnContributionsTab.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Sets the Requirement Statuses.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        private void SetRequirementStatuses( RockContext rockContext )
+        {
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMember = groupMemberService.Get( hfGroupMemberId.ValueAsInt() );
+
+            gmrcRequirements.RequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
+            gmrcRequirements.SelectedGroupRoleId = groupMember.GroupRoleId;
+            var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
+                groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
+            gmrcRequirements.CreateRequirementStatusControls( groupMember.Id, currentPersonIsLeaderOfCurrentGroup, false );
         }
 
         /// <summary>

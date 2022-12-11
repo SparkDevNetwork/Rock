@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -37,6 +38,32 @@ namespace Rock.Field.Types
     {
         #region Configuration
         private const string HIDE_UNKNOWN_GENDER_KEY = "hideUnknownGender";
+
+        #endregion Configuration
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            if ( configurationValues.GetValueOrNull( HIDE_UNKNOWN_GENDER_KEY ).AsBooleanOrNull() ?? false )
+            {
+                return value.ConvertToEnum<Gender>().ConvertToString();
+            }
+
+            return value.ConvertToEnum<Gender>( Gender.Unknown ).ConvertToString();
+        }
+
+        #endregion
+
+
+        #region WebForms
+#if WEBFORMS
 
         /// <inheritdoc />
         public override List<string> ConfigurationKeys()
@@ -99,26 +126,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion Configuration
-
-        #region Edit Control
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            if (value.IsNullOrWhiteSpace())
-            {
-                return string.Empty;
-            }
-
-            if ( configurationValues.GetValueOrNull( HIDE_UNKNOWN_GENDER_KEY ).AsBooleanOrNull() ?? false )
-            {
-                return value.ConvertToEnum<Gender>().ConvertToString();
-            }
-
-            return value.ConvertToEnum<Gender>( Gender.Unknown ).ConvertToString();
-        }
-
         /// <inheritdoc />
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
@@ -167,6 +174,7 @@ namespace Rock.Field.Types
             editControl?.SetValue( value );
         }
 
+#endif
         #endregion
 
     }

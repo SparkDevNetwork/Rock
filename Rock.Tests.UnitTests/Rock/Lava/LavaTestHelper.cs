@@ -153,10 +153,17 @@ namespace Rock.Tests.UnitTests.Lava
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
-                // Set to Japan Standard Time (UTC+09:00)
-                tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
+                // Set to Tokyo Standard Time aka Japan Standard Time (UTC+09:00)
+                try
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Tokyo Standard Time" );
+                }
+                catch ( TimeZoneNotFoundException )
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
+                }
 
-                Assert.That.IsNotNull( tz, "Timezone 'JST' is not available in this environment." );
+                Assert.That.IsNotNull( tz, "Timezone 'Tokyo Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
@@ -182,8 +189,8 @@ namespace Rock.Tests.UnitTests.Lava
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 // Set to UCT-07:00.
-                tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaii Standard Time" );
-                Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+                tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaiian Standard Time" );
+                Assert.That.IsNotNull( tz, "Timezone 'Hawaiian Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
@@ -601,13 +608,13 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( DateTime? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( DateTime? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
             var engines = GetActiveTestEngines();
 
             foreach ( var engine in engines )
             {
-                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta );
+                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta, mergeValues );
             }
         }
 
@@ -617,13 +624,13 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( DateTimeOffset? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( DateTimeOffset? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
             var engines = GetActiveTestEngines();
 
             foreach ( var engine in engines )
             {
-                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta );
+                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta, mergeValues );
             }
         }
 
@@ -633,9 +640,9 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( string expectedRockDateTimeOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( string expectedRockDateTimeOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            AssertTemplateOutputDate( LavaDateTime.ParseToOffset( expectedRockDateTimeOutput ), inputTemplate, maximumDelta );
+            AssertTemplateOutputDate( LavaDateTime.ParseToOffset( expectedRockDateTimeOutput ), inputTemplate, maximumDelta, mergeValues );
         }
 
         /// <summary>
@@ -644,9 +651,9 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedDateTime"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( ILavaEngine engine, DateTimeOffset? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( ILavaEngine engine, DateTimeOffset? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            var outputString = GetTemplateOutput( engine, inputTemplate );
+            var outputString = GetTemplateOutput( engine, inputTemplate, mergeValues );
 
             var outputDateUtc = LavaDateTime.ParseToOffset( outputString, null );
 
@@ -687,26 +694,11 @@ RockTimeZoneOffset = { RockDateTime.OrgTimeZoneInfo.BaseUtcOffset }
         /// <param name="expectedDateTime"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( ILavaEngine engine, DateTime? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( ILavaEngine engine, DateTime? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            AssertDateIsUtc( expectedDateTime );
+            var expectedOffset = LavaDateTime.ConvertToRockOffset( expectedDateTime ?? DateTime.MinValue );
 
-            var outputString = GetTemplateOutput( engine, inputTemplate );
-
-            var outputDateUtc = LavaDateTime.ParseToUtc( outputString, null );
-
-            WriteOutputToDebug( engine, outputString );
-
-            Assert.That.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
-
-            if ( maximumDelta != null )
-            {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc, maximumDelta.Value );
-            }
-            else
-            {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc );
-            }
+            AssertTemplateOutputDate( engine, expectedOffset, inputTemplate, maximumDelta, mergeValues );
         }
 
         public void AssertDateIsUtc( DateTime? dateTime )

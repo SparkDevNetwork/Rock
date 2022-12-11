@@ -48,6 +48,13 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [BooleanField(
+        "Disallow Group Selection If Specified",
+        Description = "When enabled it will hide the group picker if there is a GroupId in the query string.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.DisallowGroupSelectionIfSpecified )]
     [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
@@ -60,6 +67,11 @@ namespace RockWeb.Blocks.GroupScheduling
             /// The future weeks to show
             /// </summary>
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+
+            /// <summary>
+            /// The disallow group selection if specified
+            /// </summary>
+            public const string DisallowGroupSelectionIfSpecified = "DisallowGroupSelectionIfSpecified";
         }
 
         #region PageParameterKeys
@@ -444,6 +456,12 @@ btnCopyToClipboard.ClientID );
                 var pageParameterGroupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                 if ( pageParameterGroupId.HasValue )
                 {
+                    /*
+                      SK - 11/09/2022
+                      This will hide the group picker if there is a GroupId in the query string.
+                      If there is a GroupIds query string parm. This will not lock the group selection.
+                     */
+                    gpPickedGroups.Enabled = !GetAttributeValue(AttributeKey.DisallowGroupSelectionIfSpecified).AsBoolean() || pageParameterGroupIds.Any();
                     selectedGroupId = pageParameterGroupId.Value;
                     if ( !pageParameterGroupIds.Contains( selectedGroupId.Value ) )
                     {
@@ -1643,7 +1661,7 @@ btnCopyToClipboard.ClientID );
                 lSingleGroupModeColumnHeadingOccurrenceDate.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show time in '10:30 AM' format
-                lSingleGroupModeColumnHeadingOccurrenceScheduleName.Text = occurrenceColumnItem.Schedule?.Name ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lSingleGroupModeColumnHeadingOccurrenceScheduleName.Text = occurrenceColumnItem.Schedule?.AbbreviatedName ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
             }
             else
             {
@@ -1712,7 +1730,7 @@ btnCopyToClipboard.ClientID );
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show schedule name if null show time in '10:30 AM' format
-                lMultiGroupModeOccurrenceScheduleName.Text = attendanceOccurrenceRowItem.Schedule?.Name ?? attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lMultiGroupModeOccurrenceScheduleName.Text = attendanceOccurrenceRowItem.Schedule?.AbbreviatedName ?? attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
                 pnlScheduledOccurrence.Attributes["data-attendanceoccurrence-date"] = attendanceOccurrenceRowItem.ScheduledDateTime.Value.Date.ToISO8601DateString();
             }
 

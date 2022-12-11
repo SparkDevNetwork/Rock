@@ -24,16 +24,29 @@ namespace Rock.Lava.Fluid
     /// </summary>
     internal class FluidTemplateProxy : LavaTemplateBase
     {
+        private FluidTemplate _template;
+        private string _description = null;
+
         #region Constructors
 
-        private FluidTemplate _template;
+        public FluidTemplateProxy( FluidTemplate template, string description )
+        {
+            _template = template;
+            _description = description;
+        }
+
+        #endregion
+
+        /// <inheritdoc>
+        public override string GetDescription()
+        {
+            return _description;
+        }
 
         public FluidTemplateProxy( FluidTemplate template )
         {
             _template = template;
         }
-
-        #endregion
 
         /// <summary>
         /// Get the Fluid template instance.

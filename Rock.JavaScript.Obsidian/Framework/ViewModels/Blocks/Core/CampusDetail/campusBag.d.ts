@@ -30,6 +30,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * Implements the Rock.ViewModels.Utility.EntityBagBase
  */
 export type CampusBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the campus schedules. */
     campusSchedules?: CampusScheduleBag[] | null;
 
@@ -41,6 +47,9 @@ export type CampusBag = {
 
     /** Gets or sets the description. */
     description?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive?: boolean | null;
@@ -71,13 +80,4 @@ export type CampusBag = {
 
     /** Gets or sets the URL. */
     url?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

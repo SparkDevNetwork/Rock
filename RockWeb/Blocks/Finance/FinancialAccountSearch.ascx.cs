@@ -211,7 +211,8 @@ namespace RockWeb.Blocks.Finance
                         GlCode = act.GlCode,
                         AccountType = act.AccountTypeValue?.Value,
                         Description = act.Description,
-                        Path = accountService.GetDelimitedAccountHierarchy( act, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )?.Replace( "^", " > " )
+                        Path = accountService.GetDelimitedAccountHierarchy( act, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )?.Replace( "^", " > " ),
+                        Campus = act.Campus?.Name
                     } )
                     .ToList();
 

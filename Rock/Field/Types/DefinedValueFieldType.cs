@@ -18,8 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -56,24 +58,6 @@ namespace Rock.Field.Types
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
         private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
-
-        /// <summary>
-        /// Returns a list of the configuration keys.
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( DEFINED_TYPE_KEY );
-            configKeys.Add( ALLOW_MULTIPLE_KEY );
-            configKeys.Add( DISPLAY_DESCRIPTION );
-            configKeys.Add( ENHANCED_SELECTION_KEY );
-            configKeys.Add( INCLUDE_INACTIVE_KEY );
-            configKeys.Add( ALLOW_ADDING_NEW_VALUES_KEY );
-            configKeys.Add( REPEAT_COLUMNS_KEY );
-            configKeys.Add( SELECTABLE_VALUES_KEY );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -229,6 +213,511 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
+        }
+
+        #endregion
+
+        #region EntityQualifierConfiguration
+
+        /// <summary>
+        /// Gets the configuration values for this field using the EntityTypeQualiferColumn and EntityTypeQualifierValues
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        public Dictionary<string, Rock.Field.ConfigurationValue> GetConfigurationValuesFromEntityQualifier( string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
+            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
+            configurationValues.Add( ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue( "Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty ) );
+            configurationValues.Add( REPEAT_COLUMNS_KEY, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty ) );
+            configurationValues.Add( SELECTABLE_VALUES_KEY, new ConfigurationValue( "Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
+
+            if ( entityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) )
+            {
+                configurationValues[DEFINED_TYPE_KEY].Value = entityTypeQualifierValue;
+            }
+
+            return configurationValues;
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                    : false;
+
+                var names = new List<string>();
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var definedValue = DefinedValueCache.Get( guid );
+                    if ( definedValue != null )
+                    {
+                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            return formattedValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                    : false;
+
+                var names = new List<string>();
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var definedValue = DefinedValueCache.Get( guid );
+                    if ( definedValue != null )
+                    {
+                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            return formattedValue.Truncate( 100 );
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                : false;
+
+            var definedValues = new List<DefinedValueCache>();
+            foreach ( var guid in guids )
+            {
+                var definedValue = DefinedValueCache.Get( guid );
+                if ( definedValue != null )
+                {
+                    definedValues.Add( definedValue );
+                }
+            }
+
+            return new PublicValue
+            {
+                Value = privateValue,
+                Text = definedValues.Select( v => v.Value ).JoinStrings( ", " ),
+                Description = useDescription ? definedValues.Select( v => v.Description ).JoinStrings( ", " ) : string.Empty
+            }.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var value = publicValue.FromJsonOrNull<PublicValue>();
+
+            return value?.Value ?? string.Empty;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            bool useDescription = false;
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+            {
+                useDescription = true;
+            }
+
+            var values = new List<string>();
+            foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+            {
+                var definedValue = DefinedValueCache.Get( guid );
+                if ( definedValue != null )
+                {
+                    values.Add( useDescription ? definedValue.Description : definedValue.Value );
+                }
+            }
+
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if ( allowMultiple )
+            {
+                return base.GetFilterFormatScript( configurationValues, title );
+            }
+
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 2 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
+                    Value = values[1]
+                };
+            }
+            else if ( values?.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.Contains,
+                    Value = values[0]
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( selectedValues.Any() )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+                var type = propertyType;
+                bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
+                if ( isNullableType )
+                {
+                    type = Nullable.GetUnderlyingType( type );
+                    propertyExpression = Expression.Property( propertyExpression, "Value" );
+                }
+
+                Type genericListType = typeof( List<> );
+                Type specificListType = genericListType.MakeGenericType( type );
+                object specificList = Activator.CreateInstance( specificListType );
+
+                foreach ( string value in selectedValues )
+                {
+                    string tempValue = value;
+
+                    // if this is not for an attribute value, look up the id for the defined value
+                    if ( propertyName != "Value" || propertyType != typeof( string ) )
+                    {
+                        var dv = DefinedValueCache.Get( value.AsGuid() );
+                        tempValue = dv != null ? dv.Id.ToString() : string.Empty;
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( tempValue ) )
+                    {
+                        object obj = Convert.ChangeType( tempValue, type );
+                        specificListType.GetMethod( "Add" ).Invoke( specificList, new object[] { obj } );
+                    }
+                }
+
+                ConstantExpression constantExpression = Expression.Constant( specificList, specificListType );
+                return Expression.Call( constantExpression, specificListType.GetMethod( "Contains", new Type[] { type } ), propertyExpression );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            List<string> selectedValues;
+            if ( allowMultiple || filterValues.Count != 1 )
+            {
+                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                // if it isn't either "Contains" or "Not Contains", just use the base AttributeFilterExpression
+                if ( !( new ComparisonType[] { ComparisonType.Contains, ComparisonType.DoesNotContain } ).Contains( comparisonType ) )
+                {
+                    return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+                }
+
+                //// OR up the where clauses for each of the selected values
+                //// and make sure to wrap commas around things so we don't collide with partial matches
+                //// so it'll do something like this:
+                ////
+                //// WHERE ',' + Value + ',' like '%,bacon,%'
+                //// OR ',' + Value + ',' like '%,lettuce,%'
+                //// OR ',' + Value + ',' like '%,tomato,%'
+
+                if ( filterValues.Count > 1 )
+                {
+                    selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                }
+                else
+                {
+                    selectedValues = new List<string>();
+                }
+
+                Expression comparison = null;
+
+                foreach ( var selectedValue in selectedValues )
+                {
+                    var searchValue = "," + selectedValue + ",";
+                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
+
+                    if ( comparisonType != ComparisonType.Contains )
+                    {
+                        valueExpression = Expression.Not( valueExpression );
+                    }
+
+                    if ( comparison == null )
+                    {
+                        comparison = valueExpression;
+                    }
+                    else
+                    {
+                        comparison = Expression.Or( comparison, valueExpression );
+                    }
+                }
+
+                if ( comparison == null )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else
+                {
+                    return comparison;
+                }
+            }
+
+            selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            int valueCount = selectedValues.Count();
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+            if ( valueCount == 0 )
+            {
+                // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                return new NoAttributeFilterExpression();
+            }
+            else if ( valueCount == 1 )
+            {
+                // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+            }
+            else
+            {
+                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+            }
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new DefinedValueService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region ICachedEntitiesFieldType Members
+        /// <summary>
+        /// Gets the cached defined values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var definedValues = new List<IEntityCache>();
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var definedValue = DefinedValueCache.Get( guid );
+                    if ( definedValue != null )
+                    {
+                        definedValues.Add( definedValue );
+                    }
+                }
+            }
+
+            return definedValues;
+        }
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+
+            if ( oldDisplayDescription != newDisplayDescription )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
+
+            return privateValue
+                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Value and Description properties of
+            // a DefinedValue and should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys.
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( DEFINED_TYPE_KEY );
+            configKeys.Add( ALLOW_MULTIPLE_KEY );
+            configKeys.Add( DISPLAY_DESCRIPTION );
+            configKeys.Add( ENHANCED_SELECTION_KEY );
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( ALLOW_ADDING_NEW_VALUES_KEY );
+            configKeys.Add( REPEAT_COLUMNS_KEY );
+            configKeys.Add( SELECTABLE_VALUES_KEY );
+            return configKeys;
         }
 
         /// <summary>
@@ -423,7 +912,7 @@ namespace Rock.Field.Types
 
                     var definedValues = includeInactive ?
                         DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
-                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where(v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
                     cblSelectableValues.Visible = definedValues?.Any() ?? false;
@@ -518,89 +1007,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region EntityQualifierConfiguration
-
-        /// <summary>
-        /// Gets the configuration values for this field using the EntityTypeQualiferColumn and EntityTypeQualifierValues
-        /// </summary>
-        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
-        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <returns></returns>
-        public Dictionary<string, Rock.Field.ConfigurationValue> GetConfigurationValuesFromEntityQualifier( string entityTypeQualifierColumn, string entityTypeQualifierValue )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
-            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
-            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
-            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
-            configurationValues.Add( ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue( "Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty ) );
-            configurationValues.Add( REPEAT_COLUMNS_KEY, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty ) );
-            configurationValues.Add( SELECTABLE_VALUES_KEY, new ConfigurationValue( "Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
-
-            if ( entityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) )
-            {
-                configurationValues[DEFINED_TYPE_KEY].Value = entityTypeQualifierValue;
-            }
-
-            return configurationValues;
-        }
-
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
-                    : false;
-
-                var names = new List<string>();
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var definedValue = DefinedValueCache.Get( guid );
-                    if ( definedValue != null )
-                    {
-                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return formattedValue;
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var names = new List<string>();
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var definedValue = DefinedValueCache.Get( guid );
-                    if ( definedValue != null )
-                    {
-                        names.Add( definedValue.Value );
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return formattedValue.Truncate( 100 );
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -647,44 +1053,6 @@ namespace Rock.Field.Types
             }
 
             return base.SortValue( parentControl, value, configurationValues );
-        }
-
-        #endregion
-
-        #region Edit Control
-
-        /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guids = privateValue.SplitDelimitedValues().AsGuidList();
-            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
-                : false;
-
-            var definedValues = new List<DefinedValueCache>();
-            foreach ( var guid in guids )
-            {
-                var definedValue = DefinedValueCache.Get( guid );
-                if ( definedValue != null )
-                {
-                    definedValues.Add( definedValue );
-                }
-            }
-
-            return new PublicValue
-            {
-                Value = privateValue,
-                Text = definedValues.Select( v => v.Value ).JoinStrings( ", " ),
-                Description = useDescription ? definedValues.Select( v => v.Description ).JoinStrings( ", " ) : string.Empty
-            }.ToCamelCaseJson( false, true );
-        }
-
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var value = publicValue.FromJsonOrNull<PublicValue>();
-
-            return value?.Value ?? string.Empty;
         }
 
         /// <summary>
@@ -872,10 +1240,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -901,20 +1265,6 @@ namespace Rock.Field.Types
                 // hide the compare control when in SimpleFilter mode
                 lbl.Visible = filterMode != FilterMode.SimpleFilter;
                 return lbl;
-            }
-        }
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.ContainsFilterComparisonTypes;
             }
         }
 
@@ -1008,208 +1358,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            bool useDescription = false;
-            if ( configurationValues != null &&
-                configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
-                configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
-            {
-                useDescription = true;
-            }
-
-            var values = new List<string>();
-            foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-            {
-                var definedValue = DefinedValueCache.Get( guid );
-                if ( definedValue != null )
-                {
-                    values.Add( useDescription ? definedValue.Description : definedValue.Value );
-                }
-            }
-
-            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
-        }
-
-        /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-            if ( allowMultiple )
-            {
-                return base.GetFilterFormatScript( configurationValues, title );
-            }
-
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
-            return string.Format( format, titleJs );
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an entity property value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <returns></returns>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
-        {
-            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
-
-                var type = propertyType;
-                bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
-                if ( isNullableType )
-                {
-                    type = Nullable.GetUnderlyingType( type );
-                    propertyExpression = Expression.Property( propertyExpression, "Value" );
-                }
-
-                Type genericListType = typeof( List<> );
-                Type specificListType = genericListType.MakeGenericType( type );
-                object specificList = Activator.CreateInstance( specificListType );
-
-                foreach ( string value in selectedValues )
-                {
-                    string tempValue = value;
-
-                    // if this is not for an attribute value, look up the id for the defined value
-                    if ( propertyName != "Value" || propertyType != typeof( string ) )
-                    {
-                        var dv = DefinedValueCache.Get( value.AsGuid() );
-                        tempValue = dv != null ? dv.Id.ToString() : string.Empty;
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( tempValue ) )
-                    {
-                        object obj = Convert.ChangeType( tempValue, type );
-                        specificListType.GetMethod( "Add" ).Invoke( specificList, new object[] { obj } );
-                    }
-                }
-
-                ConstantExpression constantExpression = Expression.Constant( specificList, specificListType );
-                return Expression.Call( constantExpression, specificListType.GetMethod( "Contains", new Type[] { type } ), propertyExpression );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
-            List<string> selectedValues;
-            if ( allowMultiple || filterValues.Count != 1 )
-            {
-                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
-
-                // if it isn't either "Contains" or "Not Contains", just use the base AttributeFilterExpression
-                if ( !( new ComparisonType[] { ComparisonType.Contains, ComparisonType.DoesNotContain } ).Contains( comparisonType ) )
-                {
-                    return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
-                }
-
-                //// OR up the where clauses for each of the selected values
-                //// and make sure to wrap commas around things so we don't collide with partial matches
-                //// so it'll do something like this:
-                ////
-                //// WHERE ',' + Value + ',' like '%,bacon,%'
-                //// OR ',' + Value + ',' like '%,lettuce,%'
-                //// OR ',' + Value + ',' like '%,tomato,%'
-
-                if ( filterValues.Count > 1 )
-                {
-                    selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                }
-                else
-                {
-                    selectedValues = new List<string>();
-                }
-
-                Expression comparison = null;
-
-                foreach ( var selectedValue in selectedValues )
-                {
-                    var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
-                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
-
-                    if ( comparisonType != ComparisonType.Contains )
-                    {
-                        valueExpression = Expression.Not( valueExpression );
-                    }
-
-                    if ( comparison == null )
-                    {
-                        comparison = valueExpression;
-                    }
-                    else
-                    {
-                        comparison = Expression.Or( comparison, valueExpression );
-                    }
-                }
-
-                if ( comparison == null )
-                {
-                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
-                    return new NoAttributeFilterExpression();
-                }
-                else
-                {
-                    return comparison;
-                }
-            }
-
-            selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            int valueCount = selectedValues.Count();
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-            if ( valueCount == 0 )
-            {
-                // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
-                return new NoAttributeFilterExpression();
-            }
-            else if ( valueCount == 1 )
-            {
-                // only one value, so do an Equal instead of Contains which might compile a little bit faster
-                ComparisonType comparisonType = ComparisonType.EqualTo;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
-            }
-            else
-            {
-                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
-                return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
-            }
-        }
-
-        #endregion
-
-        #region Entity Methods
-
-        /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
         /// <param name="control">The control.</param>
@@ -1240,113 +1388,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new DefinedValueService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region ICachedEntitiesFieldType Members
-        /// <summary>
-        /// Gets the cached defined values.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public List<IEntityCache> GetCachedEntities( string value )
-        {
-            var definedValues = new List<IEntityCache>();
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var definedValue = DefinedValueCache.Get( guid );
-                    if ( definedValue != null )
-                    {
-                        definedValues.Add( definedValue );
-                    }
-                }
-            }
-
-            return definedValues;
-        }
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
-            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
-
-            if ( oldDisplayDescription != newDisplayDescription )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( privateValue.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
-
-            return privateValue
-                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                .AsGuidList()
-                .Select( g => DefinedValueCache.Get( g ) )
-                .Where( dv => dv != null )
-                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
-                .ToList();
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Value and Description properties of
-            // a DefinedValue and should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
-            };
-        }
-
+#endif
         #endregion
 
         private class PublicValue

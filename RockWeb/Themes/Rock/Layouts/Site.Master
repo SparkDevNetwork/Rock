@@ -115,6 +115,7 @@
     <script>
         Sys.Application.add_load(BindNavEvents);
         Sys.Application.add_load(PreventNumberScroll);
+        Sys.Application.add_load(HandleBackForwardCache);
     </script>
 
 </body>

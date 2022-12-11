@@ -74,6 +74,11 @@ export default defineComponent({
             default: ""
         },
 
+        inputClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         enhanceForLongLists: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -368,6 +373,7 @@ export default defineComponent({
                 v-model:value="internalValue"
                 v-bind="field"
                 class="form-control"
+                :class="inputClasses"
                 :allowClear="isClearable"
                 :loading="computedLoading"
                 :disabled="isDisabled"

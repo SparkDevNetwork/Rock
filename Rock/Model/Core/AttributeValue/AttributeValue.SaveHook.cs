@@ -71,6 +71,15 @@ namespace Rock.Model
                     }
                 }
 
+                // Check if we are newly added or updated and the Value property modified.
+                var valueWasModified = Entry.State == EntityContextState.Added
+                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
+
+                if ( valueWasModified )
+                {
+                    Entity.UpdateValueAsProperties( rockContext );
+                }
+
                 base.PreSave();
             }
 
@@ -126,6 +135,22 @@ namespace Rock.Model
                             new System.Data.SqlClient.SqlParameter( "@personId", personId ) );
                     }
                 }
+
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue] SET ValueAsDateTime = 
+    CASE WHEN 
+	    LEN(value) < 50 and 
+	    ISNULL(value,'') != '' and 
+	    ISNUMERIC([value]) = 0 THEN
+		    CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+			    ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+		    ELSE
+			    TRY_CAST( [value] as datetime )
+		    END
+    END
+WHERE [Id] = @entityId 
+",
+new System.Data.SqlClient.SqlParameter( "@entityId", Entity.Id ) );
 
                 base.PostSave();
             }

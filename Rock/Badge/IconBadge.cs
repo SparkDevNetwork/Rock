@@ -33,7 +33,7 @@ namespace Rock.Badge
         /// </summary>
         /// <param name="person">The person.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
+        [Obsolete( "This method will be removed, use the Entity param instead.", true )]
         public virtual string GetToolTipText( Person person ) {
             return string.Empty;
         }
@@ -43,7 +43,7 @@ namespace Rock.Badge
         /// </summary>
         /// <param name="person">The person.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
+        [Obsolete( "This method will be removed, use the Entity param instead.", true )]
         public virtual string GetIconPath( Person person )
         {
             return string.Empty;
@@ -74,23 +74,9 @@ namespace Rock.Badge
             {
                 var tooltipText = GetToolTipText( entity );
 
-                if ( tooltipText.IsNullOrWhiteSpace() )
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    tooltipText = GetToolTipText( entity as Person );
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-
                 writer.Write( $"<div class=\"badge\" title=\"{tooltipText.EncodeXml( true )}\">" );
 
                 var iconPath = GetIconPath( entity );
-
-                if ( iconPath.IsNullOrWhiteSpace() )
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    iconPath = GetIconPath( entity as Person );
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
 
                 writer.Write( $"<img src=\"{iconPath.EncodeXml( true )}\">" );
 

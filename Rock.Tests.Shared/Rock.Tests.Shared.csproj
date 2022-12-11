@@ -92,12 +92,15 @@
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Constants\TestGuids.cs" />
+    <Compile Include="Rock\Core\Schedules\ScheduleTestHelper.cs" />
     <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
     <Compile Include="TestFramework\CollectionAssertExtensions.cs" />
     <Compile Include="TestFramework\FileAssertExtensions.cs" />
     <Compile Include="TestFramework\xUnitAssertExtensions.cs" />
+    <Compile Include="Utility\DateTimeTestHelper.cs" />
+    <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\TestConfigurationHelper.cs" />
     <Compile Include="Utility\SampleData.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />

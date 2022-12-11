@@ -18,9 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 using Owin;
 
@@ -42,15 +48,9 @@ namespace RockWeb
         /// <param name="app">The application.</param>
         public void Configuration( IAppBuilder app )
         {
-            app.MapSignalR();
-
-            /* 02/18/2022 MDP
-             By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
-             It looks in *all* DLLs in RockWeb/bin. It does this on the first page that includes <script src="/SignalR/hubs"></script>.
-             This initial hit can take 30-60 seconds, so we'll register our own assembly locator to only look in Rock and Rock Plugins.
-             RockWeb.RockMessageHub will be the only Hub. So it doesn't make sense to look in all DLL for any more.
-            */
-            Microsoft.AspNet.SignalR.GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
+            Rock.WebStartup.RockApplicationStartupHelper.LogStartupMessage( "Initializing the RealTime system." );
+            Rock.RealTime.AspNet.AspNetEngineStartup.Configure( app );
+            Rock.WebStartup.RockApplicationStartupHelper.ShowDebugTimingMessage( "Initialized the RealTime system." );
 
             try
             {
@@ -84,23 +84,6 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        /// <summary>
-        /// Class RockHubAssemblyLocator.
-        /// Implements the <see cref="Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator" />
-        /// </summary>
-        /// <seealso cref="Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator" />
-        private class RockHubAssemblyLocator : IAssemblyLocator
-        {
-            /// <summary>
-            /// Gets the assemblies.
-            /// </summary>
-            /// <returns>IList&lt;Assembly&gt;.</returns>
-            public IList<Assembly> GetAssemblies()
-            {
-                return Rock.Reflection.GetRockAndPluginAssemblies();
             }
         }
     }

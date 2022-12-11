@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -245,8 +245,9 @@ namespace Rock.Achievement.Component
                 return updatedAttempts;
             }
 
-            // If the achievement type is not active (or null) then there is nothing to do
-            if ( achievementTypeCache?.IsActive != true )
+            // If the achievement type is not active (or null) OR if there is no person associated to the financial transaction
+            // then there is nothing to do
+            if ( achievementTypeCache?.IsActive != true || financialTransaction.AuthorizedPersonAliasId == null )
             {
                 return updatedAttempts;
             }
@@ -441,7 +442,14 @@ namespace Rock.Achievement.Component
             ComputedStreak accumulation = null;
 
             // Get the transaction dates and begin calculating attempts
-            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, transaction.AuthorizedPersonAlias.PersonId, minDate, maxDate );
+            if ( !transaction.AuthorizedPersonAliasId.HasValue )
+            {
+                ExceptionLogService.LogException( $"{GetType().Name}. CreateNewAttempts cannot process because the transaction does not have an AuthorizedPersonAliasId." );
+                return null;
+            }
+
+            var personId = new PersonAliasService( new RockContext() ).Get( transaction.AuthorizedPersonAliasId.Value ).PersonId;
+            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, personId, minDate, maxDate );
 
             foreach ( var transactionDate in transactionDates )
             {

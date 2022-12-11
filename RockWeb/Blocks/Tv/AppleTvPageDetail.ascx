@@ -43,6 +43,9 @@
                     <fieldset class="mb-4">
                         <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                     </fieldset>
+
+                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+
                     <div class="actions">
                         <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:Button ID="btnSaveAndEdit" runat="server" Text="Save Continue Editing" CssClass="btn btn-link" OnClick="btnSaveAndEdit_Click" />

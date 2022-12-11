@@ -31,8 +31,8 @@ export type SaveFinancialAccountFormSaveAccountOptionsBag = {
     /** Gets or sets the gateway unique identifier. */
     gatewayGuid?: Guid | null;
 
-    /** Gets or sets the username. */
-    username?: string | null;
+    /** Gets or sets the gateway token. */
+    gatewayPersonIdentifier?: string | null;
 
     /** Gets or sets the password. */
     password?: string | null;
@@ -43,6 +43,6 @@ export type SaveFinancialAccountFormSaveAccountOptionsBag = {
     /** Gets or sets the transaction code. */
     transactionCode?: string | null;
 
-    /** Gets or sets the gateway token. */
-    gatewayPersonIdentifier?: string | null;
+    /** Gets or sets the username. */
+    username?: string | null;
 };

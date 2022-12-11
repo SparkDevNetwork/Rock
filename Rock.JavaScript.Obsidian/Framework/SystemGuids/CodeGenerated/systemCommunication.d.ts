@@ -98,4 +98,6 @@ export const enum SystemCommunication {
     GroupAttendanceDigest = "345CD403-11D2-4B74-A467-ADD15572DD4F",
     /** Gets the template guid for  */
     KioskInfoUpdate = "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
+    /** Gets the template guid for Reminder Notifications. */
+    ReminderNotification = "7899958C-BC2F-499E-A5CC-11DE1EF8DF20",
 }

@@ -154,6 +154,23 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Gets the System Settings values for the specified key, returns the default value if the value for the key does not exist
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The value returned if no value exists for the specified key.</param>
+        /// <returns></returns>
+        public static string GetValue( string key, string defaultValue )
+        {
+            string result;
+            if ( Get().SystemSettingsValues.TryGetValue( key, out result ) )
+            {
+                return result;
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="key">The key.</param>

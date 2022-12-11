@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Streaks
 
                     lBiStateGraph.Text = string.Format( @"
                         <div class=""chart-container"">
-                            <ul class=""trend-chart trend-chart-sm"">{0}</ul>
+                            <ul class=""trend-chart trend-chart-sm text-info"">{0}</ul>
                         </div>", stringBuilder );
                 }
             }

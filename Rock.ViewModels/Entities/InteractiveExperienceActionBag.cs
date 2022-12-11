@@ -82,6 +82,14 @@ namespace Rock.ViewModels.Entities
         public bool IsResponseAnonymous { get; set; }
 
         /// <summary>
+        /// Gets or sets the sort order of this action.
+        /// </summary>
+        /// <value>
+        /// The sort order of this action.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the EntityTypeId for the Rock.Model.EntityType of the response visual.
         /// </summary>
         /// <value>

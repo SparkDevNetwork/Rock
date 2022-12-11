@@ -46,7 +46,7 @@ namespace Rock.Workflow.Action
         "Group Member Requirement",
         "Attribute Value",
         Description = "The group member requirement to mark as met. This can be either the GUID of the requirement or a workflow attribute with the requirement. <span class='tip tip-lava'></span>",
-        IsRequired = false,
+        IsRequired = true,
         DefaultValue = "",
         Category = "",
         Order = 1,

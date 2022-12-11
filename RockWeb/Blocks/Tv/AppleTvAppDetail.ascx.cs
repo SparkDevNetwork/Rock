@@ -194,9 +194,11 @@ namespace RockWeb.Blocks.Tv
             site.LoginPageId = ppLoginPage.PageId;
             site.LoginPageRouteId = ppLoginPage.PageRouteId;
 
+            avcAttributes.GetEditValues( site );
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
+                site.SaveAttributeValues( rockContext );
 
                 // Create/Modify API Key
                 additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, txtApiKey.Text, string.Format( "tv_application_{0}", site.Id ), rockContext );
@@ -273,7 +275,20 @@ namespace RockWeb.Blocks.Tv
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            ShowView();
+            var siteId = PageParameter( PageParameterKey.SiteId );
+
+            // If we are in the process of creating a new site, navigate back to the site list page.
+            if ( siteId == null || siteId.AsInteger() == 0 )
+            {
+                NavigateToParentPage();
+            }
+            // Otherwise, navigate back to the current page with the siteId parameter.
+            else
+            {
+                var qryParams = new Dictionary<string, string>();
+                qryParams[PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId );
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
@@ -397,6 +412,9 @@ namespace RockWeb.Blocks.Tv
                 ceApplicationStyles.Text = additionalSettings.ApplicationStyles;
 
                 cbEnablePageViews.Checked = site.EnablePageViews;
+
+                site.LoadAttributes( rockContext );
+                avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
 
                 // Login Page
                 if ( site.LoginPageRoute != null )

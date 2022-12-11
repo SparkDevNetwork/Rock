@@ -463,21 +463,7 @@ namespace Rock.Model
 
             return cteBuilder.ToString();
         }
-
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
-        /// </summary>
-        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" /> to retrieve descendents for.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
-        /// </returns>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need", true )]
-        public IEnumerable<Group> GetAllDescendents( int parentGroupId )
-        {
-            return GetAllDescendentGroups( parentGroupId, true );
-        }
-
+        
         /// <summary>
         /// Returns a list of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
         /// </summary>
@@ -1624,19 +1610,6 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( this.Context as RockContext );
             archivedGroupMember = groupMemberService.GetArchived().Where( a => a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).OrderByDescending( a => a.ArchivedDateTime ).FirstOrDefault();
             return archivedGroupMember;
-        }
-
-        /// <summary>
-        /// Returns true if duplicate group members are allowed in groups
-        /// Normally this is false, but there is a web.config option to allow it
-        /// </summary>
-        /// <param name="group">The group.</param>
-        /// <returns></returns>
-        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", true )]
-        [RockObsolete( "1.9" )]
-        public bool AllowsDuplicateMembers( Group group )
-        {
-            return AllowsDuplicateMembers();
         }
 
         /// <summary>

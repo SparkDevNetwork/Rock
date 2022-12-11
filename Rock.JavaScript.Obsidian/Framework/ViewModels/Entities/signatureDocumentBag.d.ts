@@ -31,11 +31,23 @@ export type SignatureDocumentBag = {
     /** Gets or sets the assigned to person alias identifier. */
     assignedToPersonAliasId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the binary file identifier. */
     binaryFileId?: number | null;
 
     /** The date and time the document completion email was sent. */
     completionEmailSentDateTime?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the document key. */
     documentKey?: string | null;
@@ -46,6 +58,9 @@ export type SignatureDocumentBag = {
     /** The EntityType that this document is related to (example Rock.Model.Registration) */
     entityTypeId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the invite count. */
     inviteCount: number;
 
@@ -54,6 +69,12 @@ export type SignatureDocumentBag = {
 
     /** Gets or sets the last status date. */
     lastStatusDate?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -100,25 +121,4 @@ export type SignatureDocumentBag = {
 
     /** Gets or sets the status. */
     status: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

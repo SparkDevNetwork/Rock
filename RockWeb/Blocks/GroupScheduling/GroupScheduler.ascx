@@ -273,15 +273,15 @@
                                                         <div class="js-resource-name-meta">
                                                             <span class="resource-member-role js-resource-member-role"></span>
                                                         </div>
-                                                        <div class="dropdown js-resource-actions hide-transit">
+                                                        <div class="dropdown js-resource-actions hide-dragging">
                                                             <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                                                         </div>
                                                     </div>
 
-                                                    <div class="resource-preferences js-resource-preferences hide-transit small text-muted">
+                                                    <div class="resource-preferences js-resource-preferences hide-dragging small text-muted">
                                                     </div>
 
-                                                    <div class="resource-scheduled js-resource-scheduled hide-transit small text-muted">
+                                                    <div class="resource-scheduled js-resource-scheduled hide-dragging small text-muted">
                                                     </div>
 
                                                     <div class="resource-meta">
@@ -332,7 +332,7 @@
                                                 <div class="resource-meta">
                                                     <div class="js-resource-meta text-right"></div>
                                                 </div>
-                                                <div class="dropdown js-resource-actions hide-transit">
+                                                <div class="dropdown js-resource-actions hide-dragging">
                                                     <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-right">
                                                         <li>
@@ -403,7 +403,7 @@
                                                     <asp:Panel ID="pnlSingleGroupModeColumnHeading" runat="server" CssClass="board-heading mt-3">
                                                         <div class="d-flex justify-content-between">
                                                             <span class="board-column-title"><asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceDate" runat="server" /></span>
-                                                            <span class="board-column-schedule-name"><asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceScheduleName" runat="server" /></span>
+                                                            <span class="board-column-schedule-name" data-toggle="tooltip" data-placement="bottom" title="<%# Eval("Schedule.AbbreviatedName") %>"><asp:Literal ID="lSingleGroupModeColumnHeadingOccurrenceScheduleName" runat="server" /></span>
                                                         </div>
                                                         <div class="board-heading-pill mt-2 mb-3" style="background:#C8C8C8"></div>
                                                     </asp:Panel>
@@ -425,7 +425,7 @@
                                                                                 </div>
 
                                                                                 <div>
-                                                                                    <span class="board-column-schedule-name"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduleName" /></span>
+                                                                                    <span class="board-column-schedule-name" data-toggle="tooltip" data-placement="bottom" title="<%# Eval("Schedule.AbbreviatedName") %>"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduleName" /></span>
 
                                                                                     <span class="autoscheduler-warning js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
                                                                                         <i class="fa fa-exclamation-triangle"></i>

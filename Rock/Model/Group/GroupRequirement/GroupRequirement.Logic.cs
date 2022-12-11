@@ -101,9 +101,21 @@ namespace Rock.Model
                 var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
                 var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
                 var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
-                personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
-            }
 
+                // If the dataview does not contain anyone in the person query, return a "not applicable" status.
+                if ( !personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) ).Any() )
+                {
+                    var result = personQry.Select( p => p.Id ).ToList().Select( a =>
+                          new PersonGroupRequirementStatus
+                          {
+                              PersonId = Id,
+                              GroupRequirement = this,
+                              MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
+                          } );
+
+                    return result;
+                }
+            }
             var attributeValueService = new AttributeValueService( rockContext );
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
@@ -281,8 +293,10 @@ namespace Rock.Model
             else
             {
                 // manual
-                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable()
-                    .Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
+                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirementQry = groupMemberRequirementService.Queryable()
+                    .Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id );
+                var groupMemberRequirementWithMetDateTimeQry = groupMemberRequirementQry.Where( a => a.RequirementMetDateTime.HasValue );
 
                 var result = personQry.ToList().Select( a =>
                 {
@@ -297,9 +311,9 @@ namespace Rock.Model
                     {
                         PersonId = a.Id,
                         GroupRequirement = this,
+                        GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.Id, this.Id, groupId, groupRoleId ),
                         RequirementDueDate = possibleDueDate,
-                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) &&
-                        !groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id && r.RequirementWarningDateTime.HasValue ) ? MeetsGroupRequirement.Meets
+                        MeetsGroupRequirement = groupMemberRequirementWithMetDateTimeQry.Any( r => r.GroupMember.PersonId == a.Id ) ? MeetsGroupRequirement.Meets
                         : possibleDueDate.HasValue ? possibleDueDate > RockDateTime.Now ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet : MeetsGroupRequirement.NotMet
                     };
                 } );
@@ -318,9 +332,28 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Does not pass the RockContext into subsequent method calls.  Use PersonMeetsGroupRequirement( RockContext rockContext...) instead.", false )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int groupId, int? groupRoleId )
         {
-            var rockContext = new RockContext();
+            return PersonMeetsGroupRequirement( null, personId, groupId, groupRoleId );
+        }
+
+        /// <summary>
+        /// Check if the Person meets the group requirement for the role.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( RockContext rockContext, int personId, int groupId, int? groupRoleId )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
             var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupId, groupRoleId ).FirstOrDefault();
             if ( result == null )
@@ -387,31 +420,26 @@ namespace Rock.Model
 
                 groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
 
-                if ( ( meetsGroupRequirement == MeetsGroupRequirement.Meets ) || ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ) )
+                if ( meetsGroupRequirement == MeetsGroupRequirement.Meets )
                 {
-                    // they meet the requirement so update the Requirement Met Date/Time
+                    // They meet the requirement so update the Requirement Met Date/Time.
                     groupMemberRequirement.RequirementMetDateTime = currentDateTime;
                     groupMemberRequirement.RequirementFailDateTime = null;
                 }
-                else
-                {
-                    // they don't meet the requirement so set the Requirement Met Date/Time to null
-                    groupMemberRequirement.RequirementMetDateTime = null;
-                    groupMemberRequirement.RequirementFailDateTime = currentDateTime;
-                }
-
-                if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                else if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
                 {
                     if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
                     {
-                        // they have a warning for the requirement, and didn't have a warning already
+                        // They have a warning for the requirement, and didn't have a warning already.
                         groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
                     }
                 }
                 else
                 {
-                    // no warning, so set to null
+                    // They don't meet the requirement so set the Requirement Met and the Warning Date/Time to null.
+                    groupMemberRequirement.RequirementMetDateTime = null;
                     groupMemberRequirement.RequirementWarningDateTime = null;
+                    groupMemberRequirement.RequirementFailDateTime = currentDateTime;
                 }
             }
         }

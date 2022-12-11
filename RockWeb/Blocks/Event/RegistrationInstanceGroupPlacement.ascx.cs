@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -27,6 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -97,15 +99,38 @@ namespace RockWeb.Blocks.Event
             public const string PlacementConfigurationJSON_RegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}";
             public const string RegistrantAttributeFilter_RegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}";
             public const string RegistrantAttributeFilter_RegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}";
+            public const string GroupAttributeFilter_GroupTypeId = "GroupAttributeFilter_GroupTypeId_{0}";
+            public const string GroupMemberAttributeFilter_GroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
         }
 
         #endregion UserPreferenceKeys
+
+        #region Properties
+
+        /// <summary>
+        /// The placemnent group type identifier.
+        /// </summary>
+        public int PlacementGroupTypeId
+        {
+            get
+            {
+                return ( ViewState[ViewStateKey.PlacementGroupTypeId] as string ).AsInteger();
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.PlacementGroupTypeId] = value.ToString();
+            }
+        }
+
+        #endregion Properties
 
         #region ViewStateKeys
 
         private static class ViewStateKey
         {
             public const string DataFilterJSON = "DataFilterJSON";
+            public const string PlacementGroupTypeId = "PlacementGroupTypeId";
         }
 
         #endregion ViewStateKeys
@@ -190,6 +215,22 @@ namespace RockWeb.Blocks.Event
             public int[] DisplayedRegistrantAttributeIds { get; set; }
 
             /// <summary>
+            /// Gets or sets a value indicating whether [display registrant attributes].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [display registrant attributes]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DisplayRegistrantAttributes { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [apply registrant filters].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [apply registrant filters]; otherwise, <c>false</c>.
+            /// </value>
+            public bool ApplyRegistrantFilters { get; set; }
+
+            /// <summary>
             /// Gets or sets the registrant data view filter (Person DataViewFilter)
             /// </summary>
             /// <value>
@@ -260,7 +301,7 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Rock/Controls/GroupPlacementTool/groupPlacementTool.js" );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-placement.css", true );
@@ -361,10 +402,11 @@ namespace RockWeb.Blocks.Event
             hfOptionsRegistrantPersonDataViewFilterId.Value = placementConfiguration.RegistrantPersonDataViewFilterId.ToString();
 
             hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
-            hfOptionsDisplayedGroupMemberAttributeKeys.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Key ).ToList().AsDelimited( "," );
-
+            hfOptionsDisplayedGroupMemberAttributeIds.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.ToJson();
             hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToJavaScriptValue();
             hfOptionsHighlightGenders.Value = placementConfiguration.HighlightGenders.ToJavaScriptValue();
+            hfOptionsDisplayRegistrantAttributes.Value = placementConfiguration.DisplayRegistrantAttributes.ToJavaScriptValue();
+            hfOptionsApplyRegistrantFilters.Value = placementConfiguration.ApplyRegistrantFilters.ToJavaScriptValue();
             hfOptionsHideFullGroups.Value = placementConfiguration.HideFullGroups.ToJavaScriptValue();
             hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
             hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToJavaScriptValue();
@@ -389,6 +431,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
+                    PlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
                     hfRegistrationTemplatePlacementGroupTypeId.Value = registrationTemplatePlacementGroupTypeId.ToString();
                     hfRegistrationTemplatePlacementAllowMultiplePlacements.Value = registrationTemplatePlacement.AllowMultiplePlacements.ToJavaScriptValue();
                 }
@@ -578,6 +621,7 @@ namespace RockWeb.Blocks.Event
 
         private Dictionary<int, List<int>> _placementGroupIdRegistrationInstanceIds;
         private List<int> _registrationTemplatePlacementGroupIds;
+        private Dictionary<int, Dictionary<int,int>> _placementGroupIdGroupRoleIdCount;
 
         /// <summary>
         /// Binds the placement groups repeater.
@@ -594,7 +638,7 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-
+            var groupService = new GroupService( rockContext );
             RegistrationTemplatePlacement registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
 
             List<RegistrationInstance> registrationInstanceList = null;
@@ -633,6 +677,8 @@ namespace RockWeb.Blocks.Event
                         placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
                     }
 
+                    placementGroupsQry = ApplyGroupFilter( groupType, groupService, placementGroupsQry );
+
                     var placementGroups = placementGroupsQry.ToList();
 
                     foreach ( var placementGroup in placementGroups )
@@ -652,6 +698,8 @@ namespace RockWeb.Blocks.Event
                 registrationTemplatePlacementGroupQuery = registrationTemplatePlacementGroupQuery.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId );
             }
 
+            registrationTemplatePlacementGroupQuery = ApplyGroupFilter( groupType, groupService, registrationTemplatePlacementGroupQuery );
+
             var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery.ToList();
             _registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
             var placementGroupList = new List<Group>();
@@ -661,11 +709,52 @@ namespace RockWeb.Blocks.Event
             // A placement group could be associated with both the instance and the template. So, we'll make sure the same group isn't listed more than once
             placementGroupList = placementGroupList.DistinctBy( a => a.Id ).ToList();
             placementGroupList = placementGroupList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-
+            var groupIds = placementGroupList.Select( a => a.Id ).ToList();
             var groupMemberService = new GroupMemberService( rockContext );
+            _placementGroupIdGroupRoleIdCount = groupMemberService
+               .Queryable()
+               .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && groupIds.Contains( a.GroupId ) )
+               .ToList()
+               .GroupBy( a => a.GroupId )
+               .ToDictionary( a => a.Key, b => b.GroupBy( a => a.GroupRoleId ).ToDictionary( a => a.Key, a => a.Count() ) );
 
             rptPlacementGroups.DataSource = placementGroupList;
             rptPlacementGroups.DataBind();
+        }
+
+        private IQueryable<Group> ApplyGroupFilter( GroupTypeCache groupType, GroupService groupService, IQueryable<Group> placementGroupsQry )
+        {
+            Dictionary<int, string> attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.GroupAttributeFilter_GroupTypeId, groupType.Id ) ).FromJsonOrNull<Dictionary<int, string>>();
+            var parameterExpression = groupService.ParameterExpression;
+            Expression groupWhereExpression = null;
+            if (attributeFilters != null)
+            {
+                foreach (var attributeFilter in attributeFilters)
+                {
+                    var attribute = AttributeCache.Get(attributeFilter.Key);
+                    var attributeFilterValues = attributeFilter.Value.FromJsonOrNull<List<string>>();
+                    var entityField = EntityHelper.GetEntityFieldForAttribute(attribute);
+                    if (entityField != null && attributeFilterValues != null)
+                    {
+                        var attributeWhereExpression = ExpressionHelper.GetAttributeExpression(groupService, parameterExpression, entityField, attributeFilterValues);
+                        if (groupWhereExpression == null)
+                        {
+                            groupWhereExpression = attributeWhereExpression;
+                        }
+                        else
+                        {
+                            groupWhereExpression = Expression.AndAlso(groupWhereExpression, attributeWhereExpression);
+                        }
+                    }
+                }
+            }
+
+            if ( groupWhereExpression != null )
+            {
+                placementGroupsQry = placementGroupsQry.Where( parameterExpression, groupWhereExpression );
+            }
+
+            return placementGroupsQry;
         }
 
         #endregion
@@ -809,7 +898,8 @@ namespace RockWeb.Blocks.Event
             }
 
             cblDisplayedRegistrantAttributes.SetValues( placementConfiguration.DisplayedRegistrantAttributeIds );
-
+            cbDisplayRegistrantAttributes.Checked = placementConfiguration.DisplayRegistrantAttributes;
+            cbApplyRegistrantFilters.Checked = placementConfiguration.ApplyRegistrantFilters;
             var fakeGroup = new Rock.Model.Group { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
             fakeGroup.LoadAttributes();
 
@@ -821,6 +911,7 @@ namespace RockWeb.Blocks.Event
             }
 
             cblDisplayedGroupAttributes.SetValues( placementConfiguration.DisplayedGroupAttributeIds );
+            AddGroupAttributeFilters( true );
 
             var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
             fakeGroupMember.LoadAttributes();
@@ -832,6 +923,7 @@ namespace RockWeb.Blocks.Event
             }
 
             cblDisplayedGroupMemberAttributes.SetValues( placementConfiguration.DisplayedGroupMemberAttributeIds );
+            AddGroupMemberAttributeFilters( true );
             cbHideFullGroups.Checked = placementConfiguration.HideFullGroups;
 
             var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
@@ -857,6 +949,8 @@ namespace RockWeb.Blocks.Event
             }
 
             UpdateDisplayedRegistrantFilters();
+            UpdateDisplayedGroupFilters();
+            UpdateDisplayedGroupMemberFilters();
         }
 
         /// <summary>
@@ -869,7 +963,8 @@ namespace RockWeb.Blocks.Event
             var dataViewFilter = ReportingHelper.GetFilterFromControls( phPersonFilters );
 
             SaveRegistrantAttributeFilters();
-
+            SaveGroupAttributeFilters();
+            SaveGroupMemberAttributeFilters();
             // update Guids since we are creating a new dataFilter and children and deleting the old one
             SetNewDataFilterGuids( dataViewFilter );
 
@@ -906,7 +1001,8 @@ namespace RockWeb.Blocks.Event
             placementConfiguration.HighlightGenders = cbHighlightGenders.Checked;
             placementConfiguration.ShowFees = cbShowFees.Checked;
             placementConfiguration.DisplayedRegistrantAttributeIds = cblDisplayedRegistrantAttributes.SelectedValues.AsIntegerList().ToArray();
-
+            placementConfiguration.DisplayRegistrantAttributes = cbDisplayRegistrantAttributes.Checked;
+            placementConfiguration.ApplyRegistrantFilters = cbApplyRegistrantFilters.Checked;
             placementConfiguration.RegistrantPersonDataViewFilterId = dataViewFilter.Id;
             placementConfiguration.DisplayedGroupAttributeIds = cblDisplayedGroupAttributes.SelectedValues.AsIntegerList().ToArray();
             placementConfiguration.HideFullGroups = cbHideFullGroups.Checked;
@@ -1011,7 +1107,13 @@ namespace RockWeb.Blocks.Event
             }
 
             var rptPlacementGroupRole = e.Item.FindControl( "rptPlacementGroupRole" ) as Repeater;
-            rptPlacementGroupRole.DataSource = _groupTypeRoles;
+            if ( !_placementGroupIdGroupRoleIdCount.ContainsKey( placementGroup.Id ) )
+            {
+                _placementGroupIdGroupRoleIdCount.Add( placementGroup.Id, new Dictionary<int, int>() );
+            }
+
+            var groupRoleIdCount = _placementGroupIdGroupRoleIdCount[placementGroup.Id];
+            rptPlacementGroupRole.DataSource = _groupTypeRoles.ToDictionary( a => a, a => groupRoleIdCount.ContainsKey( a.Id ) ? groupRoleIdCount[a.Id] : 0 );
             rptPlacementGroupRole.DataBind();
         }
 
@@ -1022,20 +1124,23 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPlacementGroupRole_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var groupTypeRole = e.Item.DataItem as GroupTypeRoleCache;
-            if ( groupTypeRole == null )
+            if (e.Item.DataItem == null)
             {
                 return;
             }
 
+            var groupTypeRole = (KeyValuePair<GroupTypeRoleCache, int>)e.Item.DataItem;
             var hfGroupTypeRoleId = e.Item.FindControl( "hfGroupTypeRoleId" ) as HiddenFieldWithClass;
-            hfGroupTypeRoleId.Value = groupTypeRole.Id.ToString();
+            hfGroupTypeRoleId.Value = groupTypeRole.Key.Id.ToString();
 
             var hfGroupTypeRoleMaxMembers = e.Item.FindControl( "hfGroupTypeRoleMaxMembers" ) as HiddenFieldWithClass;
-            hfGroupTypeRoleMaxMembers.Value = groupTypeRole.MaxCount.ToString();
+            hfGroupTypeRoleMaxMembers.Value = groupTypeRole.Key.MaxCount.ToString();
 
             var lGroupRoleName = e.Item.FindControl( "lGroupRoleName" ) as Literal;
-            lGroupRoleName.Text = groupTypeRole.Name.Pluralize();
+            lGroupRoleName.Text = groupTypeRole.Key.Name.Pluralize();
+
+            var lGroupRoleCount = e.Item.FindControl( "lGroupRoleCount" ) as Literal;
+            lGroupRoleCount.Text = groupTypeRole.Value.ToStringSafe();
         }
 
         #endregion
@@ -1267,7 +1372,7 @@ namespace RockWeb.Blocks.Event
             }
 
             string errorMessage;
-            if (!HasValidChildGroups( parentGroupId.Value, groupTypeId, out errorMessage ))
+            if ( !HasValidChildGroups( parentGroupId.Value, groupTypeId, out errorMessage ) )
             {
                 nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
                 nbAddExistingPlacementMultipleGroupsWarning.Text = errorMessage;
@@ -1346,6 +1451,8 @@ namespace RockWeb.Blocks.Event
             }
 
             AddRegistrantAttributeFilters( false );
+            AddGroupAttributeFilters( false );
+            AddGroupMemberAttributeFilters( true );
         }
 
         /// <summary>
@@ -1728,6 +1835,263 @@ namespace RockWeb.Blocks.Event
 
         #endregion Registrant Filter
 
+        #region Group Filter
+
+        /// <summary>
+        /// Adds the group attribute filters.
+        /// </summary>
+        public void AddGroupAttributeFilters( bool setValues )
+        {
+            var groupTypeId = PlacementGroupTypeId;
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var groupAttributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+
+            phGroupFilters.Controls.Clear();
+
+            Dictionary<int, string> attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.GroupAttributeFilter_GroupTypeId, groupTypeId ) ).FromJsonOrNull<Dictionary<int, string>>();
+
+            foreach ( var attribute in groupAttributeList )
+            {
+                // Add dynamic filter fields
+                var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterGroups_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+
+                if ( setValues && attributeFilters != null )
+                {
+                    var attributeFilterValue = attributeFilters.GetValueOrNull( attribute.Id );
+                    if ( attributeFilterValue.IsNotNullOrWhiteSpace() )
+                    {
+                        var filterValues = attributeFilterValue.FromJsonOrNull<List<string>>();
+                        attribute.FieldType.Field.SetFilterValues( filterFieldControl, attribute.QualifierValues, filterValues );
+                    }
+                }
+
+                if ( filterFieldControl != null )
+                {
+                    if ( filterFieldControl is IRockControl )
+                    {
+                        var rockControl = ( IRockControl ) filterFieldControl;
+                        rockControl.Label = attribute.Name;
+                        rockControl.Help = attribute.Description;
+                        phGroupFilters.Controls.Add( filterFieldControl );
+                    }
+                    else
+                    {
+                        var wrapper = new RockControlWrapper();
+                        wrapper.ID = filterFieldControl.ID + "_wrapper";
+                        wrapper.Label = attribute.Name;
+                        wrapper.Controls.Add( filterFieldControl );
+                        phGroupFilters.Controls.Add( wrapper );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblDisplayedGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblDisplayedGroupAttributes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateDisplayedGroupFilters();
+        }
+
+        /// <summary>
+        /// Updates the displayed group filters.
+        /// </summary>
+        private void UpdateDisplayedGroupFilters()
+        {
+            var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var groupAttributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+            var displayedGroupAttributes = cblDisplayedGroupAttributes.SelectedValuesAsInt;
+            foreach ( var attribute in groupAttributeList )
+            {
+                if ( attribute.FieldType.Field.HasFilterControl() )
+                {
+                    var filterControl = phGroupFilters.FindControl( "filterGroups_" + attribute.Id.ToString() );
+                    var filterControlWrapper = phGroupFilters.FindControl( "filterGroups_" + attribute.Id.ToString() + "_wrapper" );
+                    if ( filterControl != null && filterControlWrapper != null )
+                    {
+                        filterControl.Visible = displayedGroupAttributes.Contains( attribute.Id );
+                        if ( filterControlWrapper != null )
+                        {
+                            filterControlWrapper.Visible = displayedGroupAttributes.Contains( attribute.Id );
+                        }
+                    }
+                }
+            }
+
+            // hide the registrant filters section if there aren't any visible
+            rcwGroupFilters.Visible = groupAttributeList.Where( a => displayedGroupAttributes.Contains( a.Id ) ).Any();
+        }
+
+        /// <summary>
+        /// Saves the group attribute filters.
+        /// </summary>
+        public void SaveGroupAttributeFilters()
+        {
+            var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var groupAttributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+            Dictionary<int, string> attributeFilters = new Dictionary<int, string>();
+            foreach ( var attribute in groupAttributeList )
+            {
+                var filterControl = phGroupFilters.FindControl( "filterGroups_" + attribute.Id.ToString() );
+
+                if ( filterControl != null && filterControl.Visible )
+                {
+                    try
+                    {
+                        var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                        attributeFilters.Add( attribute.Id, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+
+            SetBlockUserPreference( string.Format( UserPreferenceKey.GroupAttributeFilter_GroupTypeId, groupTypeId ), attributeFilters.ToJson() );
+        }
+
+        #endregion Group Filter
+
+        #region Group Member Filter
+
+        /// <summary>
+        /// Adds the group member attribute filters.
+        /// </summary>
+        public void AddGroupMemberAttributeFilters( bool setValues )
+        {
+            var groupTypeId = PlacementGroupTypeId;
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
+            fakeGroupMember.LoadAttributes();
+            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+
+            phGroupMemberFilters.Controls.Clear();
+
+            Dictionary<int, string> attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.GroupMemberAttributeFilter_GroupTypeId, groupTypeId ) ).FromJsonOrNull<Dictionary<int, string>>();
+
+            foreach ( var attribute in groupMemberAttributeList )
+            {
+                // Add dynamic filter fields
+                var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterGroupMembers_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+
+                if ( setValues && attributeFilters != null )
+                {
+                    var attributeFilterValue = attributeFilters.GetValueOrNull( attribute.Id );
+                    if ( attributeFilterValue.IsNotNullOrWhiteSpace() )
+                    {
+                        var filterValues = attributeFilterValue.FromJsonOrNull<List<string>>();
+                        attribute.FieldType.Field.SetFilterValues( filterFieldControl, attribute.QualifierValues, filterValues );
+                    }
+                }
+
+                if ( filterFieldControl != null )
+                {
+                    if ( filterFieldControl is IRockControl )
+                    {
+                        var rockControl = ( IRockControl ) filterFieldControl;
+                        rockControl.Label = attribute.Name;
+                        rockControl.Help = attribute.Description;
+                        phGroupMemberFilters.Controls.Add( filterFieldControl );
+                    }
+                    else
+                    {
+                        var wrapper = new RockControlWrapper();
+                        wrapper.ID = filterFieldControl.ID + "_wrapper";
+                        wrapper.Label = attribute.Name;
+                        wrapper.Controls.Add( filterFieldControl );
+                        phGroupMemberFilters.Controls.Add( wrapper );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblDisplayedGroupMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblDisplayedGroupMemberAttributes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateDisplayedGroupMemberFilters();
+        }
+
+        /// <summary>
+        /// Updates the displayed group member filters.
+        /// </summary>
+        private void UpdateDisplayedGroupMemberFilters()
+        {
+            var groupTypeId = PlacementGroupTypeId;
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
+            fakeGroupMember.LoadAttributes();
+            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            var displayedGroupMemberAttributes = cblDisplayedGroupMemberAttributes.SelectedValuesAsInt;
+            foreach ( var attribute in groupMemberAttributeList )
+            {
+                if ( attribute.FieldType.Field.HasFilterControl() )
+                {
+                    var filterControl = phGroupMemberFilters.FindControl( "filterGroupMembers_" + attribute.Id.ToString() );
+                    var filterControlWrapper = phGroupMemberFilters.FindControl( "filterGroupMembers_" + attribute.Id.ToString() + "_wrapper" );
+                    if ( filterControl != null && filterControlWrapper != null )
+                    {
+                        filterControl.Visible = displayedGroupMemberAttributes.Contains( attribute.Id );
+                        if ( filterControlWrapper != null )
+                        {
+                            filterControlWrapper.Visible = displayedGroupMemberAttributes.Contains( attribute.Id );
+                        }
+                    }
+                }
+            }
+
+            // hide the registrant filters section if there aren't any visible
+            rcwGroupMemberFilters.Visible = groupMemberAttributeList.Where( a => displayedGroupMemberAttributes.Contains( a.Id ) ).Any();
+        }
+
+        /// <summary>
+        /// Saves the group member attribute filters.
+        /// </summary>
+        public void SaveGroupMemberAttributeFilters()
+        {
+            var groupTypeId = PlacementGroupTypeId;
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId };
+            fakeGroup.LoadAttributes();
+            var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
+            fakeGroupMember.LoadAttributes();
+            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            Dictionary<int, string> attributeFilters = new Dictionary<int, string>();
+            foreach ( var attribute in groupMemberAttributeList )
+            {
+                var filterControl = phGroupMemberFilters.FindControl( "filterGroupMembers_" + attribute.Id.ToString() );
+
+                if ( filterControl != null && filterControl.Visible )
+                {
+                    try
+                    {
+                        var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                        attributeFilters.Add( attribute.Id, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+
+            SetBlockUserPreference( string.Format( UserPreferenceKey.GroupMemberAttributeFilter_GroupTypeId, groupTypeId ), attributeFilters.ToJson() );
+        }
+
+        #endregion Group Member Filter
 
     }
 }

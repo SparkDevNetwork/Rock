@@ -257,6 +257,7 @@
     <Compile Include="Entities\InteractiveExperienceActionBag.cs" />
     <Compile Include="Entities\InteractiveExperienceAnswerBag.cs" />
     <Compile Include="Entities\InteractiveExperienceBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceOccurrenceBag.cs" />
     <Compile Include="Entities\InteractiveExperienceScheduleBag.cs" />
     <Compile Include="Entities\InteractiveExperienceScheduleCampusBag.cs" />
     <Compile Include="Entities\LavaShortcodeBag.cs" />
@@ -308,6 +309,8 @@
     <Compile Include="Entities\RegistrationTemplateFormFieldBag.cs" />
     <Compile Include="Entities\RegistrationTemplatePlacementBag.cs" />
     <Compile Include="Entities\RelatedEntityBag.cs" />
+    <Compile Include="Entities\ReminderBag.cs" />
+    <Compile Include="Entities\ReminderTypeBag.cs" />
     <Compile Include="Entities\RemoteAuthenticationSessionBag.cs" />
     <Compile Include="Entities\ReportBag.cs" />
     <Compile Include="Entities\ReportFieldBag.cs" />
@@ -364,6 +367,12 @@
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValuePickerSaveNewValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGetSettingsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerSettingsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGoogleMapSettingsBag.cs" />
+    <Compile Include="Rest\Controls\GeoPickerGetGoogleMapSettingsOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowActionTypePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />
@@ -412,6 +421,7 @@
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />
     <Compile Include="Utility\EntityAuditBag.cs" />
+    <Compile Include="Utility\ITaskActivityProgressMessage.cs" />
     <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />
@@ -423,6 +433,9 @@
     <Compile Include="Utility\PublicEditableAttributeBag.cs" />
     <Compile Include="Utility\ListItemBag.cs" />
     <Compile Include="Finance\SavedFinancialAccountListItemBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressLogBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressStatusBag.cs" />
+    <Compile Include="Utility\TaskActivityProgressUpdateBag.cs" />
     <Compile Include="Utility\TreeItemBag.cs" />
     <Compile Include="Entities.Partials\AttributeValueBag.partial.cs" />
     <Compile Include="Entities.Partials\AttributeBag.partial.cs" />

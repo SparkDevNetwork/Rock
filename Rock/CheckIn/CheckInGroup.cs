@@ -170,8 +170,11 @@ namespace Rock.CheckIn
             var locations = Locations.Where( t => !t.ExcludedByFilter );
             if ( schedule != null )
             {
-                locations = locations.Where( t => t.AvailableForSchedule.Contains( schedule.Schedule.Id ) );
+                locations = locations
+                    .Where( t => t.AvailableForSchedule.Contains( schedule.Schedule.Id ) )
+                    .Where( t => t.Schedules.Where( s => s.ExcludedByFilter == false && s.Schedule.Id == schedule.Schedule.Id ).Any() );
             }
+
             return locations.ToList();
         }
 

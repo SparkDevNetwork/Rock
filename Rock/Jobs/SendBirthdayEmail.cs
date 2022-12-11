@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -43,8 +41,7 @@ namespace Rock.Jobs
          Leave blank to include all ages. Note: If a person's birth year is blank, they will get an email regardless of the age range." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Statuses", "To limit to people by connection status, specify the connection status to include", false, true )]
 
-    [DisallowConcurrentExecution]
-    public class SendBirthdayEmail : IJob
+    public class SendBirthdayEmail : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -57,17 +54,13 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            Guid? systemEmailGuid = dataMap.GetString( "BirthdayEmail" ).AsGuidOrNull();
+                        Guid? systemEmailGuid = GetAttributeValue( "BirthdayEmail" ).AsGuidOrNull();
 
             var emailService = new SystemCommunicationService( rockContext );
 
@@ -87,7 +80,7 @@ namespace Rock.Jobs
 
             // only include alive people that have record status of Active
             var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
-            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
+            var ageRange = ( GetAttributeValue( "AgeRange" ) ?? string.Empty ).Split( ',' );
             if ( ageRange.Length == 2 )
             {
                 int? minimumAge = ageRange[0].AsIntegerOrNull();
@@ -98,7 +91,7 @@ namespace Rock.Jobs
             // only include people whose birthday is today (which can be determined from the computed DaysUntilBirthday column)
             personQry = personQry.Where( a => a.DaysUntilBirthday.HasValue && a.DaysUntilBirthday == 0 );
 
-            var connectionStatusGuids = ( dataMap.GetString( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
+            var connectionStatusGuids = ( GetAttributeValue( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
 
             if ( connectionStatusGuids.Any() )
             {
@@ -124,7 +117,7 @@ namespace Rock.Jobs
             var errors = new List<string>();
 
             emailMessage.Send(out errors);
-            context.Result = string.Format( "{0} birthday emails sent", recipients.Count() );
+            this.Result = string.Format( "{0} birthday emails sent", recipients.Count() );
 
             if (errors.Any())
             {
@@ -133,7 +126,7 @@ namespace Rock.Jobs
                 sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
-                context.Result += errorMessage;
+                this.Result += errorMessage;
                 var exception = new Exception( errorMessage);
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );

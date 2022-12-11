@@ -28,6 +28,12 @@ export type LocationBag = {
     /** Gets or sets the Local Assessor's parcel identification value that is linked to the location. */
     assessorParcelId?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the barcode. */
     barcode?: string | null;
 
@@ -39,6 +45,12 @@ export type LocationBag = {
 
     /** Gets or sets the county. */
     county?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets threshold that will prevent checkin (no option to override) */
     firmRoomThreshold?: number | null;
@@ -64,6 +76,9 @@ export type LocationBag = {
     /** Gets or sets the GeoPoint (GeoLocation) for the location */
     geoPoint?: unknown;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the image identifier. */
     imageId?: number | null;
 
@@ -78,6 +93,12 @@ export type LocationBag = {
      * that this is. Examples: Campus, Building, Room, etc
      */
     locationTypeValueId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Location's Name. */
     name?: string | null;
@@ -114,25 +135,4 @@ export type LocationBag = {
 
     /** Gets or sets the second line of the Location's Street/Mailing Address.  */
     street2?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

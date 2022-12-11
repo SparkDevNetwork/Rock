@@ -304,6 +304,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ReminderType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, ReminderType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Report>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Report.FriendlyTypeName );

@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationAttachment View Model */
 export type CommunicationAttachmentBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the PersonId of the Rock.Model.Person who is being sent the Rock.Model.Communication. */
     binaryFileId: number;
 
@@ -34,24 +40,18 @@ export type CommunicationAttachmentBag = {
     /** Indicates if the attachment is for SMS recipients or Email recipients */
     communicationType: number;
 
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
     /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 };

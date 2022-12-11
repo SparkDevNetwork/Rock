@@ -273,6 +273,21 @@ namespace Rock.Rest.Controllers
                     interaction.EntityId = pageId;
                 }
 
+                var pageGuid = pageId.HasValue ? PageCache.GetGuid( pageId.Value ) : null;
+
+                // We should always get this, but just in case.
+                if ( pageGuid != null )
+                {
+                    var page = PageCache.Get( pageGuid.Value );
+                    var site = SiteCache.Get( page.SiteId );
+
+                    // We can infer the medium from which someone is consuming this content by getting the SiteType
+                    // of the page the media was on (Web, Mobile, TV). We are setting this as an indexable
+                    // column for an easy way to differentiate where people are watching the most
+                    // content from.
+                    interaction.ChannelCustomIndexed1 = site.SiteType.ToString();
+                }
+
                 interaction.InteractionLength = watchedPercentage;
                 interaction.InteractionEndDateTime = RockDateTime.Now;
                 interaction.RelatedEntityTypeId = mediaInteraction.RelatedEntityTypeId;

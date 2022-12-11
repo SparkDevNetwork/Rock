@@ -68,6 +68,8 @@
                 self.showAllRegistrantDetails = false;
                 self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val() == 'true';
                 self.hideFullGroups = $('.js-options-hide-full-groups', self.$groupPlacementTool).val() == 'true';
+                self.displayRegistrantAttributes = $('.js-options-display-registrant-attributes', self.$groupPlacementTool).val() == 'true';
+                self.applyRegistrantFilter = $('.js-options-apply-registrant-filters', self.$groupPlacementTool).val() == 'true';
 
                 // initialize dragula
                 var containers = [];
@@ -293,7 +295,7 @@
                 // hide any alerts that are showing
                 $('.js-alert', self.$groupPlacementTool).hide();
 
-                var getGroupMembersUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers';
+                var getGroupMembersUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers/GetGroupPlacementGroupMembers';
                 var $placementGroup = $groupRoleMembers.closest('.js-placement-group');
 
                 // If this placement group is just for a specific registration instance, this will be the instance id
@@ -304,19 +306,42 @@
 
                 var groupId = $placementGroup.find('.js-placement-group-id').val();
                 var groupTypeRoleId = $groupRoleMembers.find('.js-grouptyperole-id').val();
-                var groupMemberFilter = '$filter='
-                groupMemberFilter += 'GroupId eq ' + groupId;
-                groupMemberFilter += ' and GroupRoleId eq ' + groupTypeRoleId;
-                groupMemberFilter += ' and GroupMemberStatus ne \'Inactive\' ';
+                var groupMemberAttributeIds = $('.js-options-displayed-groupmember-attribute-ids', self.$groupPlacementTool).val();
 
-                var groupMemberAttributeKeys = $('.js-options-displayed-groupmember-attribute-keys', self.$groupPlacementTool).val();
 
-                // only show attributes if they are configured (none mean don't show)
-                if (groupMemberAttributeKeys) {
-                    groupMemberFilter += '&loadAttributes=simple&attributeKeys=' + groupMemberAttributeKeys;
+                var getGroupPlacementGroupMembersParameters = {
+                    GroupId: groupId,
+                    GroupRoleId: groupTypeRoleId,
+                    BlockId: self.blockId,
+                    RegistrantId: parseInt($('.js-registrant-id', self.$groupPlacementTool).val()) || null,
+                    RegistrationTemplateId: parseInt($('.js-registration-template-id', self.$groupPlacementTool).val()) || null,
+                    RegistrationInstanceId: parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null,
+                    RegistrationTemplatePlacementId: self.registrationTemplatePlacementId,
+                    IncludeFees: $('.js-options-include-fees', self.$groupPlacementTool).val(),
+                    RegistrantPersonDataViewFilterId: parseInt($('.js-options-registrant-person-dataviewfilter-id', self.$groupPlacementTool).val()) || null,
+                    FilterFeeId: parseInt($('.js-options-filter-fee-id', self.$groupPlacementTool).val()) || null,
+                    DisplayRegistrantAttributes: self.displayRegistrantAttributes,
+                    ApplyRegistrantFilter: self.applyRegistrantFilter
+                };
+
+                if ($('.js-options-displayed-registrant-attribute-ids', self.$groupPlacementTool).val() != '') {
+                    getGroupPlacementGroupMembersParameters.DisplayedRegistrantAttributeIds = JSON.parse($('.js-options-displayed-registrant-attribute-ids', self.$groupPlacementTool).val());
                 }
 
-                $.get(getGroupMembersUrl + '?' + groupMemberFilter + '&$expand=Person', function (groupMembers) {
+                if (groupMemberAttributeIds) {
+                    getGroupPlacementGroupMembersParameters.DisplayedGroupMemberAttributeIds = JSON.parse(groupMemberAttributeIds);
+                }
+
+                if ($('.js-options-filter-fee-item-ids', self.$groupPlacementTool).val() != '') {
+                    getGroupPlacementGroupMembersParameters.FilterFeeOptionIds = JSON.parse($('.js-options-filter-fee-item-ids', self.$groupPlacementTool).val());
+                }
+
+                $.ajax({
+                    method: "POST",
+                    url: getGroupMembersUrl,
+                    data: getGroupPlacementGroupMembersParameters
+                }).done(function (groupMembers) {
+
                     $groupRoleContainer.html('');
 
                     $.each(groupMembers, function (i) {
@@ -406,9 +431,9 @@
 
                 $groupMemberDiv.find('.js-person-id-anchor').prop('name', 'PersonId_' + groupMember.PersonId);
                 if (self.highlightGenders) {
-                    $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
+                    $groupMemberDiv.attr('data-person-gender', groupMember.PersonGender);
                 }
-                $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
+                $groupMemberDiv.find('.js-groupmember-name').text(groupMember.PersonName);
                 var $editGroupMemberButton = $groupMemberDiv.find('.js-edit-group-member');
                 if ($editGroupMemberButton.length) {
                     $editGroupMemberButton.attr('href', self.groupMemberDetailUrl + '?GroupMemberId=' + groupMember.Id);
@@ -420,18 +445,32 @@
                 }
 
                 // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
-                if (groupMember.AttributeValues && Object.keys(groupMember.AttributeValues).length > 0) {
+                if (groupMember.GroupMemberAttributeValues && Object.keys(groupMember.GroupMemberAttributeValues).length > 0) {
                     var $attributesDiv = $('.js-groupmember-attributes-container', $groupMemberDiv);
                     var $attributesDl = $('<dl></dl>');
-                    for (var displayedAttribute in groupMember.Attributes) {
-                        if (groupMember.AttributeValues[displayedAttribute].ValueFormatted) {
-                            $attributesDl.append('<dt>' + groupMember.Attributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.AttributeValues[displayedAttribute].ValueFormatted + '</dd>');
+                    for (var displayedAttribute in groupMember.GroupMemberAttributes) {
+                        if (groupMember.GroupMemberAttributeValues[displayedAttribute].ValueFormatted) {
+                            $attributesDl.append('<dt>' + groupMember.GroupMemberAttributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.GroupMemberAttributeValues[displayedAttribute].ValueFormatted + '</dd>');
                         }
                     }
 
                     $attributesDiv.append($attributesDl);
                 }
-                else {
+
+                // NOTE: RegistrantAttributeValues are already filtered to the configured displayed attributes when doing the REST call
+                if (groupMember.RegistrantAttributeValues && Object.keys(groupMember.RegistrantAttributeValues).length > 0) {
+                    var $registrantAttributesDiv = $('.js-groupmember-attributes-container', $groupMemberDiv);
+                    var $registrantAttributesDl = $('<dl></dl>');
+                    for (var displayedRegistrantAttribute in groupMember.RegistrantAttributes) {
+                        if (groupMember.RegistrantAttributeValues[displayedRegistrantAttribute].ValueFormatted) {
+                            $registrantAttributesDl.append('<dt>' + groupMember.RegistrantAttributes[displayedRegistrantAttribute].Name + ' </dt><dd>' + groupMember.RegistrantAttributeValues[displayedRegistrantAttribute].ValueFormatted + '</dd>');
+                        }
+                    }
+
+                    $registrantAttributesDiv.append($registrantAttributesDl);
+                }
+
+                if (!groupMember.GroupMemberAttributeValues && !groupMember.RegistrantAttributeValues) {
                     $('.js-groupmember-details', $groupMemberDiv).hide();
                 }
             },
@@ -733,6 +772,20 @@
                 $('.js-toggle-registrant-details', self.$groupPlacementTool).click(function () {
                     var expand = !self.showAllRegistrantDetails;
                     self.expandOrHideRegistrantDetails(expand);
+                });
+
+                $('.js-toggle-group-details', self.$groupPlacementTool.closest('.block-instance')).click(function () {
+                    $('i', this).toggleClass('fa-angle-double-up fa-angle-double-down');
+                    // if toggle class is up, then show the details, otherwise hide them
+                    var groups = $(this).closest('.js-block-instance').find('.placement-group .js-group-details');
+                    var groupSlideIcon = $(this).closest('.js-block-instance').find('.js-placement-group-toggle-visibility i');
+                    if ($(this).find('i').hasClass('fa-angle-double-up')) {
+                        groups.slideDown();
+                        groupSlideIcon.attr('class', 'fa fa-chevron-up');
+                    } else {
+                        groups.slideUp();
+                        groupSlideIcon.attr('class', 'fa fa-chevron-down');
+                    }
                 });
 
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {

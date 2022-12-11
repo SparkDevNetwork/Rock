@@ -491,7 +491,7 @@ namespace Rock.Model
         /// <param name="locationId">The location identifier.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns>AttendanceOccurrence</returns>
-        [Obsolete( "Use GetOrAdd instead" )]
+        [Obsolete( "Use GetOrAdd instead", true )]
         [RockObsolete( "1.10" )]
         public AttendanceOccurrence GetOrCreateAttendanceOccurrence( DateTime occurrenceDate, int scheduleId, int? locationId, int groupId )
         {

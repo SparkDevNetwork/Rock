@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,8 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Group Requirements" )]
     [Description( "Calculate Group Requirements for group members that are in groups that have group requirements." )]
 
-    [DisallowConcurrentExecution]
-    public class CalculateGroupRequirements : IJob
+    public class CalculateGroupRequirements : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -49,11 +46,8 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var rockContext = new RockContext();
             var groupRequirementService = new GroupRequirementService( rockContext );
@@ -91,7 +85,7 @@ namespace Rock.Jobs
                 var groupCount = groupList.Count();
                 foreach ( var group in groupList )
                 {
-                    context.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {group.Name}" );
+                    this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {group.Name}" );
                     try
                     {
                         var currentDateTime = RockDateTime.Now;
@@ -156,19 +150,19 @@ namespace Rock.Jobs
                                         if ( shouldRunNotMetWorkflow )
                                         {
                                             var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.Value );
-                                            workflowName = $"({ workflowTypeCache.Name }) { workflowName }";
+                                            workflowName = $"({workflowTypeCache.Name}) {workflowName}";
                                             LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, result, group.Id, shouldRunNotMetWorkflow, false );
                                         }
                                         else if ( shouldRunWarningWorkflow )
                                         {
                                             var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.Value );
-                                            workflowName = $"({ workflowTypeCache.Name }) { workflowName }";
+                                            workflowName = $"({workflowTypeCache.Name}) {workflowName}";
                                             LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, result, group.Id, false, shouldRunWarningWorkflow );
                                         }
                                     }
                                     catch ( Exception ex )
                                     {
-                                        calculationExceptions.Add( new Exception( $"Exception when launching workflow: { workflowName } with group requirement: {groupRequirement} for person.Id: { result.PersonId }", ex ) );
+                                        calculationExceptions.Add( new Exception( $"Exception when launching workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {result.PersonId}", ex ) );
                                     }
 
                                     rockContextUpdate.SaveChanges();
@@ -176,7 +170,7 @@ namespace Rock.Jobs
                             }
                             catch ( Exception ex )
                             {
-                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: { result.PersonId }", ex ) );
+                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: {result.PersonId}", ex ) );
                             }
                         }
                     }
@@ -187,7 +181,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.UpdateLastStatusMessage( $"{groupRequirementQry.Count()} group member requirements re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} people" );
+            this.UpdateLastStatusMessage( $"{groupRequirementQry.Count()} group member requirements re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} people" );
 
             if ( calculationExceptions.Any() )
             {
@@ -225,6 +219,7 @@ namespace Rock.Jobs
 
                     var workflowService = new WorkflowService( rockContext );
                     workflow = Rock.Model.Workflow.Activate( workflowTypeCache, workflowName, rockContext );
+                    workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
                     new WorkflowService( rockContext ).Process( workflow, groupMemberRequirement, out var workflowErrors );
 
                     if ( shouldRunNotMetWorkflow )

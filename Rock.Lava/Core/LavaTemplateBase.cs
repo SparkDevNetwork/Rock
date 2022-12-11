@@ -22,9 +22,10 @@ namespace Rock.Lava
     /// </summary>
     public abstract class LavaTemplateBase : ILavaTemplate
     {
-        /*
-         * This base class has no properties or methods.
-         * It exists to implement the ILavaTemplate interface and for future expansion.
-         */
+        /// <summary>
+        /// Returns a description of the template that can be used to identify it.
+        /// </summary>
+        /// <returns></returns>
+        public abstract string GetDescription();
     }
 }

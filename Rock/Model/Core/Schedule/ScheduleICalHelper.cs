@@ -40,18 +40,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead ", true )]
-        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
-        {
-            return GetCalendarEvent( iCalendarContent );
-        }
-
-        /// <summary>
-        /// Gets the calendar event.
-        /// </summary>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <returns></returns>
         public static DDay.iCal.Event GetCalendarEvent( string iCalendarContent )
         {
             string trimmedContent = iCalendarContent.Trim();

@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -31,13 +29,11 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to makes sure that persisted dataviews are updated based on their schedule interval.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Update Persisted DataViews" )]
     [Description( "Job to makes sure that persisted dataviews are updated based on their schedule interval." )]
 
-    [DisallowConcurrentExecution]
     [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, TIMEOUT_KEY )]
-    public class UpdatePersistedDataviews : IJob
+    public class UpdatePersistedDataviews : RockJob
     {
         private const string TIMEOUT_KEY = "SqlCommandTimeout";
 
@@ -52,14 +48,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int sqlCommandTimeout = dataMap.GetString( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
+                        int sqlCommandTimeout = GetAttributeValue( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
             StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;
             var errors = new List<string>();
@@ -87,7 +79,7 @@ namespace Rock.Jobs
                         var name = dataView.Name;
                         try
                         {
-                            context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
+                            this.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
                             dataView.PersistResult( sqlCommandTimeout );
 
                             persistContext.SaveChanges();
@@ -112,7 +104,7 @@ namespace Rock.Jobs
 
             // Format the result message
             results.AppendLine( $"Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
-            context.Result = results.ToString();
+            this.Result = results.ToString();
 
             if ( errors.Any() )
             {
@@ -121,7 +113,7 @@ namespace Rock.Jobs
                 sb.Append( "Errors: " );
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
-                context.Result += errorMessage;
+                this.Result += errorMessage;
                 // We're not going to throw an aggregate exception unless there were no successes.
                 // Otherwise the status message does not show any of the success messages in
                 // the last status message.

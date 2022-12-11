@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Reporting;
@@ -30,10 +31,27 @@ namespace Rock.Field.Types
     /// the individual a nice UI interface to editing content.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "92C88D02-CE12-4217-80FB-19422B758437")]
+    [Rock.SystemGuid.FieldTypeGuid( "92C88D02-CE12-4217-80FB-19422B758437" )]
     public class StructureContentEditorFieldType : FieldType
     {
         #region Edit Control
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            var helper = new StructuredContentHelper( value );
+
+            return helper.Render();
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -82,18 +100,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
-        {
-            var helper = new StructuredContentHelper( value );
-
-            return helper.Render();
-        }
-
         /// <inheritdoc/>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
@@ -128,6 +134,7 @@ namespace Rock.Field.Types
             return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
+#endif
         #endregion
     }
 }

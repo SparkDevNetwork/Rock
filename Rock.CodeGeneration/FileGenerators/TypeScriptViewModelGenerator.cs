@@ -61,7 +61,7 @@ namespace Rock.CodeGeneration.FileGenerators
             // Loop through each sorted property and emit the declaration.
             for ( int i = 0; i < sortedProperties.Count; i++ )
             {
-                var property = properties[i];
+                var property = sortedProperties[i];
                 var isNullable = !IsNonNullType( property.PropertyType );
 
                 if ( i > 0 )

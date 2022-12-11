@@ -83,6 +83,7 @@ namespace Rock.Model
                                      c.ConnectionState != ConnectionState.Inactive &&
                                      c.ConnectionState != ConnectionState.Connected ) )
                             {
+                                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Crm, $"Person.PreSave() setting connection requests Inactive for Person.Id {this.Entity.Id} and ConnectionRequest.Id = {connectionRequest.Id}" );
                                 connectionRequest.ConnectionState = ConnectionState.Inactive;
                             }
                         }
@@ -326,7 +327,6 @@ namespace Rock.Model
                             return;
                         }
                 }
-
                 base.PreSave();
             }
 
