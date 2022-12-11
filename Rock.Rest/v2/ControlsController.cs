@@ -713,6 +713,180 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Get the attributes for the given Defined Type
+        /// </summary>
+        /// <param name="options">The options needed to find the attributes for the defined type</param>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
+        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var definedValue = new DefinedValue {
+                    Id = 0,
+                    DefinedTypeId = definedType.Id
+                };
+
+                Type entityType = definedValue.GetType();
+                if ( entityType.IsDynamicProxyType() )
+                {
+                    entityType = entityType.BaseType;
+                }
+
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
+                var entityTypeCache = EntityTypeCache.Get( entityType );
+
+                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                Dictionary<int, List<int>> inheritedAttributes = null;
+
+                //
+                // If this entity can provide inherited attribute information then
+                // load that data now. If they don't provide any then generate empty lists.
+                //
+                if ( definedValue is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                {
+                    allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
+                    inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
+                }
+
+                allAttributes = allAttributes ?? new List<AttributeCache>();
+                inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
+
+                //
+                // Get all the attributes that apply to this entity type and this entity's
+                // properties match any attribute qualifiers.
+                //
+                var entityTypeId = entityTypeCache?.Id;
+
+                if ( entityTypeCache != null )
+                {
+                    var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
+                    if ( entityTypeAttributesList.Any() )
+                    {
+                        var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                        Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+                        foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
+                        {
+                            System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                            if ( propertyInfo != null )
+                            {
+                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( definedValue, null ) );
+                            }
+                        }
+
+                        var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
+                          string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
+                                 ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
+                                 ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
+                                 ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
+
+                        attributes.AddRange( entityTypeAttributesForQualifier );
+                    }
+                }
+
+                //
+                // Append these attributes to our inherited attributes, in order.
+                //
+                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
+                {
+                    allAttributes.Add( attribute );
+                }
+                var attributeList = allAttributes
+                    .Where( a => a.IsActive )
+                    .Select( a => new PublicAttributeBag
+                    {
+                        AttributeGuid = a.Guid,
+                        FieldTypeGuid = FieldTypeCache.Get( a.FieldTypeId ).Guid,
+                        Name = a.Name,
+                        Key = a.Key,
+                        Description = a.Description,
+                        IsRequired = a.IsRequired,
+                        Order = a.Order,
+                        ConfigurationValues = a.ConfigurationValues
+                    } )
+                    .ToList();
+
+                return Ok( attributeList );
+            }
+        }
+
+        /// <summary>
+        /// Save a new Defined Value
+        /// </summary>
+        /// <param name="options">The options the new defined value</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
+        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var definedValue = new DefinedValue
+                {
+                    Id = 0,
+                    DefinedTypeId = definedType.Id,
+                    IsSystem = false,
+                    Value = options.Value,
+                    Description = options.Description
+                };
+
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                var orders = definedValueService.Queryable()
+                    .Where( d => d.DefinedTypeId == definedType.Id )
+                    .Select( d => d.Order )
+                    .ToList();
+
+                definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
+
+                // Assign Attributes
+                Attribute.Helper.LoadAttributes( definedValue );
+
+                foreach(KeyValuePair<string, AttributeValueCache> attr in definedValue.AttributeValues)
+                {
+                    definedValue.AttributeValues[attr.Key].Value = options.AttributeValues.GetValueOrNull( attr.Key );
+                }
+
+                if ( !definedValue.IsValid )
+                {
+                    return InternalServerError();
+                }
+
+                // Save the new value
+                rockContext.WrapTransaction( () =>
+                {
+                    if ( definedValue.Id.Equals( 0 ) )
+                    {
+                        definedValueService.Add( definedValue );
+                    }
+
+                    rockContext.SaveChanges();
+
+                    definedValue.SaveAttributeValues( rockContext );
+                } );
+
+                return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
+            }
+        }
+
         #endregion
 
         #region Entity Tag List
@@ -1399,6 +1573,68 @@ namespace Rock.Rest.v2
 
                 return Ok();
             }
+        }
+
+        #endregion
+
+        #region Geo Picker
+
+        /// <summary>
+        /// Retrieve the Google API key for Google Maps.
+        /// </summary>
+        /// <returns>The Google API key as a string</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "GeoPickerGetGoogleMapSettings" )]
+        [Rock.SystemGuid.RestActionGuid( "a3e0af9b-36d3-4ec8-a983-0087488c553d" )]
+        public IHttpActionResult GeoPickerGetGoogleMapSettings( [FromBody] GeoPickerGetGoogleMapSettingsOptionsBag options )
+        {
+            // Map Styles
+            Guid MapStyleValueGuid = options.MapStyleValueGuid == null || options.MapStyleValueGuid.IsEmpty() ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : options.MapStyleValueGuid;
+            string mapStyle = "null";
+            string markerColor = "";
+
+            try
+            {
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Get( MapStyleValueGuid );
+                if ( dvcMapStyle != null )
+                {
+                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    if ( colors.Any() )
+                    {
+                        markerColor = colors.First().Replace( "#", "" );
+                    }
+                }
+            }
+            catch { } // oh well...
+
+            // Google API Key
+            string googleApiKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
+
+            // Default map location
+            double? centerLatitude = null;
+            double? centerLongitude = null;
+            Guid guid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuid();
+
+            if ( !guid.Equals( Guid.Empty ) )
+            {
+                var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                if ( location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
+                {
+                    centerLatitude = location.GeoPoint.Latitude;
+                    centerLongitude = location.GeoPoint.Longitude;
+                }
+            }
+
+            return Ok( new GeoPickerGoogleMapSettingsBag
+            {
+                MapStyle = mapStyle,
+                MarkerColor = markerColor,
+                GoogleApiKey = googleApiKey,
+                CenterLatitude = centerLatitude,
+                CenterLongitude = centerLongitude
+            } );
         }
 
         #endregion

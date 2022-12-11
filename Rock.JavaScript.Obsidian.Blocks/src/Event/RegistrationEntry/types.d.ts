@@ -22,6 +22,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -38,7 +39,9 @@ export const enum RegistrationPersonFieldType {
     Grade = 11,
     ConnectionStatus = 12,
     MiddleName = 13,
-    AnniversaryDate = 14
+    AnniversaryDate = 14,
+    Race = 15,
+    Ethnicity = 16
 }
 
 export const enum RegistrationFieldSource {
@@ -110,6 +113,8 @@ export type RegistrationEntryBlockViewModel = {
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItemBag[] | null;
     registrationInstanceNotFoundMessage: string | null;
+    races: ListItemBag[];
+    ethnicities: ListItemBag[];
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
@@ -160,8 +165,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
 
 export type RegistrationEntryBlockFormFieldRuleViewModel = {
     comparedToRegistrationTemplateFormFieldGuid: Guid;
-    comparisonType: ComparisonType;
-    comparedToValue: string;
+    comparisonValue: ComparisonValue;
 };
 
 export type RegistrantInfo = {

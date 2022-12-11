@@ -34,6 +34,9 @@
                         <asp:Literal ID="lAddPlacementGroupButtonText" Text="Add ..." runat="server" />
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" OnClick="btnConfiguration_Click"><i class="fa fa-gear"></i></asp:LinkButton>
+                    <button type="button" class="btn btn-default btn-xs btn-square js-toggle-group-details">
+                        <i class="fa fa-angle-double-up"></i>
+                    </button>
                 </div>
             </div>
 
@@ -57,9 +60,11 @@
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHideFullGroups" runat="server" CssClass="js-options-hide-full-groups" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayRegistrantAttributes" runat="server" CssClass="js-options-display-registrant-attributes" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsApplyRegistrantFilters" runat="server" CssClass="js-options-apply-registrant-filters" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsRegistrantPersonDataViewFilterId" runat="server" CssClass="js-options-registrant-person-dataviewfilter-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
-                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeIds" runat="server" CssClass="js-options-displayed-groupmember-attribute-ids" />
 
                         <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeId" runat="server" CssClass="js-options-filter-fee-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeItemIds" runat="server" CssClass="js-options-filter-fee-item-ids" />
@@ -76,7 +81,7 @@
 
                                             <span class="person-name js-registrant-name"></span>
 
-                                            <div class="details-container small js-registrant-details hide-transit">
+                                            <div class="details-container small js-registrant-details hide-dragging">
                                                 <div class="registration-instance-name-container js-registration-instance-name-container">
                                                     <dl>
                                                         <dt>Instance</dt>
@@ -138,8 +143,8 @@
                                             <a class="js-person-id-anchor person-id-anchor"></a>
                                             <div class="person-container">
                                                 <span class="person-name js-groupmember-name"></span>
-                                                <div class="dropdown js-groupmember-actions hide-transit">
-                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></button>
+                                                <div class="dropdown js-groupmember-actions hide-dragging">
+                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="js-edit-group-member">Edit</a></li>
                                                         <li><a class="js-remove-group-member">Remove</a></li>
@@ -147,8 +152,10 @@
                                                 </div>
                                             </div>
 
-                                            <div class="details-container js-groupmember-details hide-transit">
+                                            <div class="details-container js-groupmember-details hide-dragging">
                                                 <div class="groupmember-attributes-container js-groupmember-attributes-container">
+                                                </div>
+                                                <div class="registrant-attributes-container js-registrant-attributes-container">
                                                 </div>
                                             </div>
                                         </div>
@@ -174,13 +181,13 @@
                                                         </h1>
 
                                                         <div class="panel-labels">
-                                                            <div class="dropdown js-group-actions hide-transit pull-right">
+                                                            <div class="dropdown js-group-actions hide-dragging pull-right">
                                                                 <div class="btn btn-square btn-overflow btn-xs" data-toggle="dropdown">
                                                                     <i class="fa fa-ellipsis-v"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li><a class="js-edit-group">Edit</a></li>
-                                                                    <li><a id="detachPlacementGroup" runat="server" class="js-detach-placement-group ">Detach</a></li>
+                                                                    <li><a id="detachPlacementGroup" runat="server" class="js-detach-placement-group">Detach</a></li>
                                                                     <li id="actionSeparator" runat="server" role="separator" class="divider"></li>
                                                                     <li><a id="deleteGroup" runat="server" class="dropdown-item-danger js-delete-group">Delete</a></li>
                                                                 </ul>
@@ -200,7 +207,7 @@
 
                                                     <div class="panel-body padding-all-none js-group-details">
 
-                                                        <asp:Panel Id="pnlGroupAttributes" runat="server" CssClass="panel-drawer">
+                                                        <asp:Panel Id="pnlGroupAttributes" runat="server" CssClass="panel-drawer p-3 pb-0 border-bottom border-panel">
                                                             <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" NumberOfColumns="2" />
                                                         </asp:Panel>
 
@@ -220,10 +227,10 @@
 
                                                                             <asp:Panel ID="pnlGroupRoleStatusLabels" runat="server" CssClass="panel-labels">
                                                                                 <div class="js-grouptyperole-statuslabels-container grouptyperole-status-labels">
+                                                                                    <span class='badge badge-info'><asp:Literal ID="lGroupRoleCount" runat="server" /></span>
                                                                                     <span class="label label-custom placement-capacity-label js-grouptyperole-max-members-label" data-status="none">1:1</span>
                                                                                 </div>
-                                                                            </asp:Panel>
-                                                                        </div>
+                                                                            </asp:Panel>                                                                        </div>
                                                                         <div class="alert alert-danger js-alert js-placement-place-registrant-error margin-all-md" style="display: none">
                                                                             <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
                                                                             <span class="js-placement-place-registrant-error-text"></span>
@@ -313,8 +320,14 @@
         <asp:Panel ID="pnlConfiguration" runat="server">
             <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" CssClass=".js-configuration-modal" OnSaveClick="mdPlacementConfiguration_SaveClick">
                 <Content>
-                    <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" />
-
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" CssClass="input-width-xl" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
+                        </div>
+                    </div>
                     <%-- This will only be shown when in Registration Template mode --%>
                     <Rock:PanelWidget ID="pwRegistrationTemplateConfiguration" runat="server" Title="Registration Template Configuration">
                         <div class="row">
@@ -328,19 +341,17 @@
 
                     <Rock:PanelWidget ID="pnlRegistrantConfiguration" runat="server" Title="Registrant Configuration" Expanded="true">
                         <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
-                            </div>
+                            
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbShowFees" runat="server" Label="Show Fees" Help="Enable this to show any fees associated with each registrant." />
                             </div>
                         </div>
 
                         <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="pwFilterConfiguration" runat="server" Title="Filters">
-                         <div class="row">
+                        <Rock:RockCheckBox ID="cbDisplayRegistrantAttributes" runat="server" Text="Display Registrant Attributes on Group Members" />
+                        <hr />
+                        <h3>Filters</h3>
+                        <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
                                     <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
@@ -357,20 +368,29 @@
                         <Rock:RockControlWrapper ID="rcwPersonFilters" runat="server" Label="Person Filters">
                             <Rock:DynamicPlaceholder ID="phPersonFilters" runat="server" />
                         </Rock:RockControlWrapper>
+                        <Rock:RockCheckBox ID="cbApplyRegistrantFilters" runat="server" Text="Apply Registrant Filters to Group Members" />
+                        
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" />
-                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" />
+                                <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupAttributes_SelectedIndexChanged" />
+                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupMemberAttributes_SelectedIndexChanged" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbHideFullGroups" runat="server" Label="Hide Full Groups" Help="Enable this to hide placement groups that are at the group capacity." />
                             </div>
                         </div>
+                        <hr />
+                        <h3>Filters</h3>
+                        <Rock:RockControlWrapper ID="rcwGroupFilters" runat="server" Label="Group Filters">
+                            <Rock:DynamicPlaceholder ID="phGroupFilters" runat="server" />
+                        </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwGroupMemberFilters" runat="server" Label="Group Member Filters">
+                            <Rock:DynamicPlaceholder ID="phGroupMemberFilters" runat="server" />
+                        </Rock:RockControlWrapper>
                     </Rock:PanelWidget>
-
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

@@ -278,6 +278,18 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlState control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlState_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var isFutureFollowUp = !ddlState.SelectedValue.IsNullOrWhiteSpace() && ddlState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp;
+            dpFollowUpDate.Visible = isFutureFollowUp;
+            dpFollowUpDate.Required = isFutureFollowUp;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnBulkRequestUpdateCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -395,6 +407,10 @@ namespace RockWeb.Blocks.Connection
                 if ( !string.IsNullOrWhiteSpace( ddlState.SelectedValue ) )
                 {
                     connectionRequest.ConnectionState = ddlState.SelectedValue.ConvertToEnum<ConnectionState>();
+                    if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+                    {
+                        connectionRequest.FollowupDate = dpFollowUpDate.SelectedDate;
+                    }
                 }
 
                 if ( !rbBulkUpdateCurrentConnector.Checked )
@@ -807,6 +823,11 @@ namespace RockWeb.Blocks.Connection
             if ( currentOpportunityId != selectedOpportunity )
             {
                 EvaluateChange( changes, "Opportunity", ddlOpportunity.SelectedItem.Text );
+            }
+
+            if ( dpFollowUpDate.Visible )
+            {
+                changes.Add( $"Set Follow-up Date to <span class='field-name'>{dpFollowUpDate.SelectedDate}</span>" );
             }
 
             return changes;

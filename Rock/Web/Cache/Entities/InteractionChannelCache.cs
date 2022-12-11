@@ -165,41 +165,7 @@ namespace Rock.Web.Cache
                 return null;
             }
         }
-
-        /// <summary>
-        /// Gets the interaction components.
-        /// </summary>
-        /// <value>
-        /// The interaction components.
-        /// </value>
-        [Obsolete( "This is not performant. Instead get the ID for the InteractionComponent from the DB using " +
-            "the InteractionComponentService and then use the ID to get the InteractionComponentCache obj from the cache.", true )]
-        [RockObsolete( "1.9.15" )]
-        public List<InteractionComponentCache> InteractionComponents
-        {
-            get
-            {
-                var components = new List<InteractionComponentCache>();
-
-                InitComponentIds();
-
-                if ( InteractionComponentIds == null )
-                {
-                    return components;
-                }
-
-                foreach ( var id in InteractionComponentIds.Keys )
-                {
-                    var component = InteractionComponentCache.Get( id );
-                    if ( component != null )
-                    {
-                        components.Add( component );
-                    }
-                }
-
-                return components;
-            }
-        }
+        
         /// <summary>
         /// The component ids
         /// </summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -204,6 +205,12 @@ namespace RockWeb.Blocks.Streaks
             if ( lProgress != null )
             {
                 lProgress.Text = GetProgressBarHtml( achievementViewModel.Progress );
+            }
+
+            var personColumn = e.Row.FindControl( "lPerson" ) as Literal;
+            if ( personColumn != null && achievementViewModel.Entity is PersonAlias personAlias )
+            {
+                personColumn.Text = $"<a class='btn btn-default btn-sm' href='/person/{personAlias.PersonId}'><i class='fa fa-user'></i></a>";
             }
         }
 
@@ -637,7 +644,8 @@ namespace RockWeb.Blocks.Streaks
                 IsSuccessful = aa.AchievementAttempt.IsSuccessful,
                 IsClosed = aa.AchievementAttempt.IsClosed,
                 Progress = aa.AchievementAttempt.Progress,
-                AchievementName = aa.AchievementAttempt.AchievementType.Name
+                AchievementName = aa.AchievementAttempt.AchievementType.Name,
+                Entity = aa.Achiever
             } );
 
             // Sort the grid
@@ -679,7 +687,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Represents an enrollment for a row in the grid
         /// </summary>
-        public class AttemptViewModel
+        public class AttemptViewModel : RockDynamic
         {
             public int Id { get; set; }
             public string AchieverName { get; set; }
@@ -689,6 +697,7 @@ namespace RockWeb.Blocks.Streaks
             public bool IsClosed { get; set; }
             public decimal Progress { get; set; }
             public string AchievementName { get; set; }
+            public IEntity Entity { get; set; }
         }
 
         /// <summary>

@@ -26,9 +26,6 @@ export type DetailBlockBox<TEntityBag, TOptions> = {
     /** Gets or sets the entity. */
     entity?: TEntityBag | null;
 
-    /** Gets or sets the options. */
-    options?: TOptions | null;
-
     /** Gets or sets the error message. */
     errorMessage?: string | null;
 
@@ -38,8 +35,8 @@ export type DetailBlockBox<TEntityBag, TOptions> = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
-    /** Gets or sets the valid properties. */
-    validProperties?: string[] | null;
+    /** Gets or sets the options. */
+    options?: TOptions | null;
 
     /**
      * Gets or sets the property names that are referenced by any attribute
@@ -50,4 +47,7 @@ export type DetailBlockBox<TEntityBag, TOptions> = {
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the valid properties. */
+    validProperties?: string[] | null;
 };

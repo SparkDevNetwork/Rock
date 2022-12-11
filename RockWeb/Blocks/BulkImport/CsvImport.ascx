@@ -119,7 +119,7 @@
                                 Label="Previous Source Descriptions"
                                 RepeatDirection="Horizontal"
                                 Required="true"
-                                Help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, chose to add a new source description." />
+                                Help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, choose to add a new source description." />
 
                             <asp:LinkButton ID="lbAddSourceDescription"
                                 runat="server"

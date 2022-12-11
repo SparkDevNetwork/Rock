@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -453,6 +453,12 @@ namespace RockWeb.Blocks.Administration
 
             rptIgnoreCampusChanges.DataSource = _ignoreCampusChangeRows;
             rptIgnoreCampusChanges.DataBind();
+
+            if ( _campusSettings.ExcludeSchedules != null && _campusSettings.ExcludeSchedules.Count > 0 )
+            {
+                var excludedSchedules = new ScheduleService( _rockContext ).Queryable().Where( s => _campusSettings.ExcludeSchedules.Contains( s.Id ) ).ToList();
+                spExcludeSchedules.SetValues( excludedSchedules );
+            }
 
             // Adult Children
             cbAdultChildren.Checked = _adultChildrenSettings.IsEnabled;

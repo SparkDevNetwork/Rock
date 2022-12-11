@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -137,6 +137,17 @@ namespace Rock.Model
         /// <value>
         /// The assigned group member attribute values.
         /// </value>
+        /// This field stores attrbute values that will be added to the group member record
+        /// when the individual is placed in the group. The contents is a JSON collection of
+        /// key/values. An example is below:
+        /// {"HoursServing":"1","Articles":"379f8144-cf81-48cf-b7bf-8befdc6dca55"}
+        /// 
+        /// IMPORTANT: This is not a pattern we want to repeat. The problem is that it detaches
+        /// the AttributeValue as the model of record. For example if the value represents an 
+        /// AttributeMatrix, we will not longer know when it's appropropriate to delete the 
+        /// AttributeMatrix record. Normally, we'd look for AttributeMatrix records that are not
+        /// in the AttributeValue table. But in this case we must also consider that the AttributeMatrix
+        /// could be referenced in this string. This is slow and makes it difficult 'know all the places'. 
         [DataMember]
         public string AssignedGroupMemberAttributeValues { get; set; }
 

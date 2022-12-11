@@ -26,12 +26,12 @@
  * the SaveFinancialAccount control.
  */
 export type SaveFinancialAccountFormSaveAccountResultBag = {
-    /** Gets or sets the title. */
-    title?: string | null;
-
     /** Gets or sets the detail. */
     detail?: string | null;
 
     /** Gets or sets a value indicating whether this instance is success. */
     isSuccess: boolean;
+
+    /** Gets or sets the title. */
+    title?: string | null;
 };

@@ -68,23 +68,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds the page route.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        /// <param name="routeName">Name of the route.</param>
-        /// <param name="pageAndRouteIds">The page and route ids.</param>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use the override without the Generic list instead.", true )]
-        public static void AddPageRoute( this Collection<RouteBase> routes, string routeName, List<Rock.Web.PageAndRouteId> pageAndRouteIds)
-        {
-            Route route = new Route( routeName, new Rock.Web.RockRouteHandler() );
-            route.DataTokens = new RouteValueDictionary();
-            route.DataTokens.Add( "RouteName", routeName );
-            route.DataTokens.Add( "PageRoutes", pageAndRouteIds );
-            routes.Add( route );
-        }
-
-        /// <summary>
         /// Adds the page route. If the route name already exists then the PageAndRouteId obj will be added to the DataTokens "PageRoutes" List.
         /// </summary>
         /// <param name="routes">The routes.</param>

@@ -38,26 +38,28 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// The Group Member ID for the container.
+        /// Gets or sets the selected integer for the Group Member's Group Role Id.
         /// </summary>
-        public int GroupMemberId
+        public int? SelectedGroupRoleId { get; set; }
+
+        /// <summary>
+        /// The enumerated collection of Group Requirement Statuses for the container.
+        /// </summary>
+        public IEnumerable<GroupRequirementStatus> RequirementStatuses
         {
             get
             {
-                return _groupMemberId;
+                return _requirementStatuses;
             }
 
             set
             {
-                _groupMemberId = value;
-                ViewState[ViewStateKey.GroupMemberId] = _groupMemberId;
+                _requirementStatuses = value;
+                RecreateChildControls();
             }
         }
 
-        /// <summary>
-        /// The enumerated collection of Group Member Requirements for the container.
-        /// </summary>
-        public IEnumerable<GroupMemberRequirement> Requirements { get; set; }
+        private IEnumerable<GroupRequirementStatus> _requirementStatuses = new List<GroupRequirementStatus>();
 
         /// <summary>
         /// The workflow entry page Guid (as a string) for running workflows.
@@ -82,10 +84,15 @@ namespace Rock.Web.UI.Controls
         private static class ViewStateKey
         {
             public const string GroupMemberId = "GroupMemberId";
+            public const string RequirementStatuses = "RequirementStatuses";
         }
         #endregion ViewStateKeys
 
-        private int _groupMemberId { get; set; }
+        /// <summary>
+        /// Have this control render as a div instead of a span
+        /// </summary>
+        /// <value>The tag key.</value>
+        protected override HtmlTextWriterTag TagKey => HtmlTextWriterTag.Div;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -94,8 +101,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            EnsureChildControls();
         }
 
         /// <summary>
@@ -104,40 +109,32 @@ namespace Rock.Web.UI.Controls
         public override void DataBind()
         {
             base.DataBind();
-            RecreateChildControls();
         }
 
         /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// Create the Requirement Statuses to be created as Group Member Requirement Cards.
         /// </summary>
-        protected override void CreateChildControls()
+        /// <param name="groupMemberId"></param>
+        /// <param name="currentPersonIsLeaderOfCurrentGroup"></param>
+        /// <param name="isInteractionDisabled"></param>
+        public void CreateRequirementStatusControls( int groupMemberId, bool currentPersonIsLeaderOfCurrentGroup, bool isInteractionDisabled )
         {
             if ( !this.Visible )
             {
                 return;
             }
+            // set class of the parent control
+            this.AddCssClass( "group-member-requirements-container" );
 
-            base.CreateChildControls();
             Controls.Clear();
 
-            var rockContext = new RockContext();
-            var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberId );
+            IEnumerable<GroupRequirementStatus> groupRequirementStatuses = new List<GroupRequirementStatus>();
 
-            // If there is not a groupMember record, hide the container, and return.
-            if ( groupMember == null )
+            // If the container has a collection of requirement statuses, use them.
+            if ( RequirementStatuses != null )
             {
-                this.Visible = false;
-                return;
+                groupRequirementStatuses = RequirementStatuses;
             }
-
-            var attributeValueService = new AttributeValueService( rockContext );
-            IEnumerable<GroupRequirementStatus> groupRequirementStatuses;
-            if ( ForceRefreshRequirements )
-            {
-                groupMember.CalculateRequirements( rockContext, true );
-            }
-
-            groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
 
             // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
             var requirementCategories = groupRequirementStatuses
@@ -164,72 +161,66 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var requirementCategory in requirementCategories )
             {
-                HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
-                categoryControl.AddCssClass( "row" );
                 var categoryName = requirementCategory.Name;
-
-                HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
-                columnControl.AddCssClass( "col-xs-12" );
+                var categoryId = requirementCategory.CategoryId;
+                HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
+                categoryControl.AddCssClass( "row d-flex flex-wrap requirement-category requirement-category-" + categoryId.ToString() );
+                
 
                 if ( Visible && categoryName.IsNotNullOrWhiteSpace() )
                 {
+                    HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
+                    columnControl.AddCssClass( "col-xs-12" );
+
                     HtmlGenericControl headerControl = new HtmlGenericControl( "h5" );
                     headerControl.InnerText = categoryName;
                     columnControl.Controls.Add( headerControl );
+                    categoryControl.Controls.Add( columnControl );
                 }
 
                 var currentPerson = this.RockBlock().CurrentPerson;
 
+                // Set up Security or Override access.
+
                 // Add the Group Member Requirement Cards here.
                 foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
                 {
-                    // Set up Security or Override access.
-                    var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
                     bool leaderCanOverride = requirementStatus.GroupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
 
                     var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
 
-                    var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, leaderCanOverride || hasPermissionToOverride )
+                    // Do not render cards for "Not Applicable" or "Error" results.
+                    if ( requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
                     {
-                        Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
-                        TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
-                        MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
-                        GroupMemberRequirementId = requirementStatus.GroupMemberRequirementId,
-                        GroupRequirementId = requirementStatus.GroupRequirement.Id,
-                        GroupMemberId = GroupMemberId,
-                        GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
-                        WorkflowEntryLinkedPageValue = WorkflowEntryLinkedPageValue,
-                        IsSummaryHidden = IsSummaryHidden
-                    };
+                        var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, leaderCanOverride || hasPermissionToOverride )
+                        {
+                            Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
+                            TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
+                            MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
+                            GroupMemberRequirementId = requirementStatus.GroupMemberRequirementId,
+                            GroupRequirementId = requirementStatus.GroupRequirement.Id,
+                            GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
+                            WorkflowEntryLinkedPageValue = WorkflowEntryLinkedPageValue,
+                            IsSummaryHidden = IsSummaryHidden,
+                            GroupMemberId = groupMemberId,
+                            IsInteractionDisabled = isInteractionDisabled
+                        };
 
-                    columnControl.Controls.Add( card );
+                        categoryControl.Controls.Add( card );
+                    }
                 }
 
-                categoryControl.Controls.Add( columnControl );
+                
                 this.Controls.Add( categoryControl );
             }
         }
 
         /// <summary>
-        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
-        /// <returns>
-        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
-        /// </returns>
-        protected override object SaveViewState()
+        protected override void CreateChildControls()
         {
-            ViewState[ViewStateKey.GroupMemberId] = this._groupMemberId;
-            return base.SaveViewState();
-        }
 
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-            this._groupMemberId = Convert.ToInt32( ViewState[ViewStateKey.GroupMemberId] );
         }
     }
 }

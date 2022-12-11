@@ -123,7 +123,7 @@ namespace Rock.Blocks.Cms
     </div>
 </div>
 <div class=""actions"">
-   <a href=""#"" class=""btn btn-default show-more"">Show More</a>
+   <a href=""#"" class=""btn btn-default js-more"">Show More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
@@ -131,15 +131,11 @@ namespace Rock.Blocks.Cms
     [TextField( "Item Template",
         Description = "The lava template to use to render a single result.",
         DefaultValue = @"<div class=""result-item"">
-    <a href=""#"" class=""list-group-item"">
-        <h4>{{ Item.Name }}</h4>
-        <p>Posted on {{ Item.RelevanceDateTime  | AsDateTime | Date:'MMM dd, yyyy' }}</p>
-        {{ Item.Content | StripHtml | Truncate:100 }}
-        <span class=""pull-right pt-4 pl-2 text-primary"">
-            <i class=""fa fa-arrow-right""></i>
-        </span>
-        <span class=""text-muted""></span>
-    </a>
+    <h4 class=""mt-0"">{{ Item.Name }}</h4>
+    <div class=""mb-3"">
+    {{ Item.Content | StripHtml | Truncate:300 }}
+    </div>
+    <a href=""#"" class=""stretched-link"">Read More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ItemTemplate )]
@@ -236,9 +232,6 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
-        private IEnumerable<int> _blockInitPersonalizationSegmentIds = Array.Empty<int>();
-        private IEnumerable<int> _blockInitPersonalizationRequestFilterIds = Array.Empty<int>();
-
         #region Methods
 
         /// <inheritdoc/>
@@ -266,9 +259,6 @@ namespace Rock.Blocks.Cms
                 {
                     try
                     {
-                        _blockInitPersonalizationSegmentIds = RequestContext.GetPersonalizationSegmentIds();
-                        _blockInitPersonalizationRequestFilterIds = RequestContext.GetPersonalizationRequestFilterIds();
-
                         var searchTask = Task.Run( PerformInitialSearchAsync );
                         searchTask.Wait();
                         initialSearchResults = searchTask.Result;
@@ -629,6 +619,8 @@ namespace Rock.Blocks.Cms
                 }
             }
 
+            resultBag.TotalResultCount = resultBag.ResultSources.Sum( rs => rs.TotalResultCount );
+
             return resultBag;
         }
 
@@ -725,7 +717,7 @@ namespace Rock.Blocks.Cms
             // Add all the personalization segments this person matches.
             if ( contentCollection.EnableSegments )
             {
-                var segmentIds = _blockInitPersonalizationSegmentIds ?? RequestContext.GetPersonalizationSegmentIds();
+                var segmentIds = RequestContext.PersonalizationSegmentIds;
 
                 foreach ( var segmentId in segmentIds )
                 {
@@ -743,7 +735,7 @@ namespace Rock.Blocks.Cms
             // Add all the request filters this request matches.
             if ( contentCollection.EnableRequestFilters )
             {
-                var filterIds = _blockInitPersonalizationRequestFilterIds ?? RequestContext.GetPersonalizationRequestFilterIds();
+                var filterIds = RequestContext.PersonalizationRequestFilterIds;
 
                 foreach ( var filterId in filterIds )
                 {
@@ -970,6 +962,7 @@ namespace Rock.Blocks.Cms
                 var results = await activeComponent.SearchAsync( searchQuery, searchOptions );
 
                 resultBag.HasMore = results.TotalResultsAvailable > ( maxResults + offset );
+                resultBag.TotalResultCount = results.TotalResultsAvailable;
 
                 // Merge the results with the Lava template.
                 var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );

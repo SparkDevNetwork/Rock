@@ -214,9 +214,6 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AddPersonNote = source.AddPersonNote;
             target.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
-            #pragma warning disable 612, 618
-            target.AllowGroupPlacement = source.AllowGroupPlacement;
-            #pragma warning restore 612, 618
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             target.BatchNamePrefix = source.BatchNamePrefix;
             target.CategoryId = source.CategoryId;

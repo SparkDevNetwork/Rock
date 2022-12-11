@@ -971,14 +971,13 @@ body.nav-open {
     }
 
     .zone-content > .personal-links,
+    .zone-content > .reminder-links,
     .zone-content > .smart-search {
       display: block;
       @media @sm {
         float: right;
       }
     }
-
-
   }
 
   .navbar-toggle {
@@ -1262,7 +1261,7 @@ body.nav-open {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: @zindex-navbar-fixed + 10;
+  z-index: @zindex-navbar-fixed - 5;
   display: none;
   width: @navbarside-width;
   height: 100%;
@@ -1853,6 +1852,7 @@ body.navbar-side-open {
 
 
 .rock-bookmark {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1860,13 +1860,36 @@ body.navbar-side-open {
   height: @navbar-element-height;
   margin: @navbar-element-margin 8px @navbar-element-margin 0;
   font-size: 20px;
-  color: fade(@white, 75%);
-  background-color: rgba(255, 255, 255, .1);
   border-radius: @border-radius-base;
+
+  &,
+  &:focus {
+    color: fade(@white, 75%);
+    background-color: rgba(255, 255, 255, .1);
+  }
 
   &:hover,
   &:active {
     color: fade(@white, 50%);
+  }
+
+  &.active {
+    color: var(--brand-primary);
+    background-color: fade(@white, 75%);
+
+    &:hover,
+    &:active {
+      background-color: fade(@white, 50%);
+    }
+  }
+
+  .count-bottom {
+    position: absolute;
+    bottom: 0;
+    right: 2px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
   }
 }
 
@@ -1874,6 +1897,13 @@ body.navbar-side-open {
 .debug-timings {
   // width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
+}
+
+.avatar-lg {
+  &,
+  &::after {
+    border-radius: 6px;
+  }
 }
 
 .avatar-email {
@@ -1952,6 +1982,18 @@ body.navbar-side-open {
         width: @input-width-xl;
       }
     }
+  }
+}
+
+.reminder-note {
+  max-width: 800px;
+}
+
+.success-on-hover {
+  color: @text-color;
+  transition: .2s color;
+  &:hover {
+    color: @brand-success;
   }
 }
 

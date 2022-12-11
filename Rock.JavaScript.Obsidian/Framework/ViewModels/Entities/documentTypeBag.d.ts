@@ -25,8 +25,20 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DocumentType View Model */
 export type DocumentTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the id of the Rock.Model.BinaryFileType that this document type belongs to. */
     binaryFileTypeId: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the default document name template. */
     defaultDocumentNameTemplate?: string | null;
@@ -52,6 +64,9 @@ export type DocumentTypeBag = {
     /** Gets or sets the CSS class that is used for a vector/CSS icon. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the IsImage flag for the Rock.Model.DocumentType. */
     isImage: boolean;
 
@@ -61,6 +76,12 @@ export type DocumentTypeBag = {
     /** Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit. */
     maxDocumentsPerEntity?: number | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the given Name of the DocumentType. */
     name?: string | null;
 
@@ -69,25 +90,4 @@ export type DocumentTypeBag = {
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

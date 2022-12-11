@@ -25,8 +25,20 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Report View Model */
 export type ReportBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the CategoryId of the Rock.Model.Category that the Report belongs to. */
     categoryId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or the DataViewId of the root Rock.Model.DataView that this Report is based on. */
     dataViewId?: number | null;
@@ -40,11 +52,20 @@ export type ReportBag = {
     /** Gets or sets the number of records to fetch in the report.  Null means all records. */
     fetchTop?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this Report is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
     /** Gets or sets the last run date time. */
     lastRunDateTime?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Name of the Report. This property is required. */
     name?: string | null;
@@ -57,25 +78,4 @@ export type ReportBag = {
 
     /** The amount of time in milliseconds that it took to run the Rock.Model.Report.DataView */
     timeToRunDurationMilliseconds?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

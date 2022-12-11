@@ -125,6 +125,26 @@ namespace Rock.SystemKey
         /// </summary>
         public const string CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN = "core_checkin_registration_DisplayGradeOnChildren";
 
+        /// <summary>
+        /// Show or hide the control to set the race and ethnicity on Children
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN = "core_checkin_registration_DisplayRaceChildren";
+
+        /// <summary>
+        /// Show or hide the control to set the race and ethnicity on Children
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN = "core_checkin_registration_DisplayEthnicityChildren";
+
+        /// <summary>
+        /// Show or hide the control to set the race on adults
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYRACEONADULTS = "core_checkin_registration_DisplayRaceAdult";
+
+        /// <summary>
+        /// Show or hide the control to set the ethnicity on adults
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS = "core_checkin_registration_DisplayEthnicityAdult";
+
         #endregion Registration Specific
 
         #region Checkin

@@ -97,6 +97,26 @@ namespace Rock.Model
         public InteractiveExperiencePushNotificationType PushNotificationType { get; set; }
 
         /// <summary>
+        /// Gets or sets the title of the push notification.
+        /// </summary>
+        /// <value>
+        /// The title of the push notification.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string PushNotificationTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the detail message of the push notification.
+        /// </summary>
+        /// <value>
+        /// The detail message of the push notification.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string PushNotificationDetail { get; set; }
+
+        /// <summary>
         /// Gets or sets the welcome title.
         /// </summary>
         /// <value>
@@ -299,6 +319,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string AudienceCustomCss { get; set; }
+
+        /// <summary>
+        /// Gets or sets the JSON representing the additional settings.
+        /// </summary>
+        /// <value>
+        /// The JSON representing the additional settings.
+        /// </value>
+        [DataMember]
+        public string ExperienceSettingsJson { get; set; }
 
         #endregion
 

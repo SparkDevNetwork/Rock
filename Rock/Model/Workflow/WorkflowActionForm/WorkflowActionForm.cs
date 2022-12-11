@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// The notification system email identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead." )]
+        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? NotificationSystemEmailId { get; set; }
 
@@ -233,6 +233,24 @@ namespace Rock.Model
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
 
         /// <summary>
+        /// Gets or sets the person entry race entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryRaceEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
+        /// Gets or sets the person entry ethnicity entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryEthnicityEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
         /// Gets or sets the person entry spouse label.
         /// </summary>
         /// <value>
@@ -402,7 +420,7 @@ namespace Rock.Model
         /// The notification system email.
         /// </value>
         [LavaVisible]
-        [Obsolete( "Use NotificationSystemCommunication instead." )]
+        [Obsolete( "Use NotificationSystemCommunication instead.", true )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail NotificationSystemEmail { get; set; }
 
@@ -483,10 +501,6 @@ namespace Rock.Model
         public WorkflowActionFormConfiguration()
         {
             this.HasOptional( f => f.NotificationSystemCommunication ).WithMany().HasForeignKey( f => f.NotificationSystemCommunicationId ).WillCascadeOnDelete( false );
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            this.HasOptional( f => f.NotificationSystemEmail ).WithMany().HasForeignKey( f => f.NotificationSystemEmailId ).WillCascadeOnDelete( false );
-#pragma warning restore CS0618 // Type or member is obsolete
 
             this.HasOptional( f => f.PersonEntryConnectionStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryRecordStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryRecordStatusValueId ).WillCascadeOnDelete( false );

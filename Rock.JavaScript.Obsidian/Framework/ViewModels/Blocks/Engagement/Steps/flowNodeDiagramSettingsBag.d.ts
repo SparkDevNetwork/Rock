@@ -23,18 +23,18 @@
 
 /** Model of the settings for the Flow Node Diagram */
 export type FlowNodeDiagramSettingsBag = {
-    /** Gets or sets the Node width */
-    nodeWidth?: number | null;
-
-    /** Gets or sets the Node vertical spacing */
-    nodeVerticalSpacing?: number | null;
+    /** Gets or sets the chart height */
+    chartHeight?: number | null;
 
     /** Gets or sets the chart width */
     chartWidth?: number | null;
 
-    /** Gets or sets the chart height */
-    chartHeight?: number | null;
-
     /** Gets or sets the legend HTML */
     legendHtml?: string | null;
+
+    /** Gets or sets the Node vertical spacing */
+    nodeVerticalSpacing?: number | null;
+
+    /** Gets or sets the Node width */
+    nodeWidth?: number | null;
 };

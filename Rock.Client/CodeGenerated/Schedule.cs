@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AbbreviatedName { get; set; }
+
+        /// <summary />
         public bool AutoInactivateWhenComplete { get; set; }
 
         /// <summary />
@@ -66,6 +69,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsActive { get; set; } = true;
+
+        /// <summary />
+        public bool? IsPublic { get; set; } = true;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -117,6 +123,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Schedule source )
         {
             this.Id = source.Id;
+            this.AbbreviatedName = source.AbbreviatedName;
             this.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             this.CategoryId = source.CategoryId;
             this.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
@@ -128,6 +135,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.iCalendarContent = source.iCalendarContent;
             this.IsActive = source.IsActive;
+            this.IsPublic = source.IsPublic;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;

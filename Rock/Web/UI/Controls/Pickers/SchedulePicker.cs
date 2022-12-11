@@ -40,6 +40,25 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool AllowInactiveSelection { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show only public].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show only public]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnlyPublic
+        {
+            get
+            {
+                return ViewState["ShowOnlyPublic"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowOnlyPublic"] = value;
+            }
+        }
+
         #region Controls
 
         /// <summary>
@@ -235,6 +254,12 @@ namespace Rock.Web.UI.Controls
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
+            if ( ShowOnlyPublic )
+            {
+                ItemRestUrlExtraParams += "&itemFilterPropertyName=IsPublic";
+                ItemRestUrlExtraParams += "&itemFilterPropertyValue=" + ShowOnlyPublic.ToTrueFalse();
+            }
+
             ItemRestUrlExtraParams += "&includeInactiveItems=" + includeInactiveSchedules.ToTrueFalse();
             ItemRestUrlExtraParams += "&lazyLoad=false";
         }

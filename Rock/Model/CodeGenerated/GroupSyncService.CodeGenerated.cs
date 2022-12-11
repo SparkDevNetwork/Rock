@@ -161,9 +161,6 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             target.ExitSystemCommunicationId = source.ExitSystemCommunicationId;
-            #pragma warning disable 612, 618
-            target.ExitSystemEmailId = source.ExitSystemEmailId;
-            #pragma warning restore 612, 618
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
@@ -172,9 +169,6 @@ namespace Rock.Model
             target.ScheduleIntervalMinutes = source.ScheduleIntervalMinutes;
             target.SyncDataViewId = source.SyncDataViewId;
             target.WelcomeSystemCommunicationId = source.WelcomeSystemCommunicationId;
-            #pragma warning disable 612, 618
-            target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
-            #pragma warning restore 612, 618
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

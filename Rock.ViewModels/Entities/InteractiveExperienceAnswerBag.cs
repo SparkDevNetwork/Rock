@@ -42,10 +42,11 @@ namespace Rock.ViewModels.Entities
         public int ApprovalStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock.Model.Campus associated with Interactive Experience Answer.
+        /// Gets or sets the identifier of the Rock.Model.InteractiveExperienceAnswer.Campus the answer
+        /// originated from.
         /// </summary>
         /// <value>
-        /// An System.Int32 that represents the Id of the campus.
+        /// The identifier of the Rock.Model.InteractiveExperienceAnswer.Campus.
         /// </value>
         public int? CampusId { get; set; }
 
@@ -66,12 +67,12 @@ namespace Rock.ViewModels.Entities
         public int InteractiveExperienceActionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this Interactive Experience Answer is associated with. This property is required.
+        /// Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceSchedule that the Interactive Experience Answer is associated with.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractiveExperienceOccurrence that the Interactive Experience Answer is associated with.
         /// </value>
-        public int InteractiveExperienceScheduleId { get; set; }
+        public int InteractiveExperienceOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier.
@@ -88,6 +89,15 @@ namespace Rock.ViewModels.Entities
         /// The response.
         /// </value>
         public string Response { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom response data JSON. This will hold additional
+        /// information that does not need referential integrity.
+        /// </summary>
+        /// <value>
+        /// The custom response data JSON.
+        /// </value>
+        public string ResponseDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets the response date time.

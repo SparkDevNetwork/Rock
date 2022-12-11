@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransaction View Model */
 export type FinancialTransactionBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the authorized person identifier. */
     authorizedPersonAliasId?: number | null;
 
@@ -48,6 +54,12 @@ export type FinancialTransactionBag = {
     /** Gets or sets an encrypted version of a scanned check's parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber} */
     checkMicrParts?: string | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the gateway identifier. */
     financialGatewayId?: number | null;
 
@@ -60,6 +72,9 @@ export type FinancialTransactionBag = {
     /** Gets or sets date and time that the transaction should be processed after. This is the local server time. */
     futureProcessingDateTime?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if the transaction has been reconciled or not. */
     isReconciled?: boolean | null;
 
@@ -71,6 +86,12 @@ export type FinancialTransactionBag = {
      * Fail means that the check scanner detected a bad MICR read, but the user choose to Upload it anyway
      */
     mICRStatus?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the non cash asset type Rock.Model.DefinedValue identifier. */
     nonCashAssetTypeValueId?: number | null;
@@ -131,25 +152,4 @@ export type FinancialTransactionBag = {
      * the type of the transaction.
      */
     transactionTypeValueId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

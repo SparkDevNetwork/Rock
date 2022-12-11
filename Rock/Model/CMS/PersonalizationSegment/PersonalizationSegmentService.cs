@@ -246,5 +246,77 @@ namespace Rock.Model
 
             return segmentIdKeys;
         }
+
+        #region Actions
+
+        /// <summary>
+        /// Add Personalization segments for the specified person.
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="segmentIdList"></param>
+        /// <returns></returns>
+        public int AddSegmentsForPerson( int personId, IEnumerable<int> segmentIdList )
+        {
+            if ( segmentIdList == null || !segmentIdList.Any() )
+            {
+                return 0;
+            }
+
+            var rockContext = (RockContext)this.Context;
+            var existingSegmentIdList = rockContext.PersonAliasPersonalizations
+                .Where( x => x.PersonAlias.PersonId == personId
+                             && x.PersonalizationType == PersonalizationType.Segment )
+                .Select( x => x.PersonalizationEntityId )
+                .ToList();
+
+            var addSegmentIdList = segmentIdList.Except( existingSegmentIdList ).ToList();
+            if ( addSegmentIdList.Any() )
+            {
+                var personService = new PersonService( rockContext );
+                var person = personService.Get( personId );
+                var personAliasId = person.PrimaryAliasId.GetValueOrDefault(0);
+                if ( personAliasId != 0 )
+                {
+                    foreach ( var segmentId in addSegmentIdList )
+                    {
+                        var pap = new PersonAliasPersonalization();
+                        pap.PersonalizationType = PersonalizationType.Segment;
+                        pap.PersonAliasId = personAliasId;
+                        pap.PersonalizationEntityId = segmentId;
+
+                        rockContext.PersonAliasPersonalizations.Add( pap );
+                    }
+                }
+            }
+
+            return addSegmentIdList.Count;
+        }
+
+        /// <summary>
+        /// Remove Personalization segments for the specified person.
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="segmentIdList"></param>
+        /// <returns></returns>
+        public int RemoveSegmentsForPerson( int personId, IEnumerable<int> segmentIdList )
+        {
+            if ( segmentIdList == null || !segmentIdList.Any() )
+            {
+                return 0;
+            }
+
+            var rockContext = ( RockContext ) this.Context;
+            var removeSegments = rockContext.PersonAliasPersonalizations
+                .Where( pap => pap.PersonAlias.PersonId == personId
+                             && pap.PersonalizationType == PersonalizationType.Segment
+                             && segmentIdList.Contains( pap.PersonalizationEntityId ) )
+                .ToList();
+
+            rockContext.PersonAliasPersonalizations.RemoveRange( removeSegments );
+
+            return removeSegments.Count;
+        }
+
+        #endregion
     }
 }

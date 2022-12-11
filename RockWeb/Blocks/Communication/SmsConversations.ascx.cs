@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -697,6 +697,12 @@ namespace RockWeb.Blocks.Communication
         protected void ppRecipient_SelectPerson( object sender, EventArgs e )
         {
             nbNoSms.Visible = false;
+            var senderClearButton = ( HtmlAnchor ) sender;
+            if (senderClearButton != null && senderClearButton.ID == "btnSelectNone" )
+            {
+                // The PersonPicker clear button was clicked so no need to check for SMS numbers
+                return;
+            }
 
             int toPersonAliasId = ppRecipient.PersonAliasId.Value;
             var personAliasService = new PersonAliasService( new RockContext() );

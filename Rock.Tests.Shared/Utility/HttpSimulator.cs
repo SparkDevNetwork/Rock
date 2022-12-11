@@ -25,7 +25,13 @@ namespace Rock.Tests.Shared
     /// would be in "as if" handling a request. Thus the HttpContext.Current 
     /// property is populated.
     /// </summary>
-    public class HttpSimulator : IDisposable
+    /// <remarks>
+    /// Adapted from HttpSimulator code first published here:
+    /// https://haacked.com/archive/2007/06/19/unit-tests-web-code-without-a-web-server-using-httpsimulator.aspx/
+    /// Modified to implement HttpCookies.
+    /// This implementation should be used in preference to the HttpSimulator library.
+    /// </remarks>
+    public class RockHttpSimulator : IDisposable
     {
         private const string defaultPhysicalAppPath = @"c:\InetPub\wwwRoot\";
         private StringBuilder builder;
@@ -35,16 +41,15 @@ namespace Rock.Tests.Shared
         private NameValueCollection _headers = new NameValueCollection();
         private NameValueCollection _serverVariables = new NameValueCollection();
 
-        public HttpSimulator() : this( "/", defaultPhysicalAppPath )
+        public RockHttpSimulator() : this( "/", defaultPhysicalAppPath )
         {
         }
 
-        public HttpSimulator( string applicationPath ) : this( applicationPath, defaultPhysicalAppPath )
+        public RockHttpSimulator( string applicationPath ) : this( applicationPath, defaultPhysicalAppPath )
         {
-
         }
 
-        public HttpSimulator( string applicationPath, string physicalApplicationPath )
+        public RockHttpSimulator( string applicationPath, string physicalApplicationPath )
         {
             this.ApplicationPath = applicationPath;
             this.PhysicalApplicationPath = physicalApplicationPath;
@@ -56,7 +61,7 @@ namespace Rock.Tests.Shared
         /// <remarks>
         /// Simulates a request to http://localhost/
         /// </remarks>
-        public HttpSimulator SimulateRequest()
+        public RockHttpSimulator SimulateRequest()
         {
             return SimulateRequest( new Uri( "http://localhost/" ) );
         }
@@ -65,7 +70,7 @@ namespace Rock.Tests.Shared
         /// Sets up the HttpContext objects to simulate a GET request.
         /// </summary>
         /// <param name="url"></param>
-        public HttpSimulator SimulateRequest( Uri url )
+        public RockHttpSimulator SimulateRequest( Uri url )
         {
             return SimulateRequest( url, HttpVerb.GET );
         }
@@ -75,7 +80,7 @@ namespace Rock.Tests.Shared
         /// </summary>
         /// <param name="url"></param>
         /// <param name="httpVerb"></param>
-        public HttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb )
+        public RockHttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb )
         {
             return SimulateRequest( url, httpVerb, null, null );
         }
@@ -85,7 +90,7 @@ namespace Rock.Tests.Shared
         /// </summary>
         /// <param name="url"></param>
         /// <param name="formVariables"></param>
-        public HttpSimulator SimulateRequest( Uri url, NameValueCollection formVariables )
+        public RockHttpSimulator SimulateRequest( Uri url, NameValueCollection formVariables )
         {
             return SimulateRequest( url, HttpVerb.POST, formVariables, null );
         }
@@ -96,7 +101,7 @@ namespace Rock.Tests.Shared
         /// <param name="url"></param>
         /// <param name="formVariables"></param>
         /// <param name="headers"></param>
-        public HttpSimulator SimulateRequest( Uri url, NameValueCollection formVariables, NameValueCollection headers )
+        public RockHttpSimulator SimulateRequest( Uri url, NameValueCollection formVariables, NameValueCollection headers )
         {
             return SimulateRequest( url, HttpVerb.POST, formVariables, headers );
         }
@@ -107,7 +112,7 @@ namespace Rock.Tests.Shared
         /// <param name="url"></param>
         /// <param name="httpVerb"></param>
         /// <param name="headers"></param>
-        public HttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb, NameValueCollection headers )
+        public RockHttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb, NameValueCollection headers )
         {
             return SimulateRequest( url, httpVerb, null, headers );
         }
@@ -119,7 +124,7 @@ namespace Rock.Tests.Shared
         /// <param name="httpVerb"></param>
         /// <param name="formVariables"></param>
         /// <param name="headers"></param>
-        protected virtual HttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb, NameValueCollection formVariables, NameValueCollection headers )
+        protected virtual RockHttpSimulator SimulateRequest( Uri url, HttpVerb httpVerb, NameValueCollection formVariables, NameValueCollection headers, HttpCookieCollection cookies = null )
         {
             HttpContext.Current = null;
 
@@ -195,7 +200,9 @@ namespace Rock.Tests.Shared
 
         private void InitializeSession()
         {
-            HttpContext.Current = new HttpContext( workerRequest );
+            var httpContext = new HttpContext( workerRequest );
+            Context = new HttpContextWrapper( httpContext );
+            HttpContext.Current = httpContext;
             HttpContext.Current.Items.Clear();
             HttpSessionState session = ( HttpSessionState ) ReflectionHelper.Instantiate( typeof( HttpSessionState ), new Type[] { typeof( IHttpSessionState ) }, new FakeHttpSessionState() );
 
@@ -209,6 +216,42 @@ namespace Rock.Tests.Shared
                     {"isMobileDevice","false"}
                 }
             };
+        }
+
+        public class FakeHttpContext : HttpContextWrapper
+        {
+            private readonly MockRequest request;
+            public FakeHttpContext( HttpContext context, HttpCookieCollection cookies )
+                : base( context )
+            {
+                this.request = new MockRequest( cookies );
+            }
+
+            public override HttpRequestBase Request
+            {
+                get
+                {
+                    return request;
+                }
+            }
+
+            public class MockRequest : HttpRequestBase
+            {
+                private readonly HttpCookieCollection cookies;
+                public MockRequest( HttpCookieCollection cookies )
+                {
+                    this.cookies = cookies;
+                }
+
+                public override HttpCookieCollection Cookies
+                {
+                    get
+                    {
+                        return cookies;
+                    }
+                }
+            }
+
         }
 
         public class FakeHttpSessionState : NameObjectCollectionBase, IHttpSessionState
@@ -487,7 +530,7 @@ namespace Rock.Tests.Shared
         /// </summary>
         /// <param name="referer"></param>
         /// <returns></returns>
-        public HttpSimulator SetReferer( Uri referer )
+        public RockHttpSimulator SetReferer( Uri referer )
         {
             if ( this.workerRequest != null )
                 this.workerRequest.SetReferer( referer );
@@ -500,7 +543,7 @@ namespace Rock.Tests.Shared
         /// </summary>
         /// <param name="ua"></param>
         /// <returns></returns>
-        public HttpSimulator SetUserAgent( string ua )
+        public RockHttpSimulator SetUserAgent( string ua )
         {
             if ( this.workerRequest != null )
                 this.workerRequest.SetUserAgent( ua );
@@ -514,7 +557,7 @@ namespace Rock.Tests.Shared
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public HttpSimulator SetFormVariable( string name, string value )
+        public RockHttpSimulator SetFormVariable( string name, string value )
         {
             //TODO: Change this ordering requirement.
             if ( this.workerRequest != null )
@@ -531,7 +574,7 @@ namespace Rock.Tests.Shared
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public HttpSimulator SetHeader( string name, string value )
+        public RockHttpSimulator SetHeader( string name, string value )
         {
             //TODO: Change this ordering requirement.
             if ( this.workerRequest != null )
@@ -548,7 +591,7 @@ namespace Rock.Tests.Shared
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public HttpSimulator SetServerVariable( string name, string value )
+        public RockHttpSimulator SetServerVariable( string name, string value )
         {
             if ( this.workerRequest != null )
             {
@@ -583,6 +626,11 @@ namespace Rock.Tests.Shared
 
             return original.Substring( original.IndexOf( search ) + search.Length );
         }
+
+        /// <summary>
+        /// Gets the HttpContext instance.
+        /// </summary>
+        public HttpContextBase Context { get; private set; }
 
         public string Host
         {
@@ -765,8 +813,8 @@ namespace Rock.Tests.Shared
 
         internal class ConfigMapPath : IConfigMapPath
         {
-            private HttpSimulator _requestSimulation;
-            public ConfigMapPath( HttpSimulator simulation )
+            private RockHttpSimulator _requestSimulation;
+            public ConfigMapPath( RockHttpSimulator simulation )
             {
                 _requestSimulation = simulation;
             }

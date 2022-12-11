@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -404,6 +404,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             }
                         }
 
+                        // If there is already a country associated, use that, if not, get the default organizational country.
+                        var country = profile.HomeAddress.Country.IsNotNullOrWhiteSpace() ? profile.HomeAddress.Country : GetDefaultCountry();
+
                         // TODO: ???
                         // familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
                         // familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
@@ -413,7 +416,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             profile.HomeAddress.City,
                             profile.HomeAddress.State,
                             profile.HomeAddress.PostalCode,
-                            profile.HomeAddress.Country,
+                            country,
                             person.PrimaryFamily,
                             true );
 
@@ -450,6 +453,17 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                 return ActionOk( mobilePerson );
             }
+        }
+
+        /// <summary>
+        /// Gets the default country from the OrganizationCountry global attribute, or returns 'US' if none are
+        /// specified.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetDefaultCountry()
+        {
+            var organizationCountryAttribute = GlobalAttributesCache.Get().OrganizationCountry;
+            return organizationCountryAttribute.IsNotNullOrWhiteSpace() ? organizationCountryAttribute : "US";     
         }
 
         #endregion

@@ -31,6 +31,12 @@ export type AttendanceBag = {
     /** Gets or sets the Id of the Rock.Model.AttendanceCode that is associated with this Rock.Model.Attendance entity. */
     attendanceCodeId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Id of the Rock.Model.Campus that the individual attended/checked in to. */
     campusId?: number | null;
 
@@ -39,6 +45,12 @@ export type AttendanceBag = {
 
     /** Gets or sets the person that checked-out the Rock.Model.PersonAlias person attended. */
     checkedOutByPersonAliasId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the Reason that the Rock.Model.Attendance.PersonAlias person declined to attend */
     declineReasonValueId?: number | null;
@@ -52,8 +64,17 @@ export type AttendanceBag = {
     /** Gets or sets the date and time that person checked out. */
     endDateTime?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets if this first time that this person has ever checked into anything */
     isFirstTime?: boolean | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the note. */
     note?: string | null;
@@ -112,25 +133,4 @@ export type AttendanceBag = {
 
     /** Gets or sets the date and time that person checked in */
     startDateTime?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -153,6 +153,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
                 actionForm.PersonEntrySpouseLabel = formSettings.PersonEntry.SpouseLabel;
+                actionForm.PersonEntryRaceEntryOption = formSettings.PersonEntry.RaceEntry.ToPersonEntryOption();
+                actionForm.PersonEntryEthnicityEntryOption = formSettings.PersonEntry.EthnicityEntry.ToPersonEntryOption();
             }
 
             UpdateFormSections( formSettings, actionForm, workflowType, rockContext );
@@ -454,7 +456,9 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
-                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel,
+                    RaceEntry = actionForm.PersonEntryRaceEntryOption.ToFormFieldVisibility(),
+                    EthnicityEntry = actionForm.PersonEntryEthnicityEntryOption.ToFormFieldVisibility(),
                 };
             }
 

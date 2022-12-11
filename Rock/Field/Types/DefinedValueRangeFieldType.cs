@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -43,6 +45,179 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
         private const string PUBLIC_VALUES = "values";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetTextValue( value, configurationValues, false );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetTextValue( value, configurationValues, true );
+        }
+
+        /// <summary>
+        /// Gets the text value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> the value will be displayed in a condensed space.</param>
+        /// <returns></returns>
+        private string GetTextValue( string value, Dictionary<string, string> configurationValues, bool condensed )
+        {
+            if ( value != null )
+            {
+                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                if ( valuePair.Length == 2 )
+                {
+                    bool useDescription = false;
+                    if ( !condensed && configurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ).AsBoolean() )
+                    {
+                        useDescription = true;
+                    }
+
+                    var lowerDefinedValue = DefinedValueCache.Get( valuePair[0].AsGuid() );
+                    var upperDefinedValue = DefinedValueCache.Get( valuePair[1].AsGuid() );
+                    if ( lowerDefinedValue != null || upperDefinedValue != null )
+                    {
+                        if ( useDescription )
+                        {
+                            return string.Format(
+                                "{0} to {1}",
+                                lowerDefinedValue != null ? lowerDefinedValue.Description : string.Empty,
+                                upperDefinedValue != null ? upperDefinedValue.Description : string.Empty );
+                        }
+                        else
+                        {
+                            return string.Format(
+                                "{0} to {1}",
+                                lowerDefinedValue != null ? lowerDefinedValue.Value : string.Empty,
+                                upperDefinedValue != null ? upperDefinedValue.Value : string.Empty );
+                        }
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
+                }
+            }
+
+            // Something unexpected. Let the base format it.
+            return base.GetTextValue( value, configurationValues );
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues().AsGuidOrNullList();
+            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                : false;
+
+            if ( guids.Count == 2 && guids[0].HasValue && guids[1].HasValue )
+            {
+                var lowerValue = DefinedValueCache.Get( guids[0].Value );
+                var upperValue = DefinedValueCache.Get( guids[1].Value );
+
+                return new PublicValue
+                {
+                    Value = privateValue,
+                    Text = $"{lowerValue.Value} to {upperValue.Value}",
+                    Description = useDescription ? $"{lowerValue.Description} to {upperValue.Description}" : string.Empty
+                }.ToCamelCaseJson( false, true );
+            }
+
+            return new PublicValue().ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var value = publicValue.FromJsonOrNull<PublicValue>();
+
+            return value?.Value ?? string.Empty;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+
+            if ( oldDisplayDescription != newDisplayDescription )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
+
+            return privateValue
+                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Value and Description properties of
+            // a DefinedValue and should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -176,72 +351,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            return GetTextValue( value, configurationValues, false );
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
-        {
-            return GetTextValue( value, configurationValues, true );
-        }
-
-        /// <summary>
-        /// Gets the text value.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> the value will be displayed in a condensed space.</param>
-        /// <returns></returns>
-        private string GetTextValue( string value, Dictionary<string, string> configurationValues, bool condensed )
-        {
-            if ( value != null )
-            {
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length == 2 )
-                {
-                    bool useDescription = false;
-                    if ( !condensed && configurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ).AsBoolean() )
-                    {
-                        useDescription = true;
-                    }
-
-                    var lowerDefinedValue = DefinedValueCache.Get( valuePair[0].AsGuid() );
-                    var upperDefinedValue = DefinedValueCache.Get( valuePair[1].AsGuid() );
-                    if ( lowerDefinedValue != null || upperDefinedValue != null )
-                    {
-                        if ( useDescription )
-                        {
-                            return string.Format(
-                                "{0} to {1}",
-                                lowerDefinedValue != null ? lowerDefinedValue.Description : string.Empty,
-                                upperDefinedValue != null ? upperDefinedValue.Description : string.Empty );
-                        }
-                        else
-                        {
-                            return string.Format(
-                                "{0} to {1}",
-                                lowerDefinedValue != null ? lowerDefinedValue.Value : string.Empty,
-                                upperDefinedValue != null ? upperDefinedValue.Value : string.Empty );
-                        }
-                    }
-                    else
-                    {
-                        return string.Empty;
-                    }
-                }
-            }
-
-            // Something unexpected. Let the base format it.
-            return base.GetTextValue( value, configurationValues );
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -255,42 +364,6 @@ namespace Rock.Field.Types
             return !condensed
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        #endregion
-
-        #region Edit Control
-
-        /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guids = privateValue.SplitDelimitedValues().AsGuidOrNullList();
-            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
-                : false;
-
-            if ( guids.Count == 2 && guids[0].HasValue && guids[1].HasValue )
-            {
-                var lowerValue = DefinedValueCache.Get( guids[0].Value );
-                var upperValue = DefinedValueCache.Get( guids[1].Value );
-
-                return new PublicValue
-                {
-                    Value = privateValue,
-                    Text = $"{lowerValue.Value} to {upperValue.Value}",
-                    Description = useDescription ? $"{lowerValue.Description} to {upperValue.Description}" : string.Empty
-                }.ToCamelCaseJson( false, true );
-            }
-
-            return new PublicValue().ToCamelCaseJson( false, true );
-        }
-
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var value = publicValue.FromJsonOrNull<PublicValue>();
-
-            return value?.Value ?? string.Empty;
         }
 
         /// <summary>
@@ -330,7 +403,7 @@ namespace Rock.Field.Types
                         lowerValueControl.Items.Add( new ListItem() );
                         upperValueControl.Items.Add( new ListItem() );
 
-                        foreach ( var definedValue in definedValues)
+                        foreach ( var definedValue in definedValues )
                         {
                             lowerValueControl.Items.Add( new ListItem( useDescription ? definedValue.Description : definedValue.Value, definedValue.Guid.ToString() ) );
                             upperValueControl.Items.Add( new ListItem( useDescription ? definedValue.Description : definedValue.Value, definedValue.Guid.ToString() ) );
@@ -393,10 +466,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -425,68 +494,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
-            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
-
-            if ( oldDisplayDescription != newDisplayDescription )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( privateValue.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
-
-            return privateValue
-                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                .AsGuidList()
-                .Select( g => DefinedValueCache.Get( g ) )
-                .Where( dv => dv != null )
-                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
-                .ToList();
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Value and Description properties of
-            // a DefinedValue and should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
-            };
-        }
-
+#endif
         #endregion
 
         private class PublicValue

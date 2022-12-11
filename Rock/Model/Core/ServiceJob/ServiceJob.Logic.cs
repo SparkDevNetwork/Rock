@@ -17,6 +17,8 @@
 
 using System;
 
+using Rock.Jobs;
+
 namespace Rock.Model
 {
     public partial class ServiceJob
@@ -34,7 +36,16 @@ namespace Rock.Model
             if ( string.IsNullOrWhiteSpace( job.Assembly ) )
             {
                 // first, if no assembly is known, look in all the dlls for it
-                type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+                type = Rock.Reflection.FindType( typeof( RockJob ), job.Class );
+
+                if ( type == null )
+                {
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
+                    // if this isn't a RockJob, it could be from a pre-v15 plugin that implements Quartz.IJob directly
+                    type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
+
+                }
 
                 if ( type == null )
                 {

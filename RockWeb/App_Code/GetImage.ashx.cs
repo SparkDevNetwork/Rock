@@ -244,13 +244,16 @@ namespace RockWeb
             context.Response.AddHeader( "Last-Modified", binaryFileMetaData.ModifiedDateTime.ToUniversalTime().ToString( "R" ) );
             context.Response.AddHeader( "ETag", binaryFileMetaData.ModifiedDateTime.ToString().XxHash() );
 
-            //// if the binaryFile's BinaryFileType requires view security, check security
-            //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
-            if ( binaryFileMetaData.BinaryFileType_RequiresViewSecurity )
+            var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+            Person currentPerson = currentUser != null ? currentUser.Person : null;
+            BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).AsNoTracking().First( a => a.Id == binaryFileMetaData.Id );
+
+            var parentEntityAllowsView = binaryFileAuth.ParentEntityAllowsView( currentPerson );
+
+            // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+            // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
+            if ( parentEntityAllowsView == null && binaryFileMetaData.BinaryFileType_RequiresViewSecurity )
             {
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                Person currentPerson = currentUser != null ? currentUser.Person : null;
-                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).AsNoTracking().First( a => a.Id == binaryFileMetaData.Id );
                 if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     SendNotAuthorized( context );
@@ -258,7 +261,14 @@ namespace RockWeb
                 }
             }
 
+            // Since this has a value use it
+            if ( parentEntityAllowsView == false )
+            {
+                SendNotAuthorized( context );
+                return;
+            }
 
+            // Security checks pass so send the file
             Stream fileContent = null;
             try
             {

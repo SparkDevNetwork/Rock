@@ -31,6 +31,18 @@ export type AuthBag = {
     /** Gets or sets a flag indicating if this Auth entity allows or denies this action for the role. */
     allowOrDeny?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the EntityId of the entity that this Auth entity applies to. */
     entityId?: number | null;
 
@@ -40,6 +52,15 @@ export type AuthBag = {
     /** Gets or sets the GroupId of the Security Role Rock.Model.Group that this Auth entity allows or denies access to. This is used for group based authorization. */
     groupId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the order or priority of the Auth entity.  */
     order: number;
 
@@ -48,25 +69,4 @@ export type AuthBag = {
 
     /** Gets or sets the special role that this Auth entity applies to. */
     specialRole: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

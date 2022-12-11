@@ -198,7 +198,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the exclusion values.
         /// </summary>
-        [Obsolete("This will not work with a distributed cache system such as Redis. The StreakType will need to be flushed from cache.")]
+        [Obsolete("This will not work with a distributed cache system such as Redis. The StreakType will need to be flushed from cache.", true)]
         [RockObsolete("1.10")]
         public void ReloadOccurrenceExclusions()
         {

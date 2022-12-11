@@ -28,18 +28,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * Implements the Rock.ViewModels.Utility.EntityBagBase
  */
 export type PersonalLinkSectionBag = {
-    /** Gets or sets the name. */
-    name?: string | null;
-
-    /** Gets or sets a flag indicating if this Link Section is shared. */
-    isShared: boolean;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets a flag indicating if this Link Section is shared. */
+    isShared: boolean;
+
+    /** Gets or sets the name. */
+    name?: string | null;
 };

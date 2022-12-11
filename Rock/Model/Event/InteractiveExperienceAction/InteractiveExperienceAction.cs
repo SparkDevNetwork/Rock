@@ -30,7 +30,7 @@ namespace Rock.Model
     [Table( "InteractiveExperienceAction" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "8635E7E7-3576-47FF-92DE-30A69EB5D011" )]
-    public partial class InteractiveExperienceAction : Model<InteractiveExperienceAction>
+    public partial class InteractiveExperienceAction : Model<InteractiveExperienceAction>, IOrdered
     {
         #region Entity Properties
 
@@ -99,6 +99,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ActionSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order of this action.
+        /// </summary>
+        /// <value>The sort order of this action.</value>
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion
 

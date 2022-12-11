@@ -47,6 +47,12 @@ export type FinancialTransactionAlertTypeBag = {
      */
     amountSensitivityScale?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the campus identifier. */
     campusId?: number | null;
 
@@ -55,6 +61,12 @@ export type FinancialTransactionAlertTypeBag = {
 
     /** Gets or sets a value indicating whether [continue if matched]. */
     continueIfMatched: boolean;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the data view identifier. */
     dataViewId?: number | null;
@@ -70,6 +82,9 @@ export type FinancialTransactionAlertTypeBag = {
      * see how this value is used for Gratitude vs Follow-Up alert types.
      */
     frequencySensitivityScale?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether [include child financial accounts]. */
     includeChildFinancialAccounts: boolean;
@@ -88,6 +103,12 @@ export type FinancialTransactionAlertTypeBag = {
 
     /** Gets or sets the minimum median gift amount. */
     minimumMedianGiftAmount?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -112,25 +133,4 @@ export type FinancialTransactionAlertTypeBag = {
 
     /** Gets or sets the workflow type identifier. */
     workflowTypeId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

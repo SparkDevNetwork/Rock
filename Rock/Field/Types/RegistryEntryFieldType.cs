@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -28,7 +29,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "D98E1D88-2240-4248-B93B-0512BD3BB61A")]
+    [Rock.SystemGuid.FieldTypeGuid( "D98E1D88-2240-4248-B93B-0512BD3BB61A" )]
     public class RegistryEntryFieldType : FieldType
     {
         /// <summary>
@@ -57,7 +58,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RegistryEntry )
             {
-                return ( (RegistryEntry)control ).Text;
+                return ( ( RegistryEntry ) control ).Text;
             }
 
             return null;
@@ -73,7 +74,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RegistryEntry )
             {
-                ( (RegistryEntry)control ).Text = value;
+                ( ( RegistryEntry ) control ).Text = value;
             }
         }
 

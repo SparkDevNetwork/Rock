@@ -1272,7 +1272,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( @"<div class=""panel-labels"" style=""text-align: right;"">" );
+            stringBuilder.AppendLine( @"<div class=""panel-labels text-right"">" );
 
             if ( !viewModel.CampusName.IsNullOrWhiteSpace() )
             {
@@ -2221,7 +2221,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
+                var message = string.Format( "A '{0}' workflow was started.", workflowType.Name );
                 mdWorkflowLaunched.Show( message, ModalAlertType.Information );
             }
         }

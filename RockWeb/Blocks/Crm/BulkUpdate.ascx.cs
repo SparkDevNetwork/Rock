@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
@@ -40,6 +39,9 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.IO;
 using Rock.Tasks;
+using Rock.Utility;
+using Rock.RealTime.Topics;
+using Rock.RealTime;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -149,11 +151,6 @@ namespace RockWeb.Blocks.Crm
 
         #region Properties
 
-        /// <summary>
-        /// This holds the reference to the RockMessageHub SignalR Hub context.
-        /// </summary>
-        private IHubContext HubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
-
         private List<Individual> Individuals { get; set; }
         private bool ShowAllIndividuals { get; set; }
         private int? GroupId { get; set; }
@@ -167,8 +164,6 @@ namespace RockWeb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
@@ -642,6 +637,8 @@ namespace RockWeb.Blocks.Crm
             }
 
             var processor = this.GetProcessorForCurrentConfiguration( HttpContext.Current.Request );
+            var progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) );
+            tapReporter.TaskId = progress.TaskId;
 
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
@@ -649,27 +646,25 @@ namespace RockWeb.Blocks.Crm
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {
-                    var client = HubContext.Clients.Client( hfConnectionId.Value );
-
-                    if ( client == null )
-                    {
-                        return;
-                    }
-
                     if ( args.UpdateType == PersonBulkUpdateProcessor.ProcessorStatusUpdateTypeSpecifier.Progress )
                     {
                         // Progress Update
-                        client.bulkUpdateProgress( args.ProcessedCount.ToString(), args.TotalCount.ToString( "n0" ) );
+                        progress.ReportProgressUpdate( args.ProcessedCount, args.TotalCount, $"{args.ProcessedCount}/{args.TotalCount}" );
                     }
                     else if ( args.UpdateType == PersonBulkUpdateProcessor.ProcessorStatusUpdateTypeSpecifier.Error )
                     {
                         // Error Message
-                        client.exportStatus( args.StatusMessage, false );
+                        progress.StopTask( args.StatusMessage, new string[] { "1 or more errors occurred." } );
+                    }
+                    else if ( args.UpdateType == PersonBulkUpdateProcessor.ProcessorStatusUpdateTypeSpecifier.Warning )
+                    {
+                        // Warning Message
+                        progress.StopTask( args.StatusMessage, new string[] { "1 or more warnings occurred." } );
                     }
                     else
                     {
                         // Status Update
-                        client.bulkUpdateStatus( args.StatusMessage, args.StatusDetail );
+                        progress.StopTask( args.StatusMessage );
                     }
                 };
 
@@ -680,10 +675,11 @@ namespace RockWeb.Blocks.Crm
             } );
 
             pnlConfirm.Visible = false;
-            pnlProcessing.Visible = true;
+            tapReporter.Visible = true;
 
             // Start the background processing task and complete this request.
-            // The task will continue to run until complete, delivering client status notifications via the SignalR hub.
+            // The task will continue to run until complete, delivering client
+            // status notifications via the RealTime topic.
             task.Start();
         }
 

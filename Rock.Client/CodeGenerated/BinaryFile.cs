@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalInformation { get; set; }
+
+        /// <summary />
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary />
@@ -71,6 +74,12 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public int? ParentEntityId { get; set; }
+
+        /// <summary />
+        public int? ParentEntityTypeId { get; set; }
 
         /// <summary />
         public string Path { get; set; }
@@ -114,6 +123,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BinaryFile source )
         {
             this.Id = source.Id;
+            this.AdditionalInformation = source.AdditionalInformation;
             this.BinaryFileTypeId = source.BinaryFileTypeId;
             this.ContentLastModified = source.ContentLastModified;
             this.Description = source.Description;
@@ -126,6 +136,8 @@ namespace Rock.Client
             this.IsTemporary = source.IsTemporary;
             this.MimeType = source.MimeType;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.ParentEntityId = source.ParentEntityId;
+            this.ParentEntityTypeId = source.ParentEntityTypeId;
             this.Path = source.Path;
             this.StorageEntitySettings = source.StorageEntitySettings;
             this.Width = source.Width;

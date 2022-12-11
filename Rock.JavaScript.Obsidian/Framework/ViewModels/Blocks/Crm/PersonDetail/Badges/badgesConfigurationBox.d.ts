@@ -28,6 +28,12 @@ import { RenderedBadgeBag } from "@Obsidian/ViewModels/Crm/renderedBadgeBag";
  * Badges block.
  */
 export type BadgesConfigurationBox = {
+    /** Gets or sets the bottom left rendered badge content. */
+    bottomLeftBadges?: RenderedBadgeBag[] | null;
+
+    /** Gets or sets the bottom right rendered badge content. */
+    bottomRightBadges?: RenderedBadgeBag[] | null;
+
     /** Gets or sets the person key identifier of the person being viewed. */
     personKey?: string | null;
 
@@ -39,10 +45,4 @@ export type BadgesConfigurationBox = {
 
     /** Gets or sets the top right rendered badge content. */
     topRightBadges?: RenderedBadgeBag[] | null;
-
-    /** Gets or sets the bottom left rendered badge content. */
-    bottomLeftBadges?: RenderedBadgeBag[] | null;
-
-    /** Gets or sets the bottom right rendered badge content. */
-    bottomRightBadges?: RenderedBadgeBag[] | null;
 };

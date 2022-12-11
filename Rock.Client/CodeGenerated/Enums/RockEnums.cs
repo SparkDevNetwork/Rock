@@ -764,9 +764,6 @@ namespace Rock.Client.Enums
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
-
-        [Obsolete( "Use RegistrantAttribute instead", true )]
-        RegistrationAttribute = 0x4,
     }
 
     /// <summary>
@@ -800,6 +797,16 @@ namespace Rock.Client.Enums
         ConnectionStatus = 0xc,
         MiddleName = 0xd,
         AnniversaryDate = 0xe,
+        Race = 0xf,
+        Ethnicity = 0x10,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ReminderNotificationType
+    {
+        Communication = 0x0,
+        Workflow = 0x1,
     }
 
     /// <summary>

@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -41,6 +42,213 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                Guid guid = privateValue.AsGuid();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    formattedValue = new PersonAliasService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.Person.NickName + " " + a.Person.LastName )
+                    .FirstOrDefault();
+                }
+            }
+
+            return formattedValue;
+        }
+
+        /// <summary>
+        /// Formats the value extended.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Guid guid = value.AsGuid();
+                int personId = new PersonAliasService( new RockContext() ).Queryable()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.PersonId )
+                    .FirstOrDefault();
+                return string.Format( "person/{0}", personId );
+            }
+
+            return value;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override System.Linq.Expressions.Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, System.Linq.Expressions.ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count >= 2 )
+            {
+                string comparisonValue = filterValues[0];
+                if ( comparisonValue != "0" )
+                {
+                    Guid guid = filterValues[1].AsGuid();
+                    int personId = new PersonAliasService( new RockContext() ).Queryable()
+                        .Where( a => a.Guid.Equals( guid ) )
+                        .Select( a => a.PersonId )
+                        .FirstOrDefault();
+
+                    if ( personId > 0 )
+                    {
+                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsPersonId" );
+                        ConstantExpression constantExpression = Expression.Constant( personId, typeof( int ) );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    }
+                }
+            }
+
+            return new NoAttributeFilterExpression();
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new PersonAliasService( rockContext ).GetPerson( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = string.Empty,
+                    CondensedTextValue = string.Empty,
+                    HtmlValue = string.Empty,
+                    CondensedHtmlValue = string.Empty
+                };
+            }
+
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+            var condensedTextValue = textValue.Truncate( 100 );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue,
+                CondensedHtmlValue = condensedTextValue
+            };
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var personAliasValues = new PersonAliasService( rockContext ).Queryable()
+                    .Where( pa => pa.Guid == guid.Value )
+                    .Select( pa => new
+                    {
+                        pa.Id,
+                        pa.PersonId
+                    } )
+                    .FirstOrDefault();
+
+                if ( personAliasValues == null )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, personAliasValues.Id ),
+                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, personAliasValues.PersonId )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the FirstName and LastName properties
+            // of a Person and the PersonId property of a PersonAlias. It
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -110,32 +318,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                Guid guid = privateValue.AsGuid();
-
-                using ( var rockContext = new RockContext() )
-                {
-                    formattedValue = new PersonAliasService( rockContext ).Queryable()
-                    .AsNoTracking()
-                    .Where( a => a.Guid.Equals( guid ) )
-                    .Select( a => a.Person.NickName + " " + a.Person.LastName )
-                    .FirstOrDefault();
-                }
-            }
-
-            return formattedValue;
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -144,37 +326,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <summary>
-        /// Formats the value extended.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                Guid guid = value.AsGuid();
-                int personId = new PersonAliasService( new RockContext() ).Queryable()
-                    .Where( a => a.Guid.Equals( guid ) )
-                    .Select( a => a.PersonId )
-                    .FirstOrDefault();
-                return string.Format( "person/{0}", personId );
-            }
-
-            return value;
-        }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -184,9 +341,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var personPicker = new PersonPicker { ID = id }; 
+            var personPicker = new PersonPicker { ID = id };
             if ( configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
             {
                 personPicker.EnableSelfSelection = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
@@ -201,7 +358,7 @@ namespace Rock.Field.Types
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             PersonPicker ppPerson = control as PersonPicker;
             string result = string.Empty;
@@ -235,7 +392,7 @@ namespace Rock.Field.Types
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             PersonPicker ppPerson = control as PersonPicker;
             if ( ppPerson != null )
@@ -257,47 +414,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override System.Linq.Expressions.Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, System.Linq.Expressions.ParameterExpression parameterExpression )
-        {
-            if ( filterValues.Count >= 2 )
-            {
-                string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
-                {
-                    Guid guid = filterValues[1].AsGuid();
-                    int personId = new PersonAliasService( new RockContext() ).Queryable()
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.PersonId )
-                        .FirstOrDefault();
-
-                    if ( personId > 0 )
-                    {
-                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsPersonId" );
-                        ConstantExpression constantExpression = Expression.Constant( personId, typeof( int ) );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-                }
-            }
-
-            return new NoAttributeFilterExpression();
-        }
-
-        #endregion
-
-        #region Entity Methods
-
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -308,7 +424,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = new PersonAliasService( new RockContext() ).Get( guid );
-            return item != null ? item.PersonId : (int?)null;
+            return item != null ? item.PersonId : ( int? ) null;
         }
 
         /// <summary>
@@ -324,86 +440,8 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity(string value)
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity(string value, RockContext rockContext)
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new PersonAliasService( rockContext ).GetPerson( guid.Value );
-            }
-
-            return null;
-        }
-
+#endif
         #endregion
 
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var personAliasValues = new PersonAliasService( rockContext ).Queryable()
-                    .Where( pa => pa.Guid == guid.Value )
-                    .Select( pa => new
-                    {
-                        pa.Id,
-                        pa.PersonId
-                    } )
-                    .FirstOrDefault();
-
-                if ( personAliasValues == null )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, personAliasValues.Id ),
-                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, personAliasValues.PersonId )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the FirstName and LastName properties
-            // of a Person and the PersonId property of a PersonAlias. It
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
-            };
-        }
-
-        #endregion
     }
 }

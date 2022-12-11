@@ -22,8 +22,6 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -36,8 +34,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that collects hosting metrics.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Collect Hosting Metrics" )]
     [Description( @"This job will collect a few hosting metrics regarding the usage of resources such as the database connection pool. Note that this Job can be activated/deactivated by navigating to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and toggling the ""Enable Database Performance Counters"" setting." )]
 
@@ -53,7 +49,7 @@ namespace Rock.Jobs
         Description = "The maximum number of metric values to retain for these hosting metrics. When the maximum is reached, the oldest records are deleted to stay below this limit.",
         IsRequired = false,
         DefaultIntegerValue = 10000 )]
-    public class CollectHostingMetrics : IJob
+    public class CollectHostingMetrics : RockJob
     {
         #region AttributeKeys
 
@@ -154,11 +150,8 @@ namespace Rock.Jobs
 
         #endregion
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             try
             {
@@ -174,16 +167,14 @@ namespace Rock.Jobs
                     throw new Exception( @"You must first navigate to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and enable the ""Enable Database Performance Counters"" setting." );
                 }
 
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
-
                 // Get the configured timeout, or default to 60 minutes if it is blank.
-                _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                _maximumMetricsToRetain = dataMap.GetString( AttributeKey.MaximumMetricstoRetain ).AsIntegerOrNull();
+                _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+                _maximumMetricsToRetain = GetAttributeValue( AttributeKey.MaximumMetricstoRetain ).AsIntegerOrNull();
 
                 SetUpPerformanceCounters();
                 ReadPerformanceCounters();
 
-                SaveMetricValues( context );
+                SaveMetricValues();
             }
             catch ( Exception ex )
             {
@@ -271,11 +262,9 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Saves the <see cref="MetricValue"/>s and updates the <see cref="IJobExecutionContext"/>'s Result property.
+        /// Saves the <see cref="MetricValue" />s
         /// </summary>
-        /// <param name="context">The <see cref="IJobExecutionContext"/>.</param>
-        /// <exception cref="Exception">Unable to find the "Hosting Metrics" Category ID.</exception>
-        private void SaveMetricValues( IJobExecutionContext context )
+        private void SaveMetricValues()
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = _commandTimeout;
@@ -350,7 +339,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = $"Calculated a total of {metricValues.Count} metric values for {metrics.Count} metrics";
+            this.Result = $"Calculated a total of {metricValues.Count} metric values for {metrics.Count} metrics";
         }
 
         /// <summary>

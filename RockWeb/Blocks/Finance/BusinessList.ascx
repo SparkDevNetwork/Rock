@@ -31,6 +31,7 @@
                             <Rock:RockLiteralField SortExpression="PhoneNumber, Email" HeaderText="Contact Information" ID="lContactInformation" OnDataBound="lContactInformation_DataBound" />
                             <Rock:RockLiteralField SortExpression="Address.City,Address.Street1" HeaderText="Address" ID="lAddress" OnDataBound="lAddress_DataBound" />
                             <Rock:RockLiteralField HeaderText="Contacts" ID="lContacts" OnDataBound="lContacts_DataBound" />
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
                         </Columns>
                     </Rock:Grid>
 

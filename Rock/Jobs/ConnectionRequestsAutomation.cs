@@ -24,8 +24,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -47,8 +45,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
-    public class ConnectionRequestsAutomation : IJob
+    public class ConnectionRequestsAutomation : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -75,14 +72,10 @@ namespace Rock.Jobs
 
         private int commandTimeout;
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
+            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
@@ -100,11 +93,11 @@ namespace Rock.Jobs
             }
 
             var totalUpdated = updatedResults.Sum();
-            context.Result = $"{totalUpdated} Connection Request{( totalUpdated == 1 ? "" : "s" )} updated.";
+            this.Result = $"{totalUpdated} Connection Request{( totalUpdated == 1 ? "" : "s" )} updated.";
 
             if ( errors.Any() )
             {
-                ThrowErrors( context, errors );
+                ThrowErrors( errors );
             }
         }
 
@@ -318,13 +311,12 @@ namespace Rock.Jobs
         /// <summary>
         /// Throws the errors.
         /// </summary>
-        /// <param name="jobExecutionContext">The job execution context.</param>
         /// <param name="errors">The errors.</param>
-        private void ThrowErrors( IJobExecutionContext jobExecutionContext, IEnumerable<string> errors )
+        private void ThrowErrors( IEnumerable<string> errors )
         {
             var sb = new StringBuilder();
 
-            if ( !jobExecutionContext.Result.ToStringSafe().IsNullOrWhiteSpace() )
+            if ( !this.Result.IsNullOrWhiteSpace() )
             {
                 sb.AppendLine();
             }
@@ -337,7 +329,7 @@ namespace Rock.Jobs
             }
 
             var errorMessage = sb.ToString();
-            jobExecutionContext.Result += errorMessage;
+            this.Result += errorMessage;
 
             var exception = new Exception( errorMessage );
             var httpContext = HttpContext.Current;

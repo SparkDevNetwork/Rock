@@ -61,6 +61,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractiveExperienceAction.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<InteractiveExperienceOccurrence>( Context ).Queryable().Any( a => a.CurrentlyShownActionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractiveExperienceAction.FriendlyTypeName, InteractiveExperienceOccurrence.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -94,6 +100,7 @@ namespace Rock.Model
                 IsModerationRequired = model.IsModerationRequired,
                 IsMultipleSubmissionAllowed = model.IsMultipleSubmissionAllowed,
                 IsResponseAnonymous = model.IsResponseAnonymous,
+                Order = model.Order,
                 ResponseVisualEntityTypeId = model.ResponseVisualEntityTypeId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -172,6 +179,7 @@ namespace Rock.Model
             target.IsModerationRequired = source.IsModerationRequired;
             target.IsMultipleSubmissionAllowed = source.IsMultipleSubmissionAllowed;
             target.IsResponseAnonymous = source.IsResponseAnonymous;
+            target.Order = source.Order;
             target.ResponseVisualEntityTypeId = source.ResponseVisualEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

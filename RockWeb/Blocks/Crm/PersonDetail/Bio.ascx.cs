@@ -805,6 +805,25 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 $@"<dt title=""Gender"">{Person.Gender}</dt>
                 <dd class=""d-none"">Gender</dd>";
 
+            var raceAndEthnicity = new List<string>();
+
+            if ( Person.RaceValue != null )
+            {
+                raceAndEthnicity.Add( Person.RaceValue.Value );
+            }
+
+            if ( Person.EthnicityValue != null )
+            {
+                raceAndEthnicity.Add( Person.EthnicityValue.Value );
+            }
+
+            if ( raceAndEthnicity.Count > 0 )
+            {
+                lRaceAndEthnicity.Text =
+                    $@"<dt title=""Race/Ethnicity"">{raceAndEthnicity.AsDelimited("/")}</dt>
+                    <dd class=""d-none"">Race/Ethnicity</dd>";
+            }
+
             if ( Person.BirthDate.HasValue )
             {
                 if ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year )
@@ -840,11 +859,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
+                lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
-                    lGraduation.Text =
-                        $@"<dt>{(Person.HasGraduated.Value ? "Graduated" : "Graduates")} {Person.GraduationYear.Value}</dt>
-                        <dd class=""d-none"">Graduation</dd>";
+                    lGraduation.Text = Person.HasGraduated.Value ? $@"<dt>Graduated {Person.GraduationYear.Value}</dt>" : $@"<dd>Graduates {Person.GraduationYear.Value}</dd>";
+                    lGraduation.Text += @"<dd class=""d-none"">Graduation</dd>";
                 }
             }
         }

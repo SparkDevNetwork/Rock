@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -536,6 +536,35 @@ namespace Rock.Model
         [DataMember]
         public int? PreferredLanguageValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the reminder count associated with the Person.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the reminder count that is associated with the Person.
+        /// </value>
+        [DataMember]
+        public int? ReminderCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Race <see cref="Rock.Model.DefinedValue"/> representing the race of this person
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Race <see cref="Rock.Model.DefinedValue"/> representing the race of this person.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RACE )]
+        public int? RaceValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Ethnicity <see cref="Rock.Model.DefinedValue"/> representing the ethnicity of this person
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Ethnicity <see cref="Rock.Model.DefinedValue"/> representing the ethnicity of this person.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_ETHNICITY )]
+        public int? EthnicityValueId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -766,6 +795,25 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public int? DaysUntilBirthday { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's Race
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the Person's race.
+        /// </value>
+        /// 
+        [DataMember]
+        public virtual DefinedValue RaceValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's Ethnicity
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the Person's ethnicity.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue EthnicityValue { get; set; }
+
         #endregion
 
         #region Methods
@@ -810,6 +858,8 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.RaceValue ).WithMany().HasForeignKey( a => a.RaceValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.EthnicityValue ).WithMany().HasForeignKey( a => a.EthnicityValueId ).WillCascadeOnDelete( false );
         }
     }
 
