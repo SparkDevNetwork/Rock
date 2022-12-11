@@ -380,7 +380,7 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                         Fields = new Nest.Field( searchField.Name, searchField.Boost )
                     };
 
-                    if (!searchField.IsPhrase)
+                    if ( !searchField.IsPhrase )
                     {
                         // If this is enabled on attribute value searches they fail.
                         qry.Analyzer = "whitespace_lowercase";
@@ -564,12 +564,15 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                 }
                 else if ( options.Order == SearchSortOrder.Trending )
                 {
+                    // The TrendingRank property has a value of 1 meaning highest rank,
+                    // 2 meaning second highest, and so on. So we actually invert the
+                    // isDescending value on it.
                     return options.IsDescending
                         ? sd.Descending( nameof( IndexDocumentBase.IsTrending ) )
-                            .Descending( nameof( IndexDocumentBase.TrendingRank ) )
+                            .Ascending( nameof( IndexDocumentBase.TrendingRank ) )
                             .Descending( SortSpecialField.Score )
                         : sd.Descending( nameof( IndexDocumentBase.IsTrending ) )
-                            .Ascending( nameof( IndexDocumentBase.TrendingRank ) )
+                            .Descending( nameof( IndexDocumentBase.TrendingRank ) )
                             .Descending( SortSpecialField.Score );
                 }
                 else if ( options.Order == SearchSortOrder.Alphabetical )

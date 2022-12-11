@@ -30,7 +30,6 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Analysis.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -530,9 +529,16 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                     // Add field filter
                     var phraseQuery = new PhraseQuery();
 
-                    foreach ( var word in searchField.Value.Split( ' ' ) )
+                    if ( searchField.IsPhrase )
                     {
-                        phraseQuery.Add( new Term( searchField.Name, word.ToLower() ) );
+                        phraseQuery.Add( new Term( searchField.Name, searchField.Value.ToLower() ) );
+                    }
+                    else
+                    {
+                        foreach ( var word in searchField.Value.Split( ' ' ) )
+                        {
+                            phraseQuery.Add( new Term( searchField.Name, word.ToLower() ) );
+                        }
                     }
 
                     BooleanClause booleanClause = new BooleanClause( phraseQuery, occur );
@@ -571,9 +577,12 @@ namespace Rock.Cms.ContentCollection.IndexComponents
             }
             else if ( sortOrder == SearchSortOrder.Trending )
             {
+                // The TrendingRank property has a value of 1 meaning highest rank,
+                // 2 meaning second highest, and so on. So we actually invert the
+                // isDescending value on it.
                 return new Sort(
                     new SortField( nameof( IndexDocumentBase.IsTrending ), SortFieldType.STRING, true ),
-                    new SortField( nameof( IndexDocumentBase.TrendingRank ), SortFieldType.INT32, isDescending ),
+                    new SortField( nameof( IndexDocumentBase.TrendingRank ), SortFieldType.INT32, !isDescending ),
                     new SortField( null, SortFieldType.SCORE, isDescending )
                 );
             }

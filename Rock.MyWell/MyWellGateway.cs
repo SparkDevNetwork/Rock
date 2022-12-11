@@ -447,8 +447,12 @@ namespace Rock.MyWell
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
             errorMessage = null;
-            var tokenResponse = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
-            if ( tokenResponse?.IsSuccessStatus() != true )
+            var myWellHostedPaymentControl = hostedPaymentInfoControl as MyWellHostedPaymentControl;
+            var tokenResponse = myWellHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+
+            bool successful = tokenResponse?.IsSuccessStatus() ?? false;
+
+            if ( !successful )
             {
                 if ( tokenResponse?.HasValidationError() == true )
                 {
@@ -456,11 +460,13 @@ namespace Rock.MyWell
                 }
 
                 errorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = myWellHostedPaymentControl.PaymentInfoToken;
+                referencePaymentInfo.InitialCurrencyTypeValue = myWellHostedPaymentControl.CurrencyTypeValue;
             }
             else
             {
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = myWellHostedPaymentControl.PaymentInfoToken;
+                referencePaymentInfo.InitialCurrencyTypeValue = myWellHostedPaymentControl.CurrencyTypeValue;
             }
         }
 

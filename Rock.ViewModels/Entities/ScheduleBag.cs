@@ -34,6 +34,15 @@ namespace Rock.ViewModels.Entities
     public partial class ScheduleBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        public string AbbreviatedName { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [auto inactivate when complete].
         /// </summary>
         /// <value>
@@ -109,6 +118,14 @@ namespace Rock.ViewModels.Entities
         /// A System.Boolean value that is true if this schedule is active, otherwise false.
         /// </value>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this Schedule is public.
+        /// </summary>
+        /// <value>
+        ///  A System.Boolean that is true if this Schedule is public, otherwise false.
+        /// </value>
+        public bool? IsPublic { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the Schedule. This property is required.

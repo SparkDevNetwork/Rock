@@ -38,6 +38,12 @@ export type PersonBag = {
     /** Gets or sets the date of the Person's wedding anniversary.  This property is nullable if the Person is not married or their anniversary date is not known. */
     anniversaryDate?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the day of the month portion of the Person's birth date. */
     birthDay?: number | null;
 
@@ -56,6 +62,12 @@ export type PersonBag = {
     /** Gets or sets the person's default financial account gift designation. */
     contributionFinancialAccountId?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the deceased date. */
     deceasedDate?: string | null;
 
@@ -68,8 +80,14 @@ export type PersonBag = {
     /** Gets or sets the email preference. */
     emailPreference: number;
 
+    /** Gets or sets the Id of the Ethnicity Rock.Model.DefinedValue representing the ethnicity of this person */
+    ethnicityValueId?: number | null;
+
     /** Gets or sets the first name of the Person. */
     firstName?: string | null;
+
+    /** Gets or sets the full name. */
+    fullName?: string | null;
 
     /** Gets or sets the gender of the Person. This property is required. */
     gender: number;
@@ -88,6 +106,9 @@ export type PersonBag = {
 
     /** Gets or sets the date of the Person's projected or actual high school graduation year. This value is used to determine what grade a student is in. */
     graduationYear?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the Inactive Reason Note */
     inactiveReasonNote?: string | null;
@@ -113,11 +134,20 @@ export type PersonBag = {
     /** Gets or sets the middle name of the Person. */
     middleName?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the nick name of the Person.  If a nickname was not entered, the first name is used. */
     nickName?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.BinaryFile that contains the photo of the Person. */
     photoId?: number | null;
+
+    /** Gets or sets the photo URL. */
+    photoUrl?: string | null;
 
     /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the Preferred Language for this person. */
     preferredLanguageValueId?: number | null;
@@ -128,11 +158,17 @@ export type PersonBag = {
      */
     primaryCampusId?: number | null;
 
+    /** Gets or sets the primary family unique identifier. */
+    primaryFamilyGuid?: Guid | null;
+
     /**
      * Gets or sets the group id for the Rock.Model.Person.PrimaryFamily.
      * Note: This is computed on save, so any manual changes to this will be ignored.
      */
     primaryFamilyId?: number | null;
+
+    /** Gets or sets the Id of the Race Rock.Model.DefinedValue representing the race of this person */
+    raceValueId?: number | null;
 
     /** Gets or sets the record status last modified date time. */
     recordStatusLastModifiedDateTime?: string | null;
@@ -145,6 +181,9 @@ export type PersonBag = {
 
     /** Gets or sets the Id of the Person Record Type Rock.Model.DefinedValue representing what type of Person Record this is. */
     recordTypeValueId?: number | null;
+
+    /** Gets or sets the reminder count associated with the Person. */
+    reminderCount?: number | null;
 
     /** Gets or sets notes about why a person profile needs to be reviewed */
     reviewReasonNote?: string | null;
@@ -178,34 +217,4 @@ export type PersonBag = {
 
     /** Gets or sets the count of the number of times that the Person has been viewed. */
     viewedCount?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the full name. */
-    fullName?: string | null;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
-
-    /** Gets or sets the primary family unique identifier. */
-    primaryFamilyGuid?: Guid | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

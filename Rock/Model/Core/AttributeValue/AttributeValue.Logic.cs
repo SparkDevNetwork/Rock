@@ -20,8 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlTypes;
 using System.Linq;
-using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -31,47 +32,6 @@ namespace Rock.Model
     public partial class AttributeValue
     {
         #region Properties
-
-        /// <summary>
-        /// Gets the Value as a decimal (Computed on Save).
-        /// </summary>
-        /// <value>
-        /// </value>
-        [DataMember]
-        [LavaHidden]
-        public decimal? ValueAsNumeric
-        {
-            get
-            {
-                // since this will get called on every save, don't spend time attempting to convert a large string to a decimal
-                // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
-                // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
-                if ( this.Value == null || this.Value.Length > 24 )
-                {
-                    _valueAsNumeric = null;
-                    return _valueAsNumeric;
-                }
-
-                _valueAsNumeric = this.Value.AsDecimalOrNull();
-
-                // If this is true then we are probably dealing with a comma delimited list and not a number.
-                // In either case it won't save to the DB and needs to be handled.  Don't do the
-                // rounding trick since nonnumeric attribute values should be null here.
-                if ( _valueAsNumeric != null && _valueAsNumeric > ( decimal ) 9999999999999999.99 )
-                {
-                    _valueAsNumeric = null;
-                }
-
-                return _valueAsNumeric;
-            }
-
-            set
-            {
-                _valueAsNumeric = value;
-            }
-        }
-
-        private decimal? _valueAsNumeric;
 
         /// <summary>
         /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
@@ -233,6 +193,75 @@ namespace Rock.Model
             }
 
             return attributeValue;
+        }
+
+        /// <summary>
+        /// Updates the ValueAs... properties. This will be called automatically
+        /// in the pre-save hook if <see cref="Value"/> has changed. If it is
+        /// modified in SQL then this must be called manually to sync the values.
+        /// </summary>
+        /// <param name="rockContext">The database context to use for record lookups.</param>
+        internal void UpdateValueAsProperties( RockContext rockContext )
+        {
+            var valueAsDateTime = Value.AsDateTime();
+            decimal? valueAsNumeric = null;
+            var valueAsGuid = Value.AsGuidOrNull();
+            bool? valueAsBoolean = null;
+            int? personId = null;
+
+            // Verify the date time value is valid for SQL storage.
+            if ( valueAsDateTime.HasValue )
+            {
+                if ( valueAsDateTime.Value < SqlDateTime.MinValue || valueAsDateTime.Value > SqlDateTime.MaxValue )
+                {
+                    valueAsDateTime = null;
+                }
+            }
+
+            // Since this will get called on every save, don't spend time attempting to convert a large string to a decimal
+            // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
+            // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
+            if ( Value != null && Value.Length <= 24 )
+            {
+                const decimal minValue = -9_999_999_999_999_999.99m;
+                const decimal maxValue = 9_999_999_999_999_999.99m;
+                valueAsNumeric = Value.AsDecimalOrNull();
+
+                // If the following is true then we are probably dealing with a comma delimited list and not a number.
+                // Meaning, a list of id numbers such as 111,222,[etc]. These might be parsed correctly
+                // as a decimal even though they are not. The values above represent the minimum and
+                // maximum values that can be saved to the database without throwing an exception. Don't do the
+                // rounding trick since nonnumeric attribute values should be null here.
+                if ( valueAsNumeric.HasValue && ( valueAsNumeric.Value < minValue || valueAsNumeric.Value > maxValue ) )
+                {
+                    valueAsNumeric = null;
+                }
+            }
+
+            var attributeCache = AttributeCache.Get( AttributeId );
+            var fieldTypeId = FieldTypeCache.GetId( SystemGuid.FieldType.PERSON.AsGuid() );
+
+            // If the value is a Guid, try to get the person id.
+            if ( valueAsGuid.HasValue && attributeCache?.FieldTypeId == fieldTypeId )
+            {
+                personId = new PersonAliasService( rockContext ).GetPersonId( valueAsGuid.Value );
+            }
+
+            // Don't use AsBooleanOrNull() since it has slightly different logic
+            // than originally existed in the computed column. This logic is
+            // slightly different than the patterns we would normally use. But that
+            // is to match the exact behavior of the old computed column.
+            if ( Value != null && Value != string.Empty && Value.Length <= 5 )
+            {
+                var valueLower = Value.ToLower();
+
+                valueAsBoolean = valueLower == "1" || valueLower == "y" || valueLower == "t" || valueLower == "yes" || valueLower == "true";
+            }
+
+            ValueAsBoolean = valueAsBoolean;
+            ValueAsDateTime = valueAsDateTime;
+            ValueAsNumeric = valueAsNumeric;
+            ValueAsPersonId = personId;
         }
 
         #endregion

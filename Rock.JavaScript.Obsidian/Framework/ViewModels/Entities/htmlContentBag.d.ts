@@ -31,11 +31,23 @@ export type HtmlContentBag = {
     /** Gets or sets the date and time that the HTMLContent was approved. */
     approvedDateTime?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Id of the Rock.Model.Block that the HTML content should appear on. This property is required. */
     blockId: number;
 
     /** Gets or sets the HTML content that will display on the block when conditions (if any) are met. */
     content?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
@@ -46,8 +58,17 @@ export type HtmlContentBag = {
     /** Gets or sets the date and time that the HTMLContent expires and is no longer available. If this value is null the HTMLContent remains available until it is overwritten or replaced with a new version. */
     expireDateTime?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if the content has been approved. If approval is required, the content will not be displayed until it has been approved. */
     isApproved: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /**
      * Gets or sets the date and time that the HTMLContent becomes active and available to be displayed on the web.  If a date and time is provided, the HTMLContent will not be available until then; if null
@@ -57,25 +78,4 @@ export type HtmlContentBag = {
 
     /** Gets or sets the version number for the HTMLContent */
     version: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

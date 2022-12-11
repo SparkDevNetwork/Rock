@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,30 +52,6 @@ namespace Rock.Rest.Controllers
                 }
             }
             return response;
-        }
-
-        /// <summary>
-        /// Gets the unique slug.
-        /// </summary>
-        /// <param name="slug">The slug.</param>
-        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
-        [RockObsolete( "1.9" )]
-        [System.Obsolete( "Uniqueness is now based on the content channel. Use the override GetUniqueContentSlug( contentChannelItemId, slug, contentChannelItemSlugId ) instead.", true )]
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{slug}/{contentChannelItemSlugId?}" )]
-        [Rock.SystemGuid.RestActionGuid( "059F1F4B-65C6-488F-B208-3EC4238F29AA" )]
-        public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId = null )
-        {
-            string uniquieSlug = string.Empty;
-
-            using ( var rockContext = new RockContext() )
-            {
-                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
-
-                uniquieSlug = contentChannelItemSlugService.GetUniqueContentSlug( slug, contentChannelItemSlugId );
-            }
-            return uniquieSlug;
         }
 
         /// <summary>

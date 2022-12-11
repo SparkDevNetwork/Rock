@@ -72,5 +72,12 @@ namespace Rock.Personalization
         /// </summary>
         /// <value>The ip address request filters.</value>
         public List<IPAddressRequestFilter> IPAddressRequestFilters { get; set; } = new List<IPAddressRequestFilter>();
+
+        /// <summary>
+        /// Gets or sets the environment request filter.
+        /// </summary>
+        /// <value>The environment request filter.</value>
+        public EnvironmentRequestFilter EnvironmentRequestFilter { get; set; } = new EnvironmentRequestFilter();
+
     }
 }

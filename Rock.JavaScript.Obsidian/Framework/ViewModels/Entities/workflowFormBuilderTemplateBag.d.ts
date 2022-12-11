@@ -28,11 +28,23 @@ export type WorkflowFormBuilderTemplateBag = {
     /** Gets or sets a value indicating whether a new person (and spouse) can be added */
     allowPersonEntry: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the completion settings json. */
     completionSettingsJson?: string | null;
 
     /** Gets or sets the confirmation email settings json. */
     confirmationEmailSettingsJson?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the description or summary about this WorkflowFormBuilderTemplate. */
     description?: string | null;
@@ -43,36 +55,24 @@ export type WorkflowFormBuilderTemplateBag = {
     /** Gets or sets the form header. */
     formHeader?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
     /** Gets or sets a value indicating whether [is login required]. */
     isLoginRequired: boolean;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the friendly Name of this WorkflowFormBuilderTemplate. This property is required. */
     name?: string | null;
 
     /** Gets or sets the person entry settings json. */
     personEntrySettingsJson?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

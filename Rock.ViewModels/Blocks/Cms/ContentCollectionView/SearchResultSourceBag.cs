@@ -52,5 +52,11 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionView
         /// </summary>
         /// <value><c>true</c> if this instance has more results; otherwise, <c>false</c>.</value>
         public bool HasMore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of matching results found in the index.
+        /// </summary>
+        /// <value>The total number of matching results found in the index.</value>
+        public int TotalResultCount { get; set; }
     }
 }

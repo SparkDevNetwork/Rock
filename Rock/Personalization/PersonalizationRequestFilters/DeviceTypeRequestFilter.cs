@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -42,11 +43,7 @@ namespace Rock.Personalization
 
         #endregion Configuration        
 
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
             if ( !DeviceTypes.Any() )
@@ -56,6 +53,20 @@ namespace Rock.Personalization
             }
 
             var clientType = InteractionDeviceType.GetClientType( httpRequest.UserAgent );
+
+            return DeviceTypeStrings.Contains( clientType, StringComparer.OrdinalIgnoreCase );
+        }
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            if ( !DeviceTypes.Any() )
+            {
+                // If there is no DeviceType criteria, return true;
+                return true;
+            }
+
+            var clientType = InteractionDeviceType.GetClientType( request.ClientInformation.UserAgent );
 
             return DeviceTypeStrings.Contains( clientType, StringComparer.OrdinalIgnoreCase );
         }

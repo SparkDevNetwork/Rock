@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -474,5 +475,37 @@ namespace Rock.Web.UI.Controls
             return base.SaveViewState();
         }
 
+        /// <summary>
+        /// Initializes the list of available items.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="keyExpression"></param>
+        /// <param name="descriptionExpression"></param>
+        /// <param name="allowEmptySelection"></param>
+        public void InitializeListItems<TItem>( IEnumerable<TItem> items, Expression<Func<TItem, string>> keyExpression, Expression<Func<TItem, string>> descriptionExpression, bool allowEmptySelection = false )
+        {
+            var keyFunc = keyExpression?.Compile();
+            var descriptionFunc = descriptionExpression?.Compile();
+
+            if ( keyFunc == null || descriptionFunc == null )
+            {
+                return;
+            }
+
+            this.Items.Clear();
+
+            if ( allowEmptySelection )
+            {
+                this.Items.Add( new ListItem() );
+            }
+
+            foreach ( var item in items )
+            {
+                var key = keyFunc( item );
+                var description = descriptionFunc( item );
+
+                this.Items.Add( new ListItem( description, key ) );
+            }
+        }
     }
 }

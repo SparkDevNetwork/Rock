@@ -249,6 +249,10 @@ export const enum EntityType {
     Registration = "D2F294C6-E161-4A56-85C7-CD74D535F61A",
     /** The guid for the Rock.Model.RegistrationTemplate entity */
     RegistrationTemplate = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70",
+    /** The guid for the Rock.Model.Reminder entity */
+    Reminder = "46CC0D74-BE46-4D5D-A6F1-0811645721AC",
+    /** The guid for the Rock.Model.ReminderType entity */
+    ReminderType = "B2B0B6F3-0E3B-40CF-BA93-FBB99D50788C",
     /** The LiquidSelect DataSelect field for Reporting */
     ReportingDataselectLiquidselect = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D",
     /** The guid for the Rock.Model.Schedule entity */
@@ -707,4 +711,8 @@ export const enum EntityType {
     InteractiveExperienceSchedule = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus  */
     InteractiveExperienceScheduleCampus = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The Test Redirection Gateway entity type */
+    FinancialGatewayTestRedirectionGateway = "AB3C5BF6-4D99-4289-84AF-3EF798849705",
+    /** The EntityType Guid for Rock.Model.InteractiveExperienceOccurrence  */
+    InteractiveExperienceOccurrence = "2D1263A1-A3E7-4568-AA4B-C1234824188D",
 }

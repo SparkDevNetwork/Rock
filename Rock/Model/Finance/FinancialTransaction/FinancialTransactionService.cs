@@ -367,6 +367,21 @@ namespace Rock.Model
         public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery()
         {
             var query = Queryable().AsNoTracking();
+
+            /*  10/10/2022 MDP
+               
+             Exclude Giver Anonymous from any Giving Automation/Giving Analytics logic. So exclude the following
+
+             - Giving Alerts
+             - Giving Journey
+             - Giving Overview (The Giving Overview block should not show info for Giver Anonymous)
+
+            */
+
+            var giverAnonymousPersonGuid = SystemGuid.Person.GIVER_ANONYMOUS.AsGuid();
+            var giverAnonymousPersonAliasIds = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.Guid == giverAnonymousPersonGuid ).Select( a => a.Id );
+            query = query.Where( a => a.AuthorizedPersonAliasId.HasValue && !giverAnonymousPersonAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
+
             var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
             // Filter by transaction type (defaults to contributions only)

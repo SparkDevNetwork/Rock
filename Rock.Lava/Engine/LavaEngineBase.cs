@@ -631,7 +631,7 @@ namespace Rock.Lava
 
                 if ( result.Error != null )
                 {
-                    result.Error = GetLavaRenderException( result.Error );
+                    result.Error = GetLavaRenderException( result.Error, template?.GetDescription() );
                 }
             }
             catch ( LavaInterruptException )
@@ -651,7 +651,7 @@ namespace Rock.Lava
 
                 result = new LavaRenderResult();
 
-                var lre = GetLavaRenderException( ex );
+                var lre = GetLavaRenderException( ex, template?.GetDescription() );
 
                 string message;
 

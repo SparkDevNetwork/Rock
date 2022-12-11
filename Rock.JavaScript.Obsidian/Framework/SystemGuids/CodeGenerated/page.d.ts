@@ -1114,6 +1114,11 @@ export const enum Page {
      */
     MyAccountSecurity = "290C53DC-0960-484C-B314-8301882A454C",
     /**
+     * Gets the My Dashboard page guid
+     * ParentPage: Internal Homepage
+     */
+    MyDashboard = "AE1818D8-581C-4599-97B9-509EA450376A",
+    /**
      * Gets the My Settings page guid
      * ParentPage: Internal Homepage
      */
@@ -1301,6 +1306,21 @@ export const enum Page {
      */
     Purchases = "6A163569-2826-4EF2-8208-879DDBDC0896",
     /**
+     * Reminder Edit page.
+     * ParentPage: Reminder List.
+     */
+    ReminderEdit = "2640FF34-DCC9-4604-9C5B-9E2DA590D5A7",
+    /**
+     * Reminder List page.
+     * ParentPage: People &gt; Manage.
+     */
+    ReminderList = "E1736347-1D4F-42A6-8EC4-7595286054A6",
+    /**
+     * Reminder List page.
+     * ParentPage: General Settings.
+     */
+    ReminderTypes = "3A2BA8F8-B119-4D3E-BE76-FEC81F7AC1BB",
+    /**
      * Gets the Report Detail page guid
      * ParentPage: Reports
      */
@@ -1459,11 +1479,6 @@ export const enum Page {
      * ParentPage: CMS Configuration
      */
     Sites = "7596D389-4EAB-4535-8BEE-229737F46F44",
-    /**
-     * Gets the SMS Phone Numbers page guid
-     * ParentPage: Communications
-     */
-    SmsFromValues = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B",
     /**
      * The SMS phone numbers
      * ParentPage: Communications

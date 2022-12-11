@@ -346,15 +346,20 @@ namespace RockWeb.Blocks.Cms
                     site.PageNotFoundPageId ?? -1
                 };
 
+                var otherSitesQry = siteService.Queryable().Where( s => s.Id != site.Id );
+
                 var pageQry = pageService.Queryable( "Layout" )
                     .Where( t =>
-                        t.Layout.SiteId == site.Id ||
-                        sitePages.Contains( t.Id ) );
+                        !t.IsSystem &&
+                        ( t.Layout.SiteId == site.Id ||
+                        sitePages.Contains( t.Id ) ) );
 
+                pageQry = pageQry.Where( p => !otherSitesQry.Any( s =>  s.DefaultPageId == p.Id || s.LoginPageId == p.Id || s.RegistrationPageId == p.Id || s.PageNotFoundPageId == p.Id  ) );
                 pageService.DeleteRange( pageQry );
 
                 var layoutQry = layoutService.Queryable()
                     .Where( l =>
+                        !l.IsSystem &&
                         l.SiteId == site.Id );
                 layoutService.DeleteRange( layoutQry );
                 rockContext.SaveChanges( true );

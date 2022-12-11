@@ -26,6 +26,13 @@
 		"editor.codeActionsOnSave": {
 		  "source.fixAll.eslint": true
 		},
+		"eslint.validate": [
+		  "javascript",
+		  "javascriptreact",
+		  "typescript",
+		  "typescriptreact",
+		  "vue"
+		],
 		"[vue]": {
 		  "editor.defaultFormatter": "Vue.volar"
 		},
@@ -36,7 +43,7 @@
 			{
 				"label": "Build Obsidian Components",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true,
@@ -53,7 +60,7 @@
 			{
 				"label": "Build Obsidian Blocks",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true,
@@ -73,6 +80,7 @@
 					"kind": "build",
 					"isDefault": true
 				},
+				"dependsOrder": "sequence",
 				"dependsOn": [
 					"Build Obsidian Components",
 					"Build Obsidian Blocks"
@@ -105,7 +113,8 @@
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
 				},
-				"isBackground": true
+				"isBackground": true,
+				"problemMatcher": []
 			},
 			{
 				"label": "Watch All Obsidian",

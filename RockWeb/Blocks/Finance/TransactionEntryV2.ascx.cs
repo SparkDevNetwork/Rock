@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         Key = AttributeKey.FeeCoverageMessage,
-        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% ({{ AmountHTML }}) to help cover the electronic transaction fees.",
+        DefaultValue = @"Make my gift go further. Please increase my gift by {%if IsPercentage %} {{ Percentage }}% ({{ AmountHTML }}) {% else %} {{ AmountHTML }} {% endif %} to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -1230,6 +1230,7 @@ mission. We are so grateful for your commitment.</p>
             cbGetPaymentInfoCoverTheFeeACH.Checked = feeCoverageDefaultState;
             cbGetPaymentInfoCoverTheFeeCreditCard.Checked = feeCoverageDefaultState;
 
+
             var feeCoverageMessageTemplate = this.GetAttributeValue( AttributeKey.FeeCoverageMessage );
             var feeCoverageMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
 
@@ -1250,6 +1251,7 @@ mission. We are so grateful for your commitment.</p>
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, creditCardFeeCoverageAmount.FormatAsCurrency() );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, creditCardFeeCoverageAmount );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsPercentage, true );
                 cbGetPaymentInfoCoverTheFeeCreditCard.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeCreditCard.Value = ( totalAmount + creditCardFeeCoverageAmount ).FormatAsCurrency();
             }
@@ -1260,6 +1262,7 @@ mission. We are so grateful for your commitment.</p>
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsPercentage, false );
                 cbGetPaymentInfoCoverTheFeeACH.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeACH.Value = ( totalAmount + achFeeCoverageAmount ).FormatAsCurrency();
             }
@@ -1294,6 +1297,7 @@ mission. We are so grateful for your commitment.</p>
 
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsPercentage, false );
                 cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
             }
@@ -1307,6 +1311,7 @@ mission. We are so grateful for your commitment.</p>
 
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, $"{RockCurrencyCodeInfo.GetCurrencySymbol()}<span class='{calculatedAmountJSHook}' decimal-places='{RockCurrencyCodeInfo.GetDecimalPlaces()}'></span>" );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsPercentage, true );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, null );
 
                 cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
@@ -3009,6 +3014,11 @@ mission. We are so grateful for your commitment.</p>
             SetPaymentComment( paymentInfo, commentTransactionAccountDetails, tbCommentEntry.Text );
 
             paymentInfo.Amount = commentTransactionAccountDetails.Sum( a => a.Amount );
+            var totalFeeCoverageAmounts = commentTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
+            if ( totalFeeCoverageAmounts.Any() )
+            {
+                paymentInfo.FeeCoverageAmount = totalFeeCoverageAmounts.Sum();
+            }
 
             var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             paymentInfo.TransactionTypeValueId = transactionType.Id;

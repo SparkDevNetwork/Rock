@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
     /// </summary>
     [Serializable]
-    [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D")]
+    [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D" )]
     public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
@@ -82,6 +83,211 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        private List<ListItem> GetDefinedValueListItems( int? definedTypeId )
+        {
+            var definedValues = new List<ListItem>();
+
+            if ( definedTypeId != null )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
+
+                if ( definedType != null )
+                {
+                    definedValues = definedType.DefinedValues
+                        .Select( v => new ListItem { Text = v.Value, Value = v.Id.ToString() } )
+                        .ToList();
+                }
+            }
+
+            return definedValues;
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDefinedType = oldPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
+            var newDefinedType = newPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
+
+            if ( oldDefinedType != newDefinedType )
+            {
+                return true;
+            }
+
+            var oldSelectableValues = oldPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
+            var newSelectableValues = newPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
+
+            if ( oldSelectableValues != newSelectableValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        private const string AllCategoriesListItemText = "All Categories";
+
+        #endregion
+
+        #region Filter Control
+
+        /// <inheritdoc/>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// A base class to provide commonly-used functions for handling Field Type configuration settings.
+        /// </summary>
+        internal abstract class FieldTypeConfigurationSettings
+        {
+            Dictionary<string, ConfigurationValue> _configurationValues = new Dictionary<string, ConfigurationValue>();
+
+            /// <summary>
+            /// Add a configuration value definition.
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="name"></param>
+            /// <param name="description"></param>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public ConfigurationValue Add( string key, string name, string description, string value )
+            {
+                var newValue = new ConfigurationValue( name, description, value );
+
+                _configurationValues.Add( key, newValue );
+
+                return newValue;
+            }
+
+            /// <summary>
+            /// Attempt to set a configuration value.
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public bool TrySetValue( string key, string value )
+            {
+                if ( !_configurationValues.ContainsKey( key ) )
+                {
+                    return false;
+                }
+
+                _configurationValues[key].Value = value;
+                return true;
+            }
+
+            /// <summary>
+            /// Attempt to get a configuration value, or a default value if undefined.
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="defaultValue"></param>
+            /// <returns></returns>
+            public string TryGetValue( string key, string defaultValue = null )
+            {
+                if ( !_configurationValues.ContainsKey( key ) )
+                {
+                    return defaultValue;
+                }
+
+                return _configurationValues[key].Value;
+            }
+
+            /// <summary>
+            /// Gets the list of defined configuration keys.
+            /// </summary>
+            /// <returns></returns>
+            public List<string> GetConfigurationKeys()
+            {
+                return _configurationValues.Select( x => x.Key ).ToList();
+            }
+
+            /// <summary>
+            /// Gets a dictionary of defined configuration settings and their values.
+            /// </summary>
+            /// <returns></returns>
+            public Dictionary<string, ConfigurationValue> GetConfigurationValues()
+            {
+                var values = _configurationValues.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value.Name, v.Value.Description, v.Value.Value ) );
+                return values;
+            }
+
+            /// <summary>
+            /// Sets defined configuration settings from the list of supplied values.
+            /// </summary>
+            /// <param name="configurationValues"></param>
+            public void SetConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+            {
+                if ( configurationValues == null )
+                {
+                    return;
+                }
+                foreach ( var value in configurationValues )
+                {
+                    TrySetValue( value.Key, value.Value.Value );
+                }
+            }
+        }
+
+        private class DefinedValueTreeNode : CategorizedValuePickerItem
+        {
+            public string ParentKey { get; set; }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var settings = new Settings( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            var referencedEntities = new List<ReferencedEntity>();
+            if ( settings.DefinedTypeId != null )
+            {
+                for ( int i = 0; i < values.Length; i++ )
+                {
+                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
+                    if ( definedValue != null )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, definedValue.Id ) );
+                    }
+                }
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <inheritdoc/>
         public override List<string> ConfigurationKeys()
@@ -230,52 +436,6 @@ namespace Rock.Field.Types
                     }
                 }
             }
-
-        }
-
-        private List<ListItem> GetDefinedValueListItems( int? definedTypeId )
-        {
-            var definedValues = new List<ListItem>();
-
-            if ( definedTypeId != null )
-            {
-                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
-
-                if ( definedType != null )
-                {
-                    definedValues = definedType.DefinedValues
-                        .Select( v => new ListItem { Text = v.Value, Value = v.Id.ToString() } )
-                        .ToList();
-                }
-            }
-
-            return definedValues;
-        }
-
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDefinedType = oldPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
-            var newDefinedType = newPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
-
-            if ( oldDefinedType != newDefinedType )
-            {
-                return true;
-            }
-
-            var oldSelectableValues = oldPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
-            var newSelectableValues = newPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
-
-            if ( oldSelectableValues != newSelectableValues )
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <inheritdoc/>
@@ -308,12 +468,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control
-
-        private const string AllCategoriesListItemText = "All Categories";
 
         /// <inheritdoc/>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
@@ -556,10 +710,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <inheritdoc/>
         public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
@@ -567,151 +717,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <inheritdoc/>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region Helper Classes
-
-        /// <summary>
-        /// A base class to provide commonly-used functions for handling Field Type configuration settings.
-        /// </summary>
-        internal abstract class FieldTypeConfigurationSettings
-        {
-            Dictionary<string, ConfigurationValue> _configurationValues = new Dictionary<string, ConfigurationValue>();
-
-            /// <summary>
-            /// Add a configuration value definition.
-            /// </summary>
-            /// <param name="key"></param>
-            /// <param name="name"></param>
-            /// <param name="description"></param>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public ConfigurationValue Add( string key, string name, string description, string value )
-            {
-                var newValue = new ConfigurationValue( name, description, value );
-
-                _configurationValues.Add( key, newValue );
-
-                return newValue;
-            }
-
-            /// <summary>
-            /// Attempt to set a configuration value.
-            /// </summary>
-            /// <param name="key"></param>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public bool TrySetValue( string key, string value )
-            {
-                if ( !_configurationValues.ContainsKey( key ) )
-                {
-                    return false;
-                }
-
-                _configurationValues[key].Value = value;
-                return true;
-            }
-
-            /// <summary>
-            /// Attempt to get a configuration value, or a default value if undefined.
-            /// </summary>
-            /// <param name="key"></param>
-            /// <param name="defaultValue"></param>
-            /// <returns></returns>
-            public string TryGetValue( string key, string defaultValue = null )
-            {
-                if ( !_configurationValues.ContainsKey( key ) )
-                {
-                    return defaultValue;
-                }
-
-                return _configurationValues[key].Value;
-            }
-
-            /// <summary>
-            /// Gets the list of defined configuration keys.
-            /// </summary>
-            /// <returns></returns>
-            public List<string> GetConfigurationKeys()
-            {
-                return _configurationValues.Select( x => x.Key ).ToList();
-            }
-
-            /// <summary>
-            /// Gets a dictionary of defined configuration settings and their values.
-            /// </summary>
-            /// <returns></returns>
-            public Dictionary<string, ConfigurationValue> GetConfigurationValues()
-            {
-                var values = _configurationValues.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value.Name, v.Value.Description, v.Value.Value ) );
-                return values;
-            }
-
-            /// <summary>
-            /// Sets defined configuration settings from the list of supplied values.
-            /// </summary>
-            /// <param name="configurationValues"></param>
-            public void SetConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
-            {
-                if ( configurationValues == null )
-                {
-                    return;
-                }
-                foreach ( var value in configurationValues )
-                {
-                    TrySetValue( value.Key, value.Value.Value );
-                }
-            }
-        }
-
-        private class DefinedValueTreeNode : CategorizedValuePickerItem
-        {
-            public string ParentKey { get; set; }
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var settings = new Settings( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
-
-            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
-            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            var referencedEntities = new List<ReferencedEntity>();
-            if ( settings.DefinedTypeId != null )
-            {
-                for ( int i = 0; i < values.Length; i++ )
-                {
-                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
-                    if ( definedValue != null )
-                    {
-                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, definedValue.Id ) );
-                    }
-                }
-            }
-
-            return referencedEntities;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

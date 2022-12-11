@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -112,6 +112,9 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
+            // Hide any previous notifications.
+            nbLoggingMessage.Visible = false;
+
             ShowHideEditForm( true, null );
         }
         #endregion

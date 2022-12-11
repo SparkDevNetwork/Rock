@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Web;
-using Quartz;
-using Rock.Data;
+using System.Web;using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 
@@ -33,8 +31,7 @@ namespace Rock.Jobs
     [DisplayName( "Charge Future Transactions" )]
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
-    [DisallowConcurrentExecution]
-    public class ChargeFutureTransactions : IJob
+    public class ChargeFutureTransactions : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -47,11 +44,8 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
@@ -74,7 +68,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = string.Format( "{0} future transactions charged", successCount );
+            UpdateLastStatusMessage( string.Format( "{0} future transactions charged", successCount ) );
 
             if ( errors.Any() )
             {
@@ -84,7 +78,8 @@ namespace Rock.Jobs
                 errors.ForEach( e => sb.AppendLine( e ) );
 
                 var errorMessage = sb.ToString();
-                context.Result += errorMessage;
+
+                this.Result += errorMessage;
 
                 var exception = new Exception( errorMessage );
                 var context2 = HttpContext.Current;

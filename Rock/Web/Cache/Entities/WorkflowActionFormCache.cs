@@ -43,7 +43,7 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="WorkflowActionForm.NotificationSystemEmailId"/>
         [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead." )]
+        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? NotificationSystemEmailId { get; private set; }
 
@@ -124,6 +124,14 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryMaritalStatusEntryOption"/>
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRaceEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryRaceEntryOption { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryEthnicityEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryEthnicityEntryOption { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntrySpouseLabel"/>
         [DataMember]
@@ -337,7 +345,9 @@ namespace Rock.Web.Cache
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
-                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel,
+                    RaceEntry = actionForm.PersonEntryRaceEntryOption,
+                    EthnicityEntry = actionForm.PersonEntryEthnicityEntryOption
                 };
             }
 
@@ -386,9 +396,6 @@ namespace Rock.Web.Cache
             this.Header = workflowActionForm.Header;
             this.IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
             this.NotificationSystemCommunicationId = workflowActionForm.NotificationSystemCommunicationId;
-#pragma warning disable 612, 618
-            this.NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
-#pragma warning restore 612, 618
             this.PersonEntryAddressEntryOption = workflowActionForm.PersonEntryAddressEntryOption;
             this.PersonEntryGroupLocationTypeValueId = workflowActionForm.PersonEntryGroupLocationTypeValueId;
 
@@ -404,6 +411,8 @@ namespace Rock.Web.Cache
             this.PersonEntryFamilyAttributeGuid = workflowActionForm.PersonEntryFamilyAttributeGuid;
             this.PersonEntryHideIfCurrentPersonKnown = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;
             this.PersonEntryMaritalStatusEntryOption = workflowActionForm.PersonEntryMaritalStatusEntryOption;
+            this.PersonEntryRaceEntryOption = workflowActionForm.PersonEntryRaceEntryOption;
+            this.PersonEntryEthnicityEntryOption = workflowActionForm.PersonEntryEthnicityEntryOption;
             this.PersonEntryMobilePhoneEntryOption = workflowActionForm.PersonEntryMobilePhoneEntryOption;
             this.PersonEntryPersonAttributeGuid = workflowActionForm.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;

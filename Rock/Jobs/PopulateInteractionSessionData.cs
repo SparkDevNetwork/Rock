@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
@@ -66,8 +64,7 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Interactions, this could take several hours or more.",
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
-    [DisallowConcurrentExecution]
-    public class PopulateInteractionSessionData : IJob
+    public class PopulateInteractionSessionData : RockJob
     {
         #region Keys
 
@@ -128,37 +125,29 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary> 
-        /// Job that updates the JobPulse setting with the current date/time.
-        /// This will allow us to notify an admin if the jobs stop running.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
             _errors = new List<string>();
             _exceptions = new List<Exception>();
             StringBuilder results = new StringBuilder();
 
             // Get the configured timeout, or default to 20 minutes if it is blank
-            _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             var settings = Rock.Web.SystemSettings
                 .GetValue( SystemSetting.POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS )
                 .FromJsonOrNull<PopulateInteractionSessionDataJobSettings>() ?? new PopulateInteractionSessionDataJobSettings();
 
             // STEP 1: Process IP location lookups
-            var result = ProcessInteractionSessionForIP( context );
+            var result = ProcessInteractionSessionForIP();
             if ( result.IsNotNullOrWhiteSpace() )
             {
                 results.AppendLine( result );
             }
 
             // STEP 2: Update Interaction Counts and Durations for Session
-            result = ProcessInteractionCountAndDuration( context, settings );
+            result = ProcessInteractionCountAndDuration(settings );
             if ( result.IsNotNullOrWhiteSpace() )
             {
                 results.AppendLine( result );
@@ -169,7 +158,8 @@ namespace Rock.Jobs
             {
                 results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
             }
-            context.Result = results.ToString();
+
+            this.Result = results.ToString();
 
             // Log caught exceptions
             if ( _exceptions.Any() )
@@ -182,10 +172,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Processes the sessions counts and durations.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="settings">The settings.</param>
         /// <returns>System.String.</returns>
-        private string ProcessInteractionCountAndDuration( IJobExecutionContext context, PopulateInteractionSessionDataJobSettings settings )
+        private string ProcessInteractionCountAndDuration( PopulateInteractionSessionDataJobSettings settings )
         {
             // This portion of the job looks for interaction sessions that need to have their interaction count and
             // duration properties updated. This de-normalization occurs to increase performance of the analytics.
@@ -290,7 +279,7 @@ namespace Rock.Jobs
 
                     var interactionSessions = interactionSessionsWithNullDurationLastCalculatedDateTime.Union( interactionSessionsWithOutOfDate ).ToList();
 
-                    context.UpdateLastStatusMessage( $"Processing Interaction Count And Session Duration : {batchSize} sessions are being processed currently. Total {totalRecordsProcessed} Interaction Session{( totalRecordsProcessed < 2 ? "" : "s" )} are processed till now." );
+                    this.UpdateLastStatusMessage( $"Processing Interaction Count And Session Duration : {batchSize} sessions are being processed currently. Total {totalRecordsProcessed} Interaction Session{( totalRecordsProcessed < 2 ? "" : "s" )} are processed till now." );
 
                     foreach ( var interactionSession in interactionSessions )
                     {
@@ -360,9 +349,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Processes the looking up of Interaction Sessions that do not have geo information.
         /// </summary>
-        /// <param name="jobContext">The job context.</param>
-        /// <returns></returns>
-        private string ProcessInteractionSessionForIP( IJobExecutionContext jobContext )
+        private string ProcessInteractionSessionForIP()
         {
             // This portion of the job looks for interaction sessions tied to interaction channels whose websites
             // have geo tracking enabled. The logic is broken into two parts:
@@ -380,10 +367,9 @@ namespace Rock.Jobs
             var warningMsg = string.Empty;
 
             // Read settings from job
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
-            var numberOfRecordsToProcess = dataMap.GetString( AttributeKey.MaxRecordsToProcessPerRun ).AsIntegerOrNull() ?? 50000;
-            var ipAddressComponentGuid = dataMap.GetString( AttributeKey.IPAddressGeoCodingComponent );
-            var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
+            var numberOfRecordsToProcess = GetAttributeValue( AttributeKey.MaxRecordsToProcessPerRun ).AsIntegerOrNull() ?? 50000;
+            var ipAddressComponentGuid = GetAttributeValue( AttributeKey.IPAddressGeoCodingComponent );
+            var lookbackMaximumInDays = GetAttributeValue( AttributeKey.LookbackMaximumInDays ).AsInteger();
 
             var lookBackStartDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
 
@@ -392,7 +378,7 @@ namespace Rock.Jobs
 
             if ( provider == null )
             {
-                return $"<i class='fa fa-circle text-info'>No IP Address lookup service active.</i> ";
+                return $"<i class='fa fa-circle text-info'></i> No IP Address lookup service active.";
             }
 
             // This collection will be used to store IP address that need to be processed using the lookup provider
@@ -437,7 +423,7 @@ namespace Rock.Jobs
                     minSessionId = interactionSessions.Max( s => s.Id );
 
                     // Update the job progress
-                    jobContext.UpdateLastStatusMessage( $"Processing Interaction Session for IP : {maxRecordsToReturn} IP's are being processed currently. Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. " );
+                    this.UpdateLastStatusMessage( $"Processing Interaction Session for IP : {maxRecordsToReturn} IP's are being processed currently. Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. " );
 
                     foreach ( var interactionSession in interactionSessions )
                     {
@@ -513,7 +499,7 @@ namespace Rock.Jobs
             // We now have our list of IPs that need to be processed
             if ( ipAddressSessionKeyValue.Count > 0 )
             {
-                jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
+                this.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
                 recordsUpdated = ProcessIPOnLookupComponent( provider, ipAddressSessionKeyValue );
             }
 
@@ -528,7 +514,7 @@ namespace Rock.Jobs
                 return string.Empty;
             }
 
-            return $"<i class='fa fa-circle text-success'></i> Updated IP location on {recordsUpdated} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} with {totalRecordsProcessed} unique IP addresses using {ipAddressSessionKeyValue.Count} lookup credits (others were found in the database) in {stopwatch.Elapsed.TotalSeconds} secs. {warningMsg}";
+            return $"<i class='fa fa-circle text-success'></i> Updated IP location on {recordsUpdated} {"interaction session".PluralizeIf( recordsUpdated != 1 )} with {totalRecordsProcessed} unique IP addresses using {ipAddressSessionKeyValue.Count} lookup credits (others were found in the database) in {stopwatch.Elapsed.TotalSeconds} secs. {warningMsg}";
         }
 
         /// <summary>

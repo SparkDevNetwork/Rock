@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +30,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v14 to update missing media element interactions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.0 - Add missing Media Element interactions." )]
     [Description( "This job will update the interation length of media element interactions. After all the operations are done, this job will delete itself." )]
 
@@ -42,23 +39,18 @@ namespace Rock.Jobs
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of interactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 60 * 60 )]
-    public class PostV14DataMigrationsAddMissingMediaElementInteractions : IJob
+    public class PostV14DataMigrationsAddMissingMediaElementInteractions : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
             System.Collections.Generic.List<int> mediaInteractionWithoutInteractionIdList;
 
             // First, get a list of all the Interaction IDs that we'll need to update because later each interaction needs to be updated.
@@ -69,7 +61,7 @@ namespace Rock.Jobs
                 var interactionChannelIdMediaEvent = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
                 if ( !interactionChannelIdMediaEvent.HasValue )
                 {
-                    DeleteJob( context.GetJobId() );
+                    DeleteJob( this.GetJobId() );
                     return;
                 }
 
@@ -105,13 +97,13 @@ namespace Rock.Jobs
                     if ( ( RockDateTime.Now - lastUpdateDateTime ).TotalSeconds > 3 )
                     {
                         var percentProgress = updatedCount * 100 / totalCount;
-                        context.UpdateLastStatusMessage( $"Update Progress {Math.Round( percentProgress, 2 )}%" );
+                        this.UpdateLastStatusMessage( $"Update Progress {Math.Round( percentProgress, 2 )}%" );
                         lastUpdateDateTime = RockDateTime.Now;
                     }
                 }
             }
 
-            DeleteJob( context.GetJobId() );
+            DeleteJob( this.GetJobId() );
         }
 
         private class MediaEventInteractionData

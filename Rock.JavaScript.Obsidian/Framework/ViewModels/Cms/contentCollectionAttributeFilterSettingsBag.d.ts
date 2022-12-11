@@ -25,15 +25,15 @@ import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentColle
 
 /** The settings for a single attribute filter configured on a content collection. */
 export type ContentCollectionAttributeFilterSettingsBag = {
-    /** Gets or sets a value indicating if this search filter is enabled. */
-    isEnabled: boolean;
-
-    /** Gets or sets the label to use for the filter. */
-    label?: string | null;
-
     /** Gets or sets the search filter control. */
     filterControl: ContentCollectionFilterControl;
 
+    /** Gets or sets a value indicating if this search filter is enabled. */
+    isEnabled: boolean;
+
     /** Gets or sets a value indicating if multiple selection is allowed. */
     isMultipleSelection: boolean;
+
+    /** Gets or sets the label to use for the filter. */
+    label?: string | null;
 };

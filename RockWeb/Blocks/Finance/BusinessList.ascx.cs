@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -289,7 +289,8 @@ namespace RockWeb.Blocks.Finance
                                             .Where( m => m.Group.GroupTypeId == groupTypeIdKnownRelationShips )
                                             .SelectMany( m => m.Group.Members )
                                             .Where( p => p.GroupRoleId == groupTypeRoleIdKnownRelationShipsOwner && p.PersonId != b.Id )
-                                            .Select( p => p.Person.LastName + ", " + p.Person.NickName )
+                                            .Select( p => p.Person.LastName + ", " + p.Person.NickName ),
+                        Campus = b.PrimaryCampus == null ? "" : b.PrimaryCampus.Name
                     } );
 
                 SortProperty sortProperty = gBusinessList.SortProperty;
@@ -383,6 +384,8 @@ namespace RockWeb.Blocks.Finance
             public string Email { get; set; }
             public Location Address { get; set; }
             public IEnumerable<string> Contacts { get; set; }
+
+            public string Campus { get; set; }
         }
     }
 }

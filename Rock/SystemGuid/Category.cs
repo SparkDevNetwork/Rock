@@ -223,7 +223,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The System Email Workflow Category guid
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_WORKFLOW instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_WORKFLOW instead.", true )]
         [RockObsolete("1.10")]
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
 
@@ -270,5 +270,39 @@ namespace Rock.SystemGuid
         public const string METRIC_HOSTING_METRICS = "370FBBD8-7766-4B3F-81A9-F13EE819A832";
 
         #endregion
+
+        #region WorkflowType Categories
+
+        /// <summary>
+        /// The GUID for the WorkflowType category "Check-in"
+        /// </summary>
+        public const string WORKFLOW_TYPE_CHECKIN = "8F8B272D-D351-485E-86D6-3EE5B7C84D99";
+
+        /// <summary>
+        /// The GUID for the WorkflowType category "Data Integrity"
+        /// </summary>
+        public const string WORKFLOW_TYPE_DATA_INTEGRITY = "BBAE05FD-8192-4616-A71E-903A927E0D90";
+
+        /// <summary>
+        /// The GUID for the WorkflowType category "Requests"
+        /// </summary>
+        public const string WORKFLOW_TYPE_REQUESTS = "78E38655-D951-41DB-A0FF-D6474775CFA1";
+
+        /// <summary>
+        /// The GUID for the WorkflowType category "Safety &amp; Security"
+        /// </summary>
+        public const string WORKFLOW_TYPE_SAFETY_AND_SECURITY = "6F8A431C-BEBD-4D33-AAD6-1D70870329C2";
+
+        /// <summary>
+        /// The GUID for the WorkflowType "Category Samples"
+        /// </summary>
+        public const string WORKFLOW_TYPE_SAMPLES = "CB99421E-9ADC-488E-8C71-94BB14F27F56";
+
+        /// <summary>
+        /// The GUID for the WorkflowType category "Staff Forms"
+        /// </summary>
+        public const string WORKFLOW_TYPE_STAFF_FORMS = "25E6844F-59BA-4C0D-9284-ED2A558E18EC";
+
+        #endregion FormBuilder Categories
     }
 }

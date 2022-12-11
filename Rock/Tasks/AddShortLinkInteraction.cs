@@ -110,7 +110,8 @@ namespace Rock.Tasks
                     var clientOs = client.OS.ToString();
                     var clientBrowser = client.UA.ToString();
 
-                    new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
+                    var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
+                    interaction.Source = message.UtmSource;
                     rockContext.SaveChanges();
                 }
             }
@@ -191,6 +192,11 @@ namespace Rock.Tasks
             /// Session Id.
             /// </value>
             public string SessionId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM source of the link
+            /// </summary>
+            public string UtmSource { get; set; }
         }
     }
 }

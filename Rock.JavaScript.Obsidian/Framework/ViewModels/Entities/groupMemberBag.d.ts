@@ -31,8 +31,20 @@ export type GroupMemberBag = {
     /** Gets or sets the date time that this group member was archived (soft deleted) */
     archivedDateTime?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the communication preference. */
     communicationPreference: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the date/time that the person was added to the group.
@@ -64,6 +76,9 @@ export type GroupMemberBag = {
     /** Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true. */
     guestCount?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the date that this group member became inactive */
     inactiveDateTime?: string | null;
 
@@ -75,6 +90,12 @@ export type GroupMemberBag = {
 
     /** Gets or sets a flag indicating if this GroupMember is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the note. */
     note?: string | null;
@@ -90,25 +111,4 @@ export type GroupMemberBag = {
 
     /** Gets or sets the Id of the Rock.Model.GroupMemberScheduleTemplate */
     scheduleTemplateId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -157,6 +157,14 @@ export const enum BlockType {
     StepFlow = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E",
     /** The reporting dashboard liquid/lava dashboard widget. */
     ReportingLavaDashboardWidget = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5",
+    /** The reminder edit block. */
+    ReminderEdit = "7CE0E052-1400-4AC1-8AE0-ABF770A1B11E",
+    /** The reminder links block. */
+    ReminderLinks = "EC59B6D6-5CA1-4367-9109-CDDC92357D35",
+    /** The reminder list block. */
+    ReminderList = "FC8DC018-C702-4A23-81BA-DF9DD6008CB6",
+    /** The reminder types block. */
+    ReminderTypes = "E4161700-6882-4A50-B362-8E4C8F37C79D",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }

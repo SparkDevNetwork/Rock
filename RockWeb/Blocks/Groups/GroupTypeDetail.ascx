@@ -126,8 +126,8 @@
                                 </Rock:RockControlWrapper>
                                 <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members"
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
-                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing"
-                                    Help="Determines if groups of this type should be indexed." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Universal Search Indexing"
+                                    Help="Determines if groups of this type should be indexed for Universal Search." />
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"
@@ -555,7 +555,7 @@
 
                 <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupRequirementType_SelectedIndexChanged" ValidationGroup="vg_GroupTypeGroupRequirement" />
 
-                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Applies to Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupTypeGroupRequirement" />
 
                 <Rock:RockRadioButtonList ID="rblAppliesToAgeClassification" runat="server" Label="Applies to Age Classification" RepeatDirection="Horizontal" Help="Determines which age classifications this requirement applies to."></Rock:RockRadioButtonList>
 
@@ -568,7 +568,7 @@
                 <Rock:RockCheckBox ID="cbAllowLeadersToOverride" runat="server" Text="Allow Leaders to Override" Help="Determines if the leader should be allowed to override meeting the requirement." />
 
                 <Rock:DatePicker ID="dpDueDate" runat="server" Label="Due Date" ValidationGroup="vg_GroupTypeGroupRequirement" />
-                <Rock:RockDropDownList ID="ddlDueDateGroupAttribute" runat="server" Label="Due Date Group Attribute" Help="The group attribute that contains the due date for requirements."></Rock:RockDropDownList>
+                <Rock:RockDropDownList ID="ddlDueDateGroupAttribute" runat="server" Label="Due Date Group Attribute" Help="The group attribute that contains the due date for requirements." ValidationGroup="vg_GroupTypeGroupRequirement" />
 
                 <Rock:RockCheckBox ID="cbMembersMustMeetRequirementOnAdd" runat="server" Text="Members must meet this requirement before adding" Help="If this is enabled, a person can only become a group member if this requirement is met. Note: only applies to Data View and SQL type requirements since manual ones can't be checked until after the person is added." />
             </Content>

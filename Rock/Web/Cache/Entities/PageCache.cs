@@ -738,7 +738,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the cached block instances.
         /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get()." )]
+        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
         [RockObsolete( "1.10" )]
         public void RemoveBlocks()
         {
@@ -748,7 +748,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the cached child pages.
         /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get()." )]
+        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
         [RockObsolete( "1.10" )]
         public void RemoveChildPages()
         {
@@ -976,7 +976,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific layout.
         /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForLayout( int ) instead." )]
+        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForLayout( int ) instead.", true )]
         [RockObsolete( "1.10" )]
         public static void RemoveLayoutBlocks( int layoutId )
         {
@@ -992,7 +992,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific site.
         /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForSite( int ) instead." )]
+        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForSite( int ) instead.", true )]
         [RockObsolete( "1.10" )]
         public static void RemoveSiteBlocks( int siteId )
         {

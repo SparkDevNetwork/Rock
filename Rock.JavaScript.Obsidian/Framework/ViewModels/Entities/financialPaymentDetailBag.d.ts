@@ -28,8 +28,20 @@ export type FinancialPaymentDetailBag = {
     /** Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s) */
     accountNumberMasked?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the billing location identifier. */
     billingLocationId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the DefinedValueId of the credit card type Rock.Model.DefinedValue indicating the credit card brand/type that was used
@@ -58,27 +70,15 @@ export type FinancialPaymentDetailBag = {
      */
     gatewayPersonIdentifier?: string | null;
 
-    /** Gets the name on card. */
-    nameOnCard?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets the name on card. */
+    nameOnCard?: string | null;
 };

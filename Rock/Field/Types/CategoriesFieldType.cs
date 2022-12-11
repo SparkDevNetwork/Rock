@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -59,6 +60,87 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.SplitDelimitedValues().AsGuidList();
+        }
+
+        #endregion
+
+        #region EditControl
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+
+            if ( !guids.Any() )
+            {
+                return null;
+            }
+
+            var categoryIds = guids
+                .Select( g => CategoryCache.Get( g ) )
+                .Where( c => c != null )
+                .Select( c => c.Id )
+                .ToList();
+
+            if ( !categoryIds.Any() )
+            {
+                return null;
+            }
+
+            var referencedEntities = new List<ReferencedEntity>();
+            foreach ( var categoryId in categoryIds )
+            {
+                referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Category>().Value, categoryId ) );
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Category>().Value, nameof( Category.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -74,21 +156,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return value.SplitDelimitedValues().AsGuidList();
-        }
-
-        #endregion
-
-        #region EditControl
-
-        /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -98,7 +165,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var picker = new CategoryPicker { ID = id, AllowMultiSelect = true }; 
+            var picker = new CategoryPicker { ID = id, AllowMultiSelect = true };
 
             if ( configurationValues != null )
             {
@@ -187,67 +254,7 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.ContainsFilterComparisonTypes;
-            }
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guids = privateValue.SplitDelimitedValues().AsGuidList();
-
-            if ( !guids.Any() )
-            {
-                return null;
-            }
-
-            var categoryIds = guids
-                .Select( g => CategoryCache.Get( g ) )
-                .Where( c => c != null )
-                .Select( c => c.Id )
-                .ToList();
-
-            if ( !categoryIds.Any() )
-            {
-                return null;
-            }
-
-            var referencedEntities = new List<ReferencedEntity>();
-            foreach ( var categoryId in categoryIds )
-            {
-                referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Category>().Value, categoryId ) );
-            }
-
-            return referencedEntities;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Category>().Value, nameof( Category.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

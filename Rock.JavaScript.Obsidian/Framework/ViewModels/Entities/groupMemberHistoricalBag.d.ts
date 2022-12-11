@@ -31,6 +31,18 @@ export type GroupMemberHistoricalBag = {
     /** Gets or sets the archived date time value of this group member at this point in history */
     archivedDateTime?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /**
      * Gets or sets a value indicating whether [current row indicator].
      * This will be True if this represents the same values as the current tracked record for this
@@ -66,6 +78,9 @@ export type GroupMemberHistoricalBag = {
     /** Gets or sets the group role name at this point in history */
     groupRoleName?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the InActiveDateTime value of the group member at this point in history (the time when the group member status was changed to GroupMemberStatus.Inactive) */
     inactiveDateTime?: string | null;
 
@@ -75,24 +90,9 @@ export type GroupMemberHistoricalBag = {
     /** Gets or sets a value indicating whether the group member was IsLeader (which is determined by GroupRole.IsLeader) at this point in history */
     isLeader: boolean;
 
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 };

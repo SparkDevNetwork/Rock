@@ -316,10 +316,11 @@ namespace Rock.Tests.Integration.RockTests.Model
         public void Execute_AddsNewStep()
         {
             var jobContext = new TestJobContext();
-            jobContext.JobDetail.JobDataMap[StepsAutomation.AttributeKey.DuplicatePreventionDayRange] = 7.ToString();
+            var testAttributeValues = new Dictionary<string, string>();
+            testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.Execute( jobContext );
+            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
 
             var rockContext = new RockContext();
             var stepProgramService = new StepProgramService( rockContext );
@@ -384,10 +385,12 @@ namespace Rock.Tests.Integration.RockTests.Model
 
             // Run the job
             var jobContext = new TestJobContext();
-            jobContext.JobDetail.JobDataMap[StepsAutomation.AttributeKey.DuplicatePreventionDayRange] = 7.ToString();
+
+            var testAttributeValues = new Dictionary<string, string>();
+            testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.Execute( jobContext );
+            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )
@@ -462,12 +465,14 @@ namespace Rock.Tests.Integration.RockTests.Model
                 rockContext.SaveChanges();
             }
 
-            // Run the job
             var jobContext = new TestJobContext();
-            jobContext.JobDetail.JobDataMap[StepsAutomation.AttributeKey.DuplicatePreventionDayRange] = 7.ToString();
+            var testAttributeValues = new Dictionary<string, string>();
+            testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.Execute( jobContext );
+
+            // Run the job
+            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )
@@ -546,12 +551,14 @@ namespace Rock.Tests.Integration.RockTests.Model
                 rockContext.SaveChanges();
             }
 
-            // Run the job
             var jobContext = new TestJobContext();
-            jobContext.JobDetail.JobDataMap[StepsAutomation.AttributeKey.DuplicatePreventionDayRange] = 7.ToString();
+            var testAttributeValues = new Dictionary<string, string>();
+            testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.Execute( jobContext );
+
+            // Run the job
+            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )

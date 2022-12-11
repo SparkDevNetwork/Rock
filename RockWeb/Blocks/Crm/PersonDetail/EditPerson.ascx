@@ -31,6 +31,7 @@
                             <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
                             <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
                             <Rock:DefinedValuePicker ID="dvpReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="dvpReason_SelectedIndexChanged"></Rock:DefinedValuePicker>
+                            <Rock:NotificationBox ID="nbDeceasedDateError" runat="server" CssClass="mt-4" NotificationBoxType="Danger" Visible="false" />
                             <Rock:DatePicker ID="dpDeceasedDate" runat="server" Visible="false" Label="Deceased Date" AllowFutureDateSelection="False" RequireYear="True" />
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off"></Rock:RockTextBox>
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" EnableCrop="true" />
@@ -97,6 +98,16 @@
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
                                     </div>
                                 </div>
+
+                                <div class="form-row">
+                                    <div class="col-sm-3">
+                                        <Rock:RacePicker ID="rpRace" runat="server" />
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <Rock:EthnicityPicker ID="epEthnicity" runat="server" />
+                                    </div>
+                                </div>
+
                             </fieldset>
                         </div>
 

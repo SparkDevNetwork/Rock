@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -50,8 +48,7 @@ namespace Rock.Jobs
     [IntegerField( "Minimum Fragmentation Percentage", "The minimum fragmentation percentage for an index to be considered for re-indexing. If the fragmentation is below is amount nothing will be done. Default value is 10%.", false, 10, category: "Advanced", order: 6 )]
     [IntegerField( "Rebuild Threshold Percentage", "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.", false, 30, category: "Advanced", order: 7 )]
     [BooleanField( "Use ONLINE Index Rebuild", "Use the ONLINE option when rebuilding indexes. NOTE: This is only supported on SQL Enterprise and Azure SQL Database.", false, category: "Advanced", order: 8 )]
-    [DisallowConcurrentExecution]
-    public class DatabaseMaintenance : IJob
+    public class DatabaseMaintenance : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -66,23 +63,15 @@ namespace Rock.Jobs
 
         private List<DatabaseMaintenanceTaskResult> _databaseMaintenanceTaskResults = new List<DatabaseMaintenanceTaskResult>();
 
-        /// <summary>
-        /// Job that will run quick SQL queries on a schedule.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext jobContext )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
-
             // get job parms
-            bool runIntegrityCheck = dataMap.GetBoolean( "RunIntegrityCheck" );
-            bool runIndexRebuild = dataMap.GetBoolean( "RunIndexRebuild" );
-            bool runStatisticsUpdate = dataMap.GetBoolean( "RunStatisticsUpdate" );
+            bool runIntegrityCheck = this.GetAttributeValue( "RunIntegrityCheck" ).AsBoolean();
+            bool runIndexRebuild = this.GetAttributeValue( "RunIndexRebuild" ).AsBoolean();
+            bool runStatisticsUpdate = this.GetAttributeValue( "RunStatisticsUpdate" ).AsBoolean();
 
-            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
+            int commandTimeout = GetAttributeValue( "CommandTimeout" ).AsInteger();
             bool integrityCheckPassed = false;
             bool integrityCheckIgnored = false;
 
@@ -120,8 +109,8 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    string alertEmail = dataMap.GetString( "AlertEmail" );
-                    jobContext.UpdateLastStatusMessage( $"Integrity Check..." );
+                    string alertEmail = GetAttributeValue( "AlertEmail" );
+                    this.UpdateLastStatusMessage( $"Integrity Check..." );
                     integrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail );
                 }
                 catch ( Exception ex )
@@ -142,8 +131,8 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        jobContext.UpdateLastStatusMessage( $"Rebuild Indexes..." );
-                        RebuildFragmentedIndexes( jobContext, commandTimeout );
+                        this.UpdateLastStatusMessage( $"Rebuild Indexes..." );
+                        RebuildFragmentedIndexes( commandTimeout );
                     }
                     catch ( Exception ex )
                     {
@@ -157,7 +146,7 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        jobContext.UpdateLastStatusMessage( $"Update Statistics..." );
+                        this.UpdateLastStatusMessage( $"Update Statistics..." );
                         UpdateStatistics( commandTimeout );
                     }
                     catch ( Exception ex )
@@ -181,7 +170,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some jobs have errors. See exception log for details." );
             }
 
-            jobContext.Result = jobSummaryBuilder.ToString();
+            this.Result = jobSummaryBuilder.ToString();
 
             var databaseMaintenanceExceptions = _databaseMaintenanceTaskResults.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
 
@@ -270,15 +259,13 @@ namespace Rock.Jobs
         /// <summary>
         /// Rebuilds the fragmented indexes.
         /// </summary>
-        /// <param name="jobContext">The job context.</param>
         /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
-        private void RebuildFragmentedIndexes( IJobExecutionContext jobContext, int commandTimeoutSeconds )
+        private void RebuildFragmentedIndexes( int commandTimeoutSeconds )
         {
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
-            int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
-            int minimumFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
-            int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
-            bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
+            int minimumIndexPageCount = GetAttributeValue( "MinimumIndexPageCount" ).AsInteger();
+            int minimumFragmentationPercentage = GetAttributeValue( "MinimumFragmentationPercentage" ).AsInteger();
+            int rebuildThresholdPercentage = GetAttributeValue( "RebuildThresholdPercentage" ).AsInteger();
+            bool useONLINEIndexRebuild = GetAttributeValue( "UseONLINEIndexRebuild" ).AsBoolean();
 
             if ( useONLINEIndexRebuild
                  && !( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql
@@ -335,7 +322,7 @@ SELECT
 
             foreach ( var indexInfo in sortedIndexInfoList )
             {
-                jobContext.UpdateLastStatusMessage( $"Rebuilding Index [{indexInfo.TableName}].[{indexInfo.IndexName}]" );
+                this.UpdateLastStatusMessage( $"Rebuilding Index [{indexInfo.TableName}].[{indexInfo.IndexName}]" );
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 DatabaseMaintenanceTaskResult databaseMaintenanceTaskResult = new DatabaseMaintenanceTaskResult

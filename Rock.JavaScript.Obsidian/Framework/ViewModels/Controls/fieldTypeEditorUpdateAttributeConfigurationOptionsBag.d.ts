@@ -25,9 +25,6 @@ import { Guid } from "@Obsidian/Types";
 
 /** Contains information required to update a field type's configuration. */
 export type FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
-    /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
-
     /**
      * Gets or sets the configuration values that describe the current
      * selections when editing a field type.
@@ -36,4 +33,7 @@ export type FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
 
     /** Gets or sets the default value currently set. */
     defaultValue?: string | null;
+
+    /** Gets or sets the field type unique identifier. */
+    fieldTypeGuid?: Guid | null;
 };

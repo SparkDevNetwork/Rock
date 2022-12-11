@@ -29,16 +29,16 @@ import { Guid } from "@Obsidian/Types";
  */
 export type MetricCategoryPickerGetChildrenOptionsBag = {
     /**
-     * Gets or sets the parent unique identifier whose children are to
-     * be retrieved. If null then the root items are being requested.
-     */
-    parentGuid?: Guid | null;
-
-    /**
      * Gets or sets the default icon CSS class to use for items that do not
      * specify their own IconCssClass value.
      */
     defaultIconCssClass?: string | null;
+
+    /**
+     * Gets or sets the parent unique identifier whose children are to
+     * be retrieved. If null then the root items are being requested.
+     */
+    parentGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-using Quartz;
-using Rock.Attribute;
+using System.ComponentModel;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,8 +23,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V13.0
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.0 - Add index for Interaction InteractionComponentId." )]
     [Description( "This job will add an index for the Interaction InteractionComponentId column." )]
 
@@ -36,30 +32,25 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of data, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]
-    public class PostV13DataMigrationsAddInteractionComponentIndexToInteraction : IJob
+    public class PostV13DataMigrationsAddInteractionComponentIndexToInteraction : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
             var migrationHelper = new MigrationHelper( new JobMigration( commandTimeout ) );
 
             // Referenced by FK_dbo.Interaction_dbo.InteractionComponent_InteractionComponentId
             // 23-Nov-2021 DMV: No need to drop this index if it is already there, which in some cases it is.
             migrationHelper.CreateIndexIfNotExists( "Interaction", new[] { "InteractionComponentId" }, new string[0] );
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( this.GetJobId() );
         }
     }
 }

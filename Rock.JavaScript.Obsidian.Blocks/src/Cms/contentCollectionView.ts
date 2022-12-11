@@ -37,7 +37,7 @@ import { SortOrdersKey } from "./ContentCollectionView/types";
  * Parses the window query string into the initial filter values that will be used.
  *
  * @param filterNames The names of the filters that are known by this block instance.
- * 
+ *
  * @returns An object that contains the query string values that match a filter.
  */
 function getQueryStringFilterValues(filterNames: string[]): Record<string, string> {
@@ -54,7 +54,7 @@ function getQueryStringFilterValues(filterNames: string[]): Record<string, strin
 
 /**
  * Updates the window query string to match the search parameters.
- * 
+ *
  * @param query The full-text query that was performed.
  * @param sortOrder The current sorting order applied to the results.
  * @param filterValues The values of the various filters.
@@ -106,7 +106,7 @@ function updateUrl(query: string, sortOrder: string, filterValues: Record<string
 
 /**
  * Updates the results element with additional data from the search result bag.
- * 
+ *
  * @param resultsContainerElement The element that will contain all results.
  * @param results The results that were returned by the server.
  * @param seeMore The callback to use when the js-more element is clicked.
@@ -172,7 +172,7 @@ function updateResults(resultsContainerElement: HTMLElement, results: SearchResu
 
 /**
  * Gets the sort order items that can be selected by the person.
- * 
+ *
  * @param allowed The allowed item names.
  *
  * @returns A list of items that can be selected.
@@ -247,6 +247,7 @@ export default defineComponent({
         const filterValues = ref<Record<string, string>>(getQueryStringFilterValues(filters.map(f => f.label ?? "")));
         const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.Relevance.toString());
         const sortOrderItems = getSortOrderItems(config.enabledSortOrders ?? [], config.trendingTerm ?? "Trending");
+        const totalResultsCount = ref(config.initialResults?.totalResultCount ?? 0);
 
         // #endregion
 
@@ -259,7 +260,7 @@ export default defineComponent({
         /**
          * Call the block action to perform the search and then update
          * the DOM with the results of the search.
-         * 
+         *
          * @param sourceGuid The unique identifier of the source we are loading more results for.
          * @param offset The offset into the source's results to load from.
          */
@@ -282,6 +283,7 @@ export default defineComponent({
             const result = await invokeBlockAction<SearchResultBag>("Search", data);
 
             if (result.isSuccess && result.data != null) {
+                totalResultsCount.value = result.data.totalResultCount;
                 processResults(result.data, !offset, sourceGuid);
             }
             else {
@@ -292,7 +294,7 @@ export default defineComponent({
         /**
          * Process the results received from the search request by updating
          * the DOM with the additional results.
-         * 
+         *
          * @param data The data that contains the search results.
          * @param initialResults True if this call is for initial results being loaded.
          * @param sourceGuid The unique identifier of the source we are loading additional results for.
@@ -325,7 +327,7 @@ export default defineComponent({
         /**
          * Called when a "see more" button has been clicked and the person
          * wants to load more results for the source.
-         * 
+         *
          * @param sourceGuid
          */
         const onLoadMore = async (sourceGuid: Guid): Promise<void> => {
@@ -341,6 +343,20 @@ export default defineComponent({
             const itemCount = toNumber(sourceContainerElement.dataset["resultItemCount"]);
             await performSearch(sourceGuid, itemCount);
         };
+
+        /**
+         * Event handler for when the individual clicks the clear button in
+         * the query text box.
+         */
+        function onClearClick(): void {
+            query.value = "";
+
+            const inputElement = searchContainerElement.value?.querySelector("input");
+
+            if (inputElement) {
+                inputElement.focus();
+            }
+        }
 
         // #endregion
 
@@ -381,13 +397,15 @@ export default defineComponent({
             filters,
             filterValues,
             query,
+            onClearClick,
             searchContainerElement,
             searchResultContainerElement,
             showSort: config.showSort,
             showFiltersPanel: config.showFiltersPanel,
             showFullTextSearch: config.showFullTextSearch,
             sortOrder,
-            sortOrderItems
+            sortOrderItems,
+            totalResultsCount
         };
     },
 
@@ -396,14 +414,17 @@ export default defineComponent({
 
 <div v-if="!blockError" class="collectionsearch">
     <div v-if="showFullTextSearch" class="collectionsearch-fulltext">
-        <h3 class="title">Search</h3>
-
         <div ref="searchContainerElement" class="content">
             <div class="search-fulltext">
-                <TextBox v-model="query">
+                <TextBox v-model="query" placeholder="What can we help you find?">
                     <template #prepend>
                         <div class="input-group-addon">
                             <i class="fa fa-search"></i>
+                        </div>
+                    </template>
+                    <template #append>
+                        <div v-if="query" class="input-group-addon">
+                            <i class="fa fa-times clickable" @click="onClearClick"></i>
                         </div>
                     </template>
                 </TextBox>
@@ -414,8 +435,14 @@ export default defineComponent({
     <FiltersContainer v-if="showFiltersPanel" :filters="filters" v-model:filterValues="filterValues" />
 
     <div class="collectionsearch-results">
-        <div class="results-order">
-            <DropDownList v-if="showSort" v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
+        <div class="results-header">
+            <div class="results-count">
+                Results <span class="results-count-number">{{ totalResultsCount }}</span>
+            </div>
+
+            <div v-if="showSort" class="results-order">
+                <DropDownList v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
+            </div>
         </div>
 
         <div ref="searchResultContainerElement">

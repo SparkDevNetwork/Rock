@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /* 
  * All content copyright Terracotta, Inc., unless otherwise indicated. All rights reserved. 
  * 
@@ -55,6 +55,7 @@ namespace Quartz
     /// <author>James House</author>
     /// <author>Marko Lahma (.NET)</author>
     [Serializable]
+    [Obsolete("Use Job.GetAttributeValue instead")]
     public class JobDataMap : StringKeyDirtyFlagMap
     {
         /// <summary>

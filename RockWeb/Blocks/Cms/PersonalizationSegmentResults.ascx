@@ -21,17 +21,13 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gResults" runat="server" DisplayType="Full" AllowSorting="true">
                         <Columns>
-                            <Rock:RockBoundField HeaderText="Nick Name" DataField="NickName" />
-                            <Rock:RockBoundField HeaderText="Last Name" DataField="LastName" />
+                            <Rock:RockBoundField DataField="FullName" HeaderText="Name" SortExpression="LastName,NickName" />
+                            <Rock:DefinedValueField DataField="ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="ConnectionStatusValueId" />
                             <Rock:RockBoundField
                                 DataField="Gender"
                                 HeaderText="Gender"
                                 SortExpression="Gender"
                                 ColumnPriority="Desktop" />
-                            <Rock:RockBoundField
-                                HeaderText="Email"
-                                DataField="Email"
-                                SortExpression="Email" />
                             <Rock:RockBoundField
                                 HeaderText="Age Classification"
                                 DataField="AgeClassification"
@@ -40,6 +36,7 @@
                                 DataField="RecordStatusValueId"
                                 HeaderText="Record Status"
                                 ColumnPriority="Desktop" />
+                            <asp:HyperLinkField ItemStyle-CssClass="grid-columncommand" ControlStyle-CssClass="btn btn-default btn-sm" DataTextFormatString="<i class='fa fa-user'></i>" DataTextField="FullName" DataNavigateUrlFormatString="/Person/{0}" DataNavigateUrlFields="Id" /> 
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -429,13 +429,13 @@
     <Style x:Key="gridCellStyleWhite" TargetType="{x:Type DataGridCell}">
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#ffffff" />
+                <Setter Property="Background" Value="#e4e4e4" />
                 <Setter Property="Foreground" Value="{StaticResource LabelColor}" />
             </Trigger>
         </Style.Triggers>
         <Setter Property="MinHeight" Value="38" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Margin" Value="5,0,12,0" />
+        <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Cursor" Value="Hand" />
 
         <!--  from http://stackoverflow.com/a/3995839/1755417  -->

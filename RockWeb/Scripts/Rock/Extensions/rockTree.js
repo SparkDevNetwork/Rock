@@ -703,11 +703,12 @@
                     var $li = $(li);
                     var nodeId = $li.attr('data-id');
 
+                    var foundNode = _findNodeById(nodeId, self.nodes);
                     selectedNodes.push({
                         id: nodeId,
                         // get the li text excluding child text
                         name: $li.contents(':not(ul)').text(),
-                        path: _findNodeById(nodeId, self.nodes)?.path
+                        path: foundNode ? foundNode.path : undefined
                     });
                 });
 

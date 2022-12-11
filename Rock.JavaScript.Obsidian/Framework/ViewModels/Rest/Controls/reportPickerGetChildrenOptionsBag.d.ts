@@ -28,17 +28,17 @@ import { Guid } from "@Obsidian/Types";
  * the RegistrationTemplatePicker control.
  */
 export type ReportPickerGetChildrenOptionsBag = {
+    /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
+    entityTypeGuid?: Guid | null;
+
+    /** A list of category GUIDs to filter the results. */
+    includeCategoryGuids?: Guid[] | null;
+
     /**
      * The parent unique identifier whose children are to
      * be retrieved. If null then the root items are being requested.
      */
     parentGuid?: Guid | null;
-
-    /** A list of category GUIDs to filter the results. */
-    includeCategoryGuids?: Guid[] | null;
-
-    /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
-    entityTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

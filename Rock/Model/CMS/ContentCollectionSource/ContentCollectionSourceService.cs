@@ -63,14 +63,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="item">The entity view count information that describes how many views in a recent period of time.</param>
         /// <param name="cutOffDate">The cut off date that describes the period of time.</param>
-        /// <param name="gravity">The gravity to apply to the ranking with 1.0 being the default. Larger numbers make new content more trendy..</param>
+        /// <param name="gravity">The gravity to apply to the ranking with 1.0 being the default. Larger numbers make new content more trendy.</param>
         /// <returns>The trending rank. The value really has no meaning, but larger values mean the item is more trendy.</returns>
         private static double CalculateTrendingScore( EntityViewCount item, DateTime cutOffDate, decimal gravity )
         {
             var dateTime = item.DateTime > cutOffDate ? item.DateTime : cutOffDate;
             var daysOld = RockDateTime.Now.Subtract( dateTime ).Days;
 
-            var calculatedGravity = Math.Pow( daysOld + 2, ( double ) gravity );
+            var calculatedGravity = Math.Pow( daysOld + 2, ( double ) ( gravity - 1 ) );
 
             return item.Views / calculatedGravity;
         }

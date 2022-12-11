@@ -196,5 +196,37 @@ namespace Rock.Reporting
 
             return value.Split( new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries ).ToList();
         }
+
+        /// <summary>
+        /// Create a filter settings object from a Json string.
+        /// </summary>
+        /// <typeparam name="TSettings"></typeparam>
+        /// <param name="selection"></param>
+        /// <param name="defaultSettings"></param>
+        /// <returns></returns>
+        public static TSettings DeserializeFilterSettings<TSettings> ( string selection, TSettings defaultSettings = null )
+            where TSettings : class
+        {
+            var settings = selection.FromJsonOrNull<TSettings>() ?? defaultSettings;
+            return settings; 
+        }
+
+        /// <summary>
+        /// Gets a Json string representation of a filter settings object.
+        /// </summary>
+        /// <typeparam name="TSettings"></typeparam>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        public static string SerializeFilterSettings<TSettings>( TSettings selection )
+            where TSettings : class
+        {
+            if ( selection == null )
+            {
+                return string.Empty;
+            }
+
+            var json = selection.ToJson();
+            return json;
+        }
     }
 }

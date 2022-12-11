@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -187,7 +188,9 @@ namespace RockWeb.Blocks.Cms
             cblDeviceTypes.SetValues( this.AdditionalFilterConfiguration.DeviceTypeRequestFilter.DeviceTypes.Select( a => a.ConvertToInt() ) );
             cblPreviousActivity.BindToEnum<PreviousActivityRequestFilter.PreviousActivityType>();
             cblPreviousActivity.SetValues( this.AdditionalFilterConfiguration.PreviousActivityRequestFilter.PreviousActivityTypes.Select( a => a.ConvertToInt() ) );
-
+            dowDaysOfWeek.SetValues( this.AdditionalFilterConfiguration.EnvironmentRequestFilter.DaysOfWeek.Select( a => a.ConvertToInt() ) );
+            tpTimeOfDayFrom.SelectedTime = this.AdditionalFilterConfiguration.EnvironmentRequestFilter.BeginningTimeOfDay;
+            tpTimeOfDayTo.SelectedTime = this.AdditionalFilterConfiguration.EnvironmentRequestFilter.EndingTimeOfDay;
             BindQueryStringFilterToGrid();
             BindCookieFilterToGrid();
             BindBrowserFilterToGrid();
@@ -225,6 +228,13 @@ namespace RockWeb.Blocks.Cms
             {
                 nbWarningMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                 nbWarningMessage.Text = $"Key '{tbKey.Text}' is already present. Please choose a different key";
+                return;
+            }
+
+            if ( tpTimeOfDayTo.SelectedTime.HasValue && tpTimeOfDayFrom.SelectedTime.HasValue && tpTimeOfDayTo.SelectedTime < tpTimeOfDayFrom.SelectedTime )
+            {
+                nbWarningMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbWarningMessage.Text = $"Time of Day Beginning must always be smaller than Ending.";
                 return;
             }
 
@@ -267,6 +277,10 @@ namespace RockWeb.Blocks.Cms
 
                 AdditionalFilterConfiguration.CookieRequestFilterExpressionType =
                     tglCookiesAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+
+                AdditionalFilterConfiguration.EnvironmentRequestFilter.DaysOfWeek = dowDaysOfWeek.SelectedDaysOfWeek.ToArray();
+                AdditionalFilterConfiguration.EnvironmentRequestFilter.BeginningTimeOfDay = tpTimeOfDayFrom.SelectedTime;
+                AdditionalFilterConfiguration.EnvironmentRequestFilter.EndingTimeOfDay = tpTimeOfDayTo.SelectedTime;
 
                 requestFilter.FilterConfiguration = AdditionalFilterConfiguration;
 

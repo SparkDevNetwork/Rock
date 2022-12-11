@@ -937,6 +937,9 @@ var headerText = dp.label;
             var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
             var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total;
 
+            bool allowOnlyActive = tglInactive.Checked;
+            bool allowOnlyTaxDeductible = tglTaxDeductible.Checked;
+
             // Collection of async queries to run before assembling date
             var qryTasks = new List<Task>();
             var taskInfos = new List<TaskInfo>();
@@ -958,7 +961,9 @@ var headerText = dp.label;
                     accountIds,
                     currencyTypeIds,
                     sourceIds,
-                    transactionTypeIds );
+                    transactionTypeIds,
+                    allowOnlyActive,
+                    allowOnlyTaxDeductible );
 
                 if ( ds != null )
                 {
@@ -1065,7 +1070,9 @@ var headerText = dp.label;
                         accountIds,
                         currencyTypeIds,
                         sourceIds,
-                        transactionTypeIds ).Tables[0];
+                        transactionTypeIds,
+                        allowOnlyActive,
+                        allowOnlyTaxDeductible ).Tables[0];
 
                     foreach ( DataRow row in dtPersonSummary.Rows )
                     {
@@ -1256,6 +1263,8 @@ var headerText = dp.label;
 
             var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
             var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total;
+            bool allowOnlyActive = tglInactive.Checked;
+            bool allowOnlyTaxDeductible = tglTaxDeductible.Checked;
 
             GiversViewBy viewBy = GiversViewBy.Giver;
             if ( !hideViewByOption )
@@ -1276,9 +1285,8 @@ var headerText = dp.label;
 
                 var threadRockContextAnalytics = new RockContextAnalytics();
                 threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
-
                 var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsPersonSummaryDataSet(
-                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
+                    start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds, allowOnlyActive, allowOnlyTaxDeductible )
                     .Tables[0];
 
                 foreach ( DataRow row in dt.Rows )
@@ -1367,7 +1375,7 @@ var headerText = dp.label;
                 threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
 
                 var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsAccountTotalsDataSet(
-                    start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
+                    start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds, allowOnlyActive, allowOnlyTaxDeductible )
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
                 {

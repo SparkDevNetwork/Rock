@@ -1489,8 +1489,22 @@ namespace RockWeb.Blocks.Crm
                                               .ToList();
 
             var showWarning = conflictingHiddenProperties.Any();
-
             nbPermissionNotice.Visible = showWarning;
+
+            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();
+
+            nbGroupMemberAttributeConflict.Visible = conflictingGroupMemberProperties.Count > 0;
+            if ( conflictingGroupMemberProperties.Count > 0 )
+            {
+                var sb = new StringBuilder();
+                sb.Append( "<p>There are group member attributes that have conflicting values. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please update those attribute values before proceeding with the merge. </p>" );
+                sb.Append( "<p>Conflicting values for:<br>" );
+                var links = conflictingGroupMemberProperties.Select( p => $"<a target='_blank' href='/group/{p.GroupId}'>{p.GroupName}</a>" ).Distinct();
+                sb.Append( string.Join( ", ", links ) );
+                sb.Append( "</p>" );
+
+                nbGroupMemberAttributeConflict.Text = sb.ToString();
+            }
         }
 
         /// <summary>
@@ -1681,6 +1695,14 @@ namespace RockWeb.Blocks.Crm
         public List<PersonProperty> Properties { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member properties.
+        /// </summary>
+        /// <value>
+        /// The group member properties.
+        /// </value>
+        public List<GroupMemberProperty> GroupMemberProperties { get; set; }
+
+        /// <summary>
         /// Gets or sets the primary person identifier.
         /// </summary>
         /// <value>
@@ -1699,6 +1721,7 @@ namespace RockWeb.Blocks.Crm
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
+            GroupMemberProperties = new List<GroupMemberProperty>();
         }
 
         /// <summary>
@@ -1708,11 +1731,8 @@ namespace RockWeb.Blocks.Crm
         /// <param name="headingKeys">The key values of the merge categories to display.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="grantPermissionForAllAttributes">Should the current user be granted permission to view all secured Attributes?</param>
-        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson, bool grantPermissionForAllAttributes )
+        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson, bool grantPermissionForAllAttributes ) : this()
         {
-            People = new List<MergePerson>();
-            Properties = new List<PersonProperty>();
-
             bool isBusiness = people.All( a => a.IsBusiness() );
 
             foreach ( var person in people )
@@ -1824,14 +1844,32 @@ namespace RockWeb.Blocks.Crm
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    string value = person.GetAttributeValue( attribute.Key );
-                    bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
-                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
+                    var value = person.GetAttributeValue( attribute.Key );
+                    var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                    var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
 
                     var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                             || grantPermissionForAllAttributes;
 
                     AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
+                }
+
+                var groups = new GroupMemberService( new RockContext() ).Queryable().Include( gm => gm.Group ).Where( gm => gm.PersonId == person.Id ).ToList();
+
+                foreach ( var groupMember in groups )
+                {
+                    groupMember.LoadAttributes();
+                    foreach ( var attribute in groupMember.Attributes.OrderBy( a => a.Value.Order ) )
+                    {
+                        var value = groupMember.GetAttributeValue( attribute.Key );
+                        var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, groupMember.Id, value, attribute.Value.QualifierValues, condensed );
+
+                        var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
+                                                || grantPermissionForAllAttributes;
+
+                        AddGroupMemberProperty( "gm_attr_" + attribute.Key, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
+                    }
                 }
             }
 
@@ -2189,6 +2227,66 @@ namespace RockWeb.Blocks.Crm
             return property;
         }
 
+        /// <summary>
+        /// Adds the group member property.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="group">The Group.</param>
+        /// <param name="groupMemberId">The GroupMember identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="formattedValue">The formatted value.</param>
+        /// <param name="hasViewPermission">if set to <c>true</c> [has view permission].</param>
+        /// <param name="selected">if set to <c>true</c> [selected].</param>
+        /// <param name="attribute">The attribute.</param>
+        private void AddGroupMemberProperty( string key, string label, GroupMember groupMember, string value, string formattedValue, bool hasViewPermission = true, bool selected = false, AttributeCache attribute = null )
+        {
+            var property = GetGroupMemberProperty( key, true, label );
+            if ( attribute != null )
+            {
+                property.AttributeId = attribute.Id;
+            }
+
+            property.GroupName = groupMember.Group.Name;
+            property.GroupId = groupMember.Group.Id;
+            property.HasViewPermission = hasViewPermission;
+
+            var propertyValue = property.Values.Find( v => v.GroupMemberId == groupMember.Id );
+            if ( propertyValue == null )
+            {
+                propertyValue = new GroupMemberPropertyValue { GroupMemberId = groupMember.Id, PersonId = groupMember.PersonId };
+                property.Values.Add( propertyValue );
+            }
+
+            propertyValue.Value = value ?? string.Empty;
+            propertyValue.FormattedValue = formattedValue ?? string.Empty;
+            propertyValue.Selected = selected;
+        }
+
+        /// <summary>
+        /// Gets the group member property.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="label">The label.</param>
+        /// <returns></returns>
+        public GroupMemberProperty GetGroupMemberProperty( string key, bool createIfNotFound = false, string label = "" )
+        {
+            var property = GroupMemberProperties.Find( p => p.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+            if ( property == null && createIfNotFound )
+            {
+                if ( label?.Length == 0 )
+                {
+                    label = key.SplitCase();
+                }
+
+                property = new GroupMemberProperty( key, label );
+                GroupMemberProperties.Add( property );
+            }
+
+            return property;
+        }
+
         #endregion
 
         #endregion
@@ -2410,4 +2508,69 @@ namespace RockWeb.Blocks.Crm
         /// </value>
         public PersonPropertyValue PersonPropertyValue { get; set; }
     }
+
+    #region GroupMemberProperty Class
+
+    /// <summary>
+    ///
+    /// </summary>
+    [Serializable]
+    public class GroupMemberProperty
+    {
+        public string GroupName { get; set; }
+
+        public int GroupId { get; set; }
+
+        public string Key { get; set; }
+
+        public string Label { get; set; }
+
+        public int? AttributeId { get; set; }
+
+        public List<GroupMemberPropertyValue> Values { get; set; }
+
+        /// <summary>
+        /// Does the current user have view permission for this property?
+        /// </summary>
+        public bool HasViewPermission { get; set; }
+
+        public GroupMemberProperty()
+        {
+            Values = new List<GroupMemberPropertyValue>();
+        }
+
+        public GroupMemberProperty( string key )
+            : this()
+        {
+            Key = key;
+            Label = key.SplitCase();
+        }
+
+        public GroupMemberProperty( string key, string label )
+            : this()
+        {
+            Key = key;
+            Label = label;
+        }
+    }
+
+    #endregion
+
+    #region PersonPropertyValue class
+
+    [Serializable]
+    public class GroupMemberPropertyValue
+    {
+        public int GroupMemberId { get; set; }
+
+        public int PersonId { get; set; }
+
+        public bool Selected { get; set; }
+
+        public string Value { get; set; }
+
+        public string FormattedValue { get; set; }
+    }
+
+    #endregion
 }

@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,23 +38,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_TYPES )]
     public class WorkflowTypesFieldType : FieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -96,94 +81,9 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return new WorkflowTypePicker { ID = id, AllowMultiSelect = true };
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field ( as Guid )
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var picker = control as WorkflowTypePicker;
-            string result = string.Empty;
-
-            if ( picker != null )
-            {
-                var ids = picker.SelectedValuesAsInt().ToList();
-                using ( var rockContext = new RockContext() )
-                {
-                    var items = new WorkflowTypeService( rockContext ).GetByIds( ids ).ToList();
-
-                    if ( items.Any() )
-                    {
-                        result = items.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
-                    }
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value. ( as Guid )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var picker = control as WorkflowTypePicker;
-
-            if ( picker != null )
-            {
-                var guids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
-                var workflowTypes = new List<WorkflowType>();
-
-                if ( guids.Any() )
-                {
-                    var rockContext = new RockContext();
-                    workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).AsNoTracking().ToList();
-                }
-
-                picker.SetValues( workflowTypes );
-            }
-        }
-
         #endregion
 
         #region FilterControl
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            var control = base.FilterValueControl( configurationValues, id, required, filterMode );
-            WorkflowTypePicker workflowTypePicker = ( WorkflowTypePicker ) control;
-            workflowTypePicker.Required = required;
-            workflowTypePicker.AllowMultiSelect = false;
-            return control;
-        }
 
         /// <summary>
         /// Gets the type of the filter comparison.
@@ -254,6 +154,112 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new WorkflowTypePicker { ID = id, AllowMultiSelect = true };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field ( as Guid )
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as WorkflowTypePicker;
+            string result = string.Empty;
+
+            if ( picker != null )
+            {
+                var ids = picker.SelectedValuesAsInt().ToList();
+                using ( var rockContext = new RockContext() )
+                {
+                    var items = new WorkflowTypeService( rockContext ).GetByIds( ids ).ToList();
+
+                    if ( items.Any() )
+                    {
+                        result = items.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
+                    }
+                }
+
+                return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value. ( as Guid )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var picker = control as WorkflowTypePicker;
+
+            if ( picker != null )
+            {
+                var guids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
+                var workflowTypes = new List<WorkflowType>();
+
+                if ( guids.Any() )
+                {
+                    var rockContext = new RockContext();
+                    workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).AsNoTracking().ToList();
+                }
+
+                picker.SetValues( workflowTypes );
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var control = base.FilterValueControl( configurationValues, id, required, filterMode );
+            WorkflowTypePicker workflowTypePicker = ( WorkflowTypePicker ) control;
+            workflowTypePicker.Required = required;
+            workflowTypePicker.AllowMultiSelect = false;
+            return control;
+        }
+
+#endif
         #endregion
     }
 }

@@ -53,7 +53,7 @@ namespace Rock.Client
         public int InteractiveExperienceActionId { get; set; }
 
         /// <summary />
-        public int InteractiveExperienceScheduleId { get; set; }
+        public int InteractiveExperienceOccurrenceId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -65,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Response { get; set; }
+
+        /// <summary />
+        public string ResponseDataJson { get; set; }
 
         /// <summary />
         public DateTime ResponseDateTime { get; set; }
@@ -108,10 +111,11 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractiveExperienceActionId = source.InteractiveExperienceActionId;
-            this.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
+            this.InteractiveExperienceOccurrenceId = source.InteractiveExperienceOccurrenceId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
             this.Response = source.Response;
+            this.ResponseDataJson = source.ResponseDataJson;
             this.ResponseDateTime = source.ResponseDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -132,10 +136,13 @@ namespace Rock.Client
         public Campus Campus { get; set; }
 
         /// <summary />
+        public InteractionSession InteractionSession { get; set; }
+
+        /// <summary />
         public InteractiveExperienceAction InteractiveExperienceAction { get; set; }
 
         /// <summary />
-        public InteractiveExperienceSchedule InteractiveExperienceSchedule { get; set; }
+        public InteractiveExperienceOccurrence InteractiveExperienceOccurrence { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

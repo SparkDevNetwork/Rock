@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -34,7 +32,6 @@ namespace Rock.Jobs
     [DisplayName( "Download Payments" )]
     [Category( "Finance" )]
     [Description( "Job to download any scheduled payments that were processed by the payment gateway." )]
-    [DisallowConcurrentExecution]
 
     #region Job Attributes
     [IntegerField(
@@ -90,7 +87,7 @@ namespace Rock.Jobs
         Order = 7 )]
 
     #endregion Job Attributes
-    public class GetScheduledPayments : IJob
+    public class GetScheduledPayments : RockJob
     {
         #region Attribute Keys
 
@@ -148,39 +145,29 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <exception cref="Exception">
-        /// One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine )
-        /// </exception>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var exceptionMsgs = new List<string>();
-
-            // get the job map
-            var dataMap = context.JobDetail.JobDataMap;
             var scheduledPaymentsProcessed = 0;
 
-            Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();
-            Guid? failedPaymentEmail = dataMap.GetString( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
-            Guid? failedPaymentWorkflowType = dataMap.GetString( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
-            int daysBack = dataMap.GetString( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
-            bool verboseLogging = dataMap.GetString( AttributeKey.VerboseLogging ).AsBoolean( true );
+            Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            Guid? failedPaymentEmail = GetAttributeValue( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
+            Guid? failedPaymentWorkflowType = GetAttributeValue( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
+            int daysBack = GetAttributeValue( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+            bool verboseLogging = GetAttributeValue( AttributeKey.VerboseLogging ).AsBoolean( true );
 
             DateTime today = RockDateTime.Today;
             TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
 
-            string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
+            string batchNamePrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
             Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
-
 
             using ( var rockContext = new RockContext() )
             {
                 var targetGatewayQuery = new FinancialGatewayService( rockContext ).Queryable().Where( g => g.IsActive ).AsNoTracking();
 
-                var targetGatewayGuid = dataMap.GetString( AttributeKey.TargetGateway ).AsGuidOrNull();
+                var targetGatewayGuid = GetAttributeValue( AttributeKey.TargetGateway ).AsGuidOrNull();
                 if ( targetGatewayGuid.HasValue )
                 {
                     targetGatewayQuery = targetGatewayQuery.Where( g => g.Guid == targetGatewayGuid.Value );
@@ -216,29 +203,37 @@ namespace Rock.Jobs
                         }
                         else
                         {
-                            throw new Exception( errorMessage );
+                            processedPaymentsSummary.Add( financialGateway, errorMessage + Environment.NewLine );
                         }
                     }
                     catch ( Exception ex )
                     {
                         ExceptionLogService.LogException( ex, null );
                         exceptionMsgs.Add( ex.Message );
+                        processedPaymentsSummary.Add( financialGateway, ex.Message + Environment.NewLine );
                     }
                 }
             }
 
+            var summary = new StringBuilder();
+
             if ( exceptionMsgs.Any() )
             {
-                throw new Exception( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+                summary.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some Financial Gateways have errors. See exception log for details." );
+                summary.AppendLine();
             }
 
-            StringBuilder summary = new StringBuilder();
             foreach ( var item in processedPaymentsSummary )
             {
                 summary.AppendLine( $"Summary for {item.Key.Name}:<br/>{item.Value}" );
             }
 
-            context.Result = summary.ToString();
+            this.Result = summary.ToString();
+
+            if ( exceptionMsgs.Any() )
+            {
+                throw new RockJobWarningException( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+            }
         }
     }
 }

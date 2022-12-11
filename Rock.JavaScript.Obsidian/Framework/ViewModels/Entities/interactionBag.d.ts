@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Interaction View Model */
 export type InteractionBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the campaign name */
     campaign?: string | null;
 
@@ -39,6 +45,12 @@ export type InteractionBag = {
 
     /** Gets or sets the campaign content. */
     content?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the Id of the entity that this interaction component is tracking activity for.
@@ -57,6 +69,9 @@ export type InteractionBag = {
      *     <description>EntityId is the <see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description>
      */
     entityId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.InteractionComponent Component that is associated with this Interaction. */
     interactionComponentId: number;
@@ -93,6 +108,12 @@ export type InteractionBag = {
     /** Gets or sets the campaign medium. */
     medium?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'. */
     operation?: string | null;
 
@@ -113,25 +134,4 @@ export type InteractionBag = {
 
     /** Gets or sets the term(s). */
     term?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -30,5 +30,11 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionView
         /// </summary>
         /// <value>The source that results have been generated for.</value>
         public List<SearchResultSourceBag> ResultSources { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of matching results found in the index.
+        /// </summary>
+        /// <value>The total number of matching results found in the index.</value>
+        public int TotalResultCount { get; set; }
     }
 }

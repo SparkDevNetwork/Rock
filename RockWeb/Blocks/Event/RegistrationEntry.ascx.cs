@@ -2783,6 +2783,12 @@ namespace RockWeb.Blocks.Event
                     CurrentPerson.NickName = CurrentPerson.FirstName;
                 }
 
+                // For a person with no email address, this resolves null reference issues downstream.
+                if ( CurrentPerson != null && CurrentPerson.Email == null )
+                {
+                    CurrentPerson.Email = string.Empty;
+                }
+
                 // If the 'your name' value equals the currently logged in person, use their person alias id
                 if ( CurrentPerson != null &&
                 ( CurrentPerson.NickName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
@@ -3137,6 +3143,18 @@ namespace RockWeb.Blocks.Event
                                     var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
                                     History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                                     person.ConnectionStatusValueId = newConnectionStatusId;
+                                    break;
+
+                                case RegistrationPersonFieldType.Race:
+                                    var raceValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( person.RaceValueId ), DefinedValueCache.GetName( raceValueId ) );
+                                    person.RaceValueId = raceValueId;
+                                    break;
+
+                                case RegistrationPersonFieldType.Ethnicity:
+                                    var ethnicityValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( person.EthnicityValueId ), DefinedValueCache.GetName( ethnicityValueId ) );
+                                    person.EthnicityValueId = ethnicityValueId;
                                     break;
                             }
                         }

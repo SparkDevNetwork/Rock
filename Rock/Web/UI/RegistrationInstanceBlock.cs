@@ -279,6 +279,16 @@ namespace Rock.Web.UI
             /// The grid filter registration campus
             /// </summary>
             public const string GridFilter_RegistrationCampus = "Registration Campus";
+
+            /// <summary>
+            /// The grid filter race
+            /// </summary>
+            public const string GridFilter_Race = "Race";
+
+            /// <summary>
+            /// The grid filter ethnicity
+            /// </summary>
+            public const string GridFilter_Ethnicity = "Ethnicity";
         }
 
         #endregion User Preference Keys
@@ -344,6 +354,16 @@ namespace Rock.Web.UI
         /// The filter work phone Identifier
         /// </summary>
         protected const string FILTER_WORK_PHONE_ID = "tbWorkPhoneFilter";
+
+        /// <summary>
+        /// Filter connection status Identifier
+        /// </summary>
+        protected const string FILTER_RACE_ID = "dvpRaceFilter";
+
+        /// <summary>
+        /// Filter connection status Identifier
+        /// </summary>
+        protected const string FILTER_ETHNICITY_ID = "dvpEthnicityFilter";
 
         /// <summary>
         /// Filter attribute prefix
@@ -846,6 +866,62 @@ namespace Rock.Web.UI
 
                                     addressField.ID = ADDRESS_GRID_COLUMN_ID;
                                     grid.Columns.Add( addressField );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Race:
+                                {
+                                    var dvpRaceFilter = new RacePicker
+                                    {
+                                        ID = FILTER_RACE_ID,
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                                    };
+
+                                    if ( setValues )
+                                    {
+                                        dvpRaceFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Race ) );
+                                    }
+
+                                    filterFieldsContainer.Controls.Add( dvpRaceFilter );
+
+                                    dataFieldExpression = "PersonAlias.Person.RaceValue.Value";
+
+                                    var raceField = new RockLiteralField
+                                    {
+                                        ID = "lRace",
+                                        HeaderText = "Race",
+                                        SortExpression = dataFieldExpression
+                                    };
+                                    grid.Columns.Add( raceField );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Ethnicity:
+                                {
+                                    var dvpEthnicityFilter = new EthnicityPicker
+                                    {
+                                        ID = FILTER_ETHNICITY_ID,
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                                    };
+
+                                    if ( setValues )
+                                    {
+                                        dvpEthnicityFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Ethnicity ) );
+                                    }
+
+                                    filterFieldsContainer.Controls.Add( dvpEthnicityFilter );
+
+                                    dataFieldExpression = "PersonAlias.Person.EthnicityValue.Value";
+
+                                    var ethnicityField = new RockLiteralField
+                                    {
+                                        ID = "lEthnicity",
+                                        HeaderText = "Ethnicity",
+                                        SortExpression = dataFieldExpression
+                                    };
+                                    grid.Columns.Add( ethnicityField );
                                 }
 
                                 break;
