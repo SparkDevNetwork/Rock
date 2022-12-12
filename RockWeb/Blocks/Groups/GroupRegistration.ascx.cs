@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     var errorMessage = string.Empty;
-                    cvGroupMember.IsValid = AddPersonToGroup( rockContext, person, workflowType, ref newGroupMembers, out errorMessage );
+                    cvGroupMember.IsValid = AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, out errorMessage );
                     if ( !cvGroupMember.IsValid )
                     {
                         cvGroupMember.ErrorMessage = errorMessage;
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( spouse != null )
                     {
-                        cvGroupMember.IsValid = AddPersonToGroup( rockContext, spouse, workflowType, ref newGroupMembers, out errorMessage );
+                        cvGroupMember.IsValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
                         if ( !cvGroupMember.IsValid )
                         {
                             cvGroupMember.ErrorMessage = errorMessage;
@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="person">The person.</param>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, ref List<GroupMember> groupMembers, out string errorMessage )
+        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
         {
             errorMessage = string.Empty;
             if ( person == null )
