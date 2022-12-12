@@ -98,7 +98,10 @@
     });
 
     const actionItems = computed((): ListItemBag[] => {
-        return props.configuration.actions ?? [];
+        return (props.configuration.actions ?? []).map((a, idx) => ({
+            value: a.value,
+            text: `${idx + 1}. ${a.text}`
+        }));
     });
 
     // #endregion

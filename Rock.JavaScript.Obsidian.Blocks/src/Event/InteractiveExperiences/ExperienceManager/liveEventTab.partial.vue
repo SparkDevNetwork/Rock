@@ -217,11 +217,11 @@
      * @param value The new value to set activeAction to.
      */
     async function onUpdateActiveAction(value: string | null): Promise<void> {
-        activeAction.value = value;
-
-        if (!props.realTimeTopic || !props.occurrenceIdKey) {
+        if (activeAction.value === value || !props.realTimeTopic || !props.occurrenceIdKey) {
             return;
         }
+
+        activeAction.value = value;
 
         if (activeAction.value) {
             await props.realTimeTopic.server.showAction(props.occurrenceIdKey, activeAction.value, isNotificationsEnabled.value);
@@ -289,8 +289,20 @@
         }
     }
 
-    async function onUpdateActiveVisualizer(value: string | string[]): Promise<void> {
-        activeVisualizer.value = typeof value === "string" ? value : "";
+    /**
+     * Event handler for when the individual manually changes selection of the
+     * activeVisualizer value. Notify the server of the change.
+     *
+     * @param value The new value to set activeVisualizer to.
+     */
+     async function onUpdateActiveVisualizer(value: string | string[]): Promise<void> {
+        const newValue = typeof value === "string" ? value : "";
+
+        if (activeVisualizer.value === newValue) {
+            return;
+        }
+
+        activeVisualizer.value = newValue;
 
         if (props.realTimeTopic && props.occurrenceIdKey) {
             if (activeVisualizer.value) {

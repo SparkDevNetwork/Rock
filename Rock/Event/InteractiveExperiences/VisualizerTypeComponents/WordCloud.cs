@@ -53,6 +53,13 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         Key = AttributeKey.FontName,
         Order = 2 )]
 
+    [IntegerField( "Minimum Update Interval",
+        Description = "The minimum number of seconds between updates to the word cloud. This can be helpful to prevent an overly animated cloud when lots of answers are being submitted.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Key = AttributeKey.MinimumUpdateInterval,
+        Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "dc35f0f7-83e5-47d8-aa27-b448962b60dd" )]
@@ -65,6 +72,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
             public const string FontName = "visualizerFontName";
             public const string AngleCount = "visualizerAngleCount";
             public const string Colors = "visualizerColors";
+            public const string MinimumUpdateInterval = "visualizerMinimumUpdateInterval";
         }
 
         #endregion
@@ -79,6 +87,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
             bag.ConfigurationValues.AddOrReplace( "angleCount", GetAttributeValue( action, AttributeKey.AngleCount ) );
             bag.ConfigurationValues.AddOrReplace( "colors", GetAttributeValue( action, AttributeKey.Colors ) );
             bag.ConfigurationValues.AddOrReplace( "fontName", GetAttributeValue( action, AttributeKey.FontName ) );
+            bag.ConfigurationValues.AddOrReplace( "minimumUpdateInterval", GetAttributeValue( action, AttributeKey.MinimumUpdateInterval ) );
 
             return bag;
         }

@@ -132,6 +132,18 @@
         animationDuration: {
             type: Number as PropType<number>,
             default: 350
+        },
+
+        /**
+         * The minimum amount of time in milliseconds that must elapse between
+         * updates. If multiple updates are requested within this time frame
+         * then the additional ones will be deferred until after the interval
+         * has elapsed. This interval does not apply when going changing from
+         * an empty word list.
+         */
+        minimumUpdateInterval: {
+            type: Number as PropType<number>,
+            default: 0
         }
     });
 
@@ -151,6 +163,9 @@
     let animationFrame: number | null = null;
     let isUpdateRequested = false;
     let resizeObserver: ResizeObserver | null = null;
+    let lastObserverSize = { width: 0, height: 0 };
+    let lastUpdate: number = 0;
+    let deferredUpdateTimer: number | null = null;
 
     // #endregion
 
@@ -450,6 +465,7 @@
      */
     function processWords(): void {
         isUpdateRequested = false;
+        lastUpdate = Date.now();
 
         if (!svgElement.value) {
             return;
@@ -496,7 +512,13 @@
      * Request an update to the SVG. If we are currently animating then just
      * queue up a new update request.
      */
-    function requestUpdate(): void {
+    function requestUpdate(ignoreSize: boolean): void {
+        if (!ignoreSize && lastObserverSize.width === getWidth() && lastObserverSize.height === getHeight()) {
+            return;
+        }
+
+        lastObserverSize = { width: getWidth(), height: getHeight() };
+
         if (animationFrame === null) {
             processWords();
         }
@@ -514,18 +536,15 @@
 
         // Watch for changes to the size of the SVG and re-render.
         if (window.ResizeObserver) {
+            lastObserverSize = { width: getWidth(), height: getHeight() };
             resizeObserver = new ResizeObserver(() => {
-                requestUpdate();
+                requestUpdate(false);
             });
 
             resizeObserver.observe(svgElement.value);
         }
-        else {
-            // The resize observer always calls the callback when initialized,
-            // so we only need to manually request the update if we don't
-            // have resize observer available.
-            requestUpdate();
-        }
+
+        requestUpdate(true);
     });
 
     // #endregion
@@ -548,7 +567,23 @@
     ];
 
     watch(requestUpdateValues, () => {
-        console.log("changed");
-        requestUpdate();
+        if (deferredUpdateTimer) {
+            return;
+        }
+
+        if (props.minimumUpdateInterval > 0 && lastUpdate > 0 && Object.keys(elements).length > 0) {
+            const period = lastUpdate + props.minimumUpdateInterval - Date.now();
+
+            if (period > 0) {
+                deferredUpdateTimer = window.setTimeout(() => {
+                    deferredUpdateTimer = null;
+                    requestUpdate(true);
+                }, period);
+
+                return;
+            }
+        }
+
+        requestUpdate(true);
     });
 </script>
