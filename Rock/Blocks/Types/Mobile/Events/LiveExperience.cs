@@ -56,6 +56,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Order = 1
     )]
 
+    [BooleanField( "Keep Screen On",
+        Description = "Keeps the screen turned on when this page is being used by the application.",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Key = AttributeKeys.KeepScreenOn,
+        Order = 2
+    )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_LIVEEXPERIENCE_BLOCK_TYPE )]
@@ -97,7 +105,8 @@ namespace Rock.Blocks.Types.Mobile.Events
             return new
             {
                 Url = $"{GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' )}{url}",
-                AlwaysRequestLocation = GetAttributeValue( AttributeKeys.AlwaysRequestLocation )
+                AlwaysRequestLocation = GetAttributeValue( AttributeKeys.AlwaysRequestLocation ).AsBoolean(),
+                KeepScreenOn = GetAttributeValue( AttributeKeys.KeepScreenOn ).AsBoolean()
             };
         }
 
@@ -112,6 +121,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         {
             public const string AlwaysRequestLocation = "AlwaysRequestLocation";
             public const string LiveExperienceWebPage = "LiveExperienceWebPage";
+            public const string KeepScreenOn = "KeepScreenOn";
         }
 
         #endregion
