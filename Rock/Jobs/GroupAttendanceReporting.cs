@@ -144,7 +144,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
                 return;
             }
 
-            var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DbContext = rockContext, DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
+            var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
             var groupIds = groupsQuery.Select( a => a.Id ).ToList();
 
             // limit attendances to groups returned from the DataView

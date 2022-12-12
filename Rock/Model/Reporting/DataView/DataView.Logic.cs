@@ -116,21 +116,14 @@ namespace Rock.Model
         /// <returns></returns>
         public System.Data.Entity.DbContext GetDbContext()
         {
-            if ( EntityTypeId.HasValue )
+            if ( this.DisableUseOfReadOnlyContext )
             {
-                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
-
-                    if ( entityType != null )
-                    {
-                        return Reflection.GetDbContextForEntityType( entityType );
-                    }
-                }
+                return new RockContext();
             }
-
-            return null;
+            else
+            {
+                return new RockContextReadOnly();
+            }
         }
 
         /// <summary>

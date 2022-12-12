@@ -1296,12 +1296,7 @@ namespace Rock.Model
 
                 if ( dataView != null )
                 {
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                    {
-                        DbContext = rockContext
-                    };
-
-                    personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
+                    personQry = dataView.GetQuery() as IQueryable<Person>;
                 }
             }
 

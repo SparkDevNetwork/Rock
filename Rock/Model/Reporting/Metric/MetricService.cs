@@ -250,7 +250,7 @@ FROM (
                                     }
 
                                     Stopwatch stopwatch = Stopwatch.StartNew();
-                                    var qry = metric.DataView.GetQuery( new DataViewGetQueryArgs() );
+                                    var qry = metric.DataView.GetQuery();
 
                                     if ( parseCampusPartition )
                                     {

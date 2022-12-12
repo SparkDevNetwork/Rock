@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -33,6 +25,13 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -387,22 +386,35 @@ namespace RockWeb.Blocks.Reporting
 
             try
             {
-                if ( report.EntityTypeId.HasValue )
-                {
-                    var entityType = EntityTypeCache.Get( report.EntityTypeId.Value );
-                    if ( entityType != null )
-                    {
-                        var contextForEntityType = Reflection.GetDbContextForEntityType( entityType.GetEntityType() );
+                /*
 
-                        // If the DbContext for the entity type returns a standard RockContext, proceed with the ReadOnly context here.
-                        // If it returns other than a RockContext, use that DbContext for the bindGridOptions.
-                        if ( contextForEntityType.GetType() == typeof( Rock.Data.RockContext ) )
+                    11/30/2022 - CWR
+                    If there is a dataview for the report, use its DbContext.  This null check is necessary because a report does not require a dataview.
+                    
+                 */
+                if ( report.DataView != null )
+                {
+                    bindGridOptions.ReportDbContext = report.DataView.GetDbContext();
+                }
+                else
+                {
+                    if ( report.EntityTypeId.HasValue )
+                    {
+                        var entityType = EntityTypeCache.Get( report.EntityTypeId.Value );
+                        if ( entityType != null )
                         {
-                            bindGridOptions.ReportDbContext = new RockContextReadOnly();
-                        }
-                        else
-                        {
-                            bindGridOptions.ReportDbContext = contextForEntityType;
+                            var contextForEntityType = Reflection.GetDbContextForEntityType( entityType.GetEntityType() );
+
+                            // If the DbContext for the entity type returns a standard RockContext, proceed with the ReadOnly context here.
+                            // If it returns other than a RockContext, use that DbContext for the bindGridOptions.
+                            if ( contextForEntityType.GetType() == typeof( Rock.Data.RockContext ) )
+                            {
+                                bindGridOptions.ReportDbContext = new RockContextReadOnly();
+                            }
+                            else
+                            {
+                                bindGridOptions.ReportDbContext = contextForEntityType;
+                            }
                         }
                     }
                 }
@@ -1299,7 +1311,7 @@ namespace RockWeb.Blocks.Reporting
             SetupTimeToRunLabel( report );
             SetupNumberOfRuns( report );
             SetupLastRun( report );
-            
+
             if ( report.Category != null )
             {
                 lCategory.Text = new DescriptionList()
@@ -1309,7 +1321,6 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                
                 lDataView.Visible = UserCanEdit;
 
                 var queryParams = new Dictionary<string, string>();

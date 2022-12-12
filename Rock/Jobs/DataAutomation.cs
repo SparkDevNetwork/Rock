@@ -1690,12 +1690,7 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qry = dataView.GetQuery( dataViewGetQueryArgs );
+            var qry = dataView.GetQuery();
 
             if ( qry == null )
             {
