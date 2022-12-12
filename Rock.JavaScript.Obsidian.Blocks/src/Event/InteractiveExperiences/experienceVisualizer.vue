@@ -267,8 +267,6 @@
 
     async function checkForNewOccurrence(): Promise<void> {
         try {
-            console.log("Checking for new occurrence.");
-
             // If we already have an occurrence and it hasn't ended yet then
             // don't check for a new one. Otherwise we might switch visualizers
             // in the middle of an experience.

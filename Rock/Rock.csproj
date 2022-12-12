@@ -875,6 +875,7 @@
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceToken.cs" />
     <Compile Include="Event\InteractiveExperiences\ExtensionMethods.cs" />
+    <Compile Include="Event\InteractiveExperiences\RecordActionResponseStatus.cs" />
     <Compile Include="Event\InteractiveExperiences\ValidOccurrencesResult.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />

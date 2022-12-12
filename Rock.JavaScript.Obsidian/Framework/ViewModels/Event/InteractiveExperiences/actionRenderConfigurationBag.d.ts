@@ -33,4 +33,7 @@ export type ActionRenderConfigurationBag = {
 
     /** Gets or sets the configuration values for the action type. */
     configurationValues?: Record<string, string> | null;
+
+    /** Gets or sets a value indicating whether multiple responses are allowed. */
+    isMultipleSubmissionAllowed: boolean;
 };

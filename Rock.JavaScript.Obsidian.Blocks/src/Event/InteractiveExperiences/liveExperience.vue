@@ -7,12 +7,14 @@
             </Alert>
             <div v-if="isWelcomeContentVisible" class="welcome">
                 <div class="welcome-header">
+                    <img v-if="welcomeHeaderImageUrl" :src="welcomeHeaderImageUrl" class="header-image" />
                     <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
                 </div>
                 <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
             </div>
             <div v-if="isNoActionContentVisible" class="no-action">
                 <div class="no-action-header">
+                    <img v-if="noActionHeaderImageUrl" :src="noActionHeaderImageUrl" class="header-image" />
                     <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
                 </div>
                 <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
@@ -116,6 +118,14 @@ body {
 
     const isNoActionContentVisible = computed((): boolean => {
         return isReady.value && !isExperienceInactive.value && !isWelcomeContentVisible.value && !activeActionComponent.value;
+    });
+
+    const welcomeHeaderImageUrl = computed((): string | null => {
+        return config.style?.welcome?.headerImage ?? null;
+    });
+
+    const noActionHeaderImageUrl = computed((): string | null => {
+        return config.style?.noAction?.headerImage ?? null;
     });
 
     // #endregion

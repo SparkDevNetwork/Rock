@@ -109,7 +109,7 @@
                             </a>
                         </td>
                         <td class="grid-columncommand" align="center">
-                            <a class="btn btn-danger btn-sm grid-delete-button">
+                            <a class="btn btn-danger btn-sm grid-delete-button" @click.prevent="onDeleteScheduleClick(row)">
                                 <i class="fa fa-times"></i>
                             </a>
                         </td>
@@ -191,7 +191,7 @@
 
                 <div class="col-lg-3 col-sm-6">
                     <ColorPicker v-model="actionPrimaryButtonColor"
-                                 label="Primary Button Color" />
+                                 label="Primary Button Background Color" />
                 </div>
 
                 <div class="col-lg-3 col-sm-6">
@@ -205,7 +205,7 @@
 
                 <div class="col-lg-3 col-sm-6">
                     <ColorPicker v-model="actionSecondaryButtonColor"
-                                 label="Secondary Button Color" />
+                                 label="Secondary Button Background Color" />
                 </div>
 
                 <div class="col-lg-3 col-sm-6">
@@ -344,6 +344,8 @@
     import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
     import { Calendar } from "@Obsidian/Utility/internetCalendar";
     import { InteractiveExperienceCampusBehavior } from "@Obsidian/Enums/Event/interactiveExperienceCampusBehavior";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -540,12 +542,32 @@
     }
 
     /**
+     * Called when the delete button on the schedule grid is clicked.
+     *
+     * @param schedule The schedule to be edited.
+     */
+    async function onDeleteScheduleClick(schedule: InteractiveExperienceScheduleBag): Promise<void> {
+        if (!(await confirmDelete("Schedule"))) {
+            return;
+        }
+
+        const index = schedules.value.findIndex(s => areEqual(s.guid, schedule.guid));
+
+        if (index >= 0) {
+            schedules.value.splice(index, 1);
+        }
+    }
+
+    /**
      * Called when a schedule is ready to be saved.
      */
     function onSaveSchedule(): void {
         const calendar = new Calendar(scheduleContent.value);
 
-        let schedule = editingSchedule ?? {};
+        let schedule = editingSchedule ?? {
+            guid: newGuid()
+        };
+
         schedule.schedule = {
             value: scheduleContent.value,
             text: calendar.events[0].toFriendlyText()

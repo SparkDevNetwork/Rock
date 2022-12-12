@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -316,7 +317,12 @@ namespace Rock.RealTime.Topics
         /// <param name="occurrenceIdKey">The identifier of the event as returned by <see cref="JoinExperience(string, CancellationToken)"/>.</param>
         /// <param name="actionId">The action identifier.</param>
         /// <param name="response">The response content.</param>
-        public async Task PostResponse( string occurrenceIdKey, string actionId, string response )
+        /// <returns>
+        ///     <para>200-OK if the answer was saved.</para>
+        ///     <para>400-BadRequest if the parameters provided were not valid.</para>
+        ///     <para>409-Conflict if an answer was already posted and multiple answers are not allowed.</para>
+        /// </returns>
+        public async Task<int> PostResponse( string occurrenceIdKey, string actionId, string response )
         {
             var state = GetOccurrenceState( occurrenceIdKey );
 
@@ -328,11 +334,19 @@ namespace Rock.RealTime.Topics
                 throw new RealTimeException( "Invalid action specified." );
             }
 
-            var success = await InteractiveExperienceAnswerService.RecordActionAnswer( occurrenceId.Value, actionIntegerId.Value, state.InteractionSessionId, state.PersonAliasId, state.CampusId, response );
+            var status = await InteractiveExperienceAnswerService.RecordActionResponse( occurrenceId.Value, actionIntegerId.Value, state.InteractionSessionId, state.PersonAliasId, state.CampusId, response );
 
-            if ( !success )
+            if ( status == RecordActionResponseStatus.Success )
             {
-                throw new RealTimeException( "Unable to save your answer." );
+                return ( int ) HttpStatusCode.OK;
+            }
+            else if ( status == RecordActionResponseStatus.DuplicateResponse )
+            {
+                return ( int ) HttpStatusCode.Conflict;
+            }
+            else
+            {
+                return ( int ) HttpStatusCode.BadRequest;
             }
         }
 

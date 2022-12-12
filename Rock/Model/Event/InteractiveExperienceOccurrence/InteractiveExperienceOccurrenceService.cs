@@ -79,6 +79,12 @@ namespace Rock.Model
                     throw new Exception( "Action is no longer supported." );
                 }
 
+                // Check if we are already in the correct state.
+                if ( occurrence.CurrentlyShownActionId == action.Id )
+                {
+                    return;
+                }
+
                 // Update the database to record that this action is now visible.
                 occurrence.CurrentlyShownActionId = action.Id;
                 rockContext.SaveChanges();
@@ -136,6 +142,12 @@ namespace Rock.Model
                 if ( occurrence == null )
                 {
                     throw new Exception( "Experience occurrence was not found." );
+                }
+
+                // Check if we are already in the correct state.
+                if ( !occurrence.CurrentlyShownActionId.HasValue )
+                {
+                    return;
                 }
 
                 // Update the database.
@@ -200,8 +212,15 @@ namespace Rock.Model
                     }
                 }
 
-                // Update the database to record that this action is now visible.
                 var state = occurrence.StateJson.FromJsonOrNull<ExperienceOccurrenceStateBag>() ?? new ExperienceOccurrenceStateBag();
+
+                // Check if we are already in the correct state.
+                if ( state.CurrentlyShownVisualizerActionId == action.Id )
+                {
+                    return;
+                }
+
+                // Update the database to record that this action is now visible.
                 state.CurrentlyShownVisualizerActionId = action.Id;
                 occurrence.StateJson = state.ToJson();
                 rockContext.SaveChanges();
@@ -240,8 +259,15 @@ namespace Rock.Model
                     throw new Exception( "Experience occurrence was not found." );
                 }
 
-                // Update the database.
                 var state = occurrence.StateJson.FromJsonOrNull<ExperienceOccurrenceStateBag>() ?? new ExperienceOccurrenceStateBag();
+
+                // Check if we are already in the correct state.
+                if ( !state.CurrentlyShownVisualizerActionId.HasValue )
+                {
+                    return;
+                }
+
+                // Update the database.
                 state.CurrentlyShownVisualizerActionId = null;
                 occurrence.StateJson = state.ToJson();
                 rockContext.SaveChanges();

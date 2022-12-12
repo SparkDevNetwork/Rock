@@ -6,6 +6,7 @@
                    :angleCount="angleCount"
                    :fontName="fontName"
                    :colors="colors"
+                   :minimumUpdateInterval="minimumUpdateInterval"
                    width="100%"
                    height="100%" />
     </div>
@@ -70,6 +71,10 @@
 
     const fontName = computed((): string | undefined => {
         return props.renderConfiguration.configurationValues?.fontName || undefined;
+    });
+
+    const minimumUpdateInterval = computed((): number => {
+        return toNumber(props.renderConfiguration.configurationValues?.minimumUpdateInterval ?? 0) * 1_000;
     });
 
     // #endregion
