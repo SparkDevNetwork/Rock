@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -264,8 +264,7 @@ namespace Rock.Rest.Controllers
                     var dataView = new DataViewService( new RockContext() ).Get( options.DataViewId.Value );
                     if ( dataView != null )
                     {
-                        var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-                        var personList = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
+                        var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
                         HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
                         HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
 

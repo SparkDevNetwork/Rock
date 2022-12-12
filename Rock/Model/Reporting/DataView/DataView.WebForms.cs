@@ -88,6 +88,15 @@ namespace Rock.Model
         /// <summary>
         /// Gets the query.
         /// </summary>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetQuery()
+        {
+            return GetQuery( null );
+        }
+
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
         /// <param name="dataViewGetQueryArgs">The data view get query arguments.</param>
         /// <returns></returns>
         /// <exception cref="Rock.Reporting.RockReportingException">
@@ -103,12 +112,6 @@ namespace Rock.Model
             if ( dbContext == null )
             {
                 dbContext = this.GetDbContext();
-                if ( dbContext == null )
-                {
-                    // this could happen if the EntityTypeId id refers to an assembly/type that doesn't exist anymore
-                    // we'll just default to new RockContext(), but it'll likely fail when we try to get a ServiceInstance below if the entityType doesn't exist in an assembly
-                    dbContext = new RockContext();
-                }
             }
 
             IService serviceInstance = this.GetServiceInstance( dbContext );
