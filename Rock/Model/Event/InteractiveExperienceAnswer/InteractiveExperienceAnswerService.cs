@@ -43,7 +43,7 @@ namespace Rock.Model
         /// <param name="campusId">The identifier of the campus the response is originating from.</param>
         /// <param name="response">The response text.</param>
         /// <returns><c>true</c> if the answer was recorded, <c>false</c> otherwise.</returns>
-        internal static async Task<bool> RecordActionAnswer( int occurrenceId, int actionId, int? interactionSessionId, int? personAliasId, int? campusId, string response )
+        internal static async Task<RecordActionResponseStatus> RecordActionResponse( int occurrenceId, int actionId, int? interactionSessionId, int? personAliasId, int? campusId, string response )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -56,7 +56,7 @@ namespace Rock.Model
 
                 if ( occurrence == null || action == null || occurrence.InteractiveExperienceSchedule.InteractiveExperienceId != action.InteractiveExperienceId )
                 {
-                    return false;
+                    return RecordActionResponseStatus.InvalidParameters;
                 }
 
                 // If multiple submissions are not allowed then check if they
@@ -73,7 +73,7 @@ namespace Rock.Model
 
                         if ( answerQry.Any() )
                         {
-                            return false;
+                            return RecordActionResponseStatus.DuplicateResponse;
                         }
                     }
                     else if ( interactionSessionId.HasValue )
@@ -82,7 +82,7 @@ namespace Rock.Model
 
                         if ( answerQry.Any() )
                         {
-                            return false;
+                            return RecordActionResponseStatus.DuplicateResponse;
                         }
                     }
                 }
@@ -114,7 +114,7 @@ namespace Rock.Model
                 await topic.Clients.Channel( InteractiveExperienceParticipantTopic.GetVisualizerChannel( occurrence.IdKey ) )
                     .AnswerSubmitted( occurrence.IdKey, answerBag );
 
-                return true;
+                return RecordActionResponseStatus.Success;
             }
         }
 

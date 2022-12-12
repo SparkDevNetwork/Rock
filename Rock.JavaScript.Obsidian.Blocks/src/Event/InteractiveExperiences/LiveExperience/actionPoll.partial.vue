@@ -6,8 +6,12 @@
         </div>
 
         <div class="answers">
-            <RadioButtonList v-model="answerText" :items="answerItems" />
+            <RadioButtonList v-model="answerText" :items="answerItems" disabled />
         </div>
+
+        <Alert v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </Alert>
 
         <div class="submit">
             <RockButton :btnType="BtnType.Primary"
@@ -76,9 +80,10 @@
 </style>
 
 <script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
     import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { actionProps } from "./util.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -87,12 +92,22 @@
     // #region Values
 
     const answerText = ref("");
-    const answers: string[] = JSON.parse(props.renderConfiguration.configurationValues?.answers ?? "[]") ?? [];
-    const answerItems: ListItemBag[] = answers.map(a => ({ value: a, text: a }));
+    const isAnswerSubmitted = ref(false);
+    const errorMessage = ref("");
 
     // #endregion
 
     // #region Computed Values
+
+    const answerItems = computed((): ListItemBag[] => {
+        const answers: string[] = JSON.parse(props.renderConfiguration.configurationValues?.answers ?? "[]") ?? [];
+
+        return answers.map(a => ({
+            value: a,
+            text: a,
+            category: isAnswerSubmitted.value && !props.renderConfiguration.isMultipleSubmissionAllowed ? "disabled" : undefined
+        }));
+    });
 
     const additionalActionClasses = computed((): string => {
         return `experience-action-${props.renderConfiguration.actionId}`;
@@ -115,10 +130,35 @@
     // #region Event Handlers
 
     async function onSubmitClick(): Promise<void> {
-        await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        let result: number;
 
-        answerText.value = "";
+        try {
+            result = await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        }
+        catch (error) {
+            result = 400;
+            console.error(error);
+        }
+
+        if (result === 200) {
+            answerText.value = "";
+            errorMessage.value = "";
+            isAnswerSubmitted.value = true;
+        }
+        else if (result === 409) {
+            answerText.value = "";
+            errorMessage.value = "Multiple answers are not allowed and you have previously submitted an answer.";
+            isAnswerSubmitted.value = true;
+        }
+        else {
+            errorMessage.value = "Unable to submit your answer.";
+        }
     }
 
     // #endregion
+
+    watch(() => props.actionId, () => {
+        isAnswerSubmitted.value = false;
+        errorMessage.value = "";
+    });
 </script>

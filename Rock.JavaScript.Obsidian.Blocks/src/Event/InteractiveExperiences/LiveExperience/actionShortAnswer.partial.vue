@@ -6,8 +6,14 @@
         </div>
 
         <div class="answer">
-            <input v-model="answerText" class="form-control" type="text"  />
+            <div class="form-group">
+                <input v-model="answerText" class="form-control" type="text" :disabled="isAnswerDisabled" />
+            </div>
         </div>
+
+        <Alert v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </Alert>
 
         <div class="submit">
             <RockButton :btnType="BtnType.Primary"
@@ -42,8 +48,9 @@
 </style>
 
 <script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
     import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { actionProps } from "./util.partial";
 
     const props = defineProps(actionProps);
@@ -51,6 +58,8 @@
     // #region Values
 
     const answerText = ref("");
+    const isAnswerSubmitted = ref(false);
+    const errorMessage = ref("");
 
     // #endregion
 
@@ -68,6 +77,10 @@
         return !answerText.value;
     });
 
+    const isAnswerDisabled = computed((): boolean => {
+        return isAnswerSubmitted.value && !props.renderConfiguration.isMultipleSubmissionAllowed;
+    });
+
     // #endregion
 
     // #region Functions
@@ -77,10 +90,35 @@
     // #region Event Handlers
 
     async function onSubmitClick(): Promise<void> {
-        await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        let result: number;
 
-        answerText.value = "";
+        try {
+            result = await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        }
+        catch (error) {
+            result = 400;
+            console.error(error);
+        }
+
+        if (result === 200) {
+            answerText.value = "";
+            errorMessage.value = "";
+            isAnswerSubmitted.value = true;
+        }
+        else if (result === 409) {
+            answerText.value = "";
+            errorMessage.value = "Multiple answers are not allowed and you have previously submitted an answer.";
+            isAnswerSubmitted.value = true;
+        }
+        else {
+            errorMessage.value = "Unable to submit your answer.";
+        }
     }
 
     // #endregion
+
+    watch(() => props.actionId, () => {
+        isAnswerSubmitted.value = false;
+        errorMessage.value = "";
+    });
 </script>

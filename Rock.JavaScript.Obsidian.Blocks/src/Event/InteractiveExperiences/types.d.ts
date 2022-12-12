@@ -29,7 +29,7 @@ export interface IParticipantTopic {
 
     pingExperience(occurrenceIdKey: string): Promise<void>;
 
-    postResponse(occurrenceIdKey: string, actionId: string, answer: string): Promise<void>;
+    postResponse(occurrenceIdKey: string, actionId: string, answer: string): Promise<number>;
 
     getParticipantCount(occurrenceIdKey: string): Promise<number>;
 }
