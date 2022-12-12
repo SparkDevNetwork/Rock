@@ -522,7 +522,7 @@ textarea,
 .grid-columncommand {
   .btn {
     width: @input-height-small;
-    padding: @padding-small-vertical 0;
+    padding: (@padding-small-vertical - 2) 0;
   }
 
   .btn-default,
@@ -595,11 +595,19 @@ textarea,
   > * {
     margin: 4px 8px 4px 0;
   }
-}
 
-// Temporary Fix for Obsidian
-.footer-actions .btn {
-  margin-right: 8px;
+  .footer-actions,
+  .footer-secondary-actions {
+    margin: 0;
+  }
+
+  .footer-actions > * {
+    margin: 4px 8px 4px 0;
+  }
+
+  .footer-secondary-actions > * {
+    margin: 0 0 0 4px;
+  }
 }
 
 .panel-body .actions:last-of-type,

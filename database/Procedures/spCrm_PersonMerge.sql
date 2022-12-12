@@ -352,6 +352,7 @@ BEGIN
 				,'PhoneNumber'
 				,'UserLogin'
 				,'PersonAlias'
+                ,'AttributeValue'
 			)
 
 		OPEN ForeignKeyCursor

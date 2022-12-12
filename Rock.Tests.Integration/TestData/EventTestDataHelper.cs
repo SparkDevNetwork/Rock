@@ -35,6 +35,7 @@ namespace Rock.Tests.Integration.TestData
                 var scheduleSat1800Id = scheduleService.GetId( ScheduleSun1200Guid.AsGuid() );
 
                 // Get Event "Rock Solid Finances".
+                // This event is associated with both the Internal and Public calendars.
                 var eventItemService = new EventItemService( rockContext );
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
@@ -46,6 +47,7 @@ namespace Rock.Tests.Integration.TestData
                 if ( financeEvent1 == null )
                 {
                     financeEvent1 = new EventItemOccurrence();
+                    financeEvent.EventItemOccurrences.Add( financeEvent1 );
                 }
 
                 var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
@@ -57,13 +59,12 @@ namespace Rock.Tests.Integration.TestData
                 financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
                 financeEvent1.CampusId = mainCampusId;
 
-                financeEvent.EventItemOccurrences.Add( financeEvent1 );
-
                 var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
 
                 if ( financeEvent2 == null )
                 {
                     financeEvent2 = new EventItemOccurrence();
+                    financeEvent.EventItemOccurrences.Add( financeEvent2 );
                 }
 
                 financeEvent2.Location = "Meeting Room 2";
@@ -71,8 +72,6 @@ namespace Rock.Tests.Integration.TestData
                 financeEvent2.ScheduleId = scheduleSat1800Id;
                 financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
                 financeEvent2.CampusId = secondCampusId;
-
-                financeEvent.EventItemOccurrences.Add( financeEvent2 );
 
                 rockContext.SaveChanges();
             }

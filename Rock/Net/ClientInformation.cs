@@ -114,7 +114,7 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
         /// <param name="request">The request to initalize from.</param>
-        internal ClientInformation( HttpRequestMessage request )
+        internal ClientInformation( IRequest request )
         {
             //
             // Set IP Address.
@@ -122,13 +122,13 @@ namespace Rock.Net
             IpAddress = string.Empty;
 
             // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-            if ( request.Headers.Contains( "X-FORWARDED-FOR" ) )
+            if ( request.Headers["X-FORWARDED-FOR"] != null )
             {
                 IpAddress = request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
             }
-            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
+            else
             {
-                IpAddress = ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] )?.Request?.UserHostAddress ?? string.Empty;
+                IpAddress = request.RemoteAddress?.ToString() ?? string.Empty;
             }
 
             // nicely format localhost
@@ -137,7 +137,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            UserAgent = request.Headers.UserAgent.ToString();
+            UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
             _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 

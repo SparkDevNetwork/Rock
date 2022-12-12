@@ -219,8 +219,10 @@ namespace Rock.Model
                 Name = model.Name,
                 Order = model.Order,
                 ParentGroupId = model.ParentGroupId,
+                ReminderAdditionalDetails = model.ReminderAdditionalDetails,
+                ReminderOffsetDays = model.ReminderOffsetDays,
+                ReminderSystemCommunicationId = model.ReminderSystemCommunicationId,
                 RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId,
-                RSVPReminderAdditionalDetails = model.RSVPReminderAdditionalDetails,
                 RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
@@ -323,8 +325,10 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
+            target.ReminderOffsetDays = source.ReminderOffsetDays;
+            target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
-            target.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;

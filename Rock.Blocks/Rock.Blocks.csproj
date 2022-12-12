@@ -69,6 +69,12 @@
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceVisualizer.cs" />
+    <Compile Include="Event\InteractiveExperiences\InteractiveExperienceDetail.cs" />
+    <Compile Include="Event\InteractiveExperiences\LiveExperienceOccurrences.cs" />
+    <Compile Include="Event\InteractiveExperiences\LiveExperience.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />

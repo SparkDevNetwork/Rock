@@ -211,7 +211,12 @@ namespace Rock
                         {
                             object propValue = null;
 
-                            var propType = entityType.GetProperty( key )?.PropertyType;
+                            // There may be multiple inherited properties with the same name but different return types, so select the first match.
+                            var propType = entityType.GetProperties()
+                                .Where( x => x.Name == key )
+                                .Select( x => x.PropertyType )
+                                .FirstOrDefault();
+
                             if ( propType?.Name == "ICollection`1" )
                             {
                                 // if the property type is an ICollection, get the underlying query and just fetch one for an example (just in case there are 1000s of records)

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -204,6 +204,15 @@ namespace Rock.Blocks.Workflow.FormBuilder
             var nextAttributeOrder = actionForm.FormAttributes != null && actionForm.FormAttributes.Any()
                 ? actionForm.FormAttributes.Select( a => a.Order ).Max() + 1
                 : 0;
+
+
+            // If no attributes have been added yet then we need to take into account the attributes auto added when a form builder workflow is created.
+            if ( nextAttributeOrder == 0 )
+            {
+                var defaultAttributesMaxOrder = attributeService.Queryable().Where( a => a.EntityTypeQualifierValue == workflowType.Id.ToString() && a.EntityTypeQualifierColumn == "WorkflowTypeId" ).Select( m => m.Order ).Max();
+                nextAttributeOrder += defaultAttributesMaxOrder;
+            }
+
 
             if ( formSettings.Sections != null )
             {

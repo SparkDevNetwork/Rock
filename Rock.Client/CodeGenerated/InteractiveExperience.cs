@@ -83,6 +83,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public string ExperienceSettingsJson { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -113,6 +116,12 @@ namespace Rock.Client
 
         /// <summary />
         public string PublicLabel { get; set; }
+
+        /// <summary />
+        public string PushNotificationDetail { get; set; }
+
+        /// <summary />
+        public string PushNotificationTitle { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.Event.InteractiveExperiencePushNotificationType PushNotificationType { get; set; }
@@ -175,6 +184,7 @@ namespace Rock.Client
             this.AudienceSecondaryColor = source.AudienceSecondaryColor;
             this.AudienceTextColor = source.AudienceTextColor;
             this.Description = source.Description;
+            this.ExperienceSettingsJson = source.ExperienceSettingsJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
@@ -185,6 +195,8 @@ namespace Rock.Client
             this.NoActionTitle = source.NoActionTitle;
             this.PhotoBinaryFileId = source.PhotoBinaryFileId;
             this.PublicLabel = source.PublicLabel;
+            this.PushNotificationDetail = source.PushNotificationDetail;
+            this.PushNotificationTitle = source.PushNotificationTitle;
             this.PushNotificationType = source.PushNotificationType;
             this.WelcomeHeaderImageBinaryFileId = source.WelcomeHeaderImageBinaryFileId;
             this.WelcomeMessage = source.WelcomeMessage;

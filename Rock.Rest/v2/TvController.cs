@@ -760,7 +760,12 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         private string GetClientIp( HttpRequestMessage request )
         {
-            if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
+            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+            if ( request.Headers.Contains( "X-FORWARDED-FOR" ) )
+            {
+                return request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
+            }
+            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
             {
                 return ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] ).Request.UserHostAddress;
             }

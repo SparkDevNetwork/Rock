@@ -42,6 +42,15 @@ namespace Rock.ViewModels.Entities
         public int ApprovalStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the Rock.Model.InteractiveExperienceAnswer.Campus the answer
+        /// originated from.
+        /// </summary>
+        /// <value>
+        /// The identifier of the Rock.Model.InteractiveExperienceAnswer.Campus.
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the Rock.Model.InteractionSession Session.
         /// </summary>
         /// <value>
@@ -80,6 +89,15 @@ namespace Rock.ViewModels.Entities
         /// The response.
         /// </value>
         public string Response { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom response data JSON. This will hold additional
+        /// information that does not need referential integrity.
+        /// </summary>
+        /// <value>
+        /// The custom response data JSON.
+        /// </value>
+        public string ResponseDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets the response date time.

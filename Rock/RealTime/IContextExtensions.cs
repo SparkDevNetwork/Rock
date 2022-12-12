@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Net;
+
 namespace Rock.RealTime
 {
     /// <summary>
@@ -48,6 +50,20 @@ namespace Rock.RealTime
             {
                 return new TState();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the request representing the original connection.
+        /// </summary>
+        /// <remarks>
+        /// If the client temporarily reconnects (via timeout on websocket or
+        /// if they are using long-polling requests) then this request will
+        /// still represent the initial request.
+        /// </remarks>
+        /// <returns>A <see cref="RockRequestContext"/> that represents the original connection.</returns>
+        public static RockRequestContext GetRequestContext( this IContext context )
+        {
+            return context.GetConnectionState<EngineConnectionState>().Request;
         }
     }
 }

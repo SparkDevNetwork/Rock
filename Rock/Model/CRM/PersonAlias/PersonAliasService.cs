@@ -112,6 +112,7 @@ namespace Rock.Model
         /// Gets the person identifier for the specified PersonAliasGuid
         /// </summary>
         /// <param name="personAliasGuid">The person alias unique identifier.</param>
+        /// <remarks><strong>Note:</strong> This method will return 0 if the alias identifier is not found instead of <c>null</c>.</remarks>
         /// <returns></returns>
         public virtual int? GetPersonId( Guid personAliasGuid )
         {

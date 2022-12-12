@@ -177,6 +177,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? RunCountLastRefreshDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether using a read-only Rock Context is disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable use of read-only]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisableUseOfReadOnlyContext { get; set; }
+
         #endregion
 
         #region Navigation Properties

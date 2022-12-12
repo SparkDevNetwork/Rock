@@ -53,7 +53,6 @@
                             <Rock:SelectField />
                             <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="ActivatedDateTime" />
                             <Rock:CampusField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
-                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="InitiatorPersonAlias.Person.FirstName,InitiatorPersonAlias.Person.LastName,InitiatorPersonAlias.Person.NickName" />
                         </Columns>
                     </Rock:Grid>
                 </div>

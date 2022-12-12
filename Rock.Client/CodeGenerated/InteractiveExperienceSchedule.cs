@@ -57,6 +57,9 @@ namespace Rock.Client
         /// <summary />
         public int ScheduleId { get; set; }
 
+        /// <summary />
+        public string ScheduleSettingsJson { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -97,6 +100,7 @@ namespace Rock.Client
             this.InteractiveExperienceId = source.InteractiveExperienceId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ScheduleId = source.ScheduleId;
+            this.ScheduleSettingsJson = source.ScheduleSettingsJson;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

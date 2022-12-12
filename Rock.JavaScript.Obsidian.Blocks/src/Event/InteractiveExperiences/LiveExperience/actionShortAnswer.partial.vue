@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="experience-action experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210" :class="additionalActionClasses">
+        <div class="question">
+            {{ questionText }}
+        </div>
+
+        <div class="answer">
+            <input v-model="answerText" class="form-control" type="text"  />
+        </div>
+
+        <div class="submit">
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="isButtonDisabled"
+                        @click="onSubmitClick">
+                Submit
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .question::before,
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 3em;
+    font-weight: 700;
+    line-height: 1.2;
+    content: 'Q:';
+}
+
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer::before {
+    content: 'A:';
+}
+
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .answer,
+.experience-action-type-5ffe1f8f-5f0b-4b34-9c3f-1706d9093210 .submit {
+    margin-top: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
+    import { computed, ref } from "vue";
+    import { actionProps } from "./util.partial";
+
+    const props = defineProps(actionProps);
+
+    // #region Values
+
+    const answerText = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const additionalActionClasses = computed((): string => {
+        return `experience-action-${props.renderConfiguration.actionId}`;
+    });
+
+    const questionText = computed((): string => {
+        return props.renderConfiguration.configurationValues?.["question"] ?? "";
+    });
+
+    const isButtonDisabled = computed((): boolean => {
+        return !answerText.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSubmitClick(): Promise<void> {
+        await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+
+        answerText.value = "";
+    }
+
+    // #endregion
+</script>

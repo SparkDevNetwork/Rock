@@ -103,6 +103,7 @@ import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
+import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -130,6 +131,7 @@ import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
+import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
@@ -161,6 +163,7 @@ import RockValidation from "@Obsidian/Controls/rockValidation";
 import TabbedContent from "@Obsidian/Controls/tabbedContent";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
+import WordCloud from "@Obsidian/Controls/wordCloud.vue";
 
 // #region Gallery Support
 
@@ -275,6 +278,11 @@ export const GalleryAndResult = defineComponent({
         description: {
             type: String as PropType<string>,
             default: ""
+        },
+        /** Display the value raw and unformatted inside the PRE element. */
+        displayAsRaw: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -283,7 +291,10 @@ export const GalleryAndResult = defineComponent({
         const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
 
         const formattedValue = computed(() => {
-            if (!props.hasMultipleValues) {
+            if (props.displayAsRaw) {
+                return props.value;
+            }
+            else if (!props.hasMultipleValues) {
                 return JSON.stringify(props.value, null, 4);
             }
             else {
@@ -3136,6 +3147,134 @@ const binaryFileTypePickerGallery = defineComponent({
 });
 
 
+/** Demonstrates Campus picker */
+const campusPickerGallery = defineComponent({
+    name: "CampusPickerGallery",
+    components: {
+        GalleryAndResult,
+        CampusPicker,
+        CheckBox,
+        DefinedValuePicker,
+        DropDownList,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(true),
+            value: ref({}),
+            forceVisible: ref(false),
+            includeInactive: ref(false),
+            campusStatusFilter: ref(null),
+            campusTypeFilter: ref(null),
+            campusStatusDefinedTypeGuid: DefinedType.CampusStatus,
+            campusTypeDefinedTypeGuid: DefinedType.CampusType,
+            importCode: getControlImportPath("campusPicker"),
+            exampleCode: `<CampusPicker label="Campus" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <CampusPicker label="Campus"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :forceVisible="forceVisible"
+        :includeInactive="includeInactive"
+        :campusStatusFilter="campusStatusFilter?.value"
+        :campusTypeFilter="campusTypeFilter?.value" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Force Visible" v-model="forceVisible" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive" v-model="includeInactive" />
+            </div>
+
+            <div class="col-md-4">
+                <DefinedValuePicker label="Campus Type Filter" v-model="campusTypeFilter" :definedTypeGuid="campusTypeDefinedTypeGuid" showBlankItem />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DefinedValuePicker label="Campus Status Filter" v-model="campusStatusFilter" :definedTypeGuid="campusStatusDefinedTypeGuid" showBlankItem />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates Schedule Builder */
+const scheduleBuilderGallery = defineComponent({
+    name: "ScheduleBuilderGallery",
+    components: {
+        GalleryAndResult,
+        ScheduleBuilder
+    },
+    setup() {
+        return {
+            value: ref(""),
+            importCode: getControlImportPath("scheduleBuilder"),
+            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+    displayAsRaw>
+    <ScheduleBuilder label="Schedule Builder"
+        v-model="value" />
+
+    <template #settings>
+    </template>
+</GalleryAndResult>`
+});
+
+
 /** Demonstrates BinaryFile  picker */
 const binaryFilePickerGallery = defineComponent({
     name: "BinaryFilePickerGallery",
@@ -5006,6 +5145,7 @@ const rockButtonGallery = defineComponent({
             autoLoading: ref(false),
             autoDisable: ref(false),
             isLoading: ref(false),
+            isSquare: ref(false),
             loadingText: ref("Loading..."),
             importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
             exampleCode: `<RockButton
@@ -5027,7 +5167,10 @@ const rockButtonGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText">Click Here to Fire Async Operation</RockButton>
+    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText" :isSquare="isSquare">
+        <i class="fa fa-cross" v-if="isSquare"></i>
+        <template v-else>Click Here to Fire Async Operation</template>
+    </RockButton>
 
     <template #settings>
         <div class="row">
@@ -5038,6 +5181,7 @@ const rockButtonGallery = defineComponent({
         </div>
         <div class="row">
             <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
+            <CheckBox formGroupClasses="col-md-3" label="Square" v-model="isSquare" />
             <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
         </div>
     </template>
@@ -5387,6 +5531,119 @@ const groupPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a wordcloud */
+const wordCloudGallery = defineComponent({
+    name: "WordCloudGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberBox,
+        TextBox,
+        WordCloud
+    },
+    setup() {
+        const wordsText = ref("Hello, Hello, Hello, from, from, Chip");
+        const colorsText = ref("#0193B9, #F2C852, #1DB82B, #2B515D, #ED3223");
+
+        const words = computed((): string[] => {
+            return wordsText.value.split(",").map(v => v.trim()).filter(v => v.length > 0);
+        });
+
+        const colors = computed((): string[] => {
+            return colorsText.value.split(",").map(v => v.trim()).filter(v => v.length > 0);
+        });
+
+        return {
+            animationDuration: ref(350),
+            angleCount: ref(5),
+            autoClear: ref(false),
+            colors,
+            colorsText,
+            fontName: ref("Impact"),
+            minimumAngle: ref(-90),
+            minimumFontSize: ref(10),
+            maximumAngle: ref(90),
+            maximumFontSize: ref(96),
+            wordPadding: ref(5),
+            words,
+            wordsText,
+            importCode: getControlImportPath("wordCloud"),
+            exampleCode: `<WordCloud :words="['Hello', 'Hello', 'Goodbye']" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <WordCloud width="100%"
+        :words="words"
+        :animationDuration="animationDuration"
+        :angleCount="angleCount"
+        :autoClear="autoClear"
+        :colors="colors"
+        :fontName="fontName"
+        :minimumAngle="minimumAngle"
+        :minimumFontSize="minimumFontSize"
+        :maximumAngle="maximumAngle"
+        :maximumFontSize="maximumFontSize"
+        :wordPadding="wordPadding" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="wordsText" label="Words" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="colorsText" label="Colors" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="wordPadding" label="Word Padding" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="fontName" label="Font Name" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="minimumFontSize" label="Minimum Font Size" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="maximumFontSize" label="Maximum Font Size" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <NumberBox v-model="angleCount" label="Angle Count" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="minimumAngle" label="Minimum Angle" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="maximumAngle" label="Maximum Angle" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="autoClear" label="Auto Clear" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox v-model="animationDuration" label="Animation Duration" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5432,6 +5689,7 @@ const controlGalleryComponents: Record<string, Component> = [
     imageUploaderGallery,
     slidingDateRangePickerGallery,
     definedValuePickerGallery,
+    campusPickerGallery,
     entityTypePickerGallery,
     sectionHeaderGallery,
     sectionContainerGallery,
@@ -5488,6 +5746,8 @@ const controlGalleryComponents: Record<string, Component> = [
     transitionVerticalCollapseGallery,
     valueDetailListGallery,
     groupPickerGallery,
+    scheduleBuilderGallery,
+    wordCloudGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

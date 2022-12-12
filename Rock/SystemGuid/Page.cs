@@ -2094,6 +2094,12 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_ENTRY = "0550D2AA-A705-4400-81FF-AB124FDF83D7";
 
         /// <summary>
+        /// Gets the external site's Workflow Entry page guid
+        /// ParentPage: Workflows
+        /// </summary>
+        public const string EXTERNAL_WORKFLOW_ENTRY = "C58861DF-2D82-4E7A-AA5B-04165D2D34C2";
+
+        /// <summary>
         /// Gets the Workflow Trigger page guid
         /// ParentPage: Workflow Triggers
         /// </summary>

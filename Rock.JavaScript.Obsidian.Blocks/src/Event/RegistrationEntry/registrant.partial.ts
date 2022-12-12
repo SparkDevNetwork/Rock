@@ -317,7 +317,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember) {
+            if (!this.familyMember || this.registrationEntryState.navBack) {
                 // Nothing to copy
                 return;
             }

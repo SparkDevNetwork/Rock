@@ -686,8 +686,36 @@ namespace RockWeb.Blocks.Event
                 var groupMemberService = new GroupMemberService( rockContext );
 
                 var registration = registrationService.Get( Registration.Id );
-                registration.RegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
 
+                var oldRegistrationInstanceId = registration.RegistrationInstanceId;
+                var oldRegistrationInstanceName = registration.RegistrationInstance.Name;
+                var newRegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
+
+                registration.RegistrationInstanceId = newRegistrationInstanceId;
+
+                // Get new registration instance so we have it's properties for history
+                var newRegistrationInstance = new RegistrationInstanceService( rockContext ).Get( newRegistrationInstanceId );
+
+                //
+                // Add History record
+                var historyService = new HistoryService( rockContext );
+                var historyRecord = new History();
+                historyService.Add( historyRecord );
+
+                historyRecord.EntityTypeId = EntityTypeCache.Get<Registration>().Id;
+                historyRecord.EntityId = registration.Id;
+
+                historyRecord.Verb = "MOVED";
+                historyRecord.ValueName = "Registration Instance";
+                historyRecord.ChangeType = "Moved";
+                historyRecord.OldValue = oldRegistrationInstanceName;
+                historyRecord.OldRawValue = oldRegistrationInstanceId.ToStringSafe();
+                historyRecord.NewValue = newRegistrationInstance.Name;
+                historyRecord.NewRawValue = newRegistrationInstance.Id.ToString();
+                historyRecord.Caption = tbComment.Text;
+                historyRecord.CategoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION ).Id;
+
+                //
                 // Move registrants to new group
                 int? groupId = ddlMoveGroup.SelectedValueAsInt();
                 if ( groupId.HasValue )

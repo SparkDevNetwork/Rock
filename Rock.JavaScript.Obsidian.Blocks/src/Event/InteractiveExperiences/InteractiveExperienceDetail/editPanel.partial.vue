@@ -1,0 +1,672 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="publicLabel"
+                         label="Public Label"
+                         rules="required"
+                         help="The experience name that will be shown publicly." />
+            </div>
+
+            <div class="col-md-6">
+                <ImageUploader v-model="experiencePhoto"
+                               label="Experience Photo"
+                               help="An optional photo to be used when displaying information about the experience."
+                               :binaryFileTypeGuid="binaryFileTypeGuid" />
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <RadioButtonList v-model="pushNotificationConfiguration"
+                             label="Push Notification Configuration"
+                             help="Detemines when push notifications should be sent when launching actions."
+                             :items="pushNotificationConfigurationItems"
+                             horizontal />
+
+            <TransitionVerticalCollapse>
+                <div v-if="isPushActive" class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="pushNotificationTitle"
+                                 label="Push Notification Title"
+                                 help="The title to use on any push notifications when actions are posted."
+                                 rules="required"
+                                 :maxLength="200" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <TextBox v-model="pushNotificationDetail"
+                                 label="Push Notification Detail"
+                                 help="The detail message to use on any push notifications when actions are posted."
+                                 rules="required"
+                                 :maxLength="1000" />
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        </div>
+
+        <SectionContainer title="Schedules"
+                          description="Schedules determine when and where the experience occurs. You can also configure filters to determine who should be allowed to view an experience. These filters require that the individual is logged in.">
+            <RadioButtonList v-model="campusBehavior"
+                             label="Campus Behavior"
+                             :items="campusBehaviorItems"
+                             rules="required"
+                             horizontal
+                             help="&lt;p&gt;Determines the role of campus with the experience.&lt;/p&gt;&lt;p&gt;Filter Schedules will only show the schedules that match the individual's location using the geofence of the campuses.&lt;/p&gt;&lt;p&gt;Dermine Campus will use the campus geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Use Individual's Campus will not consider campus geofences and simply use the campus set on the individual.&lt;/p&gt;" />
+
+            <TransitionVerticalCollapse>
+                <div v-if="isDefaultCampusVisible" class="row">
+                    <div class="col-md-6">
+                        <CampusPicker v-model="defaultCampus"
+                                      label="Default Campus"
+                                      forceVisible
+                                      showBlankItem
+                                      help="The campus to use if no campus can be determined." />
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+
+            <table class="grid-table table table-condensed table-light">
+                <thead>
+                    <tr>
+                        <th>Schedule</th>
+                        <th>Campus</th>
+                        <th>Data View</th>
+                        <th>Group</th>
+                        <th class="grid-columncommand"></th>
+                        <th class="grid-columncommand"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="row in schedules">
+                        <td>{{ row.schedule?.text }}</td>
+                        <td>{{ getScheduleCampusNames(row) }}</td>
+                        <td>{{ row.dataView?.text }}</td>
+                        <td>{{ row.group?.text }}</td>
+                        <td class="grid-columncommand" align="center">
+                            <a class="btn btn-sm grid-edit-button" @click.prevent="onEditScheduleClick(row)">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </td>
+                        <td class="grid-columncommand" align="center">
+                            <a class="btn btn-danger btn-sm grid-delete-button">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr v-if="!schedules.length">
+                        <td colspan="6">No schedules defined.</td>
+                    </tr>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td class="grid-actions" colspan="6">
+                            <a class="btn btn-grid-action btn-add btn-default btn-sm"
+                               accesskey="n"
+                               title="Alt+N"
+                               href="#"
+                               @click.prevent="onAddScheduleClick">
+                                <i class="fa fa-plus-circle fa-fw"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </SectionContainer>
+
+        <SectionContainer title="Welcome Content"
+                          description="This optional content will be shown before the first action is displayed. It allows you to welcome your guest to the environment and let them know what to expect.">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="welcomeTitle"
+                             label="Title" />
+
+                    <TextBox v-model="welcomeMessage"
+                             label="Message"
+                             textMode="multiline" />
+                </div>
+
+                <div class="col-md-6">
+                    <ImageUploader v-model="welcomeHeaderImage"
+                                   label="Header Image"
+                                   :binaryFileTypeGuid="binaryFileTypeGuid" />
+                </div>
+            </div>
+        </SectionContainer>
+
+        <SectionContainer title="No Actions Content"
+                          description="This optional content will be shown when there are no active actions being displayed.">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="noActionsTitle"
+                             label="Title" />
+
+                    <TextBox v-model="noActionsMessage"
+                             label="Message"
+                             textMode="multiline" />
+                </div>
+
+                <div class="col-md-6">
+                    <ImageUploader v-model="noActionsHeaderImage"
+                                   label="Header Image"
+                                   :binaryFileTypeGuid="binaryFileTypeGuid" />
+                </div>
+            </div>
+        </SectionContainer>
+
+        <SectionContainer title="Action Appearance"
+                          description="The settings below can help override the default appearance on the individual devices to provide a custom theme for the experience.">
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionBackgroundColor"
+                                 label="Background Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionTextColor"
+                                 label="Text Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionPrimaryButtonColor"
+                                 label="Primary Button Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionPrimaryButtonTextColor"
+                                 label="Primary Button Text Color" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6"></div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionSecondaryButtonColor"
+                                 label="Secondary Button Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="actionSecondaryButtonTextColor"
+                                 label="Secondary Button Text Color" />
+                </div>
+            </div>
+
+            <ImageUploader v-model="actionBackgroundImage"
+                           label="Background Image"
+                           :binaryFileTypeGuid="binaryFileTypeGuid" />
+
+            <div class="mt-2 text-right">
+                <a href="#" class="text-xs" @click.prevent="onActionAdvancedOptionsClick">
+                    Advanced Options
+                    <i v-if="isActionAdvancedOptionsVisible" class="fa fa-angle-up"></i>
+                    <i v-else class="fa fa-angle-down"></i>
+                </a>
+            </div>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isActionAdvancedOptionsVisible">
+                    <CodeEditor v-model="actionCustomCss"
+                                label="Custom CSS"
+                                mode="css" />
+                </div>
+            </TransitionVerticalCollapse>
+        </SectionContainer>
+
+        <SectionContainer title="Audience Appearance"
+                          description="The settings below can help override the default appearance on the audience visuals to provide a custom theme for the experience.">
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="audienceBackgroundColor"
+                                 label="Background Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="audienceTextColor"
+                                 label="Text Color" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="audiencePrimaryColor"
+                                 label="Primary Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="audienceSecondaryColor"
+                                 label="Secondary Color" />
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <ColorPicker v-model="audienceAccentColor"
+                                 label="Accent Color" />
+                </div>
+            </div>
+
+            <ImageUploader v-model="audienceBackgroundImage"
+                           label="Background Image"
+                           :binaryFileTypeGuid="binaryFileTypeGuid" />
+
+            <div class="mt-2 text-right">
+                <a href="#" class="text-xs" @click.prevent="onAudienceAdvancedOptionsClick">
+                    Advanced Options
+                    <i v-if="isAudienceAdvancedOptionsVisible" class="fa fa-angle-up"></i>
+                    <i v-else class="fa fa-angle-down"></i>
+                </a>
+            </div>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isAudienceAdvancedOptionsVisible">
+                    <CodeEditor v-model="audienceCustomCss"
+                                label="Custom CSS"
+                                mode="css" />
+                </div>
+            </TransitionVerticalCollapse>
+        </SectionContainer>
+    </fieldset>
+
+    <Modal v-model="isScheduleModalVisible"
+           :title="scheduleModalTitle"
+           saveText="OK"
+           @save="onSaveSchedule">
+        <ScheduleBuilder v-model="scheduleContent"
+                         label="Schedule"
+                         help="The schedule of when the experience is active."
+                         rules="required" />
+
+        <SectionHeader title="Filters"
+                       description="Filters help to limit who will see experiences on the list those that are available." />
+
+        <CampusPicker v-model="scheduleCampuses"
+                      label="Campus"
+                      help="Which campuses the experience is for. Leave blank to show for all campuses."
+                      forceVisible
+                      multiple />
+
+        <DataViewPicker v-model="scheduleDataView"
+                        label="Data View"
+                        help="A data view that the individual must be in to see the environment. It is highly encouraged that this data view be persisted for performance." />
+
+        <GroupPicker v-model="scheduleGroup"
+                     label="Group"
+                     help="A group that the individual must be in to see the environment." />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, shallowRef, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import ColorPicker from "@Obsidian/Controls/colorPicker";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+    import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import Modal from "@Obsidian/Controls/modal";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids";
+    import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
+    import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { InteractiveExperiencePushNotificationType } from "@Obsidian/Enums/Event/interactiveExperiencePushNotificationType";
+    import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
+    import { Calendar } from "@Obsidian/Utility/internetCalendar";
+    import { InteractiveExperienceCampusBehavior } from "@Obsidian/Enums/Event/interactiveExperienceCampusBehavior";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<InteractiveExperienceBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<InteractiveExperienceDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: InteractiveExperienceBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const campusBehavior = ref(props.modelValue.campusBehavior.toString());
+    const defaultCampus = ref(props.modelValue.defaultCampus);
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const publicLabel = propertyRef(props.modelValue.publicLabel ?? "", "PublicLabel");
+    const experiencePhoto = propertyRef(props.modelValue.photoBinaryFile ?? null, "PhotoBinaryFileId");
+    const pushNotificationConfiguration = propertyRef(props.modelValue.pushNotificationType.toString(), "PushNotificationType");
+    const pushNotificationTitle = propertyRef(props.modelValue.pushNotificationTitle ?? "", "PushNotificationTitle");
+    const pushNotificationDetail = propertyRef(props.modelValue.pushNotificationDetail ?? "", "PushNotificationDetail");
+    const schedules = ref(props.modelValue.schedules ?? []);
+    const welcomeTitle = propertyRef(props.modelValue.welcomeTitle ?? "", "WelcomeTitle");
+    const welcomeMessage = propertyRef(props.modelValue.welcomeMessage ?? "", "WelcomeMessage");
+    const welcomeHeaderImage = propertyRef(props.modelValue.welcomeHeaderImageBinaryFile ?? null, "WelcomeHeaderImageBinaryFileId");
+    const noActionsTitle = propertyRef(props.modelValue.noActionTitle ?? "", "NoActionTitle");
+    const noActionsMessage = propertyRef(props.modelValue.noActionMessage ?? "", "NoActionMessage");
+    const noActionsHeaderImage = propertyRef(props.modelValue.noActionHeaderImageBinaryFile ?? null, "NoActionHeaderImageBinaryFileId");
+    const actionBackgroundColor = propertyRef(props.modelValue.actionBackgroundColor ?? "", "ActionBackgroundColor");
+    const actionTextColor = propertyRef(props.modelValue.actionTextColor ?? "", "ActionTextColor");
+    const actionPrimaryButtonColor = propertyRef(props.modelValue.actionPrimaryButtonColor ?? "", "ActionPrimaryButtonColor");
+    const actionPrimaryButtonTextColor = propertyRef(props.modelValue.actionPrimaryButtonTextColor ?? "", "ActionPrimaryButtonTextColor");
+    const actionSecondaryButtonColor = propertyRef(props.modelValue.actionSecondaryButtonColor ?? "", "ActionSecondaryButtonColor");
+    const actionSecondaryButtonTextColor = propertyRef(props.modelValue.actionSecondaryButtonTextColor ?? "", "ActionSecondaryButtonTextColor");
+    const actionBackgroundImage = propertyRef(props.modelValue.actionBackgroundImageBinaryFile ?? null, "ActionBackgroundImageBinaryFileId");
+    const actionCustomCss = propertyRef(props.modelValue.actionCustomCss ?? "", "ActionCustomCss");
+    const audienceBackgroundColor = propertyRef(props.modelValue.audienceBackgroundColor ?? "", "ActionBackgroundColor");
+    const audienceTextColor = propertyRef(props.modelValue.audienceTextColor ?? "", "ActionTextColor");
+    const audiencePrimaryColor = propertyRef(props.modelValue.audiencePrimaryColor ?? "", "AudiencePrimaryColor");
+    const audienceSecondaryColor = propertyRef(props.modelValue.audienceSecondaryColor ?? "", "AudienceSecondaryColor");
+    const audienceAccentColor = propertyRef(props.modelValue.audienceAccentColor ?? "", "AudienceAccentColor");
+    const audienceBackgroundImage = propertyRef(props.modelValue.audienceBackgroundImageBinaryFile ?? null, "AudienceBackgroundImageBinaryFileId");
+    const audienceCustomCss = propertyRef(props.modelValue.audienceCustomCss ?? "", "AudienceCustomCss");
+
+    const isScheduleModalVisible = ref(false);
+    let editingSchedule: InteractiveExperienceScheduleBag | null = null;
+    const scheduleModalTitle = ref("");
+    const scheduleContent = ref("");
+    const scheduleCampuses = shallowRef<ListItemBag[]>([]);
+    const scheduleDataView = shallowRef<ListItemBag | null>(null);
+    const scheduleGroup = shallowRef<ListItemBag | null>(null);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description,
+        isActive,
+        name,
+        publicLabel,
+        experiencePhoto,
+        pushNotificationConfiguration,
+        pushNotificationTitle,
+        pushNotificationDetail,
+        welcomeTitle,
+        welcomeMessage,
+        welcomeHeaderImage,
+        noActionsTitle,
+        noActionsMessage,
+        noActionsHeaderImage,
+        actionBackgroundColor,
+        actionTextColor,
+        actionPrimaryButtonColor,
+        actionPrimaryButtonTextColor,
+        actionSecondaryButtonColor,
+        actionSecondaryButtonTextColor,
+        actionBackgroundImage,
+        actionCustomCss,
+        audienceBackgroundColor,
+        audienceTextColor,
+        audiencePrimaryColor,
+        audienceSecondaryColor,
+        audienceAccentColor,
+        audienceBackgroundImage,
+        audienceCustomCss];
+
+    const binaryFileTypeGuid = BinaryFiletype.Default;
+    const isActionAdvancedOptionsVisible = ref(false);
+    const isAudienceAdvancedOptionsVisible = ref(false);
+
+    const pushNotificationConfigurationItems: ListItemBag[] = [
+        {
+            value: InteractiveExperiencePushNotificationType.Never.toString(),
+            text: "Never"
+        },
+        {
+            value: InteractiveExperiencePushNotificationType.EveryAction.toString(),
+            text: "Every Action"
+        },
+        {
+            value: InteractiveExperiencePushNotificationType.SpecificActions.toString(),
+            text: "Specific Actions"
+        }
+    ];
+
+    const campusBehaviorItems: ListItemBag[] = [
+        {
+            value: InteractiveExperienceCampusBehavior.FilterSchedulesByCampusGeofences.toString(),
+            text: "Filter Schedules by Campus Geofences"
+        },
+        {
+            value: InteractiveExperienceCampusBehavior.DetermineCampusFromGeofence.toString(),
+            text: "Determine Campus from Geofence",
+        },
+        {
+            value: InteractiveExperienceCampusBehavior.UseIndividualsCampus.toString(),
+            text: "Use Individual's Campus"
+        }
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isPushActive = computed((): boolean => {
+        return pushNotificationConfiguration.value === InteractiveExperiencePushNotificationType.EveryAction.toString()
+            || pushNotificationConfiguration.value === InteractiveExperiencePushNotificationType.SpecificActions.toString();
+    });
+
+    const isDefaultCampusVisible = computed((): boolean => {
+        return campusBehavior.value === InteractiveExperienceCampusBehavior.DetermineCampusFromGeofence.toString()
+            || campusBehavior.value === InteractiveExperienceCampusBehavior.UseIndividualsCampus.toString();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the campus names for a schedule as a comma separated string.
+     *
+     * @param schedule The schedule whose campus names are to be returned.
+     *
+     * @returns A string that represents the campuses tied to the schedule.
+     */
+    function getScheduleCampusNames(schedule: InteractiveExperienceScheduleBag): string {
+        if (schedule.campuses && schedule.campuses.length) {
+            return schedule.campuses.map(c => c.text ?? "").join(", ");
+        }
+        else {
+            return "";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the "+" add button on the schedule grid is clicked.
+     */
+    function onAddScheduleClick(): void {
+        scheduleModalTitle.value = "Add Schedule";
+        editingSchedule = null;
+        scheduleContent.value = "";
+        scheduleCampuses.value = [];
+        scheduleDataView.value = null;
+        scheduleGroup.value = null;
+        isScheduleModalVisible.value = true;
+    }
+
+    /**
+     * Called when the pencil/edit button on the schedule grid is clicked.
+     *
+     * @param schedule The schedule to be edited.
+     */
+    function onEditScheduleClick(schedule: InteractiveExperienceScheduleBag): void {
+        scheduleModalTitle.value = "Edit Schedule";
+        editingSchedule = schedule;
+        scheduleContent.value = schedule.schedule?.value ?? "";
+        scheduleCampuses.value = schedule.campuses ?? [];
+        scheduleDataView.value = schedule.dataView ?? null;
+        scheduleGroup.value = schedule.group ?? null;
+        isScheduleModalVisible.value = true;
+    }
+
+    /**
+     * Called when a schedule is ready to be saved.
+     */
+    function onSaveSchedule(): void {
+        const calendar = new Calendar(scheduleContent.value);
+
+        let schedule = editingSchedule ?? {};
+        schedule.schedule = {
+            value: scheduleContent.value,
+            text: calendar.events[0].toFriendlyText()
+        };
+        schedule.campuses = scheduleCampuses.value;
+        schedule.dataView = scheduleDataView.value;
+        schedule.group = scheduleGroup.value;
+
+        if (!editingSchedule) {
+            schedules.value.push(schedule);
+        }
+
+        isScheduleModalVisible.value = false;
+    }
+
+    /**
+     * Called when the advanced options of the action section should be
+     * expaned or collapsed.
+     */
+    function onActionAdvancedOptionsClick(): void {
+        isActionAdvancedOptionsVisible.value = !isActionAdvancedOptionsVisible.value;
+    }
+
+    /**
+     * Called when the advanced options of the audience section should be
+     * expaned or collapsed.
+     */
+    function onAudienceAdvancedOptionsClick(): void {
+        isAudienceAdvancedOptionsVisible.value = !isAudienceAdvancedOptionsVisible.value;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(campusBehavior, props.modelValue.campusBehavior.toString());
+        updateRefValue(defaultCampus, props.modelValue.defaultCampus);
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(publicLabel, props.modelValue.publicLabel ?? "");
+        updateRefValue(experiencePhoto, props.modelValue.photoBinaryFile ?? null);
+        updateRefValue(pushNotificationConfiguration, props.modelValue.pushNotificationType.toString());
+        updateRefValue(pushNotificationTitle, props.modelValue.pushNotificationTitle ?? "");
+        updateRefValue(pushNotificationDetail, props.modelValue.pushNotificationDetail ?? "");
+        updateRefValue(welcomeTitle, props.modelValue.welcomeTitle ?? "");
+        updateRefValue(welcomeMessage, props.modelValue.welcomeMessage ?? "");
+        updateRefValue(welcomeHeaderImage, props.modelValue.welcomeHeaderImageBinaryFile ?? null);
+        updateRefValue(noActionsTitle, props.modelValue.noActionTitle ?? "");
+        updateRefValue(noActionsMessage, props.modelValue.noActionMessage ?? "");
+        updateRefValue(noActionsHeaderImage, props.modelValue.noActionHeaderImageBinaryFile ?? null);
+        updateRefValue(actionBackgroundColor, props.modelValue.actionBackgroundColor ?? "");
+        updateRefValue(actionTextColor, props.modelValue.actionTextColor ?? "");
+        updateRefValue(actionPrimaryButtonColor, props.modelValue.actionPrimaryButtonColor ?? "");
+        updateRefValue(actionPrimaryButtonTextColor, props.modelValue.actionPrimaryButtonTextColor ?? "");
+        updateRefValue(actionSecondaryButtonColor, props.modelValue.actionSecondaryButtonColor ?? "");
+        updateRefValue(actionSecondaryButtonTextColor, props.modelValue.actionSecondaryButtonTextColor ?? "");
+        updateRefValue(actionBackgroundImage, props.modelValue.actionBackgroundImageBinaryFile ?? null);
+        updateRefValue(actionCustomCss, props.modelValue.actionCustomCss ?? "");
+        updateRefValue(audienceBackgroundColor, props.modelValue.audienceBackgroundColor ?? "");
+        updateRefValue(audienceTextColor, props.modelValue.audienceTextColor ?? "");
+        updateRefValue(audiencePrimaryColor, props.modelValue.audiencePrimaryColor ?? "");
+        updateRefValue(audienceSecondaryColor, props.modelValue.audienceSecondaryColor ?? "");
+        updateRefValue(audienceAccentColor, props.modelValue.audienceAccentColor ?? "");
+        updateRefValue(audienceBackgroundImage, props.modelValue.audienceBackgroundImageBinaryFile ?? null);
+        updateRefValue(audienceCustomCss, props.modelValue.audienceCustomCss ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, campusBehavior, defaultCampus, schedules, ...propRefs], () => {
+        const newValue: InteractiveExperienceBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            campusBehavior: toNumber(campusBehavior.value),
+            defaultCampus: defaultCampus.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            publicLabel: publicLabel.value,
+            photoBinaryFile: experiencePhoto.value,
+            pushNotificationType: toNumber(pushNotificationConfiguration.value),
+            pushNotificationTitle: pushNotificationTitle.value,
+            pushNotificationDetail: pushNotificationDetail.value,
+            welcomeTitle: welcomeTitle.value,
+            welcomeMessage: welcomeMessage.value,
+            welcomeHeaderImageBinaryFile: welcomeHeaderImage.value,
+            noActionTitle: noActionsTitle.value,
+            noActionMessage: noActionsMessage.value,
+            noActionHeaderImageBinaryFile: noActionsHeaderImage.value,
+            actionBackgroundColor: actionBackgroundColor.value,
+            actionTextColor: actionTextColor.value,
+            actionPrimaryButtonColor: actionPrimaryButtonColor.value,
+            actionPrimaryButtonTextColor: actionPrimaryButtonTextColor.value,
+            actionSecondaryButtonColor: actionSecondaryButtonColor.value,
+            actionSecondaryButtonTextColor: actionSecondaryButtonTextColor.value,
+            actionBackgroundImageBinaryFile: actionBackgroundImage.value,
+            actionCustomCss: actionCustomCss.value,
+            audienceBackgroundColor: audienceBackgroundColor.value,
+            audienceTextColor: audienceTextColor.value,
+            audiencePrimaryColor: audiencePrimaryColor.value,
+            audienceSecondaryColor: audienceSecondaryColor.value,
+            audienceAccentColor: audienceAccentColor.value,
+            audienceBackgroundImageBinaryFile: audienceBackgroundImage.value,
+            audienceCustomCss: audienceCustomCss.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    // Watch for changes to name, and if the old value matches the public name
+    // then update the public name to the new value.
+    watch(name, (newValue, oldValue) => {
+        if (oldValue === publicLabel.value) {
+            publicLabel.value = newValue;
+        }
+    });
+</script>

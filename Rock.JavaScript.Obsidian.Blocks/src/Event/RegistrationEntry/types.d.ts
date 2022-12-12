@@ -235,6 +235,7 @@ export type RegistrationEntryState = {
     viewModel: RegistrationEntryBlockViewModel;
     currentStep: string;
     firstStep: string;
+    navBack: boolean;
     currentRegistrantIndex: number;
     currentRegistrantFormIndex: number;
     registrants: RegistrantInfo[];

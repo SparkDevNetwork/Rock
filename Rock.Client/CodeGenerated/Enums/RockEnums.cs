@@ -1131,6 +1131,15 @@ namespace Rock.Client.Enums.Event
 
     /// <summary>
     /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum InteractiveExperiencePushNotificationType
     {
         Never = 0x0,

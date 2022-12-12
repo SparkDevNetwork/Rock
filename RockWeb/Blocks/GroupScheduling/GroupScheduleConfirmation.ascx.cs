@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.SchedulerReceiveConfirmationEmails )]
 
     [BooleanField( "Require Decline Reasons",
-        Description = "If checked, a person must choose one of the ‘Decline Reasons’ to submit their decline status.",
+        Description = "If checked, a person must choose one of the 'Decline Reasons' to submit their decline status.",
         DefaultBooleanValue = true,
         Order = 5,
         Key = AttributeKey.RequireDeclineReasons )]
@@ -136,11 +136,11 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         protected const string ConfirmHeadingTemplateDefaultValue = @"
-<h2 class='margin-t-none'>{{ Person.NickName }}, you’re confirmed to serve.</h2>
-<p>Thanks for letting us know.  You’re confirmed for:</p>
+<h2 class='margin-t-none'>{{ Person.NickName }}, you're confirmed to serve.</h2>
+<p>Thanks for letting us know.  You're confirmed for:</p>
 
 {% capture attendanceIdList %}{% for ScheduledItem in ScheduledItems %}{{ ScheduledItem.Id }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
-{% assign lastDate = '''' %}
+{% assign lastDate = '' %}
 
 <p>
 {% for ScheduledItem in ScheduledItems %}
@@ -157,10 +157,10 @@ namespace RockWeb.Blocks.GroupScheduling
 </p><p class='margin-b-lg'>Thanks again!<br /></p>";
 
         protected const string DeclineHeadingTemplateDefaultValue = @"
-<h2 class='margin-t-none'>{{ Person.NickName }}, can’t make it?</h2>
-<p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
+<h2 class='margin-t-none'>{{ Person.NickName }}, can't make it?</h2>
+<p>Thanks for letting us know.  We'll try to schedule another person for:</p>
 {% capture attendanceIdList %}{% for ScheduledItem in ScheduledItems %}{{ ScheduledItem.Id }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
-{% assign lastDate = '''' %}
+{% assign lastDate = '' %}
 
 <p>
 {% for ScheduledItem in ScheduledItems %}
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.GroupScheduling
 </p>";
 
         protected const string DeclineMessageTemplateDefaultValue = @"
-<div class='alert alert-success'><strong>Thank You</strong> We’ll try to schedule another person for:
+<div class='alert alert-success'><strong>Thank You</strong> We'll try to schedule another person for:
 
 {% for ScheduledItem in ScheduledItems %}
   <br />{{ ScheduledItem.Occurrence.Group.Name }}
@@ -225,11 +225,11 @@ namespace RockWeb.Blocks.GroupScheduling
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the btnSubmit control.
+        /// Handles the Click event of the btnSubmitDeclineReason control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSubmit_Click( object sender, EventArgs e )
+        protected void btnSubmitDeclineReason_Click( object sender, EventArgs e )
         {
             if ( this.Page.IsValid )
             {
@@ -246,6 +246,10 @@ namespace RockWeb.Blocks.GroupScheduling
                 if ( PageParameter( PageParameterKey.ReturnUrl ).IsNotNullOrWhiteSpace() )
                 {
                     NavigateToPage( PageParameter( PageParameterKey.ReturnUrl ).AsGuid(), null );
+                }
+                else
+                {
+                    nbSaveDeclineReasonMessage.Visible = true;
                 }
             }
         }
@@ -488,7 +492,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             // block setting drives if required
             ddlDeclineReason.Required = GetAttributeValue( AttributeKey.RequireDeclineReasons ).AsBoolean();
-            this.btnSubmit.Visible = true;
+            this.btnSubmitDeclineReason.Visible = true;
 
             // decline Note
             dtbDeclineReasonNote.Label = GetAttributeValue( AttributeKey.DeclineNoteTitle ).ToString();
@@ -508,7 +512,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 {
                     nbError.Visible = true;
                 }
-                else if ( CurrentPerson != null && _selectedPerson != CurrentPerson )
+                else if ( CurrentPerson != null && _selectedPerson.Guid != CurrentPerson.Guid )
                 {
                     nbError.Visible = true;
                     nbError.Title = "Note:";

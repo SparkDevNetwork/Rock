@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 using Rock.CodeGeneration.Utility;
 
@@ -104,6 +105,14 @@ namespace Rock.CodeGeneration
             else if ( type == typeof( DateTimeOffset ) )
             {
                 return new PropertyDeclaration( "DateTimeOffset?", new[] { "System" } );
+            }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            {
+                return new PropertyDeclaration( type.Name, new[] { type.Namespace } );
+            }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Model") && type.GetCustomAttributes().FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" ) != null )
+            {
+                return new PropertyDeclaration( type.Name, new[] { type.Namespace } );
             }
             else
             {

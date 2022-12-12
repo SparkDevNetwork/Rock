@@ -111,6 +111,7 @@ export default defineComponent({
             viewModel: viewModel,
             firstStep: currentStep,
             currentStep: currentStep,
+            navBack: false,
             currentRegistrantFormIndex: 0,
             currentRegistrantIndex: 0,
             registrants: viewModel.session?.registrants || [getDefaultRegistrantInfo(null, viewModel, null)],
@@ -429,6 +430,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -436,6 +438,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -443,6 +446,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -450,6 +454,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -457,6 +462,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -464,6 +470,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -471,6 +478,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -487,7 +495,7 @@ export default defineComponent({
                     this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
                     this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 }
-
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -499,6 +507,7 @@ export default defineComponent({
                 else {
                     this.registrationEntryState.currentStep = Step.Success;
                 }
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -506,12 +515,14 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
         async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         }

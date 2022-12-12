@@ -34,6 +34,10 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
+    <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.vue" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.vue" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +59,8 @@
     <Folder Include="src\Engagement\Steps\" />
     <Folder Include="src\Engagement\Steps\StepFlow\" />
     <Folder Include="src\Event\" />
+    <Folder Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\" />
+    <Folder Include="src\Event\InteractiveExperiences\" />
     <Folder Include="src\Event\RegistrationEntry\" />
     <Folder Include="src\Example\" />
     <Folder Include="src\Finance\" />
@@ -113,6 +119,7 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.partial.ts" />
+    <TypeScriptCompile Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\costSummary.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\discountCodeForm.partial.ts" />
