@@ -109,7 +109,6 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     // script tags that have the same source.
     if (isScriptLoaded) {
         if (isScriptLoaded()) {
-            console.log(src, "isScriptLoaded true");
             return true;
         }
     }
@@ -120,11 +119,8 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
 
     if (thisScript.length > 0) {
         const promise = scriptLoadedPromise(thisScript[0]);
-        console.log(src, "script tag exists", promise);
         return promise;
     }
-
-    console.log(src, "Load it up");
 
     // Build the script tag that will be dynamically loaded.
     const script = document.createElement("script");

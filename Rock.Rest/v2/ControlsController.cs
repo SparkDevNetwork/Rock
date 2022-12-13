@@ -89,7 +89,6 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">Address details to validate</param>
         /// <returns>Validation information and a single string representation of the address</returns>
-        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "AddressControlGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "b477fb6d-4a35-45ec-ac98-b6b5c3727375" )]
@@ -2266,11 +2265,10 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">Address details to validate</param>
         /// <returns>Validation information and a single string representation of the address</returns>
-        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "LocationAddressPickerValidateAddress" )]
         [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
-        public IHttpActionResult LocationAddewaaPickerValidateAddress( [FromBody] LocationAddressPickerValidateAddressOptionsBag options )
+        public IHttpActionResult LocationAddressPickerValidateAddress( [FromBody] LocationAddressPickerValidateAddressOptionsBag options )
         {
             var editedLocation = new Location();
             string errorMessage = null;

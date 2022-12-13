@@ -168,42 +168,42 @@
         const result = await post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
 
         if (result.isSuccess && result.data) {
-            const x = result.data;
+            const data = result.data;
 
             // Label and rules are static
-            country.isVisible = x.showCountrySelection;
+            country.isVisible = data.showCountrySelection;
 
             // Label is static
-            address1.isVisible = x.addressLine1Requirement != RequirementLevel.Unavailable;
-            address1.rules = getRules(x.addressLine1Requirement);
+            address1.isVisible = data.addressLine1Requirement != RequirementLevel.Unavailable;
+            address1.rules = getRules(data.addressLine1Requirement);
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
-            address2.isVisible = x.addressLine2Requirement == RequirementLevel.Required || (props.showAddressLine2 && x.addressLine2Requirement != RequirementLevel.Unavailable);
-            address2.rules = getRules(x.addressLine2Requirement);
+            address2.isVisible = data.addressLine2Requirement == RequirementLevel.Required || (props.showAddressLine2 && data.addressLine2Requirement != RequirementLevel.Unavailable);
+            address2.rules = getRules(data.addressLine2Requirement);
 
-            city.isVisible = x.cityRequirement != RequirementLevel.Unavailable;
-            city.rules = getRules(x.cityRequirement);
-            city.label = x.cityLabel ?? city.label;
+            city.isVisible = data.cityRequirement != RequirementLevel.Unavailable;
+            city.rules = getRules(data.cityRequirement);
+            city.label = data.cityLabel ?? city.label;
 
             // County / Locality is only shown if it's required or it's requested by the prop
-            county.isVisible = x.localityRequirement == RequirementLevel.Required || (props.showCounty && x.localityRequirement != RequirementLevel.Unavailable);
-            county.rules = getRules(x.localityRequirement);
-            county.label = x.localityLabel ?? county.label;
+            county.isVisible = data.localityRequirement == RequirementLevel.Required || (props.showCounty && data.localityRequirement != RequirementLevel.Unavailable);
+            county.rules = getRules(data.localityRequirement);
+            county.label = data.localityLabel ?? county.label;
 
-            state.isVisible = x.stateRequirement != RequirementLevel.Unavailable;
-            state.rules = getRules(x.stateRequirement);
-            state.label = x.stateLabel ?? state.label;
+            state.isVisible = data.stateRequirement != RequirementLevel.Unavailable;
+            state.rules = getRules(data.stateRequirement);
+            state.label = data.stateLabel ?? state.label;
 
-            zip.isVisible = x.postalCodeRequirement != RequirementLevel.Unavailable;
-            zip.rules = getRules(x.postalCodeRequirement);
-            zip.label = x.postalCodeLabel ?? zip.label;
+            zip.isVisible = data.postalCodeRequirement != RequirementLevel.Unavailable;
+            zip.rules = getRules(data.postalCodeRequirement);
+            zip.label = data.postalCodeLabel ?? zip.label;
 
-            countryOptions.value = x.countries ?? [];
-            stateOptions.value = x.states ?? [];
-            hasStateList.value = x.hasStateList;
+            countryOptions.value = data.countries ?? [];
+            stateOptions.value = data.states ?? [];
+            hasStateList.value = data.hasStateList;
 
-            const countryValue = (x.selectedCountry || x.defaultCountry) ?? "";
-            const stateValue = x.defaultState ?? "";
+            const countryValue = (data.selectedCountry || data.defaultCountry) ?? "";
+            const stateValue = data.defaultState ?? "";
 
             // If we don't have a country set yet, and we have a good countryValue, set to that
             if (!internalValue.country && countryValue) {

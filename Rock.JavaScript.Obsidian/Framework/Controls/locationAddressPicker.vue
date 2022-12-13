@@ -55,9 +55,6 @@
     const props = defineProps({
         ...standardRockFormFieldProps,
 
-        /**
-         * Geographical Point or Polygon coordinates in Well Known Text format
-         */
         modelValue: {
             type: Object as PropType<AddressControlBag>,
             required: true
