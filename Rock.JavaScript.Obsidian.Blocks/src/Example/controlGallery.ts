@@ -62,7 +62,7 @@ import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import ListBox from "@Obsidian/Controls/listBox";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
-import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
+import AddressControl from "@Obsidian/Controls/addressControl.vue";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import Switch from "@Obsidian/Controls/switch";
 import Toggle from "@Obsidian/Controls/toggle";
@@ -102,7 +102,7 @@ import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import LocationPicker from "@Obsidian/Controls/locationPicker";
+import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
@@ -185,10 +185,13 @@ import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
 import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
+import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.vue";
 import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
 import WordCloud from "@Obsidian/Controls/wordCloud.vue";
 import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.vue";
 import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.vue";
+import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.vue";
+import LocationPicker from "@Obsidian/Controls/locationPicker.vue";
 
 // #region Gallery Support
 
@@ -1874,8 +1877,8 @@ const addressControlGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref(getDefaultAddressControlModel()),
-            importCode: getControlImportPath("addressControl"),
+            value: ref({}),
+            importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
     },
@@ -2856,20 +2859,20 @@ const categoryPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates location picker */
-const locationPickerGallery = defineComponent({
-    name: "LocationPickerGallery",
+/** Demonstrates location item picker */
+const locationItemPickerGallery = defineComponent({
+    name: "LocationItemPickerGallery",
     components: {
         GalleryAndResult,
         CheckBox,
-        LocationPicker
+        LocationItemPicker
     },
     setup() {
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("locationPicker"),
-            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+            importCode: getControlImportPath("locationItemPicker"),
+            exampleCode: `<LocationItemPicker label="Location" v-model="value" :multiple="false" />`
         };
     },
     template: `
@@ -2878,7 +2881,7 @@ const locationPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+    <LocationItemPicker label="Location" v-model="value" :multiple="multiple" />
 
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
@@ -6357,6 +6360,8 @@ const contentDropDownPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+
 /** Demonstrates a wordcloud */
 const wordCloudGallery = defineComponent({
     name: "WordCloudGallery",
@@ -6543,6 +6548,70 @@ const groupTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Location Address Picker */
+const locationAddressPickerGallery = defineComponent({
+    name: "LocationAddressPickerGallery",
+    components: {
+        GalleryAndResult,
+        LocationAddressPicker,
+        DropDownList,
+        CheckBox,
+        TextBox,
+        Toggle
+    },
+    setup() {
+        return {
+            value: ref({}),
+            importCode: getSfcControlImportPath("locationAddressPicker"),
+            exampleCode: `<LocationAddressPicker v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <LocationAddressPicker label="Location Address Picker" v-model="value" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates location picker */
+const locationPickerGallery = defineComponent({
+    name: "LocationPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        LocationPicker
+    },
+    setup() {
+        return {
+            value: ref(null),
+            importCode: getControlImportPath("locationPicker"),
+            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -6593,7 +6662,7 @@ const controlGalleryComponents: Record<string, Component> = [
     sectionHeaderGallery,
     sectionContainerGallery,
     categoryPickerGallery,
-    locationPickerGallery,
+    locationItemPickerGallery,
     copyButtonGallery,
     entityTagListGallery,
     followingGallery,
@@ -6666,6 +6735,8 @@ const controlGalleryComponents: Record<string, Component> = [
     wordCloudGallery,
     eventCalendarPickerGallery,
     groupTypePickerGallery,
+    locationAddressPickerGallery,
+    locationPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

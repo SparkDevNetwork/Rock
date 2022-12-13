@@ -21,26 +21,19 @@
 // </copyright>
 //
 
-/** Address Control View Model */
-export type AddressControlBag = {
-    /** Gets or sets the city. */
-    city?: string | null;
+import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
-    /** Gets or sets the country. */
-    country?: string | null;
+/** The results from the ValidateAddress API action of the LocationAddressPicker control. */
+export type LocationAddressPickerValidateAddressResultsBag = {
+    /** If the address is valid, this is an HTML string of the address */
+    address?: AddressControlBag | null;
 
-    /** Gets or sets the locality. */
-    locality?: string | null;
+    /** If the address is valid, this is an HTML string of the address */
+    addressString?: string | null;
 
-    /** Gets or sets the postal code. */
-    postalCode?: string | null;
+    /** If invalid, this is the message stating what is wrong with the given address */
+    errorMessage?: string | null;
 
-    /** Gets or sets the state. */
-    state?: string | null;
-
-    /** Gets or sets the street1. */
-    street1?: string | null;
-
-    /** Gets or sets the street2. */
-    street2?: string | null;
+    /** Whether the gvien address is valid or not */
+    isValid: boolean;
 };

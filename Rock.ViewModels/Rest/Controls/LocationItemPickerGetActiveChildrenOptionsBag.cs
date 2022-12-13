@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the GetActiveChildren API action of
     /// the LocationPicker control.
     /// </summary>
-    public class LocationPickerGetActiveChildrenOptionsBag
+    public class LocationItemPickerGetActiveChildrenOptionsBag
     {
         /// <summary>
         /// Gets or sets the unique identifier of the parent location whose

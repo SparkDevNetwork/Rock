@@ -28,6 +28,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Extension;
+using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -77,6 +78,157 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Address Control
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlGetConfiguration" )]
+        [Rock.SystemGuid.RestActionGuid( "b477fb6d-4a35-45ec-ac98-b6b5c3727375" )]
+        public IHttpActionResult AddressControlGetConfiguration( [FromBody] AddressControlGetConfigurationOptionsBag options )
+        {
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var showCountrySelection = globalAttributesCache.GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
+
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? "US" : options.CountryCode;
+
+            var orgStateCode = globalAttributesCache.OrganizationState;
+            var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
+
+
+            // Generate List of Countries
+            var countries = new List<ListItemBag>();
+            if (showCountrySelection)
+            {
+                var countryValues = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .ToList();
+
+                // Move default country to the top of the list
+                if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
+                {
+                    var defaultCountry = countryValues
+                        .Where( v => v.Value.Equals( defaultCountryCode, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault();
+                    if ( defaultCountry != null )
+                    {
+                        countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
+                        countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
+                        countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
+                    }
+                }
+
+                foreach ( var country in countryValues )
+                {
+                    countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? country.Value : country.Description, Value = country.Value } );
+                }
+            }
+
+            // Generate List of States
+            string countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                .DefinedValues
+                .Where( v => v.Value.Equals( countryCode, StringComparison.OrdinalIgnoreCase ) )
+                .Select( v => v.Guid )
+                .FirstOrDefault()
+                .ToString();
+
+            List<ListItemBag> states = null;
+            var hasStateList = false;
+
+            if ( countryGuid.IsNotNullOrWhiteSpace() )
+            {
+                var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+
+                states = definedType
+                    .DefinedValues
+                    .Where( v =>
+                        (
+                            v.AttributeValues.ContainsKey( "Country" ) &&
+                            v.AttributeValues["Country"] != null &&
+                            v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
+                        ) ||
+                        (
+                            ( !v.AttributeValues.ContainsKey( "Country" ) || v.AttributeValues["Country"] == null ) &&
+                            v.Attributes.ContainsKey( "Country" ) &&
+                            v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
+                        ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag { Value = v.Value, Text = v.Value } )
+                    .ToList();
+
+                hasStateList = states.Any();
+            }
+
+            // Get Labels and Validation Rules
+            string cityLabel = null;
+            string localityLabel = null;
+            string stateLabel = null;
+            string postalCodeLabel = null;
+            DataEntryRequirementLevelSpecifier addressLine1Requirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier addressLine2Requirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier cityRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier localityRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier stateRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier postalCodeRequirement = DataEntryRequirementLevelSpecifier.Optional;
+
+
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                .DefinedValues
+                .Where( v => v.Value.Equals( countryCode, StringComparison.OrdinalIgnoreCase ) )
+                .FirstOrDefault();
+
+            if (countryValue != null)
+            {
+                cityLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressCityLabel ).ToStringOrDefault( "City" );
+                localityLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLocalityLabel ).ToStringOrDefault( "Locality" );
+                stateLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressStateLabel ).ToStringOrDefault( "State" );
+                postalCodeLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).ToStringOrDefault( "Postal Code" );
+
+                var requirementField = new DataEntryRequirementLevelFieldType();
+
+                addressLine1Requirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                addressLine2Requirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                cityRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                localityRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                stateRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                postalCodeRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+            }
+
+            return Ok( new AddressControlConfigurationBag
+            {
+                ShowCountrySelection = showCountrySelection,
+                DefaultCountry = defaultCountryCode,
+                DefaultState = defaultStateCode,
+                Countries = countries,
+                States = states,
+
+                HasStateList = hasStateList,
+                SelectedCountry = countryCode,
+
+                CityLabel = cityLabel,
+                LocalityLabel = localityLabel,
+                StateLabel = stateLabel,
+                PostalCodeLabel = postalCodeLabel,
+
+                AddressLine1Requirement = (RequirementLevel) addressLine1Requirement,
+                AddressLine2Requirement = ( RequirementLevel ) addressLine2Requirement,
+                CityRequirement = (RequirementLevel) cityRequirement,
+                LocalityRequirement = (RequirementLevel) localityRequirement,
+                StateRequirement = (RequirementLevel) stateRequirement,
+                PostalCodeRequirement = (RequirementLevel) postalCodeRequirement,
+            } );
         }
 
         #endregion
@@ -2134,7 +2286,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Location Picker
+        #region Location Item Picker
 
         /// <summary>
         /// Gets the child locations, excluding inactive items.
@@ -2143,9 +2295,9 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "LocationPickerGetActiveChildren" )]
+        [System.Web.Http.Route( "LocationItemPickerGetActiveChildren" )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
-        public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptionsBag options )
+        public IHttpActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
             IQueryable<Location> qry;
 
@@ -2214,6 +2366,64 @@ namespace Rock.Rest.v2
 
                 return Ok( locationNameList );
             }
+        }
+
+        #endregion
+
+        #region Location Address Picker
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LocationAddressPickerValidateAddress" )]
+        [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
+        public IHttpActionResult LocationAddressPickerValidateAddress( [FromBody] LocationAddressPickerValidateAddressOptionsBag options )
+        {
+            var editedLocation = new Location();
+            string errorMessage = null;
+            string addressString = null;
+
+            editedLocation.Street1 = options.Street1;
+            editedLocation.Street2 = options.Street2;
+            editedLocation.City = options.City;
+            editedLocation.State = options.State;
+            editedLocation.PostalCode = options.PostalCode;
+            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
+
+            var locationService = new LocationService( new RockContext() );
+
+            string validationMessage;
+
+            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
+
+            if ( !isValid )
+            {
+                errorMessage = validationMessage;
+            }
+            else
+            {
+                editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+            }
+
+            return Ok( new
+            {
+                ErrorMessage = errorMessage,
+                IsValid = isValid,
+                AddressString = addressString,
+                Address = new AddressControlBag
+                {
+                    Street1 = editedLocation.Street1,
+                    Street2 = editedLocation.Street2,
+                    City = editedLocation.City,
+                    State = editedLocation.State,
+                    PostalCode = editedLocation.PostalCode,
+                    Country = editedLocation.Country
+                }
+            } );
         }
 
         #endregion

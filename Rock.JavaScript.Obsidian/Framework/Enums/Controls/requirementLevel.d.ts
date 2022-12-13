@@ -21,26 +21,20 @@
 // </copyright>
 //
 
-/** Address Control View Model */
-export type AddressControlBag = {
-    /** Gets or sets the city. */
-    city?: string | null;
+/**
+ * Requirement level of an input field. Based off Rock.Field.Types.DataEntryRequirementLevelSpecifier
+ * for transfer to/from Obsidian controls.
+ */
+export const enum RequirementLevel {
+    /** No requirement level has been specified for this field. */
+    Unspecified = 0,
 
-    /** Gets or sets the country. */
-    country?: string | null;
+    /** The field is available but not required. */
+    Optional = 1,
 
-    /** Gets or sets the locality. */
-    locality?: string | null;
+    /** The field is available and required. */
+    Required = 2,
 
-    /** Gets or sets the postal code. */
-    postalCode?: string | null;
-
-    /** Gets or sets the state. */
-    state?: string | null;
-
-    /** Gets or sets the street1. */
-    street1?: string | null;
-
-    /** Gets or sets the street2. */
-    street2?: string | null;
-};
+    /** The field is not available. */
+    Unavailable = 3
+}

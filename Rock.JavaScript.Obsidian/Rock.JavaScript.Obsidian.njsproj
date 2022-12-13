@@ -33,6 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
+    <Content Include="Framework\Controls\addressControl.vue" />
     <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\buttonGroup.vue" />
     <Content Include="Framework\Controls\cacheabilityPicker.vue" />
@@ -49,10 +50,12 @@
     <Content Include="Framework\Controls\groupTypePicker.vue" />
     <Content Include="Framework\Controls\intervalPicker.vue" />
     <Content Include="Framework\Controls\kpi.vue" />
+    <Content Include="Framework\Controls\locationAddressPicker.vue" />
     <Content Include="Framework\Controls\monthDayPicker.vue" />
     <Content Include="Framework\Controls\monthYearPicker.vue" />
     <Content Include="Framework\Controls\scheduleBuilder.vue" />
     <Content Include="Framework\Controls\timeIntervalPicker.vue" />
+    <Content Include="Framework\Controls\treeItemPicker.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\wordCloud.vue" />
     <Content Include="Framework\Controls\workflowActionTypePicker.vue" />
@@ -218,13 +221,12 @@
     <TypeScriptCompile Include="Framework\Controls\groupMemberPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\interactionChannelPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
-    <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\locationItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockFormFieldError.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepProgramPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\remoteAuthsPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
-    <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\categoryPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldTypeEditor.ts" />
@@ -246,7 +248,6 @@
     <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
-    <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
     <TypeScriptCompile Include="Framework\Controls\workflowTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
@@ -279,6 +280,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\buttonOptions.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\requirementLevel.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\rockCacheabilityType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\notificationClassification.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\segmentCriteria.d.ts" />
@@ -878,6 +880,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assessmentTypePickerGetAssessmentTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assetStorageProviderPickerGetAssetStorageProvidersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\auditDetailGetAuditDetailsOptionsBag.d.ts" />
@@ -916,7 +920,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypePickerGetGroupTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationAddressPickerValidateAddressOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationAddressPickerValidateAddressResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationItemPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricCategoryPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricItemPickerGetChildrenOptionsBag.d.ts" />

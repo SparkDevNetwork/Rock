@@ -377,7 +377,7 @@ export default defineComponent({
     },
 
     template: `
-<div>
+<div style="overflow-x: hidden; max-width: 100%;">
     <ul class="rocktree">
         <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
     </ul>

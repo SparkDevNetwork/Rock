@@ -27,7 +27,7 @@ import { Guid } from "@Obsidian/Types";
  * The options that can be passed to the GetActiveChildren API action of
  * the LocationPicker control.
  */
-export type LocationPickerGetActiveChildrenOptionsBag = {
+export type LocationItemPickerGetActiveChildrenOptionsBag = {
     /**
      * Gets or sets the unique identifier of the parent location whose
      * children are to be enumerated.
@@ -35,7 +35,7 @@ export type LocationPickerGetActiveChildrenOptionsBag = {
     guid?: Guid | null;
 
     /**
-     * Gets or sets the root location unique identifier. This is used if Rock.ViewModels.Rest.Controls.LocationPickerGetActiveChildrenOptionsBag.Guid
+     * Gets or sets the root location unique identifier. This is used if Rock.ViewModels.Rest.Controls.LocationItemPickerGetActiveChildrenOptionsBag.Guid
      * is empty to specify the root location to limit the tree to.
      */
     rootLocationGuid?: Guid | null;

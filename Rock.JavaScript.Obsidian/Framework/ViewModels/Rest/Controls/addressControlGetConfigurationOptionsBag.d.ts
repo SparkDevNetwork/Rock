@@ -21,26 +21,14 @@
 // </copyright>
 //
 
-/** Address Control View Model */
-export type AddressControlBag = {
-    /** Gets or sets the city. */
-    city?: string | null;
+/**
+ * The options that can be passed to the GetConfiguration API action of
+ * the AddressControl control.
+ */
+export type AddressControlGetConfigurationOptionsBag = {
+    /** The 2-character code name of the selected country */
+    countryCode?: string | null;
 
-    /** Gets or sets the country. */
-    country?: string | null;
-
-    /** Gets or sets the locality. */
-    locality?: string | null;
-
-    /** Gets or sets the postal code. */
-    postalCode?: string | null;
-
-    /** Gets or sets the state. */
-    state?: string | null;
-
-    /** Gets or sets the street1. */
-    street1?: string | null;
-
-    /** Gets or sets the street2. */
-    street2?: string | null;
+    /** Whether or not to use an abbreviated form of the country name in the list */
+    useCountryAbbreviation: boolean;
 };

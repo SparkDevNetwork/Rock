@@ -1,62 +1,72 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="modelValue" v-bind="formFieldProps" :name="'picker' + id">
-        <template #default="{uniqueId, field}">
+        <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
-                <div class="picker picker-select rollover-container" :class="pickerClass">
-                    <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu">
-                        <i :class="pickerIconClass"></i>
-                        <slot name="innerLabel"><span class="selected-names">{{innerLabel}}</span></slot>
-                        <b class="fa fa-caret-down pull-right"></b>
-                    </a>
+                <slot name="prepend" :isInputGroupSupported="true" />
+                <div :class="{ 'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend }">
+                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                    <div class="picker picker-select rollover-container" :class="pickerClass">
+                        <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend }">
+                            <i :class="pickerIconClass"></i>
+                            <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
+                            <b class="fa fa-caret-down pull-right"></b>
+                        </a>
 
-                    <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onAction('clear')">
-                        <i class="fa fa-times"></i>
-                    </a>
+                        <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onAction('clear')">
+                            <i class="fa fa-times"></i>
+                        </a>
 
-                    <Fullscreen v-if="internalShowPopup" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
-                        <!-- Optional header area for picker content area. If you provide content for the header or enable showing the fullscreen button, this will show -->
-                        <div class="picker-search-header picker-header" v-if="$slots.pickerContentHeader || $slots.pickerContentHeading || pickerContentHeadingText || showFullscreenButton">
-                            <!-- Override entire header area with `pickerContentHeader` slot -->
-                            <slot name="pickerContentHeader">
-                                <!-- Override heading, but keep fullscreen button intact with this `pickerContentHeading` slot, or specify heading text with `pickerContentHeadingText` prop -->
-                                <slot name="pickerContentHeading">
-                                    <h4>{{ pickerContentHeadingText }}</h4>
-                                </slot>
-                                <!-- Show this fullscreen button in the header if enabled -->
-                                <RockButton
-                                            v-if="showFullscreenButton"
-                                            @click="internalIsFullscreen = !internalIsFullscreen"
-                                            :btnType="fullscreenButtonType"
-                                            class="ml-auto w-auto"
-                                            title="Toggle Fullscreen"
-                                            aria-label="Toggle Fullscreen"><i class="fa fa-expand"></i></RockButton>
-                            </slot>
-                        </div>
-
-                        <!-- Main Picker Content via default slot -->
-                        <div class="scrollbar-thin picker-body" :style="pickerMenuInnerStyles">
-                            <slot />
-                        </div>
-
-                        <!-- Actions Buttons -->
-                        <div class="picker-actions">
-                            <!-- Main Action Buttons: Overridable via `mainPickerActions` slot, or just configure with props -->
-                            <slot name="mainPickerActions" v-if="!hideMainActionButtons">
-                                <RockButton :btnSize="selectButton.size" :btnType="selectButton.type" class="picker-btn" @click.prevent.stop="onAction('primary')">
-                                    <slot name="primaryButtonLabel">{{primaryButtonLabel}}</slot>
-                                </RockButton>
-                                <RockButton :btnSize="cancelButton.size" :btnType="cancelButton.type" class="picker-cancel" @click.prevent.stop="onAction('secondary')">
-                                    <slot name="secondaryButtonLabel">{{secondaryButtonLabel}}</slot>
-                                </RockButton>
-                            </slot>
-                            <!-- Custom Action Buttons: `customPickerActions` slot allows you to add additional buttons to the right -->
-                            <div v-if="$slots.customPickerActions" class="pull-right">
-                                <slot name="customPickerActions" />
+                        <Fullscreen v-if="internalShowPopup" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
+                            <!-- Optional "super header" area for things such as a means to switch between picker types -->
+                            <div class="picker-mode-options" v-if="$slots.pickerContentSuperHeader">
+                                <slot name="pickerContentSuperHeader"></slot>
                             </div>
-                        </div>
-                    </Fullscreen>
+
+                            <!-- Optional header area for picker header content. If you provide content for the header or enable showing the fullscreen button, this will show -->
+                            <div class="picker-search-header picker-header" v-if="$slots.pickerContentHeader || $slots.pickerContentHeading || pickerContentHeadingText || showFullscreenButton">
+                                <!-- Override entire header area with `pickerContentHeader` slot -->
+                                <slot name="pickerContentHeader">
+                                    <!-- Override heading, but keep fullscreen button intact with this `pickerContentHeading` slot, or specify heading text with `pickerContentHeadingText` prop -->
+                                    <slot name="pickerContentHeading">
+                                        <h4>{{ pickerContentHeadingText }}</h4>
+                                    </slot>
+                                    <!-- Show this fullscreen button in the header if enabled -->
+                                    <RockButton
+                                                v-if="showFullscreenButton"
+                                                @click="internalIsFullscreen = !internalIsFullscreen"
+                                                :btnType="fullscreenButtonType"
+                                                class="ml-auto w-auto"
+                                                title="Toggle Fullscreen"
+                                                aria-label="Toggle Fullscreen"><i class="fa fa-expand"></i></RockButton>
+                                </slot>
+                            </div>
+
+                            <!-- Main Picker Content via default slot -->
+                            <div class="scrollbar-thin picker-body" :style="pickerMenuInnerStyles">
+                                <slot />
+                            </div>
+
+                            <!-- Actions Buttons -->
+                            <div class="picker-actions">
+                                <!-- Main Action Buttons: Overridable via `mainPickerActions` slot, or just configure with props -->
+                                <slot name="mainPickerActions" v-if="!hideMainActionButtons">
+                                    <RockButton :btnSize="selectButton.size" :btnType="selectButton.type" class="picker-btn" @click.prevent.stop="onAction('primary')">
+                                        <slot name="primaryButtonLabel">{{ primaryButtonLabel }}</slot>
+                                    </RockButton>
+                                    <RockButton :btnSize="cancelButton.size" :btnType="cancelButton.type" class="picker-cancel" @click.prevent.stop="onAction('secondary')">
+                                        <slot name="secondaryButtonLabel">{{ secondaryButtonLabel }}</slot>
+                                    </RockButton>
+                                </slot>
+                                <!-- Custom Action Buttons: `customPickerActions` slot allows you to add additional buttons to the right -->
+                                <div v-if="$slots.customPickerActions" class="pull-right">
+                                    <slot name="customPickerActions" />
+                                </div>
+                            </div>
+                        </Fullscreen>
+                    </div>
                 </div>
+                <slot name="append" :isInputGroupSupported="true" />
             </div>
         </template>
     </RockFormField>
@@ -91,7 +101,8 @@
 }
 
 .picker-menu {
-    --body-background: var(--panel-bg)
+    --body-background: var(--panel-bg);
+    overflow-y: visible;
 }
 
 .picker-menu.is-fullscreen {
@@ -106,6 +117,11 @@
 
 .picker-body {
     flex: 1;
+}
+
+.has-ig-prepend {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
 }
 </style>
 
@@ -258,7 +274,7 @@
          */
         showFullscreenButton: {
             type: Boolean as PropType<boolean>,
-            default: ""
+            default: false
         },
     });
 
@@ -298,7 +314,7 @@
     const pickerMenuInnerStyles = computed<string>(() => {
         let height = internalIsFullscreen.value ? "100%" : props.pickerContentBoxHeight;
 
-        return `height: ${height}; overflow-x: hidden; overflow-y: ${props.disablePickerContentBoxScroll ? "hidden" : "scroll"};`;
+        return `height: ${height}; overflow-x: visible; overflow-y: ${props.disablePickerContentBoxScroll ? "visible" : "auto"};`;
     });
 
     const pickerMenuStyles = computed<string>(() => {

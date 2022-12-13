@@ -389,6 +389,8 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\AddressControlConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\AddressControlGetConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusPickerGetCampusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
@@ -398,6 +400,9 @@
     <Compile Include="Rest\Controls\GeoPickerSettingsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGoogleMapSettingsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGetGoogleMapSettingsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LocationAddressPickerValidateAddressResultsBag.cs" />
+    <Compile Include="Rest\Controls\LocationAddressPickerValidateAddressOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LocationItemPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowActionTypePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />
@@ -441,7 +446,6 @@
     <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
     <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
     <Compile Include="Rest\Controls\FollowingSetFollowingOptionsBag.cs" />
-    <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />

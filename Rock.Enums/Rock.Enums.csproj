@@ -67,6 +67,7 @@
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
     <Compile Include="Controls\MergeTemplateOwnership.cs" />
+    <Compile Include="Controls\RequirementLevel.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
     <Compile Include="Core\AddressInvalidReason.cs" />
     <Compile Include="Core\AuditType.cs" />

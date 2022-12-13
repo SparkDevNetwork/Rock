@@ -15,14 +15,15 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
+using System;
 
-namespace Rock.ViewModels.Controls
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Address Control View Model
+    /// The options that can be passed to the ValidateAddress API action of
+    /// the LocationAddressPicker control.
     /// </summary>
-    public sealed class AddressControlBag : IViewModel
+    public class LocationAddressPickerValidateAddressOptionsBag
     {
         /// <summary>
         /// Gets or sets the street1.
@@ -55,14 +56,6 @@ namespace Rock.ViewModels.Controls
         /// The state.
         /// </value>
         public string State { get; set; }
-
-        /// <summary>
-        /// Gets or sets the locality.
-        /// </summary>
-        /// <value>
-        /// The locality/county.
-        /// </value>
-        public string Locality { get; set; }
 
         /// <summary>
         /// Gets or sets the postal code.
