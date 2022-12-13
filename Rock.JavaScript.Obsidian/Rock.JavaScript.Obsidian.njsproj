@@ -38,6 +38,8 @@
     <Content Include="Framework\Controls\cacheabilityPicker.vue" />
     <Content Include="Framework\Controls\campusPicker.vue" />
     <Content Include="Framework\Controls\contentDropDownPicker.vue" />
+    <Content Include="Framework\Controls\datePickerBase.vue" />
+    <Content Include="Framework\Controls\datePicker.vue" />
     <Content Include="Framework\Controls\dayOfWeekPicker.vue" />
     <Content Include="Framework\Controls\definedValueEditor.vue" />
     <Content Include="Framework\Controls\definedValuePicker.vue" />
@@ -394,7 +396,6 @@
     <TypeScriptCompile Include="Framework\Controls\countdownTimer.ts" />
     <TypeScriptCompile Include="Framework\Controls\currencyBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\datePartsPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\datePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\dateRangePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\dateTimePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\dropDownList.ts" />

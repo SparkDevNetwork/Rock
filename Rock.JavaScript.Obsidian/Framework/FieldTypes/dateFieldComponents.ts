@@ -22,7 +22,7 @@ import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.vue";
 import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -302,7 +302,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

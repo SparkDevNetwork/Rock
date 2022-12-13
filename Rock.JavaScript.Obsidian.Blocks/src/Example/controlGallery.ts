@@ -56,7 +56,7 @@ import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.vue";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import ListBox from "@Obsidian/Controls/listBox";
@@ -1293,8 +1293,24 @@ const datePickerGallery = defineComponent({
             date: ref<string | null>(null),
             displayCurrentOption: ref(false),
             isCurrentDateOffset: ref(false),
+            disableForceParse: ref(false),
+            disableShowOnFocus: ref(false),
+            disableHighlightToday: ref(false),
+            disallowFutureDateSelection: ref(false),
+            disallowPastDateSelection: ref(false),
+            startView: ref(0),
+            viewOptions: [{ value: 0, text: "Month" }, { value: 1, text: "Year" }, { value: 2, text: "Decade" }],
             importCode: getControlImportPath("datePicker"),
-            exampleCode: `<DatePicker label="Date" v-model="date" :displayCurrentOption="false" :isCurrentDateOffset="false" />`
+            exampleCode: `<DatePicker label="Date" v-model="date"
+    :displayCurrentOption="false"
+    :isCurrentDateOffset="false"
+    :disableForceParse="false"
+    :disableShowOnFocus="false"
+    :disableHighlightToday="false"
+    :disallowFutureDateSelection="false"
+    :disallowPastDateSelection="false"
+    :startView="startView"
+/>`
         };
     },
     template: `

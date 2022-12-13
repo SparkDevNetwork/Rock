@@ -28,7 +28,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import Loading from "@Obsidian/Controls/loading";
 import PrimaryBlock from "@Obsidian/Controls/primaryBlock";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.vue";
 import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";

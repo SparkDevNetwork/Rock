@@ -276,11 +276,11 @@
 </template>
 
 <style scoped>
-.recurrence-pattern-specific-date>ul>li>a {
+.recurrence-pattern-specific-date > ul > li > a {
     display: none;
 }
 
-.recurrence-pattern-specific-date>ul:hover>li>a {
+.recurrence-pattern-specific-date > ul:hover > li > a {
     display: initial;
 }
 </style>
@@ -288,7 +288,8 @@
 <script setup lang="ts">
     import { PropType, computed, ref, shallowRef, watch } from "vue";
     import CheckBoxList from "./checkBoxList";
-    import DatePicker, { DatePickerBase } from "./datePicker";
+    import DatePickerBase from "./datePickerBase.vue";
+    import DatePicker from "./datePicker.vue";
     import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
     import DateTimePicker from "./dateTimePicker";
     import DropDownList from "./dropDownList";

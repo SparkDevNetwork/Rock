@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import { defineComponent } from "vue";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";

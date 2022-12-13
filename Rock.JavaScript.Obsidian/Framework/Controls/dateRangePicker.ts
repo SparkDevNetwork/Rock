@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
-import { DatePickerBase } from "./datePicker";
+import DatePickerBase from "./datePickerBase.vue";
 
 export type DateRangeParts = {
     lowerValue?: string | null,
