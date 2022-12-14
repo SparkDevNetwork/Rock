@@ -185,6 +185,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
+                ,[p].Gender
                 ,COUNT(*) [MatchCount]
             FROM [PhoneNumber] [pn]
             JOIN [Person] [p] ON [p].[Id] = [pn].[PersonId]
@@ -199,7 +200,7 @@ BEGIN
                 ,[pn].[NumberTypeValueId]
            ,[p].[Gender]
             ) [a]
-        WHERE [a].[MatchCount] > 1
+        WHERE [a].[MatchCount] > 1 OR [a].[Gender] = 0
         ) [m]
     JOIN [PhoneNumber] [pn] ON [pn].[Number] = [m].[Number]
         AND ISNULL([pn].[Extension], '') = ISNULL([m].[Extension], '')
