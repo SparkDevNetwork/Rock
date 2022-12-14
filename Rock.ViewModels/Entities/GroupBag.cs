@@ -296,6 +296,14 @@ namespace Rock.ViewModels.Entities
         public int? ScheduleCancellationPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        public int? ScheduleConfirmationLogic { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.Schedule identifier.
         /// </summary>
         /// <value>

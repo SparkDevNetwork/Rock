@@ -1199,6 +1199,18 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Group
+{
+    /// <summary>
+    /// </summary>
+    public enum ScheduleConfirmationLogic
+    {
+        Ask = 0x0,
+        AutoAccept = 0x1,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
 {
     /// <summary>
