@@ -66,14 +66,10 @@ body {
     border-color: var(--experience-action-secondary-btn-bg);
 }
 
-.live-experience-body .welcome-header {
-    background-image: var(--welcome-header-image, initial);
-    background-size: cover;
-}
-
-.live-experience-body .no-action-header {
-    background-image: var(--no-action-header-image, initial);
-    background-size: cover;
+.live-experience-body .header-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
 }
 </style>
 
