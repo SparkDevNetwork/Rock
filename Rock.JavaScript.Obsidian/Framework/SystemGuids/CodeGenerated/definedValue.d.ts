@@ -29,6 +29,8 @@ export const enum DefinedValue {
     BenevolenceDenied = "3720671E-DA48-405F-A6D5-5E2D47436F9A",
     /** Benevolence Pending */
     BenevolencePending = "67B24629-62A9-436A-A98C-30A454642153",
+    /** The block template for the live experience occurrences block. */
+    BlockTemplateLiveExperienceOccurrences = "95837896-BB45-47FA-8517-F1C0EFE2A89C",
     /** The block template for mobile answer to prayer block. */
     BlockTemplateMobileAnswerToPrayer = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7",
     /** The block template for the event template on the mobile calendar item view. */

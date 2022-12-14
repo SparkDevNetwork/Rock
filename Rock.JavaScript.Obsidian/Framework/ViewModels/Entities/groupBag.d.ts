@@ -158,6 +158,9 @@ export type GroupBag = {
     /** Gets or sets the PersonAliasId of the person to notify when a person cancels */
     scheduleCancellationPersonAliasId?: number | null;
 
+    /** Gets or sets the schedule confirmation logic. */
+    scheduleConfirmationLogic?: number | null;
+
     /** Gets or sets the Rock.Model.Schedule identifier. */
     scheduleId?: number | null;
 

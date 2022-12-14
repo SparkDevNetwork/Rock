@@ -226,6 +226,7 @@ namespace Rock.Model
                 RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
+                ScheduleConfirmationLogic = ( int? ) model.ScheduleConfirmationLogic,
                 ScheduleId = model.ScheduleId,
                 SchedulingMustMeetRequirements = model.SchedulingMustMeetRequirements,
                 StatusValueId = model.StatusValueId,
@@ -332,6 +333,7 @@ namespace Rock.Model
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
+            target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;
