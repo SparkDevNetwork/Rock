@@ -15,9 +15,7 @@
         </div>
 
         <div class="action-item-selected-icon">
-            <span class="icon">
-                <i :class="getActionSelectedIconClass(action)"></i>
-            </span>
+            <i :class="getActionSelectedIconClass(action)"></i>
         </div>
     </div>
 </template>
@@ -34,33 +32,33 @@
     display: flex;
     align-items: center;
     align-self: stretch;
-    padding: 12px 12px;
+    padding: 12px;
     color: var(--text-color);
-    background-color: white;
+    background-color: #fff;
     border-top: 1px solid #c4c4c4;
     border-bottom: 1px solid #c4c4c4;
-    transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+    transition: background-color .25s ease-in-out, border-color .25s ease-in-out;
 }
 
 .action-item > *:first-child {
-    border-left: 1px solid #c4c4c4;
-    border-right: 1px solid #c4c4c4;
-    border-radius: 8px 0px 0px 8px;
     justify-content: center;
-    padding-left: 8px;
-    padding-right: 8px;
     min-width: 64px;
+    padding-right: 8px;
+    padding-left: 8px;
+    border-right: 1px solid #c4c4c4;
+    border-left: 1px solid #c4c4c4;
+    border-radius: 8px 0 0 8px;
 }
 
 .action-item > *:last-child {
-    border-right: 1px solid #c4c4c4;
-    border-radius: 0px 8px 8px 0px;
     padding-right: 16px;
+    border-right: 1px solid #c4c4c4;
+    border-radius: 0 8px 8px 0;
 }
 
 .action-item > .action-item-icon,
 .action-item > .action-item-selected-icon {
-    color: #777777;
+    color: #777;
 }
 
 .action-item > .action-item-icon > .icon {
@@ -72,7 +70,7 @@
 }
 
 .action-item:hover > * {
-    background-color: rgba(85, 150, 230, 0.1);
+    background-color: rgba(85, 150, 230, .1);
 }
 
 .action-item.selected > * {

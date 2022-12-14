@@ -17,7 +17,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
 import DropDownList from "./dropDownList";
-import DatePickerBase from "./datePicker";
+import DatePicker from "./datePicker.vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useHttp } from "@Obsidian/Utility/http";
@@ -27,7 +27,7 @@ export default defineComponent({
     name: "SlidingDateRangePicker",
 
     components: {
-        DatePickerBase,
+        DatePicker,
         DropDownList,
         RockFormField
     },
@@ -198,13 +198,13 @@ export default defineComponent({
 
             <div v-if="isDateRange" class="picker-daterange slidingdaterange-daterange pull-left">
                 <div class="input-group input-group-lower input-width-md date">
-                    <DatePickerBase v-model="lowDate" />
+                    <DatePicker v-model="lowDate" />
                 </div>
 
                 <div class="input-group form-control-static">to</div>
 
                 <div class="input-group input-group-lower input-width-md date">
-                    <DatePickerBase v-model="highDate" />
+                    <DatePicker v-model="highDate" />
                 </div>
             </div>
         </div>

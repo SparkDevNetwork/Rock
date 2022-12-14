@@ -165,6 +165,8 @@ namespace Rock.Event.InteractiveExperiences
         {
             var configuration = new ActionRenderConfigurationBag
             {
+                ActionId = action.Id,
+                IsMultipleSubmissionAllowed = action.IsMultipleSubmissionAllowed,
                 ActionTypeGuid = EntityType.Guid,
                 ConfigurationValues = new Dictionary<string, string>()
             };

@@ -1,0 +1,183 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField formGroupClasses="date-picker" #default="{ uniqueId }" name="datepicker" v-model.lazy="internalValue">
+        <div class="control-wrapper">
+            <div v-if="displayCurrentOption" class="form-control-group">
+                <div class="form-row">
+                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" :disabled="isCurrent" />
+                    <div v-if="displayCurrentOption || isCurrent" class="input-group">
+                        <div class="checkbox">
+                            <label title="">
+                                <input type="checkbox" v-model="isCurrent" />
+                                <span class="label-text">Current Date</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="isCurrent && isCurrentDateOffset" class="form-row">
+                    <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." />
+                </div>
+            </div>
+            <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" :disabled="isCurrent" v-bind="basePickerProps" />
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+
+
+    import { computed, PropType, ref, watch } from "vue";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import RockFormField from "./rockFormField";
+    import TextBox from "./textBox";
+    import DatePickerBase from "./datePickerBase.vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        displayCurrentOption: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isCurrentDateOffset: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether to parse the entered value and reformat it to match the set format. NOT Reactive */
+        disableForceParse: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** If set to true, only clicking on the calendar icon will open the calendar widget. NOT Reactive */
+        disableShowOnFocus: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not to highlight the current day on the calendar. NOT Reactive */
+        disableHighlightToday: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not the user should be able to select dates in the future. NOT Reactive */
+        disallowFutureDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not the user should be able to select dates in the past. NOT Reactive */
+        disallowPastDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Which view do we open the calendar widget on? 0 = Month, 1 = Year, 2 = Decade. NOT Reactive */
+        startView: {
+            type: Number as PropType<0 | 1 | 2>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", val: string | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<string | null>(null);
+    const isCurrent = ref<boolean>(false);
+    const currentDiff = ref<string>("0");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const asCurrentDateValue = computed<string>(() => {
+        const plusMinus = `${toNumber(currentDiff.value)}`;
+        return `CURRENT:${plusMinus}`;
+    });
+
+    const valueToEmit = computed<string | null>(() => {
+        if (isCurrent.value) {
+            return asCurrentDateValue.value;
+        }
+
+        return internalValue.value;
+    });
+
+    const basePickerProps = computed(() => {
+        return {
+            disableForceParse: props.disableForceParse,
+            disableShowOnFocus: props.disableShowOnFocus,
+            disableHighlightToday: props.disableHighlightToday,
+            disallowFutureDateSelection: props.disallowFutureDateSelection,
+            disallowPastDateSelection: props.disallowPastDateSelection,
+            startView: props.startView,
+        };
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.isCurrentDateOffset, () => {
+        if (!props.isCurrentDateOffset) {
+            currentDiff.value = "0";
+        }
+    }, { immediate: true });
+
+    watch(isCurrent, () => {
+        if (isCurrent.value) {
+            internalValue.value = "Current";
+        }
+        else {
+            internalValue.value = null;
+        }
+    }, { immediate: true });
+
+    watch(valueToEmit, () => {
+        emit("update:modelValue", valueToEmit.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        if (!props.modelValue) {
+            internalValue.value = null;
+            isCurrent.value = false;
+            currentDiff.value = "0";
+
+            return;
+        }
+
+        if (props.modelValue.indexOf("CURRENT") === 0) {
+            isCurrent.value = true;
+            const parts = props.modelValue.split(":");
+
+            if (parts.length === 2) {
+                currentDiff.value = `${toNumber(parts[1])}`;
+            }
+
+            return;
+        }
+
+        internalValue.value = props.modelValue;
+    }, { immediate: true });
+
+    watch(() => props.displayCurrentOption, () => {
+        // clear out the "current" data this option is disabled so we can actually set a new value
+        if (!props.displayCurrentOption && isCurrent.value) {
+            internalValue.value = null;
+            isCurrent.value = false;
+            currentDiff.value = "0";
+        }
+    });
+
+    // #endregion
+
+
+</script>

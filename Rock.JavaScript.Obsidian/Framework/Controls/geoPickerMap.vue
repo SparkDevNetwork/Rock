@@ -120,7 +120,7 @@
     const internalValue = computed({
         // Prop is in DB format; convert for use internally
         get(): Coordinate[] {
-            return wellKnownToCoordinates(props.modelValue, drawingMode);
+            return wellKnownToCoordinates(props.modelValue ?? "", drawingMode);
         },
         // Convert the value to Well Known Text for emitting
         set(newValue: Coordinate[]): void {

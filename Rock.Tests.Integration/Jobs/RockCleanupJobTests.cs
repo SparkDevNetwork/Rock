@@ -528,7 +528,7 @@ namespace Rock.Tests.Integration.Jobs
 
             try
             {
-                job.Execute( jobContext );
+                job.ExecuteInternal( jobContext );
             }
             catch
             {

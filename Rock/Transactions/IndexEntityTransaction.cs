@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Tracks when a person is viewed. Use this instead of ProcessEntityTypeIndex since it filters out duplicate index operations.
+    /// Executes the "IndexDocument()" method for the Entity. Use this instead of ProcessEntityTypeIndex since it filters out duplicate index operations.
     /// </summary>
     public class IndexEntityTransaction : ITransaction
     {
@@ -63,7 +63,8 @@ namespace Rock.Transactions
                 return;
             }
 
-            // Get a distinct list of the Groups. This is to prevent mutliple reindex requests being processed if multiple group members have their status changed
+            // Get a distinct list of EntityIndexInfo objects. This is to prevent duplicates of the same reindex request in the same batch.
+            // e.g. if multiple group members have their status changed at the same time then this will ensure the group is only reindexed once.
             entityIndexInfos = entityIndexInfos.GroupBy( i => new { i.EntityTypeId, i.EntityId } ).Select( i => i.FirstOrDefault() ).ToList();
 
             foreach ( var entityIndexInfo in entityIndexInfos )

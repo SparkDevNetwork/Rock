@@ -1,80 +1,75 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="live-experience-body" :style="experienceStyles">
-        <Alert v-if="isExperienceInactive" alertType="warning">
-            This experience has ended.
-        </Alert>
-
-        <div v-if="isWelcomeContentVisible" class="welcome">
-            <div class="welcome-header">
-                <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
+    <div class="styled-scroll">
+        <div class="live-experience-body" :style="experienceStyles">
+            <Alert v-if="isExperienceInactive" alertType="warning">
+                This experience has ended.
+            </Alert>
+            <div v-if="isWelcomeContentVisible" class="welcome">
+                <div class="welcome-header">
+                    <img v-if="welcomeHeaderImageUrl" :src="welcomeHeaderImageUrl" class="header-image" />
+                    <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
+                </div>
+                <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
             </div>
-
-            <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
-        </div>
-
-        <div v-if="isNoActionContentVisible" class="no-action">
-            <div class="no-action-header">
-                <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
+            <div v-if="isNoActionContentVisible" class="no-action">
+                <div class="no-action-header">
+                    <img v-if="noActionHeaderImageUrl" :src="noActionHeaderImageUrl" class="header-image" />
+                    <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
+                </div>
+                <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
             </div>
-
-            <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
+            <component v-if="activeActionComponent"
+                       :is="activeActionComponent"
+                       :eventId="eventId"
+                       :actionId="activeActionId"
+                       :renderConfiguration="activeActionRenderConfiguration"
+                       :realTimeTopic="realTimeTopic" />
         </div>
-
-        <component v-if="activeActionComponent"
-                   :is="activeActionComponent"
-                   :eventId="eventId"
-                   :actionId="activeActionId"
-                   :renderConfiguration="activeActionRenderConfiguration"
-                   :realTimeTopic="realTimeTopic" />
     </div>
 </template>
 
-<!--
-We might need to add this so that things look and behave right on mobile:
-
-<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
 <style>
 body {
     touch-action: none;
 }
-</style>
--->
 
-<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
-<style>
 .live-experience-body {
     position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     padding: 18px;
-    background-color: var(--experience-action-bg-color, inherit);
+    color: var(--experience-action-color, inherit);
+    background-color: var(--experience-action-bg, inherit);
     background-image: var(--experience-action-bg-image, initial);
-    color: var(--experience-action-text-color, inherit);
+    background-size: cover;
+    overflow: auto;
 }
 
 .live-experience-body .btn-primary,
 .live-experience-body .btn-primary:hover,
 .live-experience-body .btn-primary:focus {
-    background-color: var(--experience-action-primary-button-color);
-    border-color: var(--experience-action-primary-button-color);
-    color: var(--experience-action-primary-button-text-color);
+    color: var(--experience-action-primary-btn-color);
+    background-color: var(--experience-action-primary-btn-bg);
+    border-color: var(--experience-action-primary-btn-bg);
     box-shadow: none;
 }
 
 .live-experience-body .btn-secondary,
 .live-experience-body .btn-secondary:hover,
 .live-experience-body .btn-secondary:focus {
-    background-color: var(--experience-action-secondary-button-color);
-    border-color: var(--experience-action-secondary-button-color);
-    color: var(--experience-action-secondary-button-text-color);
+    color: var(--experience-action-secondary-btn-color);
+    background-color: var(--experience-action-secondary-btn-bg);
+    border-color: var(--experience-action-secondary-btn-bg);
 }
 
-.live-experience-body .welcome-header {
-    background-image: var(--welcome-header-image, initial);
+.live-experience-body .header-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
 }
 </style>
 
@@ -119,6 +114,14 @@ body {
 
     const isNoActionContentVisible = computed((): boolean => {
         return isReady.value && !isExperienceInactive.value && !isWelcomeContentVisible.value && !activeActionComponent.value;
+    });
+
+    const welcomeHeaderImageUrl = computed((): string | null => {
+        return config.style?.welcome?.headerImage ?? null;
+    });
+
+    const noActionHeaderImageUrl = computed((): string | null => {
+        return config.style?.noAction?.headerImage ?? null;
     });
 
     // #endregion
@@ -179,15 +182,15 @@ body {
         const styles: Record<string, string> = {};
 
         if (config.style?.welcome?.headerImage) {
-            styles["--welcome-header-image"] = config.style.welcome.headerImage;
+            styles["--welcome-header-image"] = `url('${config.style.welcome.headerImage}')`;
         }
 
         if (config.style?.noAction?.headerImage) {
-            styles["--no-action-header-image"] = config.style.noAction.headerImage;
+            styles["--no-action-header-image"] = `url('${config.style.noAction.headerImage}')`;
         }
 
         if (config.style?.action?.backgroundColor) {
-            styles["--experience-action-bg-color"] = config.style.action.backgroundColor;
+            styles["--experience-action-bg"] = config.style.action.backgroundColor;
         }
 
         if (config.style?.action?.backgroundImage) {
@@ -195,38 +198,38 @@ body {
         }
 
         if (config.style?.action?.primaryButtonColor) {
-            styles["--experience-action-primary-button-color"] = config.style.action.primaryButtonColor;
+            styles["--experience-action-primary-btn-bg"] = config.style.action.primaryButtonColor;
         }
         else {
-            styles["--experience-action-primary-button-color"] = "var(--brand-primary)";
+            styles["--experience-action-primary-btn-bg"] = "var(--brand-primary)";
         }
 
         if (config.style?.action?.primaryButtonTextColor) {
-            styles["--experience-action-primary-button-text-color"] = config.style.action.primaryButtonTextColor;
+            styles["--experience-action-primary-btn-color"] = config.style.action.primaryButtonTextColor;
         }
         else {
-            styles["--experience-action-primary-button-text-color"] = "#fff";
+            styles["--experience-action-primary-btn-color"] = "#fff";
         }
 
         if (config.style?.action?.secondaryButtonColor) {
-            styles["--experience-action-secondary-button-color"] = config.style.action.secondaryButtonColor;
+            styles["--experience-action-secondary-btn-bg"] = config.style.action.secondaryButtonColor;
         }
         else {
-            styles["--experience-action-secondary-button-color"] = "var(--brand-info)";
+            styles["--experience-action-secondary-btn-bg"] = "var(--brand-info)";
         }
 
         if (config.style?.action?.secondaryButtonTextColor) {
-            styles["--experience-action-secondary-button-text-color"] = config.style.action.secondaryButtonTextColor;
+            styles["--experience-action-secondary-btn-color"] = config.style.action.secondaryButtonTextColor;
         }
         else {
-            styles["--experience-action-secondary-button-text-color"] = "#fff";
+            styles["--experience-action-secondary-btn-color"] = "#fff";
         }
 
         if (config.style?.action?.textColor) {
-            styles["--experience-action-text-color"] = config.style.action.textColor;
+            styles["--experience-action-color"] = config.style.action.textColor;
         }
         else {
-            styles["--experience-action-text-color"] = "var(--text-color)";
+            styles["--experience-action-color"] = "var(--text-color)";
         }
 
         return styles;
@@ -270,6 +273,14 @@ body {
     }
 
     // #endregion
+
+    // Add viewport meta tag if it doesn't exist.
+    if (document.querySelector("meta[name='viewport']") === null) {
+        const metaNode = document.createElement("meta");
+        metaNode.name = "viewport";
+        metaNode.content = "width=device-width, initial-scale=1";
+        document.head.appendChild(metaNode);
+    }
 
     onConfigurationValuesChanged(useReloadBlock());
 

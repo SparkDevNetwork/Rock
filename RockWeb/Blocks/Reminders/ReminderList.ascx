@@ -189,7 +189,7 @@
                                                         </span>
                                                     </span>
                                                 </div>
-                                                <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><div class="dropdown text-info ml-auto"><i class="fa fa-clock-o"></i></div></asp:Literal>
+                                                <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><div class="dropdown text-info"><i class="fa fa-clock-o"></i></div></asp:Literal>
                                             </div>
 
                                             <div class="note-content">

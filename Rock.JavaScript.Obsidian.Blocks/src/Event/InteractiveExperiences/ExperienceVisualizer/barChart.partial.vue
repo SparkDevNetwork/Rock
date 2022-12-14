@@ -26,10 +26,11 @@
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .visualizer-title {
+    margin-bottom: 12px;
+    font-size: 36px;
     color: var(--experience-visualizer-primary-color);
     text-align: center;
-    font-size: 36px;
-    margin-bottom: 12px;
+    font-weight: 700;
 }
 
 .experience-visualizer-type-b1dfd377-9ef7-407f-9097-6206b98aec0d .chart-container {
@@ -63,7 +64,7 @@
     // #region Computed Values
 
     const additionalVisualizerClasses = computed((): string => {
-        return `experience-visualizer-${props.renderConfiguration.actionGuid}`;
+        return `experience-visualizer-${props.renderConfiguration.actionId}`;
     });
 
     const borderWidth = computed((): number => {

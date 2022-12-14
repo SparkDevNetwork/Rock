@@ -17,13 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Encodings.Web;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -623,7 +619,7 @@ namespace RockWeb.Blocks.Finance
             if ( fuEditDoc.BinaryFileId.HasValue )
             {
                 _documentsState.Add( fuEditDoc.BinaryFileId.Value );
-                BindUploadDocuments(  );
+                BindUploadDocuments();
             }
         }
 
@@ -636,7 +632,7 @@ namespace RockWeb.Blocks.Finance
             if ( e.BinaryFileId.HasValue )
             {
                 _documentsState.Remove( e.BinaryFileId.Value );
-                BindUploadDocuments(  );
+                BindUploadDocuments();
             }
         }
 
@@ -895,7 +891,7 @@ namespace RockWeb.Blocks.Finance
         #endregion View Events
 
         #region Edit Methods
-        
+
         /// <summary>
         /// Sets the edit mode.
         /// </summary>
@@ -1048,7 +1044,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 _documentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
-                BindUploadDocuments(  );
+                BindUploadDocuments();
 
                 avcAttributes.AddEditControls( benevolenceRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
@@ -1510,16 +1506,8 @@ namespace RockWeb.Blocks.Finance
             DisplayPersonName();
 
             // Setup Image
-            if ( _requester?.PhotoId != null && _requester.PhotoId.HasValue )
-            {
-                imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
-            }
-            else
-            {
-                imgViewRequestor.ImageUrl = "/Assets/Images/person-no-photo-unknown.svg";
-            }
-
-            if ( _assignedTo?.PhotoId != null && _assignedTo.PhotoId.HasValue )
+            imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
+            if ( _assignedTo != null )
             {
                 imgViewAssignedTo.ImageUrl = Person.GetPersonPhotoUrl( _assignedTo );
             }

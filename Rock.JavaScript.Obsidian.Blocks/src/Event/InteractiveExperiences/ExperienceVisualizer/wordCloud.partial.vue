@@ -6,6 +6,7 @@
                    :angleCount="angleCount"
                    :fontName="fontName"
                    :colors="colors"
+                   :minimumUpdateInterval="minimumUpdateInterval"
                    width="100%"
                    height="100%" />
     </div>
@@ -19,10 +20,11 @@
 }
 
 .experience-visualizer-type-dc35f0f7-83e5-47d8-aa27-b448962b60dd .visualizer-title {
+    margin-bottom: 12px;
+    font-size: 36px;
     color: var(--experience-visualizer-primary-color);
     text-align: center;
-    font-size: 36px;
-    margin-bottom: 12px;
+    font-weight: 700;
 }
 
 .experience-visualizer-type-dc35f0f7-83e5-47d8-aa27-b448962b60dd .rock-word-cloud {
@@ -47,7 +49,7 @@
     // #region Computed Values
 
     const additionalVisualizerClasses = computed((): string => {
-        return `experience-visualizer-${props.renderConfiguration.actionGuid}`;
+        return `experience-visualizer-${props.renderConfiguration.actionId}`;
     });
 
     const colors = computed((): string[] | undefined => {
@@ -69,6 +71,10 @@
 
     const fontName = computed((): string | undefined => {
         return props.renderConfiguration.configurationValues?.fontName || undefined;
+    });
+
+    const minimumUpdateInterval = computed((): number => {
+        return toNumber(props.renderConfiguration.configurationValues?.minimumUpdateInterval ?? 0) * 1_000;
     });
 
     // #endregion

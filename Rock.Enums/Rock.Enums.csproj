@@ -67,6 +67,7 @@
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
     <Compile Include="Controls\MergeTemplateOwnership.cs" />
+    <Compile Include="Controls\RequirementLevel.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
     <Compile Include="Core\AddressInvalidReason.cs" />
     <Compile Include="Core\AuditType.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Group\MeetsGroupRequirement.cs" />
     <Compile Include="Group\ParticipationType.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
+    <Compile Include="Group\ScheduleConfirmationLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />

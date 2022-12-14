@@ -225,7 +225,7 @@ namespace Rock.Net
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
-            RequestUri = request.UrlProxySafe();
+            RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
 
             ClientInformation = new ClientInformation( request );
@@ -294,6 +294,11 @@ namespace Rock.Net
         /// <returns>A string that represents the root url path, such as <c>https://rock.rocksolidchurch.com</c>.</returns>
         private static string GetRootUrlPath( Uri uri )
         {
+            if ( uri == null )
+            {
+                return string.Empty;
+            }
+
             var url = $"{uri.Scheme}://{uri.Host}";
 
             if ( !uri.IsDefaultPort )

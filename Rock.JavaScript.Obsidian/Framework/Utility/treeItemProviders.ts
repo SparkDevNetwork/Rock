@@ -20,7 +20,7 @@ import { emptyGuid } from "./guid";
 import { post } from "./http";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
-import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationPickerGetActiveChildrenOptionsBag";
+import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
 import { PagePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetChildrenOptionsBag";
@@ -159,12 +159,12 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const options: Partial<LocationPickerGetActiveChildrenOptionsBag> = {
+        const options: Partial<LocationItemPickerGetActiveChildrenOptionsBag> = {
             guid: parentGuid ?? emptyGuid,
             rootLocationGuid: emptyGuid,
             securityGrantToken: this.securityGrantToken
         };
-        const url = "/api/v2/Controls/LocationPickerGetActiveChildren";
+        const url = "/api/v2/Controls/LocationItemPickerGetActiveChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {

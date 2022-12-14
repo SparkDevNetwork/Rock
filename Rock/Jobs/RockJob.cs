@@ -25,10 +25,8 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Class RockJob.
-    /// Implements the <see cref="RockJob" />
+    /// Base class that all scheduled jobs in Rock should inherit from.
     /// </summary>
-    /// <seealso cref="RockJob" />
     [DisallowConcurrentExecution]
 #pragma warning disable CS0612, CS0618 // Type or member is obsolete
     public abstract class RockJob : Quartz.IJob
@@ -65,7 +63,7 @@ namespace Rock.Jobs
         /// Gets the scheduler.
         /// </summary>
         /// <value>The scheduler.</value>
-        public Quartz.IScheduler Scheduler { get; private set; }
+        internal Quartz.IScheduler Scheduler { get; private set; }
 
         /// <summary>
         /// Executes this instance.
@@ -76,7 +74,7 @@ namespace Rock.Jobs
         /// Initializes from job context.
         /// </summary>
         /// <param name="context">The context.</param>
-        protected void InitializeFromJobContext( IJobExecutionContext context )
+        internal void InitializeFromJobContext( IJobExecutionContext context )
         {
             var serviceJobId = context.GetJobIdFromQuartz();
             var rockContext = new Rock.Data.RockContext();
@@ -93,7 +91,7 @@ namespace Rock.Jobs
         /// <returns>System.String.</returns>
         public string GetAttributeValue( string key )
         {
-            return ServiceJob.GetAttributeValue( key );
+            return ServiceJob?.GetAttributeValue( key );
         }
 
         /// <summary>
@@ -122,9 +120,8 @@ namespace Rock.Jobs
         /// <value>The result.</value>
         public string Result { get; set; }
 
-
         /// <inheritdoc/>
-        protected internal void ExecuteInternal( IJobExecutionContext context )
+        internal void ExecuteInternal( IJobExecutionContext context )
         {
             InitializeFromJobContext( context );
             Execute();
@@ -134,7 +131,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( Quartz.IJobExecutionContext context )
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
+        void Quartz.IJob.Execute( Quartz.IJobExecutionContext context )
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
         {
             ExecuteInternal( context );
         }

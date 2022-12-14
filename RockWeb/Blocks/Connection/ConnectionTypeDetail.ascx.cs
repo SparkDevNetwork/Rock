@@ -1690,6 +1690,8 @@ namespace RockWeb.Blocks.Connection
                             ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                         }
                     }
+
+                    rblConnectionStatuses.SelectedValue = connectionWorkflow.ManualTriggerFilterConnectionStatusId?.ToString();
                 }
             }
 

@@ -61,10 +61,6 @@
     padding-right: 9px !important;
     padding-left: 9px !important;
   }
-
-  @media (min-width: @screen-sm) {
-    margin: 24px -9px 0;
-  }
 }
 
 .profile-content + .main-footer {
@@ -76,6 +72,12 @@
 
   .panel-title {
     font-size: 16px;
+  }
+}
+
+@media (min-width: 647px) {
+  .person-profile {
+    flex-wrap: nowrap;
   }
 }
 
@@ -97,7 +99,7 @@
 @media (min-width: 647px) {
   .profile-main {
     flex: 0 0 auto;
-    width: 40% !important;
+    width: 40%;
   }
 
   .profile-notes {
@@ -124,7 +126,7 @@
 
   .profile-main {
     flex: 0 0 auto;
-    width: 25% !important;
+    width: 25%;
   }
 
   .profile-notes {
@@ -135,7 +137,11 @@
 @media (min-width: @screen-lg) {
   .profile-main {
     flex: 0 0 auto;
-    width: 20% !important;
+    width: 20%;
+  }
+
+  .profile-data {
+    width: 80%;
   }
 }
 
@@ -585,16 +591,15 @@
 
 .card-badge-bottom {
   display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
+  flex-flow: column wrap;
   align-items: center;
   min-height: 40px;
-  padding: 0 18px;
+  padding: 6px 18px;
 
   /* TODO FIX */
 
   @media (min-width: 576px) {
-    flex-direction: row;
+    flex-flow: row nowrap;
   }
 
   .rockbadge-container {
@@ -661,10 +666,10 @@
 
   .note-editor-attributes {
     .note-text {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
       border-color: transparent;
       border-bottom-color: @input-border;
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
 
       &:focus {
         border-color: @input-border-focus;
@@ -678,7 +683,7 @@
         display: none;
       }
     }
-    
+
     .noteentry-control {
       padding: 0;
     }

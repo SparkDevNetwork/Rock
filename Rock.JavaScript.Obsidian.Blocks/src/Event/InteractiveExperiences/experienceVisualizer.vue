@@ -16,14 +16,14 @@
 <style>
 .experience-visualizer-body {
     position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
     padding: 18px;
-    background-color: var(--experience-visualizer-bg-color, inherit);
+    color: var(--experience-visualizer-color);
+    background-color: var(--experience-visualizer-bg, inherit);
     background-image: var(--experience-visualizer-bg-image, initial);
-    color: var(--experience-visualizer-text-color);
 }
 
 .experience-visualizer-body .experience-visualizer {
@@ -147,7 +147,7 @@
         const styles: Record<string, string> = {};
 
         if (style?.visualizer?.backgroundColor) {
-            styles["--experience-visualizer-bg-color"] = style.visualizer.backgroundColor;
+            styles["--experience-visualizer-bg"] = style.visualizer.backgroundColor;
         }
 
         if (style?.visualizer?.backgroundImage) {
@@ -155,17 +155,17 @@
         }
 
         if (style?.visualizer?.textColor) {
-            styles["--experience-visualizer-text-color"] = style.visualizer.textColor;
+            styles["--experience-visualizer-color"] = style.visualizer.textColor;
         }
         else {
-            styles["--experience-visualizer-text-color"] = "var(--text-color)";
+            styles["--experience-visualizer-color"] = "var(--text-color)";
         }
 
         if (style?.visualizer?.primaryColor) {
-            styles["--experience-visualizer-primary-color"] = style.visualizer.primaryColor;
+            styles["--experience-visualizer-primary-bg"] = style.visualizer.primaryColor;
         }
         else {
-            styles["--experience-visualizer-primary-color"] = "var(--brand-primary)";
+            styles["--experience-visualizer-primary-bg"] = "var(--brand-primary)";
         }
 
         if (style?.visualizer?.secondaryColor) {
@@ -267,8 +267,6 @@
 
     async function checkForNewOccurrence(): Promise<void> {
         try {
-            console.log("Checking for new occurrence.");
-
             // If we already have an occurrence and it hasn't ended yet then
             // don't check for a new one. Otherwise we might switch visualizers
             // in the middle of an experience.

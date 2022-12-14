@@ -22,7 +22,7 @@ import CodeEditor from "@Obsidian/Controls/codeEditor";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
 import NumberBox from "@Obsidian/Controls/numberBox";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.vue";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";

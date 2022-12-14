@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -64,6 +63,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.AlwaysRequestLocation,
         Order = 3 )]
 
+    [BlockTemplateField( "Template",
+        Description = "The template to use when rendering the content.",
+        TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_LIVE_EXPERIENCE_OCCURRENCES,
+        IsRequired = true,
+        DefaultValue = "0C75B833-E710-45AE-B3B2-3FAC97A79BB2",
+        Key = AttributeKeys.Template,
+        Order = 4 )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( "af20692a-9ae1-4faf-a506-d408b14652d1" )]
@@ -73,10 +80,12 @@ namespace Rock.Blocks.Types.Mobile.Events
         #region Properties
 
         /// <summary>
-        /// Gets the live experience page unique identifier.
+        /// Gets the template to use when rendering the content.
         /// </summary>
-        /// <value>The live experience page unique identifier.</value>
-        private Guid? LiveExperiencePageGuid => GetAttributeValue( AttributeKeys.DestinationPage ).AsGuidOrNull();
+        /// <value>
+        /// The template to use when rendering the content.
+        /// </value>
+        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 
@@ -117,6 +126,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             public const string DestinationPage = "DestinationPage";
             public const string LoginPage = "LoginPage";
             public const string ShowAll = "ShowAll";
+            public const string Template = "Template";
         }
 
         #endregion
@@ -153,28 +163,9 @@ namespace Rock.Blocks.Types.Mobile.Events
                 mergeFields.Add( "LoginRecommended", validOccurrences.LoginRecommended );
                 mergeFields.Add( "GeoLocationRecommended", validOccurrences.GeoLocationRecommended );
 
-                var lavaTemplate = @"<StackLayout>
-{% for occurrence in Occurrences %}
-{% if occurrence.Campus != null %}
-    {% capture occurrenceName %}{{ occurrence.InteractiveExperienceSchedule.InteractiveExperience.Name }} at {{ occurrence.Campus.Name }}{% endcapture %}
-{% else %}
-    {% capture occurrenceName %}{{ occurrence.InteractiveExperienceSchedule.InteractiveExperience.Name }}{% endcapture %}
-{% endif %}
-<Button Text=""{{ occurrenceName | Escape }}"" StyleClass=""btn,btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""{{ DestinationPageGuid }}?InteractiveExperienceOccurrenceKey={{ occurrence.Guid }}"" />
-{% endfor %}
-
-{% if LoginRecommended == true %}
-<Button Text=""Login"" StyleClass=""btn,btn-secondary"" Command=""{Binding InteractiveExperienceOccurrences.Login}"" />
-{% endif %}
-
-{% if GeoLocationRecommended == true %}
-<Button Text=""Provide Location"" StyleClass=""btn,btn-secondary"" />
-{% endif %}
-</StackLayout>";
-
                 return ActionOk( new CallbackResponse
                 {
-                    Content = lavaTemplate.ResolveMergeFields( mergeFields )
+                    Content = Template.ResolveMergeFields( mergeFields )
                 } );
             }
         }

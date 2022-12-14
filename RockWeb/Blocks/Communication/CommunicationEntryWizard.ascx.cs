@@ -247,9 +247,9 @@ namespace RockWeb.Blocks.Communication
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
             Page.Response.Cache.SetNoStore();
 
-            _smsTransportEnabled = MediumContainer.HasActiveAndAuthorizerdSmsTransport( CurrentPerson );
-            _emailTransportEnabled = MediumContainer.HasActiveAndAuthorizerdEmailTransport( CurrentPerson );
-            _pushTransportEnabled = MediumContainer.HasActiveAndAuthorizerdPushTransport( CurrentPerson );
+            _smsTransportEnabled = MediumContainer.HasActiveAndAuthorizedSmsTransport( CurrentPerson );
+            _emailTransportEnabled = MediumContainer.HasActiveAndAuthorizedEmailTransport( CurrentPerson );
+            _pushTransportEnabled = MediumContainer.HasActiveAndAuthorizedPushTransport( CurrentPerson );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
