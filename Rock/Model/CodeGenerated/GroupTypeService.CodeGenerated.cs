@@ -176,6 +176,7 @@ namespace Rock.Model
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationWorkflowTypeId = model.ScheduleCancellationWorkflowTypeId,
                 ScheduleConfirmationEmailOffsetDays = model.ScheduleConfirmationEmailOffsetDays,
+                ScheduleConfirmationLogic = ( int ) model.ScheduleConfirmationLogic,
                 ScheduleConfirmationSystemCommunicationId = model.ScheduleConfirmationSystemCommunicationId,
                 ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays,
                 ScheduleReminderSystemCommunicationId = model.ScheduleReminderSystemCommunicationId,
@@ -301,6 +302,7 @@ namespace Rock.Model
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
             #pragma warning disable 612, 618
             target.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;

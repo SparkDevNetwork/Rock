@@ -142,6 +142,9 @@ namespace Rock.Client
         public int? ScheduleCancellationPersonAliasId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Group.ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -218,6 +221,7 @@ namespace Rock.Client
             this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
+            this.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             this.ScheduleId = source.ScheduleId;
             this.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             this.StatusValueId = source.StatusValueId;

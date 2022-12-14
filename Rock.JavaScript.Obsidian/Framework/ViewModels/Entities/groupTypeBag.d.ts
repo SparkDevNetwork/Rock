@@ -183,6 +183,9 @@ export type GroupTypeBag = {
     /** Gets or sets the number of days prior to the schedule to send a confirmation email. */
     scheduleConfirmationEmailOffsetDays?: number | null;
 
+    /** Gets or sets the schedule confirmation logic. */
+    scheduleConfirmationLogic: number;
+
     /** Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated. */
     scheduleConfirmationSystemCommunicationId?: number | null;
 

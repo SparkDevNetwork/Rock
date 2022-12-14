@@ -343,6 +343,9 @@ namespace Rock.Client
         public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
 
         /// <summary />
+        public Rock.Client.Enums.Group.ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
+
+        /// <summary />
         public int? ScheduleConfirmationSystemCommunicationId { get; set; }
 
         /// <summary />
@@ -462,6 +465,7 @@ namespace Rock.Client
             this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            this.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             this.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
             #pragma warning disable 612, 618
             this.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
