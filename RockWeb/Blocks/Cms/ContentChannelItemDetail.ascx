@@ -13,8 +13,8 @@
                 restParams: '/' + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}/{contentChannelItemSlugId?}",
             },
             UniqueSlug: {
-                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentSlug" ) %>',
-                restParams: "/" + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}"
+                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentChannelSlug" ) %>',
+                restParams: "/" + ($('#<%=hfChannelId.ClientID%>').val() || 0) + "/{slug}"
             },
             RemoveSlug: {
                 restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
