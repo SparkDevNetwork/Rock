@@ -1132,6 +1132,16 @@ namespace Rock.Client.Enums.Controls
 
     /// <summary>
     /// </summary>
+    public enum RequirementLevel
+    {
+        Unspecified = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+        Unavailable = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     [Flags]
     public enum SlidingDateRangeType
     {
