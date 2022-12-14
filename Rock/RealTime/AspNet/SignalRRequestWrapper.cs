@@ -64,7 +64,9 @@ namespace Rock.RealTime.AspNet
                 }
             }
 
-            RequestUri = request.Url;
+            // request.Url is not available with Azure SignalR and doesn't really
+            // make much sense anyway since it would just be the /rock-rt endpoint.
+            // Therefore, do not set a RequestUri.
 
             QueryString = new NameValueCollection( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var qs in request.QueryString )

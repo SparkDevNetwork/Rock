@@ -80,6 +80,31 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the unique slug for the content channel.
+        /// </summary>
+        /// <param name="contentChannelId">The content channel item identifier.</param>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentChannelSlug/{contentChannelId}/{slug}/{contentChannelItemSlugId?}" )]
+        [Rock.SystemGuid.RestActionGuid( "98C1DB14-6693-4AE5-91BF-E2580BA44451" )]
+        public string GetUniqueContentSlugForContentChannel( int contentChannelId, string slug, int? contentChannelItemSlugId = null )
+        {
+            string uniqueSlug = string.Empty;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+
+                uniqueSlug = contentChannelItemSlugService.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
+            }
+
+            return uniqueSlug ?? string.Empty;
+        }
+
+        /// <summary>
         /// Return object of the SaveContentSlug action
         /// </summary>
         public class SaveSlugResponse

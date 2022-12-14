@@ -26,7 +26,7 @@ function createServerProxy<TServer extends ServerFunctions<TServer> = GenericSer
                     }
 
                     await engine.ensureConnected();
-                    await engine.invoke(identifier, propertyName, args);
+                    return await engine.invoke(identifier, propertyName, args);
                 }
             };
         }
