@@ -193,6 +193,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
 
@@ -210,6 +211,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             dlEditDocuments.ItemDataBound += dlDocuments_ItemDataBound;
+            BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -223,6 +225,7 @@ namespace RockWeb.Blocks.Finance
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
             LoadEditDetails();
             LoadViewDetails();
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>
@@ -259,6 +262,7 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             LoadEditDetails();
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>
