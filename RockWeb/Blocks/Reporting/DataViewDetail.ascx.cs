@@ -216,6 +216,7 @@ $(document).ready(function() {
         {
             var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
 
@@ -712,7 +713,6 @@ $(document).ready(function() {
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
             BindIncludeDeceasedControl( dataView.EntityTypeId, dataView.IncludeDeceased );
-            //BindReadOnlyContextControls( dataView.)
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true, rockContext );
         }
 
