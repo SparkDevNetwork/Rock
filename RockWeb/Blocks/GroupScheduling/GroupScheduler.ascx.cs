@@ -2021,7 +2021,7 @@ btnCopyToClipboard.ClientID );
                 .ToList();
 
             var attendanceService = new AttendanceService( rockContext );
-            var sendConfirmationAttendancesQuery = attendanceService.GetPendingScheduledConfirmations()
+            var sendConfirmationAttendancesQuery = attendanceService.GetPendingAndAutoAcceptScheduledConfirmations()
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 

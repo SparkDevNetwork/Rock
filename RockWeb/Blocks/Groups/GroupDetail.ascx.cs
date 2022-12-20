@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -1060,7 +1061,7 @@ namespace RockWeb.Blocks.Groups
             group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
             group.DisableScheduling = cbDisableGroupScheduling.Checked;
             group.DisableScheduleToolboxAccess = cbDisableScheduleToolboxAccess.Checked;
-
+            group.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnumOrNull<ScheduleConfirmationLogic>();
             string iCalendarContent = string.Empty;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
@@ -1922,6 +1923,8 @@ namespace RockWeb.Blocks.Groups
             cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
             cbDisableGroupScheduling.Checked = group.DisableScheduling;
             ddlAttendanceRecordRequiredForCheckIn.SetValue( group.AttendanceRecordRequiredForCheckIn.ConvertToInt() );
+            ddlScheduleConfirmationLogic.SetValue( group.ScheduleConfirmationLogic.HasValue ? group.ScheduleConfirmationLogic.ConvertToInt().ToString() : null );
+
             if ( group.ScheduleCancellationPersonAlias != null )
             {
                 ppScheduleCancellationPerson.SetValue( group.ScheduleCancellationPersonAlias.Person );
@@ -2586,6 +2589,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             ddlAttendanceRecordRequiredForCheckIn.BindToEnum<AttendanceRecordRequiredForCheckIn>();
+            ddlScheduleConfirmationLogic.BindToEnum<ScheduleConfirmationLogic>( true );
         }
 
         /// <summary>
