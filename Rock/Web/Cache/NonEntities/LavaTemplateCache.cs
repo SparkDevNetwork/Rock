@@ -86,10 +86,7 @@ namespace Rock.Web.Cache
 
         private static LavaTemplateCache Load( string content )
         {
-            // Strip out Lava comments before parsing the template because they are not recognized by standard Liquid syntax.
-            content = LavaHelper.RemoveLavaComments( content );
-
-            var template = Template.Parse( content );
+            var template = LavaHelper.CreateDotLiquidTemplate( content );
 
             /* 
              * 2/19/2020 - JPH
