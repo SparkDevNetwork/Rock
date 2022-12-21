@@ -222,6 +222,9 @@ Hi Ted!
             var expectedOutputBill = "";
             var expectedOutputTed = "Hi Ted!";
 
+            // Establish the initial conditions by ensuring that Bill does not exist in the target segments.
+            RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
+
             // Verify that if Bill is the current user, the content is not rendered.
             // Bill does not match the filter "IN_SMALL_GROUP".
             AssertOutputForPersonAndRequest( input, expectedOutputBill, TestGuids.TestPeople.BillMarble );
@@ -275,6 +278,9 @@ Bill should not see this because he only matches the 'ALL_MEN' segment.
 {% endpersonalize %}
 ";
             var expectedOutput = @"";
+
+            // Establish the initial conditions by ensuring that Bill does not exist in the target segments.
+            RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
 
             AssertOutputForPersonAndRequest( input, expectedOutput, TestGuids.TestPeople.BillMarble );
         }
