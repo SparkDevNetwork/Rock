@@ -194,7 +194,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
             if ( ShowDescription )
             {
-                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description}]]></Label>";
+                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationListDescription}]]></Label>";
             }
 
             return $@"
@@ -207,7 +207,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                StyleClass=""h3, communicationlist-item-name"" />
         {descriptionLabel}
     </StackLayout>
-    <Rock:CheckBox x:Name=""cbSubscribed_{subscription.CommunicationList.Id}""
+    <Rock:CheckBox x:Name=""cbSubscribed_{subscription.CommunicationListId}""
                    IsChecked=""{subscription.IsSubscribed}""
                    EditStyle=""Switch""
                    VerticalOptions=""Center""
@@ -216,9 +216,9 @@ namespace Rock.Blocks.Types.Mobile.Events
             <Rock:CallbackParameters Name="":UpdateSubscription""
                                      Passive=""True"">
                 <Rock:Parameter Name=""CommunicationListGuid""
-                                Value=""{subscription.CommunicationList.Guid}"" />
+                                Value=""{subscription.CommunicationListGuid}"" />
                 <Rock:Parameter Name=""Subscribed""
-                                Value=""{{Binding IsChecked, Source={{x:Reference cbSubscribed_{subscription.CommunicationList.Id}}}}}"" />
+                                Value=""{{Binding IsChecked, Source={{x:Reference cbSubscribed_{subscription.CommunicationListId}}}}}"" />
             </Rock:CallbackParameters>
         </Rock:CheckBox.CommandParameter>
     </Rock:CheckBox>
@@ -361,12 +361,15 @@ namespace Rock.Blocks.Types.Mobile.Events
                 var alwaysIncludeSubscribed = GetAttributeValue( AttributeKeys.AlwaysIncludeSubscribedLists ).AsBoolean();
                 var contextCampus = RequestContext.GetContextEntity<Campus>();
 
-                // We're going to do two steps of filtering here.
-                viewableCommunicationLists = viewableCommunicationLists.Where( x =>
-                // 1. Filter by campus.
-                ( x.Campus?.Id == contextCampus.Id || x.Campus == null )
-                // 2. OR: Include the communication lists we're already subscribed to.
-                || ( alwaysIncludeSubscribed && ContainsActivePersonRecord( x.Members, RequestContext.CurrentPerson?.Id ?? 0 ) ) ).ToList();
+                if( contextCampus != null )
+                {
+                    // We're going to do two steps of filtering here.
+                    viewableCommunicationLists = viewableCommunicationLists.Where( x =>
+                    // 1. Filter by campus.
+                    ( x.Campus?.Id == contextCampus.Id || x.Campus == null )
+                    // 2. OR: Include the communication lists we're already subscribed to.
+                    || ( alwaysIncludeSubscribed && ContainsActivePersonRecord( x.Members, RequestContext.CurrentPerson?.Id ?? 0 ) ) ).ToList();
+                }
             }
 
             return viewableCommunicationLists
@@ -374,13 +377,15 @@ namespace Rock.Blocks.Types.Mobile.Events
                 {
                     var publicName = a.GetAttributeValue( "PublicName" );
                     var member = communicationListsMember.GetValueOrDefault( a.Id, null );
+                    var isSubscribed = member != null && member.GroupMemberStatus == GroupMemberStatus.Active;
                     return new Subscription
                     {
                         DisplayName = publicName.IsNotNullOrWhiteSpace() ? publicName : a.Name,
                         CommunicationListGuid = a.Guid,
-                        CommunicationList = a,
-                        Member = member,
-                        CommunicationPreference = member?.CommunicationPreference ?? CommunicationType.Email
+                        CommunicationListId = a.Id,
+                        CommunicationListDescription = a.Description,
+                        CommunicationPreference = member?.CommunicationPreference ?? CommunicationType.Email,
+                        IsSubscribed = isSubscribed,
                     };
                 } )
                 .OrderBy( a => a.DisplayName )
@@ -542,26 +547,24 @@ namespace Rock.Blocks.Types.Mobile.Events
             public string DisplayName { get; set; }
 
             /// <summary>
+            /// Gets or sets the description.
+            /// </summary>
+            /// <value>The description.</value>
+            public string CommunicationListDescription { get; set; }
+
+            /// <summary>
             /// Gets or sets the communication list.
             /// </summary>
             /// <value>
             /// The communication list.
             /// </value>
-            public Group CommunicationList { get; set; }
+            public int CommunicationListId { get; set; }
 
             /// <summary>
             /// Gets or sets the communication list unique identifier.
             /// </summary>
             /// <value>The communication list unique identifier.</value>
             public Guid CommunicationListGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the current member record.
-            /// </summary>
-            /// <value>
-            /// The current member record.
-            /// </value>
-            public GroupMember Member { get; set; }
 
             /// <summary>
             /// Gets or sets the communication preference.
@@ -575,7 +578,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <value>
             ///   <c>true</c> if per person is subscribed; otherwise, <c>false</c>.
             /// </value>
-            public bool IsSubscribed => Member != null && Member.GroupMemberStatus == GroupMemberStatus.Active;
+            public bool IsSubscribed { get; set; }
         }
 
         #endregion
