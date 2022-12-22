@@ -488,7 +488,6 @@ namespace RockWeb.Blocks.Mobile
 
             cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
-            ceToastXaml.Text = additionalSettings.ToastXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
 
@@ -954,7 +953,6 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;
-            additionalSettings.ToastXaml = ceToastXaml.Text;
             additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
             additionalSettings.IsPackageCompressionEnabled = cbCompressUpdatePackages.Checked;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
