@@ -45,7 +45,7 @@
                             <asp:Literal ID="lIntroMessage" runat="server" />
 
                             <%-- Special input with rock-fullname class --%>
-                            <Rock:RockTextBox ID="tbRockFullName_AmountEntry" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_AmountEntry" Placeholder="Please enter name (Required)" />
+                            <Rock:RockTextBox ID="tbRockFullName_AmountEntry" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_AmountEntry" Placeholder="Please enter name (Required)" autocomplete="new-password" />
                             <Rock:NotificationBox ID="nbRockFullName_AmountEntry" runat="server" NotificationBoxType="Validation" />
 
                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
@@ -129,7 +129,7 @@
                             <Rock:Toggle ID="tglIndividualOrBusiness" runat="server" ButtonGroupCssClass="btn-group-justified" OnText="Business" OffText="Individual" OnCheckedChanged="tglIndividualOrBusiness_CheckedChanged" />
 
                             <%-- Special input with rock-fullname class --%>
-                            <Rock:RockTextBox ID="tbRockFullName_PersonalInformation" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_PersonalInformation" Placeholder="Please enter name (Required)" />
+                            <Rock:RockTextBox ID="tbRockFullName_PersonalInformation" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_PersonalInformation" Placeholder="Please enter name (Required)" autocomplete="new-password" />
                             <Rock:NotificationBox ID="nbRockFullName_PersonalInformation" runat="server" NotificationBoxType="Validation" />
 
                             <asp:Panel ID="pnlPersonInformationAsIndividual" runat="server">

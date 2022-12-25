@@ -41,7 +41,7 @@
                                 </div>
 
                                 <%-- Special input with rock-fullname class --%>
-                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="fieldgroup-personentry">
