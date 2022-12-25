@@ -405,7 +405,7 @@ $('#{0}').tooltip();
                 var days = ( groupScheduleRowInfo.OccurrenceEndDate - groupScheduleRowInfo.OccurrenceStartDate ).Days;
                 if ( days > 1 )
                 {
-                    scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span> <span class='small'>({days} days)</span>";
+                    scheduleDate = $"<span class='schedule-date'>{scheduleDate} - {groupScheduleRowInfo.OccurrenceEndDate.ToShortDateString()}</span>";
                 }
                 else
                 {
