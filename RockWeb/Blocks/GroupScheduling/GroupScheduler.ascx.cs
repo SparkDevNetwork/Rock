@@ -446,7 +446,7 @@ btnCopyToClipboard.ClientID );
             }
 
             int? selectedGroupId = null;
-            List<int> pickerGroupIds;
+            List<int> pickerGroupIds = new List<int>();
             bool showChildGroups;
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
@@ -475,9 +475,26 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                pickerGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
                 selectedGroupId = this.GetBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
                 showChildGroups = this.GetBlockUserPreference( UserPreferenceKey.ShowChildGroups ).AsBoolean();
+            }
+
+            var userPreferenceGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+            if ( pickerGroupIds.Any() )
+            {
+                var pickerSelectedGroupIds = userPreferenceGroupIds.Where( a => pickerGroupIds.Contains( a ) ).ToList();
+                if ( pickerSelectedGroupIds.Any() )
+                {
+                    pickerGroupIds = pickerSelectedGroupIds;
+                }
+                else
+                {
+                    pickerGroupIds = pickerGroupIds.Take( 1 ).ToList();
+                }
+            }                                       
+            else
+            {
+                pickerGroupIds = userPreferenceGroupIds;
             }
 
             // if there is a 'GroupIds' parameter/userpreference, that defines what groups are shown.
