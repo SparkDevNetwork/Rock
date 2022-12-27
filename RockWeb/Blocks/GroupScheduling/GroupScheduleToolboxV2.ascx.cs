@@ -1113,7 +1113,7 @@ $('#{0}').tooltip();
                     occurenceDetail += " - ";
                 }
 
-                occurenceDetail += groupScheduleRowInfo.Location.ToString();
+                occurenceDetail += groupScheduleRowInfo.Location.ToString( true );
             }
 
             occurenceDetail += "</span><span class='schedule-occurrence-schedule'>" + GetOccurrenceScheduleName( groupScheduleRowInfo ) + "</span>";
