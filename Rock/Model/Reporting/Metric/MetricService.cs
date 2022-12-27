@@ -137,12 +137,14 @@ FROM (
     SELECT pvt.Id
       ,cast(pvt.MetricValueDateTime AS DATE) AS [MetricValueDateTime]
       ,pvt.YValue
+      ,pvt.IsGoal
 {viewPartitionSELECTClauses}
     FROM (
         SELECT 
 	      mv.Id
           ,mv.YValue
           ,mv.MetricValueDateTime
+          ,case when MetricValueType = 1 then 1 else 0 end as IsGoal
           ,mvp.EntityId
           ,mp.Id [PartitionId]
         FROM MetricValue mv

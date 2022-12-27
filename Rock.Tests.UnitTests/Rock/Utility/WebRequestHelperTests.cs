@@ -29,9 +29,9 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void GetXForwardedForIpAddress_SingleForwardedRequestReturnsIPv4()
         {
-            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "10.18.20.1" );
+            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "169.254.18.24" );
 
-            Assert.That.AreEqual( "10.18.20.1", ipAddress );
+            Assert.That.AreEqual( "169.254.18.24", ipAddress );
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void GetXForwardedForIpAddress_SingleForwardedRequestReturnsIPv6()
         {
-            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "2001:4860:4860::8888" );
+            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "fe80::260:97ff:fe02:6ea5" );
 
-            Assert.That.AreEqual( "2001:4860:4860::8888", ipAddress );
+            Assert.That.AreEqual( "fe80::260:97ff:fe02:6ea5", ipAddress );
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void GetXForwardedForIpAddress_MultiForwardedRequestReturnsFirstIp()
         {
-            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "10.18.20.1,10.203.14.7" );
+            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "169.254.18.24,169.254.212.7" );
 
-            Assert.That.AreEqual( "10.18.20.1", ipAddress );
+            Assert.That.AreEqual( "169.254.18.24", ipAddress );
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void GetXForwardedForIpAddress_ForwardedRequestStripsIPv4Port()
         {
-            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "10.18.20.1:28372" );
+            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "169.254.18.24:28372" );
 
-            Assert.That.AreEqual( "10.18.20.1", ipAddress );
+            Assert.That.AreEqual( "169.254.18.24", ipAddress );
         }
 
         /// <summary>
@@ -77,9 +77,9 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void GetXForwardedForIpAddress_ForwardedRequestStripsIPv6Port()
         {
-            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "[2001:4860:4860::8888]:28372" );
+            var ipAddress = WebRequestHelper.GetXForwardedForIpAddress( "[fe80::260:97ff:fe02:6ea5]:28372" );
 
-            Assert.That.AreEqual( "2001:4860:4860::8888", ipAddress );
+            Assert.That.AreEqual( "fe80::260:97ff:fe02:6ea5", ipAddress );
         }
 
         #endregion

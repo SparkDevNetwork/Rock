@@ -288,6 +288,19 @@ namespace RockWeb.Blocks.Crm
             }});
         }}
 
+        // Radiobuttons needs special handling
+        var radioButtons = formGroup.find(':radio');
+        if ( radioButtons.length ) {{
+            $(radioButtons).each(function() {{
+                if (this.nodeName === 'INPUT' ) {{
+                    $(this).toggleClass('aspNetDisabled', !enabled);
+                    $(this).prop('disabled', !enabled);
+                    $(this).closest('label').toggleClass('text-muted', !enabled);
+                    $(this).closest('.form-group').toggleClass('bulk-item-selected', enabled);
+                }}
+            }});
+        }}
+
         // Enable/Disable the controls
         formGroup.find('.form-control').each( function() {{
 

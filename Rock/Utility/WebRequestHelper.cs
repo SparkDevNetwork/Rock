@@ -138,7 +138,7 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="headerValue">The value of the X-Forwarded-For header.</param>
         /// <returns></returns>
-        internal static string GetXForwardedForIpAddress( string headerValue )
+        public static string GetXForwardedForIpAddress( string headerValue )
         {
             /* 10/7/2021 - JME 
                Gets the IP Address from the X-Forward-For header. This can be a single address or in complex environments it could be a commma
@@ -153,6 +153,15 @@ namespace Rock.Utility
 
             var ipAddress = headerValue.Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries ).ToList().FirstOrDefault();
 
+            /* 12/20/2022 - DSH
+               The X-Forwarded-For header can contain either an IPv4 or IPv6
+               address, with or without a port number. Therefor the actual content
+               might match one of the following four values:
+               169.254.18.24
+               169.254.18.24:28372
+               fe80::260:97ff:fe02:6ea5
+               [fe80::260:97ff:fe02:6ea5]:28372
+             */
             if ( ipAddress != null )
             {
                 // Check for either IPv4 or IPv6 with port number.
