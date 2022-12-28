@@ -15,7 +15,7 @@
 //
 
 import { FilterMode } from "./filterMode";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 /** The comparison types typically used for simple binary comparison. */
 export const binaryComparisonTypes: ComparisonType = ComparisonType.EqualTo
@@ -58,7 +58,7 @@ export const dateComparisonTypes: ComparisonType = ComparisonType.EqualTo
 
 /**
  * Gets the user friendly name for the comparison type.
- * 
+ *
  * @param type The type of comparison.
  *
  * @returns A string containing the name of the comparison.
@@ -115,7 +115,7 @@ export function getComparisonName(type: ComparisonType): string {
 /**
  * Checks if the standard comparison type component should be visible or not for
  * the given comparison type options and filter mode.
- * 
+ *
  * @param comparisonType The comparison types available to be selected.
  * @param filterMode The type of filtering UI to show.
  *
@@ -136,7 +136,7 @@ export function isCompareVisibleForComparisonFilter(comparisonType: ComparisonTy
 /**
  * Determines if this comparision type specifies one and only one type. This
  * uses bitwise logic to ensure that only a single bit is set.
- * 
+ *
  * @param comparisionType The comparison type to check.
  *
  * @returns true if the comparison type specifies one and only one type.

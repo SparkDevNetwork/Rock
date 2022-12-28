@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
-    import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -82,7 +82,7 @@
         return loadOptions;
     });
 
-    const displayStyle = computed((): PickerDisplayStyleType => {
+    const displayStyle = computed((): PickerDisplayStyle => {
         if (standardProps.displayStyle !== PickerDisplayStyle.Auto) {
             return standardProps.displayStyle;
         }

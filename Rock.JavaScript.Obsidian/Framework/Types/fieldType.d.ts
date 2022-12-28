@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { Component } from "vue";
 /**

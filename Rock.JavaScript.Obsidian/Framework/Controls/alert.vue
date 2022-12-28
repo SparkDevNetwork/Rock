@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import { AlertType, AlertTypeValuesType } from "@Obsidian/Types/Controls/alert";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
 
     const props = defineProps({
@@ -19,7 +19,7 @@
             default: false
         },
         alertType: {
-            type: String as PropType<LiteralUnion<AlertTypeValuesType>>,
+            type: String as PropType<LiteralUnion<AlertType>>,
             default: AlertType.Default
         }
     });

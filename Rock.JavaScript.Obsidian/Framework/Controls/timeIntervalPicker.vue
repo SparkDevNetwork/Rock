@@ -9,14 +9,14 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed } from 'vue';
+    import { PropType, computed } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";
-    import { ListItemBag } from '@Obsidian/ViewModels/Utility/listItemBag';
-    import { toNumber } from '@Obsidian/Utility/numberUtils';
-    import { TimeInterval } from '@Obsidian/ViewModels/Utility/timeInterval';
-    import { TimeIntervalUnit } from '@Obsidian/Enums/Utility/timeIntervalUnit';
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
@@ -41,7 +41,7 @@
         }
     });
 
-    const value = computed<TimeInterval['value']>({
+    const value = computed<TimeInterval["value"]>({
         get() {
             return internalValue.value.value;
         },
@@ -53,13 +53,13 @@
         }
     });
 
-    const unit = computed<`${TimeInterval['unit']}`>({
+    const unit = computed<`${TimeInterval["unit"]}`>({
         get() {
-            return internalValue.value.unit?.toString() ?? TimeIntervalUnit.Minutes.toString();
+            return `${internalValue.value.unit ?? TimeIntervalUnit.Minutes}`;
         },
         set(newValue) {
             internalValue.value = {
-                unit: toNumber(newValue),
+                unit: toNumber(newValue) as TimeIntervalUnit,
                 value: internalValue.value.value
             };
         }

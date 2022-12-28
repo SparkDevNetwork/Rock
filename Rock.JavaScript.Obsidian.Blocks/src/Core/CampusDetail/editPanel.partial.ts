@@ -31,7 +31,7 @@ import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { DefinedType } from "@Obsidian/SystemGuids";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
 export default defineComponent({
     name: "Core.CampusDetail.EditPanel",

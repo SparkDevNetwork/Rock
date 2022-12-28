@@ -335,7 +335,7 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { BinaryFiletype } from "@Obsidian/SystemGuids";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
     import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -644,14 +644,14 @@
         const newValue: InteractiveExperienceBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
-            campusBehavior: toNumber(campusBehavior.value),
+            campusBehavior: toNumber(campusBehavior.value) as InteractiveExperienceCampusBehavior,
             defaultCampus: defaultCampus.value,
             description: description.value,
             isActive: isActive.value,
             name: name.value,
             publicLabel: publicLabel.value,
             photoBinaryFile: experiencePhoto.value,
-            pushNotificationType: toNumber(pushNotificationConfiguration.value),
+            pushNotificationType: toNumber(pushNotificationConfiguration.value) as InteractiveExperiencePushNotificationType,
             pushNotificationTitle: pushNotificationTitle.value,
             pushNotificationDetail: pushNotificationDetail.value,
             welcomeTitle: welcomeTitle.value,

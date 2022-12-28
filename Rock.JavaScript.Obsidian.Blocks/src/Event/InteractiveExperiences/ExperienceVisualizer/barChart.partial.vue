@@ -39,7 +39,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref, watch } from "vue";
+    import { computed, onMounted, shallowRef, watch } from "vue";
     import { visualizerProps } from "./util.partial";
     import { Chart, ChartConfiguration, ChartData, ChartTypeRegistry, ScaleOptions } from "@Obsidian/Libs/chart";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -55,7 +55,7 @@
 
     // #region Values
 
-    const canvasElement = ref<HTMLCanvasElement | null>(null);
+    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
     const colorConsumer = createSequentialConsumer(getColors(), 0);
     let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
 

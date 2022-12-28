@@ -53,7 +53,7 @@
     import { DrawingMode } from "@Obsidian/Types/Controls/geo";
     import { wellKnownToCoordinates, nearAddressForCoordinates, loadMapResources } from "@Obsidian/Utility/geo";
     import { Guid } from "@Obsidian/Types";
-    import { DefinedValue } from "@Obsidian/SystemGuids";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 
     const props = defineProps({
         ...standardRockFormFieldProps,

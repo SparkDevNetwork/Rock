@@ -29,7 +29,7 @@ import TextBox from "@Obsidian/Controls/textBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import { PropType } from "vue";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";
 

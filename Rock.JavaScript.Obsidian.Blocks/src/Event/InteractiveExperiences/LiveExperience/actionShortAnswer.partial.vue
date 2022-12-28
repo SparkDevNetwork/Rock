@@ -16,7 +16,7 @@
         </Alert>
 
         <div class="submit">
-            <RockButton :btnType="primaryButton"
+            <RockButton :btnType="BtnType.Primary"
                         :disabled="isButtonDisabled"
                         @click="onSubmitClick">
                 Submit
@@ -50,7 +50,7 @@
 <script setup lang="ts">
     import Alert from "@Obsidian/Controls/alert.vue";
     import RockButton from "@Obsidian/Controls/rockButton";
-    import { BtnType } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, ref, watch } from "vue";
     import { actionProps } from "./util.partial";
 
@@ -59,7 +59,6 @@
     // #region Values
 
     const answerText = ref("");
-    const primaryButton = BtnType.Primary;
     const isAnswerSubmitted = ref(false);
     const errorMessage = ref("");
 

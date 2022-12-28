@@ -18,10 +18,10 @@
 import { computed, defineComponent, nextTick, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert.vue";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
 import { useConfigurationValues } from "@Obsidian/Utility/block";
-import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { popover } from "@Obsidian/Utility/popover";
 

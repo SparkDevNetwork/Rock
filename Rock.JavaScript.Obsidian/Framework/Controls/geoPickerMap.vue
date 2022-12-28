@@ -16,7 +16,7 @@
     import { Guid } from "@Obsidian/Types";
     import { DrawingMode, Coordinate } from "@Obsidian/Types/Controls/geo";
     import { toCoordinate, wellKnownToCoordinates, coordinatesToWellKnown, loadMapResources, createLatLng } from "@Obsidian/Utility/geo";
-    import { DefinedValue } from "@Obsidian/SystemGuids";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import Loading from "@Obsidian/Controls/loading";
     import { confirm } from "@Obsidian/Utility/dialogs";
 

@@ -26,7 +26,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
-import { FieldType } from "@Obsidian/SystemGuids";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
 import { normalize as normalizeGuid } from "@Obsidian/Utility/guid";

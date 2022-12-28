@@ -50,7 +50,8 @@
     import RockButton from "./rockButton";
     import Loading from "./loading";
     import Alert from "./alert.vue";
-    import { BtnSize, BtnType } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({

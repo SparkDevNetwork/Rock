@@ -16,11 +16,10 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { GatewayControlModel } from "@Obsidian/Controls/gatewayControl";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
@@ -89,7 +88,7 @@ export type RegistrationEntryBlockViewModel = {
     forceEmailUpdate: boolean;
     registrarOption: RegistrarOption;
     cost: number;
-    gatewayControl: GatewayControlModel;
+    gatewayControl: GatewayControlBag;
     isRedirectGateway: boolean;
     spotsRemaining: number | null;
     waitListEnabled: boolean;

@@ -32,7 +32,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { ContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentSourceBag";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { areEqual } from "@Obsidian/Utility/guid";
 import Source from "./source.partial";
@@ -138,7 +138,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the person clicks outside the add source popup.
-         * 
+         *
          * @param event The event that is being processed.
          */
         const onAddSourceWindowClick = (event: Event): void => {
@@ -154,7 +154,7 @@ export default defineComponent({
             }
         };
 
-        /** 
+        /**
          * Event handler for toggling the add source popup.
          */
         const onAddSourceClick = (): void => {
@@ -281,7 +281,7 @@ export default defineComponent({
         /**
          * Event handler for when the person wants to delete the specified
          * source from the collection.
-         * 
+         *
          * @param source The source that should be deleted from the collection.
          */
         const onDeleteSource = async (source: ContentSourceBag): Promise<void> => {
@@ -306,7 +306,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the person attempts to edit a collection source.
-         * 
+         *
          * @param source The source that should be edited.
          */
         const onEditSource = async (source: ContentSourceBag): Promise<void> => {
@@ -358,7 +358,7 @@ export default defineComponent({
         /**
          * Event Handler for when the sources have been re-ordered by the person
          * via a drag and drop action.
-         * 
+         *
          * @param value The value that was moved in the list.
          * @param beforeValue The value it was placed before or null if end of list.
          */

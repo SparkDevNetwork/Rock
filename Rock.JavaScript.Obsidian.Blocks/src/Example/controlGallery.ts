@@ -47,8 +47,9 @@
  */
 
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
-import { ObjectUtils } from "@Obsidian/Utility";
-import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -115,7 +116,11 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { BinaryFiletype, DefinedType, EntityType, FieldType, AssessmentType } from "@Obsidian/SystemGuids";
+import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
+import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
@@ -124,7 +129,7 @@ import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCol
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
-import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
 import ComponentPicker from "@Obsidian/Controls/componentPicker";
@@ -147,7 +152,7 @@ import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
 import Alert from "@Obsidian/Controls/alert.vue";
-import { AlertType } from "@Obsidian/Types/Controls/alert";
+import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";

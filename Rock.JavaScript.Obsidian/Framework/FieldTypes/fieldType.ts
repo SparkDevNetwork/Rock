@@ -22,7 +22,7 @@ import { escapeHtml, truncate } from "@Obsidian/Utility/stringUtils";
 import { EditComponent as TextEditComponent } from "./textFieldComponents";
 import { getFieldEditorProps, getStandardFilterComponent } from "./utils";
 import { IFieldType } from "@Obsidian/Types/fieldType";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 /**
  * Define a simple component that can be used when editing the configuration of

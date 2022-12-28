@@ -16,7 +16,9 @@
 //
 
 import { defineComponent, inject, ref } from "vue";
-import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import Alert from "@Obsidian/Controls/alert.vue";
@@ -37,7 +39,7 @@ export default defineComponent({
         RockValidation
     },
     setup() {
-        const submitPayment = prepareSubmitPayment();
+        const submitPayment = provideSubmitPayment();
 
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
         const invokeBlockAction = useInvokeBlockAction();
@@ -74,7 +76,7 @@ export default defineComponent({
 
     computed: {
         /** The settings for the gateway (MyWell, etc) control */
-        gatewayControlModel(): GatewayControlModel {
+        gatewayControlModel(): GatewayControlBag {
             return this.viewModel.gatewayControl;
         },
 

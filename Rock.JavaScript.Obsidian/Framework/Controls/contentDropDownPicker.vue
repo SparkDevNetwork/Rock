@@ -128,7 +128,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import RockButton from "./rockButton";
-    import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import RockFormField from "./rockFormField";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";

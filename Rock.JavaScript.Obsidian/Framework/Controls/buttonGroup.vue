@@ -12,8 +12,10 @@
     import RockFormField from "@Obsidian/Controls/rockFormField";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
 
     // Use ListItemBag, but don't worry about the "category" property and make the other properties not null/undefined
     type StandardListItemBag = {
@@ -32,12 +34,12 @@
         },
 
         unselectedBtnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Default
         },
 
         selectedBtnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Primary
         },
 
@@ -62,7 +64,7 @@
         }
     });
 
-    function itemButtonType(item: StandardListItemBag): BtnType {
+    function itemButtonType(item: StandardListItemBag): LiteralUnion<BtnType> {
         return item.value == internalValue.value ? props.selectedBtnType : props.unselectedBtnType;
     }
 

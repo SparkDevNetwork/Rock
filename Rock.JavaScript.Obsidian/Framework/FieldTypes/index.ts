@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids";
+import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import { registerFieldType } from "@Obsidian/Utility/fieldTypes";
 
 export { ConfigurationValues, getFieldEditorProps } from "./utils";

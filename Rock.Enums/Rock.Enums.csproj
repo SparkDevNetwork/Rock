@@ -89,6 +89,7 @@
     <Compile Include="Core\SignatureDocumentStatus.cs" />
     <Compile Include="Core\SignatureType.cs" />
     <Compile Include="Core\SpecialRole.cs" />
+    <Compile Include="Core\TimeIntervalUnit.cs" />
     <Compile Include="Core\UpdatedAddressType.cs" />
     <Compile Include="Crm\AgeClassification.cs" />
     <Compile Include="Crm\AssessmentRequestStatus.cs" />

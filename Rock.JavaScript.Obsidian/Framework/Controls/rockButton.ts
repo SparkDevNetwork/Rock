@@ -16,7 +16,9 @@
 //
 import { computed, defineComponent, PropType, ref } from "vue";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
-import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
 export default defineComponent({
     name: "RockButton",
@@ -39,7 +41,7 @@ export default defineComponent({
             default: false
         },
         btnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Default
         },
         btnSize: {

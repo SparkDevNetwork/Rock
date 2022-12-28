@@ -5,7 +5,7 @@
             <Slider v-model="value" :max="maxValue" showValueBar isIntegerOnly />
         </div>
         <div class="text-right margin-b-md">
-            <ButtonGroup v-model="unit" :items="options" :btnSize="btnSize" :unselectedBtnType="unselectedBtnType" :selectedBtnType="selectedBtnType" />
+            <ButtonGroup v-model="unit" :items="options" :btnSize="BtnSize.ExtraSmall" :unselectedBtnType="unselectedBtnType" :selectedBtnType="selectedBtnType" />
         </div>
     </RockFormField>
 </template>
@@ -17,9 +17,11 @@
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
-    import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
-    import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
 
     const props = defineProps({
         modelValue: {
@@ -28,12 +30,12 @@
         },
 
         unselectedBtnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Default
         },
 
         selectedBtnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Primary
         },
 
@@ -75,11 +77,11 @@
 
     const unit = computed<`${TimeInterval["unit"]}`>({
         get() {
-            return internalValue.value.unit?.toString() ?? TimeIntervalUnit.Minutes.toString();
+            return `${internalValue.value.unit ?? TimeIntervalUnit.Minutes}`;
         },
         set(newValue) {
             internalValue.value = {
-                unit: toNumber(newValue),
+                unit: toNumber(newValue) as TimeIntervalUnit,
                 value: internalValue.value.value
             };
         }
@@ -108,6 +110,5 @@
         }
     });
 
-    const btnSize = BtnSize.ExtraSmall;
     const standardFieldProps = useStandardRockFormFieldProps(props);
 </script>

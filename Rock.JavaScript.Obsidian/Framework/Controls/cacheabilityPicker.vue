@@ -17,7 +17,7 @@
     import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
     import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
     import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
-    import { TimeIntervalUnit } from "@Obsidian/Enums/Utility/timeIntervalUnit";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
 
     const props = defineProps({
         modelValue: {

@@ -17,9 +17,9 @@
 
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert.vue";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./AssessmentTypeDetail/editPanel.partial";
 import ViewPanel from "./AssessmentTypeDetail/viewPanel.partial";
@@ -53,7 +53,7 @@ export default defineComponent({
         const assessmentTypeViewBag = ref(config.entity);
         const assessmentTypeEditBag = ref<AssessmentTypeBag | null>(null);
 
-        const panelMode = ref(DetailPanelMode.View);
+        const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
         // The properties that are being edited in the UI. This is used to
         // inform the server which incoming values have valid data in them.
