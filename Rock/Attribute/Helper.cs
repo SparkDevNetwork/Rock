@@ -1674,7 +1674,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                         foreach ( var changedAttributeValue in changedAttributeValues )
                         {
-                            var attributeCache = AttributeCache.Get( changedAttributeValue.Id );
+                            var attributeCache = AttributeCache.Get( changedAttributeValue.AttributeId );
 
                             if ( attributeCache != null )
                             {
