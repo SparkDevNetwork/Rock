@@ -29,7 +29,7 @@
       "@Obsidian/FieldTypes/*": [ "./FieldTypes/*" ],
       "@Obsidian/Libs/*": [ "./Libs/*" ],
       "@Obsidian/PageState": [ "./PageState" ],
-      "@Obsidian/SystemGuids": [ "./SystemGuids" ],
+      "@Obsidian/SystemGuids/*": [ "./SystemGuids/*" ],
       "@Obsidian/Types": [ "./Types" ],
       "@Obsidian/Types/*": [ "./Types/*" ],
       "@Obsidian/Utility": [ "./Utility" ],

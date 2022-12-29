@@ -9,7 +9,7 @@
             <asp:Literal runat="server" ID="lDashboardSubtitle" />
         </asp:Panel>
         <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select a metric in the block settings." />
-        <Rock:LineChart ID="flotChart" runat="server" />
+        <Rock:RockLineChart ID="metricChart" runat="server" />
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">

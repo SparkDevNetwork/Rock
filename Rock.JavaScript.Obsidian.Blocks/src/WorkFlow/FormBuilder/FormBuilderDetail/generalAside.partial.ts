@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
 import { DragSource, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import Switch from "@Obsidian/Controls/switch";

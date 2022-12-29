@@ -64,7 +64,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbShowPublicly" runat="server" Label="Show Publicly" Help="Determines if this schedule should be show or hidden when viewed by individuals outside of the organization." />
+                            <Rock:RockCheckBox ID="cbShowPublicly" runat="server" Label="Show Publicly" Help="Determines if this schedule should be shown or hidden when viewed by individuals outside of the organization." />
                         </div>
                     </div>
 

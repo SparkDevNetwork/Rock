@@ -158,7 +158,11 @@ namespace Rock.Slingshot
             if ( csvColumnBirthdate != null )
             {
                 string birthdateString = csvEntryLookup[csvColumnBirthdate].ToStringSafe();
-                if ( DateTime.TryParse( birthdateString, out DateTime birthdateDateTime ) )
+                if ( birthdateString.IsNullOrWhiteSpace() )
+                {
+                    person.Birthdate = null;
+                }
+                else if ( DateTime.TryParse( birthdateString, out DateTime birthdateDateTime ) )
                 {
                     person.Birthdate = birthdateDateTime;
                 }
@@ -172,7 +176,11 @@ namespace Rock.Slingshot
             if ( csvColumnAnniversaryDate != null )
             {
                 string anniversaryDateString = csvEntryLookup[csvColumnAnniversaryDate].ToStringSafe();
-                if ( DateTime.TryParse( anniversaryDateString, out DateTime AnniversaryDateTime ) )
+                if ( anniversaryDateString.IsNullOrWhiteSpace() )
+                {
+                    person.AnniversaryDate = null;
+                }
+                else if( DateTime.TryParse( anniversaryDateString, out DateTime AnniversaryDateTime ) )
                 {
                     person.AnniversaryDate = AnniversaryDateTime;
                 }
@@ -213,7 +221,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Could not set Is Deceased to {isDeceasedString} defaulting to \'{person.IsDeceased}\'" );
+                    parserErrors.Add( $"Could not set Is Deceased to \'{isDeceasedString}\'; defaulting to \'{person.IsDeceased}\'" );
                 }
             }
 
@@ -251,7 +259,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    parserErrors.Add( $"Could not set Give Individually to {givingIndividuallyString} defaulting to \'{person.GiveIndividually}\'" );
+                    parserErrors.Add( $"Could not set Give Individually to \'{givingIndividuallyString}\'; defaulting to \'{person.GiveIndividually}\'" );
                 }
             }
 
@@ -259,7 +267,11 @@ namespace Rock.Slingshot
             if ( csvColumnCreatedDateTime != null )
             {
                 string createdDateTimeString = csvEntryLookup[csvColumnCreatedDateTime].ToStringSafe();
-                if ( DateTime.TryParse( createdDateTimeString, out DateTime createdDateTime ) )
+                if ( createdDateTimeString.IsNullOrWhiteSpace() )
+                {
+                    person.CreatedDateTime = null;
+                }
+                else if ( DateTime.TryParse( createdDateTimeString, out DateTime createdDateTime ) )
                 {
                     person.CreatedDateTime = createdDateTime;
                 }
@@ -273,7 +285,11 @@ namespace Rock.Slingshot
             if ( csvColumnModifiedDateTime != null )
             {
                 string modifiedDateTimeString = csvEntryLookup[csvColumnModifiedDateTime].ToStringSafe();
-                if ( DateTime.TryParse( modifiedDateTimeString, out DateTime modifiedDateTime ) )
+                if ( modifiedDateTimeString.IsNullOrWhiteSpace() )
+                {
+                    person.ModifiedDateTime = null;
+                }
+                else if ( DateTime.TryParse( modifiedDateTimeString, out DateTime modifiedDateTime ) )
                 {
                     person.ModifiedDateTime = modifiedDateTime;
                 }

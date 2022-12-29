@@ -27,7 +27,7 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import Modal from "@Obsidian/Controls/modal";
 import RockButton from "@Obsidian/Controls/rockButton";
 import AttributeEditor from "@Obsidian/Controls/attributeEditor";
@@ -149,9 +149,9 @@ export default defineComponent({
 
         // #region Event Handlers
 
-        async function onAddAttribute(attributeGuid: Guid) {
+        async function onAddAttribute(attributeGuid: Guid): Promise<void> {
 
-            let response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
+            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
                 attributeGuid: attributeGuid
             });
 
@@ -163,7 +163,7 @@ export default defineComponent({
             }
         }
 
-        const onSaveEditAttribute = () => {
+        const onSaveEditAttribute = (): void => {
 
             if (siteAttribute.value && props.options.siteAttributes) {
                 const index = props.options.siteAttributes.findIndex(a => a.guid === siteAttribute.value?.guid);
@@ -373,32 +373,32 @@ export default defineComponent({
                 label="Change Password Page"
                 :multiple="false"
                 help="The page for changing a password for the site."
-                promptForPageRoute 
+                promptForPageRoute
                 showSelectCurrentPage />
 
             <PagePicker v-model="communicationPage"
                 label="Communication Page"
                 :multiple="false"
                 help="The page that user will be redirected to when creating a new communication."
-                promptForPageRoute 
+                promptForPageRoute
                 showSelectCurrentPage />
 
             <PagePicker v-model="registrationPage"
                 label="Group Registration Page"
                 :multiple="false"
                 help="The page that user will be redirected to when they request to register for a group."
-                promptForPageRoute 
+                promptForPageRoute
                 showSelectCurrentPage />
 
             <PagePicker v-model="pageNotFoundPage"
                 label="404 Page"
                 :multiple="false"
                 help="Page to use instead of the server's 404 message."
-                promptForPageRoute 
+                promptForPageRoute
                 showSelectCurrentPage />
         </div>
 
-        
+
         <div class="col-md-6 col-md-offset-2">
 
             <TextBox v-model="siteDomains"

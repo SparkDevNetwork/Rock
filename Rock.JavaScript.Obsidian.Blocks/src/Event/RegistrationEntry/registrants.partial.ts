@@ -17,7 +17,7 @@
 
 import { defineComponent, inject } from "vue";
 import Registrant from "./registrant.partial";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { RegistrantInfo, RegistrationEntryState } from "./types";
 
 export default defineComponent({

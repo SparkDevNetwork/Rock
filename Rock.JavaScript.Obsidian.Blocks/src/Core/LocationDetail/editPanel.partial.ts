@@ -17,13 +17,13 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import AddressControl from "@Obsidian/Controls/addressControl";
-import Alert from "@Obsidian/Controls/alert.vue";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
-import LocationPicker from "@Obsidian/Controls/locationPicker";
+import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -31,7 +31,7 @@ import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/bl
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
 import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
-import { DefinedType } from "@Obsidian/SystemGuids";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
 
@@ -230,7 +230,7 @@ export default defineComponent({
                 :showBlankItem="true"
                 :definedTypeGuid="locationTypeDefinedTypeGuid" />
 
-            <DropDownList label="Printer" 
+            <DropDownList label="Printer"
                 v-model="printerDevice"
                 :items="printerDeviceOptions"
                 help="The printer that this location should use for printing."
@@ -275,7 +275,7 @@ export default defineComponent({
                     <NumberBox label="Threshold (Absolute)" v-model="firmRoomThreshold" help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
                 </div>
             </div>
-            
+
         </div>
     </div>
 

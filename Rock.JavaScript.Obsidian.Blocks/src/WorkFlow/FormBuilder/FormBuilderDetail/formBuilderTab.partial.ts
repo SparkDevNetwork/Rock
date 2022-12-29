@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { computed, defineComponent, reactive, Ref, ref, watch } from "vue";
+import { computed, defineComponent, reactive, Ref, ref, shallowRef, watch } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Modal from "@Obsidian/Controls/modal";
 import Panel from "@Obsidian/Controls/panel";
@@ -322,7 +322,7 @@ export default defineComponent({
         const fieldReorderDragSourceOptions = getFieldReorderDragSourceOptions(sections);
 
         /** The body element that will be used for drag and drop operations. */
-        const bodyElement = ref<HTMLElement | null>(null);
+        const bodyElement = shallowRef<HTMLElement | null>(null);
 
         /** The component instance that is displaying the general form settings. */
         const generalAsideComponentInstance = ref<IAsideProvider | null>(null);

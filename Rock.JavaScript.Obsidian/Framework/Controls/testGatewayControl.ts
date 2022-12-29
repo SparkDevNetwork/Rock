@@ -18,7 +18,8 @@ import { defineComponent, PropType, ref } from "vue";
 import LoadingIndicator from "./loadingIndicator";
 import TextBox from "./textBox";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
+import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
 
 type Settings = {
 };

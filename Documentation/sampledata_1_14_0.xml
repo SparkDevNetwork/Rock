@@ -2,9 +2,14 @@
 <!-- 
   ║▌║█║▌│║▌▌│║▌█
   This file format is intended for internal use only.  There is no DTD which defines its 
-  specification yet.  It's purpose is to give us a way to quickly load some sample/play
-  data using the SampleData block.  The data in this file and it's specification is
+  specification yet.  Its purpose is to give us a way to quickly load some sample/play
+  data using the SampleData block.  The data in this file and its specification is
   not only subject to change, it will certainly change quite often.
+
+  When updating this data file, be sure to upload it to the cloud storage provider
+  where it is hosted, otherwise no one will get the change.
+  Once uploaded, the host may take several minutes to propagate the update
+  before the SampleData block can download the updated version.
 -->
 <data>
   <families>
@@ -240,7 +245,7 @@
 
     <!-- Alisha Marble, who is the Rock administrator at the church, is married to Bill. They are in 
     a bible study group with the Decker family. Interesting side note about Bill.  He is one of only
-    0.3% of the population who was born on a leap day (February 29, 1967). 
+    0.3% of the population who was born on a leap day (February 29, 1968). 
     -->
     <family name="Marble Family" guid="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" campus="main campus"
             startingAttendance="1/1/2012" endingAttendanceWeeksAgo="0" percentAttendance="88"
@@ -266,7 +271,7 @@
         </person>
         
         <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
-         firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
+         firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1968" gender="male"
          email="bill.marble@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"

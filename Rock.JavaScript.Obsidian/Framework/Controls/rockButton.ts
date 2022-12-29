@@ -16,7 +16,9 @@
 //
 import { computed, defineComponent, PropType, ref } from "vue";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
-import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
 export default defineComponent({
     name: "RockButton",
@@ -39,7 +41,7 @@ export default defineComponent({
             default: false
         },
         btnType: {
-            type: String as PropType<BtnType>,
+            type: String as PropType<LiteralUnion<BtnType>>,
             default: BtnType.Default
         },
         btnSize: {
@@ -63,6 +65,12 @@ export default defineComponent({
         onClick: {
             type: Function as PropType<((event: MouseEvent) => void | PromiseLike<void>)>,
             required: false
+        },
+
+        /** Change button proportions to make it a square. Used for buttons with only an icon. */
+        isSquare: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -93,7 +101,7 @@ export default defineComponent({
         });
 
         const cssClass = computed((): string => {
-            return `btn ${typeClass.value} ${sizeClass.value}`;
+            return `btn ${typeClass.value} ${sizeClass.value} ${props.isSquare ? "btn-square" : ""}`;
         });
 
         const onButtonClick = async (event: MouseEvent): Promise<void> => {

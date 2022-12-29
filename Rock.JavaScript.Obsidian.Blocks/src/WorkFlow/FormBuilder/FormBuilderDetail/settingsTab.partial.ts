@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, ref, PropType, watch } from "vue";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings.partial";

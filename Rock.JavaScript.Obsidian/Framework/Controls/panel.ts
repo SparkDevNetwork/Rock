@@ -319,11 +319,11 @@ export default defineComponent({
         </div>
 
         <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
-            <div class="panel-sub-header-left">
+            <div v-if="$slots.subheaderLeft" class="panel-sub-header-left">
                 <slot name="subheaderLeft" />
             </div>
 
-            <div class="panel-sub-header-right">
+            <div v-if="$slots.subheaderRight" class="panel-sub-header-right">
                 <slot name="subheaderRight" />
             </div>
         </div>
@@ -347,6 +347,10 @@ export default defineComponent({
                 <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
             </div>
         </div>
+
+        <template v-if="$slots.preBody">
+            <slot name="preBody" />
+        </template>
 
         <TransitionVerticalCollapse>
             <div v-show="isPanelOpen" class="panel-body">

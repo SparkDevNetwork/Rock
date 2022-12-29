@@ -36,6 +36,7 @@ namespace Rock.Tests.Integration.Lava
     {
         private const string SegmentAllMenGuid = "A8B006AF-1531-42B5-AD9A-570F97C8EFC1";
         private const string SegmentSmallGroupGuid = "F189099D-B1B7-4067-BD28-D354110AAB1D";
+        private const string SegmentHasGivenGuid = "354C8281-C4B6-44E2-8BB3-4E5E58A656A5";
         private const string SegmentTestInactiveGuid = "E5DBC839-1E16-4430-81A6-9EDEF9422B4F";
 
         private const string FilterMobileDeviceGuid = "F4F31B2A-F525-4E52-8A6E-ECA1E1EBD75B";
@@ -73,6 +74,18 @@ namespace Rock.Tests.Integration.Lava
             segmentSmallGroup.SegmentKey = "IN_SMALL_GROUP";
             segmentSmallGroup.Name = "Small Group";
             segmentSmallGroup.Guid = SegmentSmallGroupGuid.AsGuid();
+            rockContext.SaveChanges();
+
+            var segmentHasGiven = personalizationService.Get( SegmentHasGivenGuid.AsGuid() );
+            if ( segmentHasGiven == null )
+            {
+                segmentHasGiven = new PersonalizationSegment();
+                personalizationService.Add( segmentHasGiven );
+            }
+
+            segmentHasGiven.SegmentKey = "HAS_GIVEN";
+            segmentHasGiven.Name = "Has Given";
+            segmentHasGiven.Guid = SegmentHasGivenGuid.AsGuid();
             rockContext.SaveChanges();
 
             var segmentTestInactive = personalizationService.Get( SegmentTestInactiveGuid.AsGuid() );
@@ -891,6 +904,41 @@ Block 2.
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
                 TestGuids.TestPeople.TedDecker );
+        }
+
+        [TestMethod]
+        public void AddSegmentFilter_DocumentationExample_ProducesExpectedOutput()
+        {
+            var template = @"
+{% assign items = CurrentVisitor | PersonalizationItems:'Segments' %}
+<p><strong>Before:</strong></p>
+{% for item in items %}
+    <br>{{ item.Type }} - {{ item.Key }}
+{% endfor %}
+<p><strong>After:</strong></p>
+{{ CurrentPerson | AddSegment:'IN_SMALL_GROUP,HAS_GIVEN' }}
+{% assign items = CurrentVisitor | PersonalizationItems:'Segments' %}
+{% for item in items %}
+    <br>{{ item.Type }} - {{ item.Key }}
+{% endfor %}
+";
+            var output = @"
+<p><strong>Before:</strong></p><br>
+Segment-ALL_MEN<p><strong>After:</strong></p><br>Segment-ALL_MEN<br>Segment-HAS_GIVEN<br>Segment-IN_SMALL_GROUP
+";
+            // This Lava filter has side-effects, so we need to reset the initial conditions before testing
+            // each engine.
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // Establish the initial conditions by ensuring that Bill does not exist in the target segment.
+                RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
+                RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "HAS_GIVEN" );
+
+                AssertOutputForPersonAndRequest( engine,
+                    template,
+                    output,
+                    TestGuids.TestPeople.BillMarble );
+            } );
         }
 
         #endregion

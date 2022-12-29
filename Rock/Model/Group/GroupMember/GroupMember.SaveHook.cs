@@ -24,6 +24,7 @@ using Humanizer;
 
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -49,8 +50,8 @@ namespace Rock.Model
                      && Entity.IsArchived == false
                      && Entity.GroupMemberStatus != GroupMemberStatus.Inactive )
                 {
-                    var previousIsArchived = this.State == EntityContextState.Modified && OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
                     // Bypass Group Member requirement check when group member is unarchived instead we will show 'does not meet' symbol in group member list.
+                    var previousIsArchived = this.State == EntityContextState.Modified && OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
                     if ( !previousIsArchived )
                     {
                         if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
@@ -245,20 +246,6 @@ namespace Rock.Model
 
                         historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{deletedMemberPerson?.FullName}" ).SetCaption( $"{deletedMemberPerson?.FullName}" );
                     }
-
-                    // process universal search indexing if required
-                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
-                    if ( groupType != null && groupType.IsIndexEnabled )
-                    {
-                        int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
-                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                        {
-                            EntityTypeId = groupEntityTypeId,
-                            EntityId = group.Id
-                        };
-
-                        processEntityTypeIndexMsg.SendWhen( this.RockContext.WrappedTransactionCompletedTask );
-                    }
                 }
 
                 _preSaveChangesOldGroupId = oldGroupId;
@@ -368,7 +355,6 @@ namespace Rock.Model
                         PersonService.UpdatePrimaryFamily( Entity.PersonId, rockContext );
                         PersonService.UpdateGivingLeaderId( Entity.PersonId, rockContext );
 
-
                         GroupService.UpdateGroupSalutations( Entity.GroupId, rockContext );
 
                         if ( _preSaveChangesOldGroupId.HasValue && _preSaveChangesOldGroupId.Value != Entity.GroupId )
@@ -410,6 +396,15 @@ namespace Rock.Model
                             }
                         }
                     }
+                }
+
+                // process universal search indexing if required
+                var groupType = GroupTypeCache.Get( this.Entity.GroupTypeId );
+                if ( groupType != null && groupType.IsIndexEnabled && this.Entity.Group.IsActive )
+                {
+                    var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
+                    var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
+                    groupIndexTransaction.Enqueue();
                 }
 
                 SendUpdateGroupMemberMessage();

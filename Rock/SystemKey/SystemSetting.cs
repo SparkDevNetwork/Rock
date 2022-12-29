@@ -287,5 +287,15 @@ namespace Rock.SystemKey
         /// Label text for the PersonGenderPicker
         /// </summary>
         public const string PERSON_GENDER_LABEL = "core_GenderLabel";
+
+        /// <summary>
+        /// The name of the standard Rock Context.
+        /// </summary>
+        public const string ROCK_CONTEXT = "RockContext";
+
+        /// <summary>
+        /// The name of the standard Rock Context for Read Only queries.
+        /// </summary>
+        public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
     }
 }

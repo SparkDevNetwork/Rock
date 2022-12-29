@@ -57,4 +57,7 @@ export type InteractiveExperienceScheduleBag = {
 
     /** Gets or sets the Id of the Rock.Model.Schedule that is associated with this Interactive Experience. This property is required. */
     scheduleId: number;
+
+    /** Gets or sets the JSON representing the additional settings. */
+    scheduleSettingsJson?: string | null;
 };

@@ -61,7 +61,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

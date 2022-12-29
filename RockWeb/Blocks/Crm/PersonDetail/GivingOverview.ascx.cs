@@ -727,7 +727,9 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
 
         private string FormatAsCurrency( decimal value )
         {
-            return value.FormatAsCurrencyWithDecimalPlaces( 0 );
+            // wrap the first value returned with a span for styling
+            string val = value.FormatAsCurrencyWithDecimalPlaces( 0 );
+            return String.Format( "<span>{0}</span>{1}", val.Substring( 0, 1 ), val.Substring( 1 ) );
         }
 
         #endregion Methods

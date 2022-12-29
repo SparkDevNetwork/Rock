@@ -78,6 +78,10 @@
       background-color: @dropdown-link-hover-bg;
     }
   }
+
+  > li.indent > a {
+    padding-left: (@dropdown-item-padding-x * 2);
+  }
 }
 
 // Active state
@@ -149,7 +153,7 @@
 // Dropdown section headers
 .dropdown-header {
   display: block;
-  padding: 3px 20px;
+  padding: @dropdown-item-padding-y @dropdown-item-padding-x;
   font-size: @font-size-small;
   line-height: @line-height-base;
   color: @dropdown-header-color;

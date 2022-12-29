@@ -405,7 +405,7 @@ $('#{0}').tooltip();
                 var days = ( groupScheduleRowInfo.OccurrenceEndDate - groupScheduleRowInfo.OccurrenceStartDate ).Days;
                 if ( days > 1 )
                 {
-                    scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span> <span class='small'>({days} days)</span>";
+                    scheduleDate = $"<span class='schedule-date'>{scheduleDate} - {groupScheduleRowInfo.OccurrenceEndDate.ToShortDateString()}</span>";
                 }
                 else
                 {
@@ -1113,7 +1113,7 @@ $('#{0}').tooltip();
                     occurenceDetail += " - ";
                 }
 
-                occurenceDetail += groupScheduleRowInfo.Location.ToString();
+                occurenceDetail += groupScheduleRowInfo.Location.ToString( true );
             }
 
             occurenceDetail += "</span><span class='schedule-occurrence-schedule'>" + GetOccurrenceScheduleName( groupScheduleRowInfo ) + "</span>";
@@ -1389,9 +1389,12 @@ $('#{0}').tooltip();
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
                     a.IsActive
-                    && a.IsPublic.HasValue && a.IsPublic.Value &&
-                    !configuredScheduleIds.Contains( a.Id )
-                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    && a.IsPublic.HasValue
+                    && a.IsPublic.Value
+                    && !configuredScheduleIds.Contains( a.Id )
+                    || ( selectedScheduleId.HasValue
+                        && a.Id == selectedScheduleId.Value ) )
+                 .ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );

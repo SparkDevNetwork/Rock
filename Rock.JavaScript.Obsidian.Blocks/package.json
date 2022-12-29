@@ -5,7 +5,8 @@
     "build-fast": "node build/build-fast.js",
     "build": "ts-node ../Rock.JavaScript.Obsidian/Build/obsidian-tsc.ts . && rollup --config rollup.config.js && npm run copy && echo '' > dist/.buildstamp && echo DONE",
     "copy": "copyfiles -u 2 \"dist/BlocksBundled/**/*\" \"../RockWeb/Obsidian/Blocks\"",
-    "watch": "watch \"npm run build\" .\\src\\ --wait=1 --interval=1",
+    "watch": "ts-node ../Rock.JavaScript.Obsidian/Build/obsidian-tsc.ts . --post-build watch-post-build --watch",
+    "watch-post-build": "rollup --config rollup.config.js --silent && npm run --silent copy",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts src",
     "test": "jest"
@@ -18,6 +19,7 @@
     "@typescript-eslint/parser": "^4.29.0",
     "copyfiles": "^2.4.1",
     "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^9.6.0",
     "glob": "^7.2.0",
     "jest": "^27.4.3",
     "jest-editor-support": "^30.0.2",

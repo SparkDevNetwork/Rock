@@ -21,8 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-
-using Microsoft.AspNet.OData;
+using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -60,7 +59,7 @@ namespace Rock.Rest
         {
             // Initialize as lazy since very few API calls use this yet. Once
             // it becomes more common the lazy part can be removed.
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new Net.RockRequestContext( controllerContext.Request ) );
+            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ) ) );
 
             return base.ExecuteAsync( controllerContext, cancellationToken );
         }

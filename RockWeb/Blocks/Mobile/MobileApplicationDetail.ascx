@@ -291,10 +291,17 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
+                            <Rock:PagePicker ID="ppEditInteractiveExperiencePage" runat="server" Label="Interactive Experience Page" Help="If you are using interactive experiences then set this page to the mobile page that contains the Live Experience block." />
                         </div>
+
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppCommunicationViewPage" runat="server" Label="Communication View Page" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
                         </div>
                     </div>
 
@@ -336,8 +343,6 @@
                                 <Rock:RockCheckBox ID="cbCompressUpdatePackages" runat="server" Label="Compress Update Packages" Help="Compresses update packages to reduce their size by up to 95%. Not supported with mobile shell v1." />
                             </div>
                         </div>
-
-                        <Rock:CodeEditor ID="ceToastXaml" runat="server" Label="Toast XAML" Help="The XAML template to use for when a Toast is displayed." EditorMode="Xml" Required="false" />
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="pwEditDeepLinkSettings" runat="server" Title="Deep Link Settings">

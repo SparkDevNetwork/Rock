@@ -25,7 +25,7 @@ import CategoryPicker from "./categoryPicker";
 import FieldTypeEditor from "./fieldTypeEditor";
 import StaticFormControl from "./staticFormControl";
 import PanelWidget from "./panelWidget";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
 export default defineComponent({
     name: "AttributeEditor",

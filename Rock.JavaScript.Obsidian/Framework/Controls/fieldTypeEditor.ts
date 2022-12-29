@@ -17,7 +17,7 @@
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "./rockField";
-import Alert from "./alert.vue";
+import Alert from "./alert.obs";
 import DropDownList from "./dropDownList";
 import StaticFormControl from "./staticFormControl";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
@@ -241,7 +241,7 @@ export default defineComponent({
         /**
          * Called when the field type configuration control has updated one of
          * the configuration values that does not require a full reload.
-         * 
+         *
          * @param key The key of the configuration value that was changed.
          * @param value The new value of the configuration value.
          */

@@ -100,7 +100,7 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 
@@ -454,7 +454,7 @@ namespace Rock.Blocks.Core
                 {
                     IconCssClass = "fa fa-edit",
                     Tooltip = "Settings",
-                    ComponentFileUrl = "/Obsidian/Blocks/Core/categoryDetailCustomSettings.vue"
+                    ComponentFileUrl = "/Obsidian/Blocks/Core/categoryDetailCustomSettings.obs"
                 } );
             }
 
@@ -462,7 +462,6 @@ namespace Rock.Blocks.Core
         }
 
         #endregion
-
 
         #region Block Actions
 

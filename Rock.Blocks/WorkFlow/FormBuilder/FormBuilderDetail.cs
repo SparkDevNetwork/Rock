@@ -207,6 +207,15 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 ? actionForm.FormAttributes.Select( a => a.Order ).Max() + 1
                 : 0;
 
+
+            // If no attributes have been added yet then we need to take into account the attributes auto added when a form builder workflow is created.
+            if ( nextAttributeOrder == 0 )
+            {
+                var defaultAttributesMaxOrder = attributeService.Queryable().Where( a => a.EntityTypeQualifierValue == workflowType.Id.ToString() && a.EntityTypeQualifierColumn == "WorkflowTypeId" ).Select( m => m.Order ).Max();
+                nextAttributeOrder += defaultAttributesMaxOrder;
+            }
+
+
             if ( formSettings.Sections != null )
             {
                 // Get all the section identifiers that are sticking around.

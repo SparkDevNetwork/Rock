@@ -16,10 +16,10 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
-import { EntityType } from "@Obsidian/SystemGuids";
+import Alert from "@Obsidian/Controls/alert.obs";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./PageRouteDetail/editPanel.partial";
 import ViewPanel from "./PageRouteDetail/viewPanel.partial";
@@ -53,7 +53,7 @@ export default defineComponent({
         const pageRouteViewBag = ref(config.entity);
         const pageRouteEditBag = ref<PageRouteBag | null>(null);
 
-        const panelMode = ref(DetailPanelMode.View);
+        const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
         // The properties that are being edited in the UI. This is used to
         // inform the server which incoming values have valid data in them.
@@ -134,7 +134,7 @@ export default defineComponent({
         /**
          * Event handler for the Delete button being clicked. Sends the
          * delete request to the server and then redirects to the target page.
-         * 
+         *
          * @returns false if it should stay on the page; or a string containing a redirect URL.
          */
         async function onDelete(): Promise<false | string> {
@@ -179,7 +179,7 @@ export default defineComponent({
          * Event handler for when a value has changed that has an associated
          * C# property name. This is used to detect changes to values that
          * might cause qualified attributes to either show up or not show up.
-         * 
+         *
          * @param propertyName The name of the C# property that was changed.
          */
         function onPropertyChanged(propertyName: string): void {

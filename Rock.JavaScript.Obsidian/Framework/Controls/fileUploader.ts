@@ -17,8 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Alert from "./alert.vue";
-import { BinaryFiletype } from "@Obsidian/SystemGuids";
+import Alert from "./alert.obs";
+import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { uploadBinaryFile } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
@@ -96,7 +96,7 @@ export default defineComponent({
 
         /**
          * Upload the specified file into Rock with the current settings.
-         * 
+         *
          * @param file The file to be uploaded.
          */
         const uploadFile = async (file: File): Promise<void> => {
@@ -195,7 +195,7 @@ export default defineComponent({
                 });
 
                 // Register the drop event so we can begin the upload for the
-                // file that was dropped on us. 
+                // file that was dropped on us.
                 dropZoneElement.value.addEventListener("drop", event => {
                     if (!isUploading.value && event.dataTransfer && event.dataTransfer.files.length > 0) {
                         event.stopPropagation();

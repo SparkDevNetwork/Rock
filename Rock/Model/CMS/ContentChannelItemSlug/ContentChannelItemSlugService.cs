@@ -26,6 +26,18 @@ namespace Rock.Model
     public partial class ContentChannelItemSlugService
     {
         /// <summary>
+        /// Gets a unique slug for the content channel.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelId">The content channel identifier.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <returns></returns>
+        public string GetUniqueSlugForContentChannel( string slug, int contentChannelId, int? contentChannelItemSlugId)
+        {
+            return GetUniqueSlug( slug, contentChannelItemSlugId, contentChannelId );
+        }
+
+        /// <summary>
         /// Gets a globally unique slug. In most cases use the override with the content channel item ID to get a unique
         /// slug for the content channel.
         /// </summary>
@@ -53,9 +65,21 @@ namespace Rock.Model
             if ( contentChannelItemId != null )
             {
                 var contentChannelItem = new ContentChannelItemService( ( RockContext ) this.Context ).Get( contentChannelItemId.Value );
-                contentChannelId = contentChannelItem.ContentChannelId;
+                contentChannelId = contentChannelItem?.ContentChannelId;
             }
 
+            return GetUniqueSlug( slug, contentChannelItemSlugId, contentChannelId );
+        }
+
+        /// <summary>
+        /// Gets a unique slug
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <param name="contentChannelId">The content channel identifier.</param>
+        /// <returns></returns>
+        private string GetUniqueSlug( string slug, int? contentChannelItemSlugId, int? contentChannelId )
+        {
             bool isValid = false;
 
             slug = MakeSlugValid( slug );
@@ -118,7 +142,42 @@ namespace Rock.Model
         public ContentChannelItemSlug SaveSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId )
         {
             var uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
+            return SaveSlug( contentChannelItemId, contentChannelItemSlugId, uniqueSlug );
+        }
 
+        /// <summary>
+        /// Saves the slug using the given contentChannelId if the contentChannelItemId is 0 (not saved) in order to guarantee the slug is unique for that channel.
+        /// </summary>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
+        /// <param name="contentChannelId">The content channel identifier.</param>
+        /// <param name="slug">The slug.</param>
+        /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <returns></returns>
+        public ContentChannelItemSlug SaveSlug( int contentChannelItemId, int contentChannelId, string slug, int? contentChannelItemSlugId )
+        {
+            string uniqueSlug;
+
+            if ( contentChannelItemId == 0 )
+            {
+                uniqueSlug = this.GetUniqueSlugForContentChannel( slug, contentChannelId, contentChannelItemSlugId );
+            }
+            else
+            {
+                uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
+            }
+
+            return SaveSlug( contentChannelItemId, contentChannelItemSlugId, uniqueSlug );
+        }
+
+        /// <summary>
+        /// Saves the slug
+        /// </summary>
+        /// <param name="contentChannelItemId"></param>
+        /// <param name="contentChannelItemSlugId"></param>
+        /// <param name="uniqueSlug"></param>
+        /// <returns></returns>
+        private ContentChannelItemSlug SaveSlug( int contentChannelItemId, int? contentChannelItemSlugId, string uniqueSlug )
+        {
             if ( uniqueSlug.IsNullOrWhiteSpace() )
             {
                 return null;

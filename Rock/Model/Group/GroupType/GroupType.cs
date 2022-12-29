@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -656,6 +657,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsCapacityRequired { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        [DataMember]
+        public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
         #endregion Entity Properties
 

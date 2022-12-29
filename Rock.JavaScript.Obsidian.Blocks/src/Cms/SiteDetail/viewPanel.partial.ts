@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";

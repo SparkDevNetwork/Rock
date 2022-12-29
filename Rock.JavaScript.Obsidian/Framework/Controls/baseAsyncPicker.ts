@@ -18,12 +18,12 @@ import { standardAsyncPickerProps, updateRefValue, useStandardRockFormFieldProps
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { useSuspense } from "@Obsidian/Utility/suspense";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CheckBoxList from "./checkBoxList";
 import DropDownList from "./dropDownList";
 import RadioButtonList from "./radioButtonList";
-import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
 /**
  * Convert a model value to the internal value. Basically, this extracts the
@@ -284,14 +284,26 @@ export default defineComponent({
     :enhanceForLongLists="enhanceForLongLists"
     :lazyMode="lazyMode"
     displayStyle="auto"
-    @open="onOpen" />
+    @open="onOpen">
+
+    <template #prepend={isInputGroupSupported} v-if="$slots.prepend"><slot name="prepend" :isInputGroupSupported="isInputGroupSupported" /></template>
+    <template #inputGroupPrepend={isInputGroupSupported} v-if="$slots.inputGroupPrepend"><slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" /></template>
+    <template #inputGroupAppend={isInputGroupSupported} v-if="$slots.inputGroupAppend"><slot name="inputGroupAppend" :isInputGroupSupported="isInputGroupSupported" /></template>
+    <template #append={isInputGroupSupported} v-if="$slots.append"><slot name="append" :isInputGroupSupported="isInputGroupSupported" /></template>
+
+</DropDownList>
 
 <CheckBoxList v-if="isCheckBoxListStyle"
     v-model="internalValue"
     v-bind="standardProps"
     :horizontal="isHorizontal"
     :items="actualItems"
-    :repeatColumns="columnCount" />
+    :repeatColumns="columnCount">
+
+    <template #prepend={isInputGroupSupported} v-if="$slots.prepend"><slot name="prepend" :isInputGroupSupported="isInputGroupSupported" /></template>
+    <template #append={isInputGroupSupported} v-if="$slots.append"><slot name="append" :isInputGroupSupported="isInputGroupSupported" /></template>
+
+</CheckBoxList>
 
 <RadioButtonList v-if="isRadioButtonListStyle"
     v-model="internalValue"
@@ -299,6 +311,11 @@ export default defineComponent({
     :horizontal="isHorizontal"
     :items="actualItems"
     :repeatColumns="columnCount"
-    :showBlankItem="showBlankItem" />
+    :showBlankItem="showBlankItem">
+
+    <template #prepend={isInputGroupSupported} v-if="$slots.prepend"><slot name="prepend" :isInputGroupSupported="isInputGroupSupported" /></template>
+    <template #append={isInputGroupSupported} v-if="$slots.append"><slot name="append" :isInputGroupSupported="isInputGroupSupported" /></template>
+
+</RadioButtonList>
 `
 });

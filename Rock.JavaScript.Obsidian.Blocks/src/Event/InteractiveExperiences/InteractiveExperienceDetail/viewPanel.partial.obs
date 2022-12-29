@@ -1,0 +1,142 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
+    import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
+    import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<InteractiveExperienceBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<InteractiveExperienceDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("Schedules", getSchedulesHtml(props.modelValue.schedules ?? []));
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets an HTML string that describes the schedules and any filtering options.
+     *
+     * @param schedules The schedules to be turned into descriptive text.
+     *
+     * @returns An HTML string that represents the information about the schedules.
+     */
+    function getSchedulesHtml(schedules: InteractiveExperienceScheduleBag[]): string {
+        if (schedules.length === 0) {
+            return "";
+        }
+
+        return `<ul>${schedules.map(s => getScheduleHtml(s)).join("")}</ul>`;
+    }
+
+    /**
+     * Gets an HTML string that describes the schedule and any filtering options.
+     *
+     * @param schedule The schedule to be turned into descriptive text.
+     *
+     * @returns An HTML string that represents the information about the schedule.
+     */
+    function getScheduleHtml(schedule: InteractiveExperienceScheduleBag): string {
+        let html = schedule.schedule?.text || "No Schedule";
+
+        if (schedule.campuses && schedule.campuses.length > 0) {
+            const campusNames = schedule.campuses.map(c => escapeHtml(c.text ?? "")).join(", ");
+
+            html += `<br /><span class="text-muted">${campusNames}</span>`;
+        }
+
+        if (schedule.dataView && schedule.dataView.text) {
+            html += `<br /><span class="text-muted">Data View: ${escapeHtml(schedule.dataView.text)}</span>`;
+        }
+
+        if (schedule.group && schedule.group.text) {
+            html += `<br /><span class="text-muted">Group: ${escapeHtml(schedule.group.text)}</span>`;
+        }
+
+        return `<li>${html}</li>`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

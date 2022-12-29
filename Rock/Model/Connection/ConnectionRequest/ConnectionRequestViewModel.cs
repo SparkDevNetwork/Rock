@@ -264,6 +264,12 @@ namespace Rock.Model
         ///   <c>true</c> if [current person can edit]; otherwise, <c>false</c>.
         /// </value>
         public bool CanCurrentUserEdit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes of this instance
+        /// </summary>
+        public string RequestAttributes { get; set; }
+
         #endregion Properties
 
         #region Computed

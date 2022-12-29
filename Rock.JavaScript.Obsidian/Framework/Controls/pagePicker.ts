@@ -18,9 +18,10 @@
 import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
 import { PageTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.obs";
 import RockButton from "./rockButton";
-import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import { useStore as usePageStateStore } from "@Obsidian/PageState";
 import { Guid } from "@Obsidian/Types";
 import { PagePickerGetPageNameOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetPageNameOptionsBag";
@@ -28,11 +29,11 @@ import { PagePickerGetPageRoutesOptionsBag } from "@Obsidian/ViewModels/Rest/Con
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import BaseAsyncPicker from "./baseAsyncPicker";
 import { useHttp } from "@Obsidian/Utility/http";
-import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
-import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-import { Dialogs } from "@Obsidian/Utility";
+import * as Dialogs from "@Obsidian/Utility/dialogs";
 
 
 
@@ -335,18 +336,20 @@ export default defineComponent({
     <template #customPickerActions v-if="showSelectCurrentPage">
         <RockButton @click="selectCurrentPage" :btnSize="btnSize" :btnType="btnType" title="Select Current Page"><i class="fa fa-file-o"></i></RockButton>
     </template>
-</TreeItemPicker>
 
-<div v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
-    <small>{{ routeCountText }}</small>
-    <BaseAsyncPicker
-        :modelValue="internalRouteValue"
-        @update:modelValue="updateRoute"
-        showBlankItem
-        :lazyMode="isLazy"
-        :displayStyle="routePickerDisplayStyle"
-        :items="actualRouteItems"
-        :open="open" />
-</div>
+    <template #append>
+        <div class="input-max-w-xl" v-if="isRoutePickerVisible" v-show="routeItemsCount > 0">
+            <span class="d-block small mt-1 mb-2">{{ routeCountText }}</span>
+            <BaseAsyncPicker
+                :modelValue="internalRouteValue"
+                @update:modelValue="updateRoute"
+                showBlankItem
+                :lazyMode="isLazy"
+                :displayStyle="routePickerDisplayStyle"
+                :items="actualRouteItems"
+                :open="open" />
+        </div>
+    </template>
+</TreeItemPicker>
 `
 });

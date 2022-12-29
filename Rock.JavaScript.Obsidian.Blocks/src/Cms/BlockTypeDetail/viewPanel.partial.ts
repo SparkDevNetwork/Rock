@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -75,9 +75,11 @@ export default defineComponent({
 
             if (!props.modelValue.path && props.modelValue.entityType) {
                 valueBuilder.addHtmlValue("Status", `<span class="label label-info">${props.modelValue.entityType.text}</span>`);
-            } else if (props.modelValue.isBlockExists) {
+            }
+            else if (props.modelValue.isBlockExists) {
                 valueBuilder.addHtmlValue("Status", `<span class="label label-success">Block exists on the file system.</span>`);
-            } else {
+            }
+            else {
                 valueBuilder.addHtmlValue("Status", `<span class="label label-danger">The file ${props.modelValue.path} does not exist.</span>`);
             }
 
@@ -88,7 +90,8 @@ export default defineComponent({
                     pages += `<li>${page}</li>`;
                 }
                 valueBuilder.addHtmlValue(pagesStr, `<ul>${pages}</ul>`);
-            } else {
+            }
+            else {
                 valueBuilder.addHtmlValue(pagesStr, "<span class='text-muted'><em>No pages are currently using this block</em></muted>");
             }
 

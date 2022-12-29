@@ -27,10 +27,24 @@ export class NetCoreEngine extends Engine {
             .build();
 
         connection.on("message", this.onMessage.bind(this));
+        connection.onreconnecting(() => this.onTransportReconnecting());
+        connection.onreconnected(() => this.onTransportReconnect());
+        connection.onclose(() => {
+            this.connection = null;
+            this.onTransportDisconnect();
+        });
 
         await connection.start();
 
         this.connection = connection;
+    }
+
+    /** @inheritdoc */
+    protected async closeConnection(): Promise<void> {
+        if (this.connection) {
+            await this.connection.stop();
+            this.connection = null;
+        }
     }
 
     /**
@@ -41,7 +55,7 @@ export class NetCoreEngine extends Engine {
      * @param messageParams The parameters to the message.
      */
     private onMessage(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
-        this.emitter.emit(`${topicIdentifier}-${messageName}`, messageParams);
+        this.emit(topicIdentifier, messageName, messageParams);
     }
 
     /** @inheritdoc */

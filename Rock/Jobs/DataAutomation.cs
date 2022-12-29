@@ -534,7 +534,7 @@ Update Family Status: {updateFamilyStatus}
                                 person.RecordStatusReasonValueId = inactiveReason.Id;
                                 person.InactiveReasonNote = $"Inactivated by the Data Automation Job on {dateStamp}";
                                 rockContext.SaveChanges();
-
+                                
                                 recordsUpdated++;
                             }
                         }
@@ -1668,12 +1668,7 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qry = dataView.GetQuery( dataViewGetQueryArgs );
+            var qry = dataView.GetQuery();
 
             if ( qry == null )
             {

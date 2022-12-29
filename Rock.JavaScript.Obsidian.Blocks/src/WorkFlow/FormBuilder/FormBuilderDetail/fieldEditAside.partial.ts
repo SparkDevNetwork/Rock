@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import Modal from "@Obsidian/Controls/modal";
 import Panel from "@Obsidian/Controls/panel";
 import RockForm from "@Obsidian/Controls/rockForm";

@@ -452,12 +452,29 @@ namespace Rock.WebStartup
              * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
              */
 
-            // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
-            bool _migrationHistoryTableExists = DbService.ExecuteScaler(
-                @"SELECT convert(bit, 1) [Exists] 
+            // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
+            var _migrationHistoryTableExists = false;
+            try
+            {
+                _migrationHistoryTableExists = DbService.ExecuteScaler(
+                    @"SELECT convert(bit, 1) [Exists] 
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
                     AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
+            }
+            catch ( System.Data.SqlClient.SqlException ex )
+            {
+                if ( ex.Message.Contains( "Cannot open database" ) && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    // This pretty much means the database does not exist, so we'll need to assume there are pending migrations
+                    // (such as the create database migration) that need to run first.
+                    _migrationHistoryTableExists = false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             if ( !_migrationHistoryTableExists )
             {

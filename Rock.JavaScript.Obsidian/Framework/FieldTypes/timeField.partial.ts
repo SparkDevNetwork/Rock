@@ -16,7 +16,7 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { dateComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { padLeft } from "@Obsidian/Utility/stringUtils";

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
-
+using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -78,7 +76,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
-        [RockEnableQuery]
+        [EnableQuery]
         [HttpGet]
         [System.Web.Http.Route( "api/locations/{street}/{city}/{state}/{postalCode}" )]
         [Rock.SystemGuid.RestActionGuid( "94A50E83-5801-42ED-A3DB-0133353E4451" )]

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -327,6 +327,7 @@ namespace Rock.Communication.Transport
                 RegistrationIds = to,
                 Notification = new FCM.Net.Notification
                 {
+                    ClickAction = "Rock.Mobile.Main",
                     Title = title,
                     Body = message,
                     Sound = sound,
@@ -376,6 +377,14 @@ namespace Rock.Communication.Transport
                 notificationData.Add( PushKeys.CommunicationId, recipient.CommunicationId.ToString() );
                 notificationData.Add( PushKeys.RecipientId, recipient.Id.ToString() );
             };
+
+            if ( pushData.CustomData != null )
+            {
+                foreach ( var kvp in pushData.CustomData )
+                {
+                    notificationData.AddOrIgnore( kvp.Key, kvp.Value );
+                }
+            }
 
             if ( !openAction.HasValue || pushData == null )
             {

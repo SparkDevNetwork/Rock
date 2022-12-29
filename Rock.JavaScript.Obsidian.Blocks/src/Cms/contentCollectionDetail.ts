@@ -16,10 +16,10 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
-import { EntityType } from "@Obsidian/SystemGuids";
+import Alert from "@Obsidian/Controls/alert.obs";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import ContentSources from "./ContentCollectionDetail/contentSources.partial";
 import EditPanel from "./ContentCollectionDetail/editPanel.partial";
@@ -58,7 +58,7 @@ export default defineComponent({
         const contentCollectionViewBag = ref(config.entity);
         const contentCollectionEditBag = ref<ContentCollectionBag | null>(null);
 
-        const panelMode = ref(DetailPanelMode.View);
+        const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
         const isContentSourcesActive = ref(true);
 
@@ -225,7 +225,7 @@ export default defineComponent({
          * Event handler for when a value has changed that has an associated
          * C# property name. This is used to detect changes to values that
          * might cause qualified attributes to either show up or not show up.
-         * 
+         *
          * @param propertyName The name of the C# property that was changed.
          */
         const onPropertyChanged = (propertyName: string): void => {

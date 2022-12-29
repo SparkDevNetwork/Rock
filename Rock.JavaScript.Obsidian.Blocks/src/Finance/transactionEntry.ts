@@ -19,18 +19,20 @@ import { Guid } from "@Obsidian/Types";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import { defineComponent } from "vue";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Toggle from "@Obsidian/Controls/toggle";
 import { useStore } from "@Obsidian/PageState";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
-import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
@@ -80,7 +82,7 @@ export default defineComponent({
     },
 
     setup() {
-        const submitPayment = prepareSubmitPayment();
+        const submitPayment = provideSubmitPayment();
 
         return {
             submitPayment,
@@ -145,8 +147,8 @@ export default defineComponent({
             return `$${asFormattedString(this.totalAmount, 2)}`;
         },
 
-        gatewayControlModel(): GatewayControlModel {
-            return this.configurationValues["gatewayControl"] as GatewayControlModel;
+        gatewayControlModel(): GatewayControlBag {
+            return this.configurationValues["gatewayControl"] as GatewayControlBag;
         },
 
         currentPerson(): PersonBag | null {

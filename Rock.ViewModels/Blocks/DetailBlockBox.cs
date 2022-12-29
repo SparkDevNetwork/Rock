@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks
 {
     /// <summary>
@@ -24,8 +26,8 @@ namespace Rock.ViewModels.Blocks
     /// </summary>
     /// <typeparam name="TEntityBag">The type of the bag Entity.</typeparam>
     /// <typeparam name="TOptions">The type of the bag options.</typeparam>
-    /// <seealso cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
-    public class DetailBlockBox<TEntityBag, TOptions> : IValidPropertiesBox
+    /// <seealso cref="Rock.ViewModels.Utility.IValidPropertiesBox" />
+    public class DetailBlockBox<TEntityBag, TOptions> : BlockBox, IValidPropertiesBox
         where TOptions : new()
     {
         /// <summary>
@@ -41,22 +43,10 @@ namespace Rock.ViewModels.Blocks
         public TOptions Options { get; set; } = new TOptions();
 
         /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        /// <value>The error message.</value>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is editable.
         /// </summary>
         /// <value><c>true</c> if this instance is editable; otherwise, <c>false</c>.</value>
         public bool IsEditable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the navigation urls.
-        /// </summary>
-        /// <value>The navigation urls.</value>
-        public Dictionary<string, string> NavigationUrls { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the valid properties.
@@ -70,11 +60,5 @@ namespace Rock.ViewModels.Blocks
         /// are modified.
         /// </summary>
         public List<string> QualifiedAttributeProperties { get; set; }
-
-        /// <summary>
-        /// Gets or sets the security grant token.
-        /// </summary>
-        /// <value>The security grant token.</value>
-        public string SecurityGrantToken { get; set; }
     }
 }

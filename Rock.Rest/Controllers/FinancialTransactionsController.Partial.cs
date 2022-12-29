@@ -23,8 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
-using Microsoft.AspNet.OData;
+using System.Web.Http.OData;
 
 using Rock;
 using Rock.BulkExport;
@@ -265,8 +264,7 @@ namespace Rock.Rest.Controllers
                     var dataView = new DataViewService( new RockContext() ).Get( options.DataViewId.Value );
                     if ( dataView != null )
                     {
-                        var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-                        var personList = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
+                        var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
                         HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
                         HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
 
@@ -441,7 +439,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [RockEnableQuery]
+        [EnableQuery]
         [System.Web.Http.Route( "api/FinancialTransactions/GetByGivingId/{givingId}" )]
         [Rock.SystemGuid.RestActionGuid( "6C883A6E-C9A2-4562-ABBB-019C2E34BD13" )]
         public IQueryable<FinancialTransaction> GetByGivingId( string givingId )

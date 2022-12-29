@@ -129,3 +129,4 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowLoggingLevel) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerType) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerValueChangeType) )]
+[assembly: TypeForwardedTo( typeof( Rock.Utility.TimeIntervalUnit ) )]

@@ -444,6 +444,7 @@ namespace RockWeb.Blocks.Connection
                     connectionOpportunityWorkflow.TriggerType = workflowTypeStateObj.TriggerType;
                     connectionOpportunityWorkflow.QualifierValue = workflowTypeStateObj.QualifierValue;
                     connectionOpportunityWorkflow.ConnectionOpportunityId = connectionOpportunity.Id;
+                    connectionOpportunityWorkflow.ManualTriggerFilterConnectionStatusId = workflowTypeStateObj.ManualTriggerFilterConnectionStatusId;
                 }
 
                 // remove any group campuses that removed in the UI
@@ -1415,6 +1416,7 @@ namespace RockWeb.Blocks.Connection
 
             workflowTypeStateObj.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             workflowTypeStateObj.QualifierValue = string.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
+            workflowTypeStateObj.ManualTriggerFilterConnectionStatusId = rblConnectionStatuses.SelectedValueAsInt();
 
             BindWorkflowGrid();
             HideDialog();
@@ -1622,6 +1624,8 @@ namespace RockWeb.Blocks.Connection
                     }
             }
 
+            rblConnectionStatuses.Visible = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
+
             if ( workflowTypeStateObj != null )
             {
                 if ( workflowTypeStateObj.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
@@ -1643,6 +1647,8 @@ namespace RockWeb.Blocks.Connection
                         ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                     }
                 }
+
+                rblConnectionStatuses.SelectedValue = workflowTypeStateObj.ManualTriggerFilterConnectionStatusId?.ToString();
             }
         }
 
@@ -1880,6 +1886,12 @@ namespace RockWeb.Blocks.Connection
                 {
                     DefaultConnectors.AddOrReplace( campus.CampusId, personAlias.Id );
                 }
+            }
+
+            rblConnectionStatuses.Items.Clear();
+            foreach ( var connectionStatus in connectionOpportunity.ConnectionType.ConnectionStatuses.Select( cs => new ListItem() { Value = cs.Id.ToString(), Text = cs.Name } ) )
+            {
+                rblConnectionStatuses.Items.Add( connectionStatus );
             }
 
             LoadDropDowns( connectionOpportunity );
@@ -2239,6 +2251,8 @@ namespace RockWeb.Blocks.Connection
 
             public string WorkflowTypeName { get; set; }
 
+            public int? ManualTriggerFilterConnectionStatusId { get; set; }
+
             public WorkflowTypeStateObj()
             {
             }
@@ -2255,6 +2269,7 @@ namespace RockWeb.Blocks.Connection
                     WorkflowTypeId = connectionWorkflow.WorkflowType.Id;
                     WorkflowTypeName = connectionWorkflow.WorkflowType.Name;
                 }
+                ManualTriggerFilterConnectionStatusId = connectionWorkflow.ManualTriggerFilterConnectionStatusId;
             }
         }
 

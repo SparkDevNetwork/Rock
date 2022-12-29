@@ -137,11 +137,17 @@ export type GroupBag = {
     /** Gets or sets the Id of the Group's Parent Group. */
     parentGroupId?: number | null;
 
+    /** Gets or sets the reminder additional details. */
+    reminderAdditionalDetails?: string | null;
+
+    /** Gets or sets the number of days prior to an event date that a reminder should be sent. */
+    reminderOffsetDays?: number | null;
+
+    /** Gets or sets the system communication to use for sending a reminder. */
+    reminderSystemCommunicationId?: number | null;
+
     /** Gets or sets the required signature document type identifier. */
     requiredSignatureDocumentTemplateId?: number | null;
-
-    /** Gets or sets the rsvp additional reminder details. */
-    rSVPReminderAdditionalDetails?: string | null;
 
     /** Gets or sets the number of days prior to the RSVP date that a reminder should be sent. */
     rSVPReminderOffsetDays?: number | null;
@@ -151,6 +157,9 @@ export type GroupBag = {
 
     /** Gets or sets the PersonAliasId of the person to notify when a person cancels */
     scheduleCancellationPersonAliasId?: number | null;
+
+    /** Gets or sets the schedule confirmation logic. */
+    scheduleConfirmationLogic?: number | null;
 
     /** Gets or sets the Rock.Model.Schedule identifier. */
     scheduleId?: number | null;

@@ -34,6 +34,12 @@ export type InteractiveExperienceAnswerBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /**
+     * Gets or sets the identifier of the Rock.Model.InteractiveExperienceAnswer.Campus the answer
+     * originated from.
+     */
+    campusId?: number | null;
+
     /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
@@ -63,6 +69,12 @@ export type InteractiveExperienceAnswerBag = {
 
     /** Gets or sets the response. */
     response?: string | null;
+
+    /**
+     * Gets or sets the custom response data JSON. This will hold additional
+     * information that does not need referential integrity.
+     */
+    responseDataJson?: string | null;
 
     /** Gets or sets the response date time. */
     responseDateTime?: string | null;

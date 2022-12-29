@@ -17,11 +17,11 @@
 
 import { defineComponent, inject } from "vue";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 
 type CheckDiscountCodeResult = {
     discountCode: string;
@@ -37,11 +37,17 @@ export default defineComponent({
         TextBox,
         Alert
     },
-    setup () {
+    setup() {
+        const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
         return {
             invokeBlockAction: useInvokeBlockAction(),
-            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState,
+            getRegistrationEntryBlockArgs
+
         };
+    },
+    mounted() {
+        this.tryDiscountCode();
     },
     data () {
         return {
@@ -52,7 +58,7 @@ export default defineComponent({
             discountCodeInput: "",
 
             /** A warning message about the discount code that is a result of a failed AJAX call */
-            discountCodeWarningMessage: ""
+            discountCodeWarningMessage: "",
         };
     },
     computed: {
@@ -77,6 +83,16 @@ export default defineComponent({
             return this.viewModel.hasDiscountsAvailable;
         },
 
+        /** Disable the textbox and hide the apply button */
+        isDiscountCodeAllowed(): boolean {
+            const args = this.getRegistrationEntryBlockArgs();
+            if (args.discountCode.length > 0 && args.registrationGuid != null) {
+                return false;
+            }
+
+            return true;
+        },
+
         /** This is the data sent from the C# code behind when the block initialized. */
         viewModel (): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
@@ -87,17 +103,20 @@ export default defineComponent({
          *  the discount amount. */
         async tryDiscountCode (): Promise<void> {
             this.loading = true;
-
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
-                    code: this.discountCodeInput
+                    code: this.discountCodeInput,
+                    registrantCount: this.registrationEntryState.registrants.length
                 });
 
                 if (result.isError || !result.data) {
-                    this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                    if (this.discountCodeInput != "") {
+                        this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                    }
                 }
                 else {
                     this.discountCodeWarningMessage = "";
+                    this.discountCodeInput = this.discountCodeInput == "" ? result.data.discountCode : this.discountCodeInput;
                     this.registrationEntryState.discountAmount = result.data.discountAmount;
                     this.registrationEntryState.discountPercentage = result.data.discountPercentage;
                     this.registrationEntryState.discountCode = result.data.discountCode;
@@ -123,8 +142,8 @@ export default defineComponent({
     <div class="form-group pull-right">
         <label class="control-label">Discount Code</label>
         <div class="input-group">
-            <input type="text" :disabled="loading || !!discountCodeSuccessMessage" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-            <RockButton v-if="!discountCodeSuccessMessage" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
+            <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
+            <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
                 Apply
             </RockButton>
         </div>

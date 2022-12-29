@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? MinimumCapacity { get; set; }
 
         /// <summary />
-        public string RSVPReminderAdditionalDetails { get; set; }
+        public string ReminderAdditionalDetails { get; set; }
 
         /// <summary />
         public int ScheduleId { get; set; }
@@ -67,7 +67,7 @@ namespace Rock.Client
             this.GroupLocationId = source.GroupLocationId;
             this.MaximumCapacity = source.MaximumCapacity;
             this.MinimumCapacity = source.MinimumCapacity;
-            this.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
+            this.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
             this.ScheduleId = source.ScheduleId;
 
         }

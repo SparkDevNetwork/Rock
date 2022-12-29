@@ -16,7 +16,7 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";

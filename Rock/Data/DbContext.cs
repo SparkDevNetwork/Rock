@@ -29,6 +29,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
@@ -678,8 +679,8 @@ namespace Rock.Data
                 tcsPostSave.SetResult( true );
             }
 
-            var processIndexMsgs = new List<BusStartedTaskMessage>();
-            var deleteIndexMsgs = new List<BusStartedTaskMessage>();
+            List<ITransaction> indexTransactions = new List<ITransaction>();
+            var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -687,23 +688,24 @@ namespace Rock.Data
                 {
                     if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
                     {
-                        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                        DeleteIndexEntityTransaction deleteIndexEntityTransaction = new DeleteIndexEntityTransaction
                         {
                             EntityTypeId = item.Entity.TypeId,
                             EntityId = item.Entity.Id
                         };
 
-                        deleteIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                        indexTransactions.Add( deleteIndexEntityTransaction );
                     }
                     else
                     {
-                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                        {
-                            EntityTypeId = item.Entity.TypeId,
-                            EntityId = item.Entity.Id
-                        };
+                        var indexEntityTransaction = new IndexEntityTransaction(
+                            new EntityIndexInfo
+                            {
+                                EntityTypeId = item.Entity.TypeId,
+                                EntityId = item.Entity.Id
+                            } );
 
-                        processIndexMsgs.Add( processEntityTypeIndexMsg );
+                        indexTransactions.Add( indexEntityTransaction );
                     }
                 }
 
@@ -723,7 +725,7 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        deleteIndexMsgs.Add( msg );
+                        deleteContentCollectionIndexingMsgs.Add( msg );
                     }
                 }
 
@@ -757,15 +759,15 @@ namespace Rock.Data
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( processIndexMsgs.Any() || deleteIndexMsgs.Any() )
+            if ( indexTransactions.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
-                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                    var indexingEnabled = IndexContainer.GetActiveComponent() != null;
                     if ( indexingEnabled )
                     {
-                        processIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
-                        deleteIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
+                        deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }

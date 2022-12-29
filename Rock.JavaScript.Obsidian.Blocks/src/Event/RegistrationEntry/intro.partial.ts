@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
@@ -168,7 +168,7 @@ export default defineComponent({
     <Alert v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
-            There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}. 
+            There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.
         </p>
     </Alert>
     <Alert v-if="showRemainingCapacity" class="text-left" alertType="warning">
@@ -194,7 +194,7 @@ export default defineComponent({
     <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
         This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
         The first {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.instanceName}}.
-        The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist. 
+        The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist.
     </Alert>
 
     <div v-if="canContinue" class="actions text-right">

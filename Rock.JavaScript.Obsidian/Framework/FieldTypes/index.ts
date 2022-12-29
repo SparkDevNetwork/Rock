@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids";
+import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import { registerFieldType } from "@Obsidian/Utility/fieldTypes";
 
 export { ConfigurationValues, getFieldEditorProps } from "./utils";
@@ -118,3 +118,6 @@ registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
 
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
+
+import { ValueListFieldType } from "./valueListField.partial";
+registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());

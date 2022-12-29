@@ -30,11 +30,25 @@ namespace Rock.Model
         /// <summary>
         /// Adds the missing synced content channel items for all <see cref="MediaElement"/>
         /// items in the folder.
+        /// PA: Extracted the contents of this method to a new method  <see cref="MediaFolderService.AddMissingSyncedContentChannelItem"/> to add the functionality to return the number of
+        /// content channels updated while not affecting the existing functionality
         /// </summary>
         /// <param name="mediaFolderId">The media folder identifier.</param>
         public static void AddMissingSyncedContentChannelItems( int mediaFolderId )
         {
+            AddMissingSyncedContentChannelItem( mediaFolderId );
+        }
+
+        /// <summary>
+        /// Adds the missing synced content channel items for all <see cref="MediaElement"/>
+        /// items in the folder
+        /// </summary>
+        /// <param name="mediaFolderId"></param>
+        /// <returns>Number of content channels that were updated.</returns>
+        public static int AddMissingSyncedContentChannelItem( int mediaFolderId )
+        {
             List<int> mediaElementIds;
+            int contentChannelsUpdatedCount;
 
             using ( var rockContext = new RockContext() )
             {
@@ -43,7 +57,7 @@ namespace Rock.Model
                 // If the folder wasn't found or syncing isn't enabled then exit early.
                 if ( mediaFolder == null || !mediaFolder.IsContentChannelSyncEnabled )
                 {
-                    return;
+                    return 0;
                 }
 
                 var contentChannelId = mediaFolder.ContentChannelId;
@@ -52,7 +66,7 @@ namespace Rock.Model
                 // If we don't have required information then exit early.
                 if ( !contentChannelId.HasValue || !attributeId.HasValue )
                 {
-                    return;
+                    return 0;
                 }
 
                 // Build a query of all attribute values for the given attribute
@@ -73,11 +87,18 @@ namespace Rock.Model
                 // Our final query is to get all MediaElements that do not
                 // exist in the previous query. That gives us a final list
                 // of items that need to be synced still.
-                mediaElementIds = new MediaElementService( rockContext ).Queryable()
-                    .Where( e => e.MediaFolderId == mediaFolderId
-                        && !syncedMediaElementValues.Contains( e.Guid.ToString() ) )
+                var mediaElements = new MediaElementService( rockContext ).Queryable()
+                                    .Where( e => e.MediaFolderId == mediaFolderId
+                                        && !syncedMediaElementValues.Contains( e.Guid.ToString() ) );
+
+                mediaElementIds = mediaElements
                     .Select( e => e.Id )
                     .ToList();
+
+                contentChannelsUpdatedCount = mediaElements
+                    .Select( me => me.MediaFolder.ContentChannelId )
+                    .Distinct()
+                    .Count();
             }
 
             // Add the content channel item for each media element.
@@ -85,6 +106,7 @@ namespace Rock.Model
             {
                 MediaElementService.AddSyncedContentChannelItem( mediaElementId );
             }
+            return contentChannelsUpdatedCount;
         }
     }
 }

@@ -124,7 +124,8 @@ export default defineComponent({
     name="check-box-list">
     <template #default="{uniqueId}">
         <div class="control-wrapper">
-            <div class="controls rockcheckboxlist" :class="containerClasses">
+            <slot name="prepend" :isInputGroupSupported="false" />
+            <div class="controls rockcheckboxlist input-group" :class="containerClasses">
                 <template v-if="horizontal">
                     <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
                         <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
@@ -140,6 +141,7 @@ export default defineComponent({
                     </div>
                 </template>
             </div>
+            <slot name="append" :isInputGroupSupported="false" />
         </div>
     </template>
 </RockFormField>

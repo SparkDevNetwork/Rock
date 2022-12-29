@@ -46,8 +46,8 @@ export type GroupMemberAssignmentBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
-    /** The date and time when the last RSVP reminder sent. */
-    lastRSVPReminderSentDateTime?: string | null;
+    /** The date and time when the last reminder was sent. */
+    lastReminderSentDateTime?: string | null;
 
     /** Gets or sets the Rock.Model.Location identifier. */
     locationId?: number | null;
