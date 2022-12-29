@@ -25,6 +25,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -691,6 +692,14 @@ namespace RockWeb.Blocks.Reporting
                         reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
                     }
                 }
+                else if ( reportFieldType == ReportFieldType.Attribute )
+                {
+                    string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
+                    var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().FirstOrDefault( a => a.ID == placeHolderId );
+
+                    var info = GetAttributeFieldInfoFromControls( panelWidget, fieldSelection, rockContext );
+                    reportField.Selection = info.SerializeConfiguration();
+                }
                 else
                 {
                     reportField.Selection = fieldSelection;
@@ -948,7 +957,7 @@ namespace RockWeb.Blocks.Reporting
                             }
                         }
 
-                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString( "n" ) );
+                        listItem.Value = GetAttributeFieldListKey( entityField.AttributeGuid );
                     }
 
                     if ( entityField.IsPreviewable )
@@ -1522,6 +1531,26 @@ namespace RockWeb.Blocks.Reporting
                     SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
                 }
             }
+            else if ( reportFieldType == ReportFieldType.Attribute )
+            {
+                var fieldInfo = ReportingHelper.GetAttributeReportFieldInfo( fieldSelection, rockContext );
+
+                var attributeGuid = fieldInfo.AttributeGuid;
+                if ( attributeGuid.HasValue && fieldInfo.HasMaximumLength )
+                {
+                    var maxLengthControl = new NumberBox();
+                    maxLengthControl.ID = phDataSelectControls.ID + "_maxLengthTextBox";
+                    maxLengthControl.Label = "Maximum Length";
+                    maxLengthControl.Help = "The number of characters after which the field content will be truncated. If not specified, the default condensed format will be displayed.";
+                    maxLengthControl.NumberType = ValidationDataType.Integer;
+                    maxLengthControl.MinimumValue = "0";
+                    maxLengthControl.MaximumValue = "10000";
+
+                    phDataSelectControls.Controls.Add( maxLengthControl );
+
+                    SetValidationGroup( phDataSelectControls.Controls, this.BlockValidationGroup );
+                }
+            }
         }
 
         /// <summary>
@@ -1557,6 +1586,8 @@ namespace RockWeb.Blocks.Reporting
                 fieldSelection = fieldSelectionValueParts[1];
             }
 
+            var rockContext = new RockContext();
+
             Guid reportFieldGuid = new Guid( panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ) );
 
             ReportField reportField = new ReportField { ShowInGrid = true, ReportFieldType = reportFieldType };
@@ -1564,13 +1595,22 @@ namespace RockWeb.Blocks.Reporting
             {
                 reportField.Selection = string.Empty;
             }
+            else if ( reportFieldType == ReportFieldType.Attribute )
+            {
+                var info = GetAttributeFieldInfoFromControls( panelWidget, fieldSelection, rockContext );
+                fieldSelection = info.SerializeConfiguration();
+
+                reportField.Selection = fieldSelection;
+                reportField.ColumnHeaderText = info.ColumnHeader;
+                reportField.ShowInGrid = info.ShowInGrid;
+            }
             else
             {
                 reportField.Selection = fieldSelection;
             }
 
             var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
-            var rockContext = new RockContext();
+
             if ( reportFieldInfo.ReportFieldType != reportFieldType || reportFieldInfo.FieldSelection != fieldSelection )
             {
                 CreateFieldTypeSpecificControls( reportFieldType, fieldSelection, panelWidget, rockContext );
@@ -1580,6 +1620,34 @@ namespace RockWeb.Blocks.Reporting
 
                 PopulateFieldPanelWidget( panelWidget, reportField, reportFieldType, fieldSelection, rockContext );
             }
+        }
+
+        private ReportingHelper.AttributeReportFieldInfo GetAttributeFieldInfoFromControls( Control container, string attributeGuid, RockContext rockContext )
+        {
+            var info = ReportingHelper.GetAttributeReportFieldInfo( attributeGuid, rockContext );
+
+            // Column Header
+            var columnHeaderTextTextBox = WebControlHelper.TryGetByName<RockTextBox>( container.Controls, "columnHeaderTextTextBox" );
+            if ( columnHeaderTextTextBox != null )
+            {
+                info.ColumnHeader = columnHeaderTextTextBox.Text;
+            }
+
+            // Show in Grid
+            var showInGridCheckBox = WebControlHelper.TryGetByName<RockCheckBox>( container.Controls, "showInGridCheckBox" );
+            if ( showInGridCheckBox != null )
+            {
+                info.ShowInGrid = showInGridCheckBox.Checked;
+            }
+
+            // Maximum Length
+            var maxLengthTextBox = GetMaxLengthControl( container );
+            if ( maxLengthTextBox != null )
+            {
+                info.MaximumLength = maxLengthTextBox.Text.AsIntegerOrNull();
+            }
+
+            return info;
         }
 
         /// <summary>
@@ -1615,11 +1683,16 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Get( fieldSelection.AsGuid(), rockContext );
-                    if ( attribute != null )
+                    var fieldInfo = ReportingHelper.GetAttributeReportFieldInfo( fieldSelection, rockContext );
+                    var attributeGuid = fieldInfo.AttributeGuid;
+                    if ( attributeGuid.HasValue )
                     {
-                        defaultColumnHeaderText = attribute.Name;
-                        fieldDefined = true;
+                        var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
+                        if ( attribute != null )
+                        {
+                            defaultColumnHeaderText = attribute.Name;
+                            fieldDefined = true;
+                        }
                     }
 
                     break;
@@ -1656,7 +1729,9 @@ namespace RockWeb.Blocks.Reporting
             RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
             if ( reportField.ReportFieldType == ReportFieldType.Attribute )
             {
-                var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+                var fieldInfo = ReportingHelper.GetAttributeReportFieldInfo( reportField.Selection, rockContext );
+                var attributeGuid = fieldInfo.AttributeGuid;
+                var selectedValue = GetAttributeFieldListKey( attributeGuid );
                 if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
                 {
                     ddlFields.SelectedValue = selectedValue;
@@ -1664,9 +1739,16 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
-                    var attribute = AttributeCache.Get( fieldSelection.AsGuid(), rockContext );
+                    var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
                     ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
                     ddlFields.SelectedValue = selectedValue;
+                }
+
+                var hasMaxLengthControl = GetMaxLengthControl( panelWidget );
+                if ( hasMaxLengthControl != null
+                        && fieldInfo.HasMaximumLength && fieldInfo.MaximumLength.HasValue )
+                {
+                    hasMaxLengthControl.Text = fieldInfo.MaximumLength.ToString();
                 }
             }
             else if ( reportField.ReportFieldType == ReportFieldType.Property )
@@ -1687,6 +1769,19 @@ namespace RockWeb.Blocks.Reporting
                     dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
                 }
             }
+        }
+
+        private string GetAttributeFieldListKey( Guid? attributeGuid )
+        {
+            //var settings = ReportingHelper.DeserializeAttributeReportFieldConfig( attributeConfigurationString, rockContext );
+            var key = "Attribute|" + attributeGuid.GetValueOrDefault().ToString("n");
+            return key;
+        }
+
+        private NumberBox GetMaxLengthControl( Control container )
+        {
+            var maxLengthTextBox = WebControlHelper.TryGetByName<NumberBox>( container.Controls, "maxLengthTextBox" );
+            return maxLengthTextBox;
         }
 
         #endregion
