@@ -23,6 +23,9 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"volar.vueserver.additionalExtensions": [
+			"obs"
+		],
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
