@@ -9,8 +9,8 @@ const formatHost: ts.FormatDiagnosticsHost = {
 };
 
 // Inform TypeScript that .vue files are allowed.
-(ts as unknown as { supportedTSExtensions: string[][] }).supportedTSExtensions[0].push(".vue");
-(ts as unknown as { supportedTSExtensionsFlat: string[] }).supportedTSExtensionsFlat.push(".vue");
+(ts as unknown as { supportedTSExtensions: string[][] }).supportedTSExtensions[0].push(".vue", ".obs");
+(ts as unknown as { supportedTSExtensionsFlat: string[] }).supportedTSExtensionsFlat.push(".vue", ".obs");
 
 /**
  * Report a diagnostic message.
@@ -34,7 +34,7 @@ function getBuilderSystem(): ts.System {
 
         readFile(path: string, encoding?: string | undefined): string | undefined {
             // If this is a vue file then translate it into pure TypeScript/JavaScript.
-            if (path.endsWith(".vue")) {
+            if (path.endsWith(".vue") || path.endsWith(".obs")) {
                 const content = origReadFile(path, encoding);
 
                 return content ? translateVue(content, path) : undefined;
@@ -60,7 +60,7 @@ export function createSolutionBuilderHost(): ts.SolutionBuilderHost<ts.EmitAndSe
     // remove out temporary @ts-ignore markers.
     const origWriteFile = host.writeFile;
     host.writeFile = (path: string, data: string, writeByteOrderMark?: boolean | undefined): void => {
-        if (path.endsWith(".vue.js")) {
+        if (path.endsWith(".vue.js") || path.endsWith(".obs.js")) {
             data = data.split("\n").filter(l => !l.match(/\s*\/\/ @ts-ignore/)).join("\n");
         }
 
@@ -84,7 +84,7 @@ export function createSolutionBuilderWithWatchHost(reportWatch: ts.WatchStatusRe
     // remove out temporary @ts-ignore markers.
     const origWriteFile = host.writeFile;
     host.writeFile = (path: string, data: string, writeByteOrderMark?: boolean | undefined): void => {
-        if (path.endsWith(".vue.js")) {
+        if (path.endsWith(".vue.js") || path.endsWith(".obs.js")) {
             data = data.split("\n").filter(l => !l.match(/\s*\/\/ @ts-ignore/)).join("\n");
         }
 

@@ -14,7 +14,7 @@
     import { PropType, computed, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField";
     import Slider from "@Obsidian/Controls/slider";
-    import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
     import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";

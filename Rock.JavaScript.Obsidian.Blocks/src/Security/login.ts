@@ -19,7 +19,7 @@ import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { defineComponent } from "vue";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 

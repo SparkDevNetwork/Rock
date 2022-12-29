@@ -19,7 +19,7 @@
                     <span class="reorder-handle">
                         <i class="fa fa-bars"></i>
                     </span>
-                
+
                     <div class="action-item-icon">
                         <i :class="getActionTypeIconClass(action)"></i>
                     </div>
@@ -166,7 +166,7 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";

@@ -33,12 +33,12 @@
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
-    import LiveEventTab from "./ExperienceManager/liveEventTab.partial.vue";
-    import LiveQuestionsTab from "./ExperienceManager/liveQuestionsTab.partial.vue";
-    import ModerationTab from "./ExperienceManager/moderationTab.partial.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import LiveEventTab from "./ExperienceManager/liveEventTab.partial.obs";
+    import LiveQuestionsTab from "./ExperienceManager/liveQuestionsTab.partial.obs";
+    import ModerationTab from "./ExperienceManager/moderationTab.partial.obs";
     import Panel from "@Obsidian/Controls/panel";
-    import PanelNavigationBar from "./ExperienceManager/panelNavigationBar.partial.vue";
+    import PanelNavigationBar from "./ExperienceManager/panelNavigationBar.partial.obs";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";
     import { computed, provide, ref } from "vue";

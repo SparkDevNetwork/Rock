@@ -4,8 +4,8 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed } from 'vue';
-    import DatePartsPicker, { DatePartsPickerValue, getDefaultDatePartsPickerModel } from './datePartsPicker';
+    import { PropType, computed } from "vue";
+    import DatePartsPicker, { DatePartsPickerValue, getDefaultDatePartsPickerModel } from "./datePartsPicker";
     import { MonthYearValue } from "@Obsidian/ViewModels/Controls/monthYearValue";
 
     const props = defineProps({
@@ -21,14 +21,14 @@
 
     const internalValue = computed<DatePartsPickerValue>({
         get() {
-            return Object.assign({}, props.modelValue, { day: 0 })
+            return Object.assign({}, props.modelValue, { day: 0 });
         },
         set(newVal) {
             const value: MonthYearValue = {
                 month: newVal.month,
                 year: newVal.year
-            }
-            emit("update:modelValue", value)
+            };
+            emit("update:modelValue", value);
         }
-    })
+    });
 </script>

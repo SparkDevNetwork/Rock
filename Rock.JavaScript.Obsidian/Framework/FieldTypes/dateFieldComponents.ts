@@ -22,7 +22,7 @@ import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DatePicker from "@Obsidian/Controls/datePicker.vue";
+import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";

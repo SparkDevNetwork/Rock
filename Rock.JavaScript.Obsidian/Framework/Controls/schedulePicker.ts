@@ -20,7 +20,7 @@ import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { ScheduleTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "SchedulePicker",

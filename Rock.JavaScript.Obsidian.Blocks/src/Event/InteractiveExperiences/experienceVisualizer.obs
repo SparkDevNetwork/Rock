@@ -33,9 +33,9 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
-    import BarChart from "./ExperienceVisualizer/barChart.partial.vue";
-    import WordCloud from "./ExperienceVisualizer/wordCloud.partial.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import BarChart from "./ExperienceVisualizer/barChart.partial.obs";
+    import WordCloud from "./ExperienceVisualizer/wordCloud.partial.obs";
     import { Component as VueComponent, reactive, ref, watch } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { IParticipantTopic } from "./types";

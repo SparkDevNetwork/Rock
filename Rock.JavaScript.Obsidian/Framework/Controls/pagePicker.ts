@@ -18,7 +18,7 @@
 import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
 import { PageTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 import RockButton from "./rockButton";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";

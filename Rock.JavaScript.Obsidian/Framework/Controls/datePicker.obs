@@ -29,7 +29,7 @@
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import RockFormField from "./rockFormField";
     import TextBox from "./textBox";
-    import DatePickerBase from "./datePickerBase.vue";
+    import DatePickerBase from "./datePickerBase.obs";
 
     const props = defineProps({
         modelValue: {

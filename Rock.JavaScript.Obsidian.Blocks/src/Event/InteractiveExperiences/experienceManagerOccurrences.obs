@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import Panel from "@Obsidian/Controls/panel";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";

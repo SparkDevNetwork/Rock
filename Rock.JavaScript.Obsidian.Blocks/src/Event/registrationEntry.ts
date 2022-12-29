@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, provide, reactive, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";

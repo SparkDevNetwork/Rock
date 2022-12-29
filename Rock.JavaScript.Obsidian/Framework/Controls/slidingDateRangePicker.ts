@@ -17,7 +17,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
 import DropDownList from "./dropDownList";
-import DatePicker from "./datePicker.vue";
+import DatePicker from "./datePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useHttp } from "@Obsidian/Utility/http";

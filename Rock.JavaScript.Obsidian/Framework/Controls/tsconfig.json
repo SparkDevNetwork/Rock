@@ -7,7 +7,7 @@
   },
   "include": [
     "./*.ts",
-    "./*.vue"
+    "./*.obs"
   ],
   "references": [
     { "path": "../Core" },

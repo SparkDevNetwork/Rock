@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { LiveExperienceOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperienceOccurrences/liveExperienceOccurrencesInitializationBox";
     import { computed, ref } from "vue";

@@ -132,7 +132,7 @@ function watchProject(project: string, postBuildScript: string): void {
             ts.sys.write(`[${paddedBuildTime()}] `);
             reportDiagnostic(diag);
 
-            if (diag.code === 6194) {
+            if (diag.code === 6194 && diag.messageText.toString().includes("Found 0 errors")) {
                 runPostBuild();
             }
             else {

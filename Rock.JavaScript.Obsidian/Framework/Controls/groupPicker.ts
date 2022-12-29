@@ -20,7 +20,7 @@ import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { GroupTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 import { Guid } from "@Obsidian/Types";
 import InlineCheckBox from "./inlineCheckBox";
 

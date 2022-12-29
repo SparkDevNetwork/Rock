@@ -53,7 +53,7 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
 
     type ActionAnswer = ExperienceAnswerBag & {
     };

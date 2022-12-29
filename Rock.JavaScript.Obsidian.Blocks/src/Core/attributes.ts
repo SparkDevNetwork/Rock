@@ -21,7 +21,7 @@ import AttributeEditor from "@Obsidian/Controls/attributeEditor";
 import Modal from "@Obsidian/Controls/modal";
 import RockField from "@Obsidian/Controls/rockField";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";

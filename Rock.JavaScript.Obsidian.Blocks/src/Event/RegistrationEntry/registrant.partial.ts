@@ -25,7 +25,7 @@ import StringFilter from "@Obsidian/Utility/stringUtils";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm";

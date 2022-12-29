@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";

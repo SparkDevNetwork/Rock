@@ -98,7 +98,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

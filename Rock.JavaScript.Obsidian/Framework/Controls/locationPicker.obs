@@ -59,8 +59,8 @@
 
 <script lang="ts" setup>
     import LocationItemPicker from "./locationItemPicker";
-    import LocationAddressPicker from "./locationAddressPicker.vue";
-    import GeoPicker from "./geoPicker.vue";
+    import LocationAddressPicker from "./locationAddressPicker.obs";
+    import GeoPicker from "./geoPicker.obs";
     import RadioButtonList from "./radioButtonList";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

@@ -319,7 +319,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, shallowRef, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
@@ -328,7 +328,7 @@
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import Modal from "@Obsidian/Controls/modal";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
     import SectionContainer from "@Obsidian/Controls/sectionContainer";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import TextBox from "@Obsidian/Controls/textBox";

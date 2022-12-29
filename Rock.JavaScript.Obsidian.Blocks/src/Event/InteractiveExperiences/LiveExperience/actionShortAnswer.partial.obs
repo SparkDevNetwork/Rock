@@ -48,7 +48,7 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, ref, watch } from "vue";

@@ -42,8 +42,8 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import ContentDropDownPicker from "./contentDropDownPicker.vue";
-    import AddressControl from "./addressControl.vue";
+    import ContentDropDownPicker from "./contentDropDownPicker.obs";
+    import AddressControl from "./addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { post } from "@Obsidian/Utility/http";
     import { FormError } from "@Obsidian/Utility/form";

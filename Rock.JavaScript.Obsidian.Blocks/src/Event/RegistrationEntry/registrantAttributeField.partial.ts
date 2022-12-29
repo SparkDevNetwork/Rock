@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";

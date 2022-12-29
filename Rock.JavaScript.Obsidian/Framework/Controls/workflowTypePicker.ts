@@ -21,7 +21,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { WorkflowTypeTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import RockFormField from "./rockFormField";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "WorkflowTypePicker",

@@ -48,8 +48,8 @@
 <script setup lang="ts">
     import { PropType, ref, watch, onBeforeMount } from "vue";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
-    import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.vue";
+    import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.obs";
+    import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.obs";
     import { DrawingMode } from "@Obsidian/Types/Controls/geo";
     import { wellKnownToCoordinates, nearAddressForCoordinates, loadMapResources } from "@Obsidian/Utility/geo";
     import { Guid } from "@Obsidian/Types";

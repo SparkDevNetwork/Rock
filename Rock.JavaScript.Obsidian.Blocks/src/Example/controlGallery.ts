@@ -57,13 +57,13 @@ import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import DatePicker from "@Obsidian/Controls/datePicker.vue";
+import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import ListBox from "@Obsidian/Controls/listBox";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
-import AddressControl from "@Obsidian/Controls/addressControl.vue";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import Switch from "@Obsidian/Controls/switch";
 import Toggle from "@Obsidian/Controls/toggle";
@@ -101,7 +101,7 @@ import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderP
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
 import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
@@ -109,7 +109,7 @@ import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
-import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
+import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -141,7 +141,7 @@ import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
-import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
+import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
@@ -151,7 +151,7 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
@@ -181,22 +181,21 @@ import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
 import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
 import ReportPicker from "@Obsidian/Controls/reportPicker";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
-import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
-import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
-import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
-import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.vue";
+import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.obs";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
+import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.obs";
 import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
-import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
-import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
-import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
-import GeoPicker from "@Obsidian/Controls/geoPicker.vue";
-import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.vue";
-import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.vue";
-import WordCloud from "@Obsidian/Controls/wordCloud.vue";
-import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.vue";
-import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.vue";
-import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.vue";
-import LocationPicker from "@Obsidian/Controls/locationPicker.vue";
+import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
+import GeoPicker from "@Obsidian/Controls/geoPicker.obs";
+import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.obs";
+import WordCloud from "@Obsidian/Controls/wordCloud.obs";
+import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.obs";
+import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.obs";
+import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
 
 // #region Gallery Support
 
@@ -506,7 +505,7 @@ export function getControlImportPath(fileName: string): string {
  * @returns A string of code that can be used to import the given control file
  */
 export function getSfcControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.vue";`;
+    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.obs";`;
 }
 
 /**

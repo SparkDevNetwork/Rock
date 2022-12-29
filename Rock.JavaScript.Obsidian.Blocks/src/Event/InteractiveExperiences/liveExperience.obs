@@ -74,9 +74,9 @@ body {
 </style>
 
 <script setup lang="ts">
-    import ActionShortAnswer from "./LiveExperience/actionShortAnswer.partial.vue";
-    import ActionPoll from "./LiveExperience/actionPoll.partial.vue";
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import ActionShortAnswer from "./LiveExperience/actionShortAnswer.partial.obs";
+    import ActionPoll from "./LiveExperience/actionPoll.partial.obs";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import { Component as VueComponent, computed, ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { IParticipantTopic } from "./types";

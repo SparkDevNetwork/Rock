@@ -288,8 +288,8 @@
 <script setup lang="ts">
     import { PropType, computed, ref, shallowRef, watch } from "vue";
     import CheckBoxList from "./checkBoxList";
-    import DatePickerBase from "./datePickerBase.vue";
-    import DatePicker from "./datePicker.vue";
+    import DatePickerBase from "./datePickerBase.obs";
+    import DatePicker from "./datePicker.obs";
     import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
     import DateTimePicker from "./dateTimePicker";
     import DropDownList from "./dropDownList";

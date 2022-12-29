@@ -15,6 +15,9 @@
 		}
 	],
 	"settings": {
+		"files.associations": {
+			"*.obs": "vue"
+		},
 		"volar.format.initialIndent": {
 			"typescript": true,
 			"html": true

@@ -85,7 +85,7 @@
     import { ExperienceAnswerBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceAnswerBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
-    import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, watch } from "vue";
 import { ConnectionRequestTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "ConnectionRequestPicker",

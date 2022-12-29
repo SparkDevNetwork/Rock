@@ -33,7 +33,7 @@
 </style>
 
 <script setup lang="ts">
-    import WordCloud from "@Obsidian/Controls/wordCloud.vue";
+    import WordCloud from "@Obsidian/Controls/wordCloud.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { computed, ref, watch } from "vue";
     import { visualizerProps } from "./util.partial";

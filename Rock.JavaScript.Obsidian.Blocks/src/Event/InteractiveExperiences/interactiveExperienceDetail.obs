@@ -40,14 +40,14 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import ActionsPanel from "./InteractiveExperienceDetail/actionsPanel.partial.vue";
-    import EditPanel from "./InteractiveExperienceDetail/editPanel.partial.vue";
-    import ViewPanel from "./InteractiveExperienceDetail/viewPanel.partial.vue";
+    import ActionsPanel from "./InteractiveExperienceDetail/actionsPanel.partial.obs";
+    import EditPanel from "./InteractiveExperienceDetail/editPanel.partial.obs";
+    import ViewPanel from "./InteractiveExperienceDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./InteractiveExperienceDetail/types";
