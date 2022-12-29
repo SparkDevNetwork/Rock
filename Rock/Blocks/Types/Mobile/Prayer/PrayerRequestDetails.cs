@@ -806,6 +806,10 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 {
                     prayerRequest.IsPublic = ( bool ) parameters["allowPublication"];
                 }
+                else
+                {
+                    prayerRequest.IsPublic = DefaultToPublic;
+                }
 
                 if ( ShowUrgentFlag )
                 {
