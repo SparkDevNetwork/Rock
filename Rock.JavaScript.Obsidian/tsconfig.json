@@ -7,6 +7,7 @@
     "allowUnreachableCode": false,
     "forceConsistentCasingInFileNames": true,
     "target": "ES2016",
+    "module": "commonjs",
     "moduleResolution": "Node"
   }
 }

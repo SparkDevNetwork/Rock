@@ -13,5 +13,8 @@
     { "path": "./Directives" },
     { "path": "./FieldTypes" },
     { "path": "./Templates" }
-  ]
+  ],
+  "compilerOptions": {
+    "module": "commonjs"
+  }
 }

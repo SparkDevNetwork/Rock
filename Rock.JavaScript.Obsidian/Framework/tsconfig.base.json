@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "target": "ES2016",
-    "module": "ESNext",
+    "module": "commonjs",
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": true,

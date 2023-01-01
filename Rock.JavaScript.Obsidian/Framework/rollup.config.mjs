@@ -5,7 +5,7 @@ import { terser } from "rollup-plugin-terser";
 import cssnano from "cssnano";
 import * as process from "process";
 import * as path from "path";
-import * as glob from "glob";
+import glob from "glob";
 import * as fs from "fs";
 
 function virtual(modules) {

@@ -31,9 +31,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="build\.eslintrc.js" />
-    <Content Include="build\build-fast.js" />
+    <Content Include="build\build-fast.cjs" />
     <Content Include="package.json" />
-    <Content Include="rollup.config.js" />
+    <Content Include="rollup.config.mjs" />
     <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />

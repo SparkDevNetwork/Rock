@@ -2,7 +2,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import * as process from "process";
 import * as path from "path";
-import * as glob from "glob";
+import glob from "glob";
 
 function generateAutoBundles(srcPath, outPath) {
     const files = glob.sync(srcPath + "/**/*.@(js)")

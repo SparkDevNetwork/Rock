@@ -32,7 +32,7 @@
   <ItemGroup>
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
-    <Content Include="Build\build-fast.js" />
+    <Content Include="Build\build-fast.cjs" />
     <Content Include="Framework\Controls\addressControl.vue" />
     <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\buttonGroup.vue" />
@@ -64,7 +64,7 @@
     <Content Include="Framework\FieldTypes\tsconfig.json" />
     <Content Include="Framework\Libs\tsconfig.json" />
     <Content Include="Framework\PageState\tsconfig.json" />
-    <Content Include="Framework\rollup.config.js" />
+    <Content Include="Framework\rollup.config.mjs" />
     <Content Include="Framework\.eslintrc.js" />
     <Content Include="Framework\Controls\modal.ts" />
     <Content Include="Framework\Controls\transitionVerticalCollapse.ts" />
