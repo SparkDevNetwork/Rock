@@ -212,7 +212,11 @@ namespace Rock.Model
             // Verify the date time value is valid for SQL storage.
             if ( valueAsDateTime.HasValue )
             {
-                if ( valueAsDateTime.Value < SqlDateTime.MinValue || valueAsDateTime.Value > SqlDateTime.MaxValue )
+                // Even though we can compare directly to SqlDateTime.MinValue, it will throw
+                // an error if valueAsDateTime is outside the allowed values. This is because
+                // it causes valueAsDateTime to be implicitly converted to a SqlDateTime which
+                // will throw the error anyway.
+                if ( valueAsDateTime.Value < SqlDateTime.MinValue.Value || valueAsDateTime.Value > SqlDateTime.MaxValue.Value )
                 {
                     valueAsDateTime = null;
                 }
@@ -244,7 +248,7 @@ namespace Rock.Model
             // If the value is a Guid, try to get the person id.
             if ( valueAsGuid.HasValue && attributeCache?.FieldTypeId == fieldTypeId )
             {
-                personId = new PersonAliasService( rockContext ).GetPersonId( valueAsGuid.Value );
+                personId = new PersonAliasService( rockContext ).GetSelect( valueAsGuid.Value, pa => ( int? ) pa.PersonId );
             }
 
             // Don't use AsBooleanOrNull() since it has slightly different logic
