@@ -2519,7 +2519,7 @@ namespace RockWeb.Blocks.Finance
                         familyGroup,
                         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK,
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
-                        false );
+                        true);
                 }
 
                 return business;

@@ -25,7 +25,9 @@ using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -33,11 +35,13 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    ///
+    /// Block used to view the scheduled transactions, saved accounts and pledges of a person.
     /// </summary>
     [DisplayName( "Giving Configuration" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Block used to view the scheduled transactions, saved accounts and pledges of a person." )]
+
+    #region Block Attributes
 
     [LinkedPage(
         "Add Transaction Page",
@@ -45,6 +49,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.ADD_TRANSACTION,
         Order = 0 )]
+
     [IntegerField(
         "Person Token Expire Minutes",
         Key = AttributeKey.PersonTokenExpireMinutes,
@@ -52,6 +57,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultIntegerValue = 60,
         Order = 1 )]
+
     [IntegerField(
         "Person Token Usage Limit",
         Key = AttributeKey.PersonTokenUsageLimit,
@@ -59,18 +65,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = false,
         DefaultIntegerValue = 1,
         Order = 2 )]
+
     [AccountsField(
         "Accounts",
         Key = AttributeKey.Accounts,
         Description = "A selection of accounts to use for checking if transactions for the current user exist.",
         IsRequired = false,
         Order = 3 )]
+
     [LinkedPage(
         "Pledge Detail Page",
         Key = AttributeKey.PledgeDetailPage,
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.PLEDGE_DETAIL,
         Order = 4 )]
+
     [IntegerField(
         "Max Years To Display",
         Description = "The maximum number of years to display (including the current year).",
@@ -78,18 +87,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultIntegerValue = 3,
         Order = 5,
         Key = AttributeKey.MaxYearsToDisplay )]
+
     [LinkedPage(
         "Contribution Statement Detail Page",
         Description = "The contribution statement detail page.",
         Order = 6,
         DefaultValue = Rock.SystemGuid.Page.CONTRIBUTION_STATEMENT_PAGE,
         Key = AttributeKey.ContributionStatementDetailPage )]
+
     [LinkedPage(
         "Scheduled Transaction Detail Page",
         Key = AttributeKey.ScheduledTransactionDetailPage,
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
         Order = 7 )]
+
+    #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( "486E470A-DBD8-48D6-9A97-5B1B490A401E" )]
     public partial class GivingConfiguration : Rock.Web.UI.PersonBlock, ISecondaryBlock
     {
@@ -388,6 +402,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ShowDetail();
+
+            // clean up stale accounts from the text to give settings area.
+            BindSavedAccounts();
         }
 
         /// <summary>
@@ -459,7 +476,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.HasValue
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.Value == financialPersonSavedAccount.Id ).Any();
 
-            btnSavedAccountDelete.Visible = !cardInUse;
+            btnSavedAccountDelete.Visible = !cardInUse && !financialPersonSavedAccount.IsDefault;
             btnSavedAccountDelete.CommandArgument = financialPersonSavedAccount.Guid.ToString();
 
             if ( cardIsExpired )
@@ -471,6 +488,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( cardInUse )
                 {
                     lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-success text-nowrap'>In Use</span>";
+                }
+                else if ( financialPersonSavedAccount.IsDefault )
+                {
+                    lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-muted text-nowrap'>Default</span>";
                 }
                 else
                 {
@@ -644,6 +665,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ShowDetail();
         }
 
+        protected void btnEditTextToGive_Click( object sender, EventArgs e )
+        {
+            pnlTextToGive.Visible = true;
+            btnEditTextToGive.Visible = false;
+            pnlTextToGiveView.Visible = false;
+            pnlTextToGiveEdit.Visible = true;
+
+            BindSavedAccounts();
+
+            var financialAccount = GetDefaultFinancialAccount();
+            apAccountPicker.SetValue( financialAccount );
+
+            var defaultSavedAccount = GetDefaultSavedAccount();
+            ddlSavedAccount.SelectedValue = defaultSavedAccount == null ? string.Empty : defaultSavedAccount.Id.ToString();
+
+            var descriptionListLeft = new DescriptionList();
+            descriptionListLeft.Add( "Default Account", financialAccount == null ? "None" : financialAccount.PublicName );
+
+            var descriptionListRight = new DescriptionList();
+            descriptionListRight.Add( "Saved Account", defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount ) );
+
+            lDescriptionLeft.Text = descriptionListLeft.Html;
+            lDescriptionRight.Text = descriptionListRight.Html;
+        }
+
+        protected void btnSaveTextToGive_Click( object sender, EventArgs e )
+        {
+            var selectedSavedAccountId = ddlSavedAccount.SelectedValueAsInt();
+            var selectedFinancialAccountId = apAccountPicker.SelectedValueAsInt();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                personService.ConfigureTextToGive( Person.Id, selectedFinancialAccountId, selectedSavedAccountId, out _ );
+                rockContext.SaveChanges();
+                Person = personService.Get( Person.Id );
+            }
+
+            btnEditTextToGive.Visible = true;
+            pnlTextToGiveView.Visible = true;
+            pnlTextToGiveEdit.Visible = false;
+            SetTextToGiveDetails();
+
+            // editting text to give settings may affect the display of saved accounts, so rebind this.
+            BindSavedAccountList();
+        }
+
+        protected void btnCanceTextToGive_Click( object sender, EventArgs e )
+        {
+            btnEditTextToGive.Visible = true;
+            pnlTextToGiveView.Visible = true;
+            pnlTextToGiveEdit.Visible = false;
+            SetTextToGiveDetails();
+        }
+
         #endregion Base Control Methods
 
         #region Internal Methods
@@ -658,11 +734,221 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetail()
         {
+            if ( !Page.IsPostBack )
+            {
+                SetTextToGiveDetails();
+            }
+
             BindSavedAccountList();
             BindContributionStatements();
             BindScheduledTransactions();
             BindPledgeList();
         }
+
+        /// <summary>
+        /// Set the Text To Give Details
+        /// </summary>
+        private void SetTextToGiveDetails()
+        {
+            if ( !Person.ContributionFinancialAccountId.HasValue )
+            {
+                // Don't show anything.
+                pnlTextToGive.Visible = false;
+                btnEditTextToGive.Visible = false;
+                pnlTextToGiveAddSettings.Visible = true;
+                return;
+            }
+
+            pnlTextToGive.Visible = true;
+
+            var financialAccount = GetDefaultFinancialAccount();
+            var descriptionListLeft = new DescriptionList();
+            descriptionListLeft.Add( "Default Account", financialAccount == null ? "None" : financialAccount.PublicName );
+            lDescriptionLeft.Text = descriptionListLeft.Html;
+
+            var defaultSavedAccount = GetDefaultSavedAccount();
+            var descriptionListRight = new DescriptionList();
+            descriptionListRight.Add( "Saved Account", defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount ) );
+            lDescriptionRight.Text = descriptionListRight.Html;
+        }
+
+        /// <summary>
+        /// Populate the appropriate saved accounts for the person and gateway in the drop down list
+        /// </summary>
+        private void BindSavedAccounts()
+        {
+            var selectedId = ddlSavedAccount.SelectedValue.AsIntegerOrNull();
+            ddlSavedAccount.Items.Clear();
+
+            // Get the saved accounts for the person
+            var savedAccounts = GetSavedAccounts();
+
+            // Bind the accounts
+            if ( savedAccounts != null && savedAccounts.Any() )
+            {
+                var viewModels = savedAccounts.Select( sa => new
+                {
+                    Id = ( int? ) sa.Id,
+                    Name = GetSavedAccountName( sa )
+                } ).ToList();
+
+                // Add a blank option to unset the default account altogether
+                viewModels.Insert( 0, new
+                {
+                    Id = ( int? ) null,
+                    Name = string.Empty,
+                } );
+
+                ddlSavedAccount.DataSource = viewModels;
+                ddlSavedAccount.Enabled = true;
+            }
+            else
+            {
+                ddlSavedAccount.Enabled = false;
+                ddlSavedAccount.DataSource = new List<object>
+                {
+                    new {
+                        Name = "No Saved Accounts",
+                        Id = (int?) null
+                    }
+                };
+            }
+
+            ddlSavedAccount.DataBind();
+
+            // Try to select the previously selected account
+            if ( selectedId.HasValue && savedAccounts.Any( sa => sa.Id == selectedId ) )
+            {
+                ddlSavedAccount.SelectedValue = selectedId.Value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Get the name of the saved account
+        /// </summary>
+        /// <param name="savedAccount"></param>
+        /// <returns></returns>
+        private string GetSavedAccountName( FinancialPersonSavedAccount savedAccount )
+        {
+            const string unnamed = "<Unnamed>";
+
+            if ( savedAccount == null )
+            {
+                return unnamed;
+            }
+
+            var name = savedAccount.Name.IsNullOrWhiteSpace() ? unnamed : savedAccount.Name.Trim();
+
+            if ( savedAccount.FinancialPaymentDetail != null )
+            {
+                var expirationMonth = savedAccount.FinancialPaymentDetail.ExpirationMonth;
+                var expirationYear = savedAccount.FinancialPaymentDetail.ExpirationYear;
+
+                if ( expirationMonth.HasValue || expirationYear.HasValue )
+                {
+                    var monthString = expirationMonth.HasValue ?
+                        ( expirationMonth.Value < 10 ? ( "0" + expirationMonth.Value.ToString() ) : expirationMonth.Value.ToString() ) :
+                        "??";
+                    var yearString = expirationYear.HasValue ?
+                        ( expirationYear.Value % 100 ).ToString() :
+                        "??";
+
+                    name += string.Format( " ({0}/{1})", monthString, yearString );
+                }
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Gets the saved accounts.
+        /// </summary>
+        /// <returns></returns>
+        private List<FinancialPersonSavedAccount> GetSavedAccounts()
+        {
+            if ( _savedAccounts != null )
+            {
+                return _savedAccounts;
+            }
+
+            if ( Person == null )
+            {
+                return new List<FinancialPersonSavedAccount>();
+            }
+
+            var supportedGatewayIds = GetSupportedGatewayIds();
+            if ( supportedGatewayIds == null || !supportedGatewayIds.Any() )
+            {
+                return new List<FinancialPersonSavedAccount>();
+            }
+
+            var rockContext = new RockContext();
+            var service = new FinancialPersonSavedAccountService( rockContext );
+
+            _savedAccounts = service
+                .GetByPersonId( Person.Id )
+                .Include( sa => sa.FinancialPaymentDetail )
+                .AsNoTracking()
+                .Where( sa =>
+                    sa.FinancialGatewayId.HasValue &&
+                    supportedGatewayIds.Contains( sa.FinancialGatewayId.Value ) )
+                .OrderBy( sa => sa.IsDefault )
+                .ThenByDescending( sa => sa.CreatedDateTime )
+                .ToList();
+
+            return _savedAccounts;
+        }
+        private List<FinancialPersonSavedAccount> _savedAccounts = null;
+
+        /// <summary>
+        /// Gets the default saved account.
+        /// </summary>
+        /// <returns></returns>
+        private FinancialPersonSavedAccount GetDefaultSavedAccount()
+        {
+            var savedAccounts = GetSavedAccounts();
+            return savedAccounts == null ? null : savedAccounts.FirstOrDefault( sa => sa.IsDefault );
+        }
+
+        /// <summary>
+        /// Gets the default financial account.
+        /// </summary>
+        /// <returns></returns>
+        private FinancialAccount GetDefaultFinancialAccount()
+        {
+            return Person == null ? null : Person.ContributionFinancialAccount;
+        }
+
+        /// <summary>
+        /// Gets the supported gateway ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetSupportedGatewayIds()
+        {
+            if ( _supportedGatewayIds == null )
+            {
+                var rockContext = new RockContext();
+                var gatewayService = new FinancialGatewayService( rockContext );
+                var activeGatewayEntityTypes = gatewayService.Queryable( "EntityType" ).AsNoTracking()
+                    .Where( fg => fg.IsActive )
+                    .GroupBy( fg => fg.EntityType )
+                    .ToList();
+
+                var supportedTypes = Rock.Reflection.FindTypes( typeof( IAutomatedGatewayComponent ) );
+                _supportedGatewayIds = new List<int>();
+
+                foreach ( var entityType in activeGatewayEntityTypes )
+                {
+                    if ( supportedTypes.Any( t => t.Value.FullName == entityType.Key.Name ) )
+                    {
+                        _supportedGatewayIds.AddRange( entityType.Select( fg => fg.Id ) );
+                    }
+                }
+            }
+
+            return _supportedGatewayIds;
+        }
+        private List<int> _supportedGatewayIds = null;
 
         /// <summary>
         /// Binds the scheduled transactions.

@@ -76,11 +76,33 @@
                             <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
-
-                    <asp:Panel ID="pnlScheduling" runat="server">
+                    <asp:Panel ID="pnlScheduling" runat="server" Visible="false">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlGroupMemberScheduleTemplate" runat="server" Label="Schedule Template" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupMemberScheduleTemplate_SelectedIndexChanged" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="control-label">
+                                    <asp:Literal runat="server" ID="lGroupPreferenceAssignmentLabel" Text="Assignment" />
+                                </label>
+                                <p>
+                                    <asp:Literal runat="server" ID="lGroupPreferenceAssignmentHelp" Text="Please select a time and optional location that you would like to be scheduled for." />
+                                </p>
+
+                                <%-- NOTE: This gGroupPreferenceAssignments (and these other controls in the ItemTemplate) is in a repeater and is configured in rptGroupPreferences_ItemDataBound--%>
+                                <Rock:Grid ID="gGroupPreferenceAssignments" runat="server" DisplayType="Light" RowItemText="Group Preference Assignment" AllowPaging="false">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" />
+                                        <Rock:RockBoundField DataField="LocationName" HeaderText="Location" />
+                                        <Rock:LinkButtonField ID="btnEditGroupPreferenceAssignment" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-pencil'></i>" OnClick="btnEditGroupPreferenceAssignment_Click" />
+                                        <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
+                                    </Columns>
+                                </Rock:Grid>
+                                <br />
                                 <Rock:DatePicker ID="dpScheduleStartDate" runat="server" Label="Schedule Start Date" />
                                 <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The number of days prior to the schedule to send a reminder email or leave blank to use the default." Placeholder="Use default" />
                             </div>
@@ -91,8 +113,8 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
-                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" NumberOfColumns="2" />
                         </div>
                     </div>
 
@@ -178,6 +200,16 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
-
+        <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>
+        <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick"
+            Title="Add/Edit Assignment" ValidationGroup="GroupScheduleAssignment">
+            <Content>
+                <asp:HiddenField ID="hfGroupScheduleAssignmentGuid" runat="server" />
+                <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" Label="Schedule"
+                    AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged"
+                    Required="true" ValidationGroup="GroupScheduleAssignment" />
+                <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" ValidationGroup="GroupScheduleAssignment" />
+            </Content>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>

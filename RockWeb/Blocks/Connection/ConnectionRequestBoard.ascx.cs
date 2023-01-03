@@ -187,8 +187,10 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private List<ConnectionRequestViewModelWithModel> _ConnectionRequestViewModelsWithFullModel;
+        private bool _isExporting = false;
 
         #endregion
+
         #region Properties
 
         /// <summary>
@@ -2246,8 +2248,9 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Get the grid panel.
         /// </summary>
-        private void BindRequestsGrid()
+        private void BindRequestsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             var connectionRequestEntityId = ConnectionRequestEntityTypeId;
 
             gRequests.EntityIdField = "Id";
@@ -2271,8 +2274,23 @@ namespace RockWeb.Blocks.Connection
             var rockContext = new RockContext();
             var modelQuery = GetConnectionRequestModelWithFullModelQuery( rockContext );
             _ConnectionRequestViewModelsWithFullModel = modelQuery.ToList();
-            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
-            gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            if ( isExporting )
+            {
+                var connectionOpportunity = GetConnectionOpportunity();
+                gRequests.ExportFilename = connectionOpportunity.Name + "_" + RockDateTime.Now.ToString( "yyyyMMdd_hhmmtt" );
+                foreach ( var column in gRequests.Columns.OfType<SecurityField>().ToList() )
+                {
+                    gRequests.Columns.Remove( column );
+                }
+
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => (ConnectionRequestViewModel)a ).AsQueryable() );
+            }
+            else
+            {
+                gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            }
+
             gRequests.DataBind();
         }
 
@@ -2298,7 +2316,7 @@ namespace RockWeb.Blocks.Connection
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRequestsGrid();
+            BindRequestsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -2346,7 +2364,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var model = e.Row.DataItem as ConnectionRequest;
+            dynamic model = e.Row.DataItem as ConnectionRequest;
+            if ( _isExporting )
+            {
+                model = e.Row.DataItem as ConnectionRequestViewModel;
+            }
+
             if ( model == null )
             {
                 return;

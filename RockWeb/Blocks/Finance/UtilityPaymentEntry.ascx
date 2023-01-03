@@ -42,10 +42,10 @@
 
             <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
-                <div class="panel-heading">
+                <asp:Panel ID="pnlHeading1" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
                         <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
-                </div>
+                </asp:Panel>
                 <div class="panel-body">
 
                     <asp:Panel ID="pnlContributionInfo" runat="server">
@@ -57,27 +57,12 @@
                                 <% } %>
                                 <asp:Literal ID="lTransactionHeader" runat="server" />
                                 <div class="panel panel-default contribution-info">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title">
-                                            <asp:Literal ID="lContributionInfoTitle" runat="server" /></h3>
-                                    </div>
+                                    <asp:Panel ID="pnlHeading3" runat="server" CssClass="panel-heading">
+                                        <h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3>
+                                    </asp:Panel>
                                     <div class="panel-body">
                                         <fieldset>
-
-                                            <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
-                                                <ItemTemplate>
-                                                    <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
-                                                    <Rock:CurrencyBox ID="txtAccountAmount" runat="server" CssClass="account-amount" />
-                                                </ItemTemplate>
-                                            </asp:Repeater>
-
-                                            <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
-                                                DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
-
-                                            <div class="form-group">
-                                                <label runat="server" id="lblTotalAmountLabel">Total</label>
-                                                <asp:Label ID="lblTotalAmount" runat="server" CssClass="form-control-static total-amount" />
-                                            </div>
+                                            <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
                                             <div id="divRepeatingPayments" runat="server" visible="false">
                                                 <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
@@ -99,7 +84,7 @@
                                 <% } %>
 
                                 <div class="panel panel-default contribution-personal">
-                                    <div class="panel-heading">
+                                    <asp:Panel ID="pnlHeading4" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title">
                                             <asp:Literal ID="lPersonalInfoTitle" runat="server" />
                                             <div class="panel-labels">
@@ -109,7 +94,7 @@
                                                 </asp:PlaceHolder>
                                             </div>
                                         </h3>
-                                    </div>
+                                    </asp:Panel>
                                     <div class="panel-body">
                                         <fieldset>
                                             <%-- Special input with rock-fullname class --%>
@@ -165,10 +150,9 @@
 
                                 <asp:Panel ID="pnlPayment" runat="server" CssClass="panel panel-default contribution-payment">
 
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title">
-                                            <asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
-                                    </div>
+                                    <asp:Panel ID="pnlHeading5" runat="server" CssClass="panel-heading">
+                                        <h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
+                                    </asp:Panel>
                                     <div class="panel-body">
                                         <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" AutoPostBack="true" OnSelectedIndexChanged="rblSavedAccount_SelectedIndexChanged" />
 
@@ -202,7 +186,7 @@
                         <div class="actions clearfix">
                             <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();">Previous</a>
                              
-                            <Rock:BootstrapButton ID="btnSavedAccountPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" DataLoadingText="Processing..." OnClick="btnSavedAccountPaymentInfoNext_Click" />
+                            <Rock:BootstrapButton ID="btnSavedAccountPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" DataLoadingText="Processing..." Visible="false" OnClick="btnSavedAccountPaymentInfoNext_Click" />
 
                             <%-- NOTE: btnHostedPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                	Even though this is a LinkButton, btnHostedPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. ) unless a saved account is selected
@@ -216,18 +200,18 @@
 
             <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block contribution-confirmation" runat="server" Visible="false">
 
-                <div class="panel-heading">
+                <asp:Panel ID="pnlHeading2" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
                         <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
-                </div>
+                </asp:Panel>
 
                 <div class="panel-body">
                     <div class="panel panel-default">
 
-                        <div class="panel-heading">
+                        <asp:Panel ID="pnlHeading6" runat="server" CssClass="panel-heading">
                             <h1 class="panel-title">
                                 <asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
-                        </div>
+                        </asp:Panel>
                         <div class="panel-body">
                             <asp:Literal ID="lConfirmationHeader" runat="server" />
                             <dl class="dl-horizontal gift-confirmation margin-b-md">
@@ -255,14 +239,14 @@
                                     You have already submitted a similar transaction that has been processed.  Are you sure you want
                                 to submit another possible duplicate transaction?
                                 </p>
-                                <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="btnConfirm_Click" />
+                                <asp:LinkButton ID="btnConfirmDuplicateTransaction" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="btnConfirmDuplicateTransaction_Click" />
                             </asp:Panel>
 
                             <Rock:NotificationBox ID="nbConfirmationMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
                             <div class="actions clearfix">
                                 <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
-                                <Rock:BootstrapButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
+                                <Rock:BootstrapButton ID="btnProcessTransactionFromConfirmationPage" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnProcessTransactionFromConfirmationPage_Click" />
                             </div>
                         </div>
                     </div>
@@ -274,35 +258,7 @@
 
             <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
 
-                <div class="well">
-                    <legend>
-                        <asp:Literal ID="lSuccessTitle" runat="server" /></legend>
-                    <asp:Literal ID="lSuccessHeader" runat="server"></asp:Literal>
-                    <dl class="dl-horizontal gift-success">
-                        <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
-                        <Rock:TermDescription ID="tdTransactionCodeReceipt" runat="server" Term="Confirmation Code" />
-                        <Rock:TermDescription runat="server" />
-                        <Rock:TermDescription ID="tdNameReceipt" runat="server" Term="Name" />
-                        <Rock:TermDescription ID="tdPhoneReceipt" runat="server" Term="Phone" />
-                        <Rock:TermDescription ID="tdEmailReceipt" runat="server" Term="Email" />
-                        <Rock:TermDescription ID="tdAddressReceipt" runat="server" Term="Address" />
-                        <Rock:TermDescription runat="server" />
-                        <asp:Repeater ID="rptAccountListReceipt" runat="server">
-                            <ItemTemplate>
-                                <Rock:TermDescription ID="tdAccountAmountReceipt" runat="server" Term='<%# Eval("PublicName") %>' Description='<%# Eval("AmountFormatted") %>' />
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        <Rock:TermDescription ID="tdTotalReceipt" runat="server" Term="Total" />
-                        <Rock:TermDescription runat="server" />
-                        <Rock:TermDescription ID="tdPaymentMethodReceipt" runat="server" Term="Payment Method" />
-                        <Rock:TermDescription ID="tdAccountNumberReceipt" runat="server" Term="Account Number" />
-                        <Rock:TermDescription ID="tdWhenReceipt" runat="server" Term="When" />
-                    </dl>
-
-
-                    <dl class="dl-horizontal gift-confirmation margin-b-md">
-                    </dl>
-                </div>
+                <asp:Literal ID="lTransactionSummaryHTML" runat="server" />
 
                 <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
                     <div class="well">

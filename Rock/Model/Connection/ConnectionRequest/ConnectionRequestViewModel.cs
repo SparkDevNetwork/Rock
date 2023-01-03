@@ -102,6 +102,11 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the campus identifier.
         /// </summary>
+        public Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
         public int? CampusId { get; set; }
 
         /// <summary>
