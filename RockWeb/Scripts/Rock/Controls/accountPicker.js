@@ -52,7 +52,8 @@
                             isActive: item.IsActive,
                             countInfo: item.CountInfo,
                             isCategory: item.IsCategory,
-                            path: item.Path
+                            path: item.Path,
+                            totalCount: item.TotalCount
                         };
 
                         // Custom node properties passed in from the *Picker.cs using the ItemPicker base CustomDataItems property
@@ -169,6 +170,14 @@
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound', function (evt, data) {
                         self.updateScrollbar();
+                        // Get any node item so we can read to total count
+                        const rockTree = $control.find('.treeview').data('rockTree');
+                        const firstNode = rockTree.nodes[0];
+                        if (firstNode && firstNode.totalCount > 1000) {
+                            $control.find('.js-select-all').hide();
+                        }
+
+                        self.toggleSelectAll(rockTree);
                     })
                     .on('rockTree:rendered', function (evt, data) {
                         var rockTree = $control.find('.treeview').data('rockTree');
@@ -450,29 +459,41 @@
                 });
 
                 // clicking on the 'select all' btn
-                $control.on('click', '.js-select-all', function (e) {
-                    var rockTree = $control.find('.treeview').data('rockTree');
+                $control.on('click', '.js-select-all', function (e){
+                    const $tree = $control.find('.treeview');
+                    const rockTree = $tree.data('rockTree');
+                    self.selectAll = !self.selectAll;
 
                     e.preventDefault();
                     e.stopPropagation();
 
-                    var $itemNameNodes = rockTree.$el.find('.rocktree-name');
-
-                    var allItemNodesAlreadySelected = true;
-                    $itemNameNodes.each(function (a) {
-                        if (!$(this).hasClass('selected')) {
-                            allItemNodesAlreadySelected = false;
+                    let isChildrenLoaded = true;
+                    for (const node of rockTree.nodes) {
+                        if (node.hasChildren && !node.children) {
+                            isChildrenLoaded = false;
                         }
-                    });
+                    }
 
-                    if (!allItemNodesAlreadySelected) {
-                        // mark them all as unselected (just in case some are selected already), then click them to select them
-                        $itemNameNodes.removeClass('selected');
-                        $itemNameNodes.trigger('click');
+                    if (!isChildrenLoaded) {
+                        rockTree.nodes = [];
+                        rockTree.render();
+                        let treeOptions = {
+                            customDataItems: self.options.customDataItems,
+                            enhanceForLongLists: self.options.enhanceForLongLists,
+                            multiselect: self.options.allowMultiSelect,
+                            categorySelection: self.options.allowCategorySelection,
+                            categoryPrefix: self.options.categoryPrefix,
+                            restUrl: self.options.restUrl,
+                            searchRestUrl: self.options.searchRestUrl,
+                            restParams: self.options.restParams + '&loadChildren=true',
+                            expandedIds: self.options.expandedIds,
+                            expandedCategoryIds: self.options.expandedCategoryIds,
+                            showSelectChildren: self.options.showSelectChildren,
+                            id: self.options.startingId
+                        };
+                        $tree.rockTree(treeOptions);
                     } else {
-                        // if all were already selected, toggle them to unselected
-                        rockTree.setSelected([]);
-                        $itemNameNodes.removeClass('selected');
+                        self.toggleSelectAll(rockTree);
                     }
                 });
             },
@@ -855,7 +876,33 @@
                         }
                     });
                 }
-            }
+            },
+            toggleSelectAll: function (rockTree) {
+
+                const $itemNameNodes = rockTree.$el.find('.rocktree-name');
+
+                const setNodeOpenState = function (node, isOpen) {
+                    node.isOpen = isOpen;
+                    if (node.hasChildren) {
+                        node.children.forEach(childNode => setNodeOpenState(childNode, isOpen));
+                    }
+                }
+
+                if (this.selectAll) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them
+                    $itemNameNodes.removeClass('selected');
+                    $itemNameNodes.trigger('click');
+                    rockTree.nodes.forEach(node => setNodeOpenState(node, true));
+                } else {
+                    // if all were already selected, toggle them to unselected
+                    rockTree.setSelected([]);
+                    $itemNameNodes.removeClass('selected');
+                    rockTree.nodes.forEach(node => setNodeOpenState(node,false));
+                }
+
+                rockTree.render();
+            },
+            selectAll: false
         }
 
         // jquery function to ensure HTML is state remains the same each time it is executed
@@ -915,4 +962,3 @@
         return exports;
     }());
 }(jQuery));
-
