@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -122,6 +123,32 @@ namespace Rock.Web.UI.Controls
                 ViewState["CurrencyCodeDefinedValueId"] = value;
                 SyncCurrencyBoxesCurrencyCodes();
             }
+        }
+
+        /// <summary>
+        /// The Lava Template to use as the amount input label for each account.
+        /// Default is Account.PublicName.
+        /// </summary>
+        /// <value>The account header template.</value>
+        public string AccountHeaderTemplate
+        {
+            get => ViewState["AccountHeaderTemplate"] as string;
+            set => ViewState["AccountHeaderTemplate"] = value;
+        }
+
+        /// <summary>
+        /// If enabled, the <seealso cref="SelectedAccountIds"/> will be determined as follows:
+        /// <list type="number">
+        ///   <item>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</item>
+        ///   <item>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</item>
+        ///   <item>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</item>
+        /// </list>
+        /// Default is true.
+        /// </summary>
+        public bool UseAccountCampusMappingLogic
+        {
+            get => ViewState["UseAccountCampusMappingLogic"] as bool? ?? true;
+            set => ViewState["UseAccountCampusMappingLogic"] = value;
         }
 
         /// <summary>
@@ -288,14 +315,16 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the selected account ids (including the ones where an amount is not specified)
-        /// Note: This has special logic. The account(s) that the user selects <seealso cref="SelectedAccountIds"/> will be determined as follows:
-        ///   1) If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.
-        ///   2) If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.
-        ///   3) If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)
+        /// <para>
+        /// <b>NOTE</b>: This has special logic if <see cref="UseAccountCampusMappingLogic"/> is enabled.
+        /// </para>
+        /// If so, the account(s) that the user selects <seealso cref="SelectedAccountIds"/> will be determined as follows:
+        /// <list type="number">
+        ///   <item>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</item>
+        ///   <item>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</item>
+        ///   <item>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</item>
+        /// </list>
         /// </summary>
-        /// <value>
-        /// The selected account ids.
-        /// </value>
         public int[] SelectedAccountIds
         {
             get
@@ -438,12 +467,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the displayed account from selected account.
+        /// Gets the displayed account from selected account based on the <seealso cref="UseAccountCampusMappingLogic"/>
+        /// setting.
+        /// <para>See special logic on <seealso cref="SelectedAccountIds"/></para>
         /// </summary>
         /// <param name="selectedAccount">The selected account.</param>
-        /// <returns></returns>
         private FinancialAccountInfo GetDisplayedAccountFromSelectedAccount( FinancialAccountInfo selectedAccount )
         {
+            if ( !UseAccountCampusMappingLogic )
+            {
+                return selectedAccount;
+            }
+
             int? selectedAccountId = selectedAccount?.Id;
 
             FinancialAccountInfo displayedAccount;
@@ -468,13 +503,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the best matching AccountId for selected campus from the displayed account (see logic on <seealso cref="SelectedAccountIds"/>
+        /// Gets the best matching AccountId for selected campus from the displayed account.
+        /// <para>See special logic on <seealso cref="SelectedAccountIds"/></para>
         /// </summary>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="displayedAccount">The displayed account.</param>
-        /// <returns></returns>
         private int GetBestMatchingAccountIdForCampusFromDisplayedAccount( int campusId, FinancialAccountInfo displayedAccount )
         {
+            if ( !UseAccountCampusMappingLogic )
+            {
+                return displayedAccount.Id;
+            }
+
             if ( displayedAccount.CampusId.HasValue && displayedAccount.CampusId == campusId )
             {
                 // displayed account is directly associated with selected campusId, so return it
@@ -747,9 +787,18 @@ namespace Rock.Web.UI.Controls
 
             _ddlAccountSingle.Items.Clear();
 
+            string accountHeaderTemplate = AccountHeaderTemplate;
+            if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
+            {
+                accountHeaderTemplate = "{{ Account.PublicName }}";
+            }
+
             foreach ( var account in accountsList )
             {
-                _ddlAccountSingle.Items.Add( new ListItem( account.PublicName, account.Id.ToString() ) );
+                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                mergeFields.Add( "Account", account );
+                var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
+                _ddlAccountSingle.Items.Add( new ListItem( accountAmountLabel, account.Id.ToString() ) );
             }
 
             _ddlAccountSingle.SetValue( accountsList.FirstOrDefault() );
@@ -981,7 +1030,7 @@ namespace Rock.Web.UI.Controls
                 // set max length to prevent input from accepting more than $99,999,999.99 (99 million dollars), this will help prevent an Int32 overflow if amount is stored in cents
                 // However, browsers don't seem to enforce this, and we really want to limit to int.MaxValue so we'll also check in validation
                 currencyBox.Attributes["maxlength"] = "14";
-                itemTemplateControl.Controls.Add( currencyBox  );
+                itemTemplateControl.Controls.Add( currencyBox );
 
                 container.Controls.Add( itemTemplateControl );
             }
@@ -1005,7 +1054,18 @@ namespace Rock.Web.UI.Controls
             nbAccountAmountMulti.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
 
             hfAccountAmountMultiAccountId.Value = financialAccount.Id.ToString();
-            nbAccountAmountMulti.Label = financialAccount.PublicName;
+
+            string accountHeaderTemplate = AccountHeaderTemplate;
+            if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
+            {
+                accountHeaderTemplate = "{{ Account.PublicName }}";
+            }
+
+            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "Account", financialAccount );
+            var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
+
+            nbAccountAmountMulti.Label = accountAmountLabel;
         }
 
         #region Events
