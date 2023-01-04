@@ -39,10 +39,14 @@ export default defineComponent({
             default: false
         },
 
-        /** True if the submitCount and errors in the FormState needs to be reset. */
-        clearFormErrors: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        /**
+         * This value can be used to reset the form to it's initial state.
+         * Any time this value changes the submission count and error list
+         * will be reset. This does not effect the values in the form controls.
+         */
+        formResetKey: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
 
@@ -52,8 +56,7 @@ export default defineComponent({
         "validationChanged": (_errors: FormError[]) => true,
         // This contains just the errors that should be currently displayed in the UI.
         "visibleValidationChanged": (_errors: FormError[]) => true,
-        "update:submit": (_value: boolean) => true,
-        "update:clearFormErrors": (_value: boolean) => true
+        "update:submit": (_value: boolean) => true
     },
 
     setup(props, { emit }) {
@@ -130,15 +133,11 @@ export default defineComponent({
             emit("validationChanged", errorValues.value);
         });
 
-        watch(() => props.clearFormErrors, () => {
-            if(!props.clearFormErrors) {
-                return;
-            }
+        watch(() => props.formResetKey, () => {
             formState.submitCount = 0;
             updateRefValue(errors, {});
             updateRefValue(visibleErrors, []);
-            // Object.keys(errors.value).forEach(key => delete errors.value[key]);
-            emit("update:clearFormErrors", false);
+            emit("visibleValidationChanged", visibleErrors.value);
         });
 
         return {

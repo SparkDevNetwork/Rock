@@ -1846,6 +1846,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void SetControlOptions()
         {
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+
             // Set heading visibility
             var showPanelHeadings = GetAttributeValue( AttributeKey.ShowPanelHeadings ).AsBoolean();
             pnlHeading1.Visible = showPanelHeadings;
@@ -1863,7 +1865,7 @@ mission. We are so grateful for your commitment.</p>
             lPaymentInfoTitle.Text = GetAttributeValue( AttributeKey.PaymentInfoTitle );
             lConfirmationTitle.Text = GetAttributeValue( AttributeKey.ConfirmationTitle );
             lSaveAccountTitle.Text = GetAttributeValue( AttributeKey.SaveAccountTitle );
-            divRepeatingPayments.Visible = btnFrequency.Items.Count > 0;
+            divRepeatingPayments.Visible = !enableTextToGiveSetup && btnFrequency.Items.Count > 0;
 
             bool displayEmail = GetAttributeValue( AttributeKey.DisplayEmail ).AsBoolean();
             txtEmail.Visible = displayEmail;
@@ -1910,7 +1912,6 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
                 if ( enableTextToGiveSetup  )
                 {
                     btnSavedAccountPaymentInfoNext.Text = "Give";

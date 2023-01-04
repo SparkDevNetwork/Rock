@@ -110,6 +110,14 @@ namespace RockWeb.Blocks.Groups
         AllowMultiple = true,
         Order = 10 )]
 
+    [CustomDropdownListField(
+        "Schedule List Format",
+        Key = AttributeKey.ScheduleListFormat,
+        ListSource = "1^Schedule Time,2^Schedule Name,3^Schedule Time and Name",
+        IsRequired = false,
+        DefaultValue = "1",
+        Order = 11 )]
+
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
     {
@@ -130,6 +138,7 @@ namespace RockWeb.Blocks.Groups
             public const string AppendHeaderFooter = "AppendHeaderFooter";
             public const string AllowSelectingFrom = "AllowSelectingFrom";
             public const string AllowedSMSNumbers = "AllowedSMSNumbers";
+            public const string ScheduleListFormat = "ScheduleListFormat";
         }
 
         #region ViewStateKeys
@@ -723,6 +732,7 @@ namespace RockWeb.Blocks.Groups
                                 ScheduleId = a.ScheduleId.Value,
                                 LocationName = a.LocationId.HasValue ? a.Location.ToString( true ) : NO_LOCATION_PREFERENCE,
                                 ScheduleName = a.Schedule.Name,
+                                FormattedScheduleName = GetFormattedScheduleForListing( a.Schedule.Name, a.Schedule.StartTimeOfDay ),
                                 Schedule = a.Schedule
                             } )
                             .ToList();
@@ -1741,7 +1751,7 @@ namespace RockWeb.Blocks.Groups
             ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
             foreach ( var schedule in sortedScheduleList )
             {
-                var scheduleName = schedule.Name;
+                var scheduleName = GetFormattedScheduleForListing( schedule.Name, schedule.StartTimeOfDay );
                 var scheduleListItem = new ListItem( scheduleName, schedule.Id.ToString() );
                 if ( selectedScheduleId.HasValue && selectedScheduleId.Value == schedule.Id )
                 {
@@ -1785,6 +1795,12 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId.Value );
+            if ( schedule == null )
+            {
+                return;
+            }
+
             var groupMemberAssignment = GroupMemberAssignmentsState.Where( w => w.Guid.Equals( groupMemberAssignmentGuid ) && !groupMemberAssignmentGuid.Equals( Guid.Empty ) ).FirstOrDefault();
             if ( groupMemberAssignment == null )
             {
@@ -1794,8 +1810,9 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupMemberAssignment.ScheduleId = scheduleId.Value;
-            groupMemberAssignment.ScheduleName = ddlGroupScheduleAssignmentSchedule.SelectedItem.Text;
-            groupMemberAssignment.Schedule = new ScheduleService( new RockContext() ).Get( scheduleId.Value );
+            groupMemberAssignment.ScheduleName = schedule.Name;
+            groupMemberAssignment.Schedule = schedule;
+            groupMemberAssignment.FormattedScheduleName = GetFormattedScheduleForListing(schedule.Name, schedule.StartTimeOfDay);
             groupMemberAssignment.LocationId = locationId;
             groupMemberAssignment.LocationName = ddlGroupScheduleAssignmentLocation.SelectedItem.Text;
 
@@ -2202,6 +2219,31 @@ namespace RockWeb.Blocks.Groups
             return false;
         }
 
+        /// <summary>
+        /// Gets the formatted schedule name used for listing.
+        /// </summary>
+        /// <param name="scheduleName">The schedule name.</param>
+        /// <param name="startTimeOfDay">The start time of day.</param>
+        private string GetFormattedScheduleForListing( string scheduleName, TimeSpan startTimeOfDay )
+        {
+            var formattedScheduleName = string.Empty;
+            var scheduleListFormat = GetAttributeValue( AttributeKey.ScheduleListFormat ).AsInteger();
+            if ( scheduleListFormat == 1 )
+            {
+                formattedScheduleName = startTimeOfDay.ToTimeString();
+            }
+            else if ( scheduleListFormat == 2 )
+            {
+                formattedScheduleName = scheduleName;
+            }
+            else
+            {
+                formattedScheduleName = $"{startTimeOfDay.ToTimeString()} {scheduleName}";
+            }
+
+            return formattedScheduleName;
+        }
+
         #region Helper Classes
 
         [Serializable]
@@ -2218,6 +2260,8 @@ namespace RockWeb.Blocks.Groups
             public Schedule Schedule { get; set; }
 
             public string ScheduleName { get; set; }
+
+            public string FormattedScheduleName { get; set; }
 
             public int ScheduleId { get; set; }
         }
