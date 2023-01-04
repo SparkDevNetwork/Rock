@@ -212,9 +212,9 @@
     <Compile Include="Migrations\202301031641198_AddTextToGive.designer.cs">
       <DependentUpon>202301031641198_AddTextToGive.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202301041200148_AddSnippetAndSnippetType.cs" />
-    <Compile Include="Migrations\202301041200148_AddSnippetAndSnippetType.designer.cs">
-      <DependentUpon>202301041200148_AddSnippetAndSnippetType.cs</DependentUpon>
+    <Compile Include="Migrations\202301041638242_AddSnippetAndSnippetType.cs" />
+    <Compile Include="Migrations\202301041638242_AddSnippetAndSnippetType.designer.cs">
+      <DependentUpon>202301041638242_AddSnippetAndSnippetType.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
@@ -1581,8 +1581,8 @@
     <EmbeddedResource Include="Migrations\202301031641198_AddTextToGive.resx">
       <DependentUpon>202301031641198_AddTextToGive.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202301041200148_AddSnippetAndSnippetType.resx">
-      <DependentUpon>202301041200148_AddSnippetAndSnippetType.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202301041638242_AddSnippetAndSnippetType.resx">
+      <DependentUpon>202301041638242_AddSnippetAndSnippetType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>

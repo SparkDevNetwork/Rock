@@ -9,11 +9,11 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
     public sealed partial class AddSnippetAndSnippetType : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateExternalWorkflowEntryRoutes));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddSnippetAndSnippetType));
         
         string IMigrationMetadata.Id
         {
-            get { return "202301041200148_AddSnippetAndSnippetType"; }
+            get { return "202301041638242_AddSnippetAndSnippetType"; }
         }
         
         string IMigrationMetadata.Source
