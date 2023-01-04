@@ -931,6 +931,8 @@
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
+    <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
@@ -2103,7 +2105,7 @@
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
-	<Compile Include="Communication\SmsActions\SmsActionGive.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
