@@ -930,6 +930,8 @@
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
     <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />

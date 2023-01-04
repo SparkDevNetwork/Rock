@@ -129,6 +129,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
@@ -536,6 +538,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -790,6 +794,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\siteDomainBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\smsActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\smsPipelineBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\snippetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\snippetTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\stepBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\stepProgramBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\stepProgramCompletionBag.d.ts" />

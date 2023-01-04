@@ -68,6 +68,8 @@
     <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetDetail\SnippetBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetDetail\SnippetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
@@ -102,6 +104,8 @@
     <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
+    <Compile Include="Entities\SnippetBag.cs" />
+    <Compile Include="Entities\SnippetTypeBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionRenderConfigurationBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceActionStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceAnswerBag.cs" />
