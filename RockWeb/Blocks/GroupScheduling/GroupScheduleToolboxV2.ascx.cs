@@ -756,7 +756,7 @@ $('#{0}').tooltip();
 
             var lScheduleName = e.Row.FindControl( "lScheduleName" ) as Literal;
             var lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
-            lScheduleName.Text = groupMemberAssignment.Schedule.Name;
+            lScheduleName.Text = GetFormattedScheduleForListing( groupMemberAssignment.Schedule.Name, groupMemberAssignment.Schedule.StartTimeOfDay );
             if ( groupMemberAssignment.LocationId.HasValue )
             {
                 lLocationName.Text = groupMemberAssignment.Location.ToString( true );
