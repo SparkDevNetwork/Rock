@@ -96,7 +96,7 @@
                                 <%-- NOTE: This gGroupPreferenceAssignments (and these other controls in the ItemTemplate) is in a repeater and is configured in rptGroupPreferences_ItemDataBound--%>
                                 <Rock:Grid ID="gGroupPreferenceAssignments" runat="server" DisplayType="Light" RowItemText="Group Preference Assignment" AllowPaging="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" />
+                                        <Rock:RockBoundField DataField="FormattedScheduleName" HeaderText="Schedule" />
                                         <Rock:RockBoundField DataField="LocationName" HeaderText="Location" />
                                         <Rock:LinkButtonField ID="btnEditGroupPreferenceAssignment" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-pencil'></i>" OnClick="btnEditGroupPreferenceAssignment_Click" />
                                         <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
