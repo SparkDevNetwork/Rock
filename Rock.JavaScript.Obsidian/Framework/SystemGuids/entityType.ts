@@ -637,6 +637,8 @@ export const EntityType = {
     SmsActionConversation: "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
     /** The EntityType Guid for Rock.Model.SmsPipeline  */
     SmsPipeline: "64DA3A06-FD39-4E5B-8126-38404FB0092A",
+    /** The EntityType Guid for Rock.Model.Snippet */
+    Snippet: "93548852-201B-4EF6-AF27-BBF535A2CC2B",
     /** The guid for the Step entity type */
     Step: "8EADB0DC-17F4-4541-A46E-53F89E21A622",
     /** The Step Flow entity type */

@@ -34,13 +34,13 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
-    <Content Include="src\Communication\snippetDetail.vue" />
-    <Content Include="src\Communication\SnippetDetail\editPanel.partial.vue" />
-    <Content Include="src\Communication\SnippetDetail\viewPanel.partial.vue" />
-    <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.vue" />
-    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
-    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />
-    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.vue" />
+    <Content Include="src\Communication\snippetDetail.obs" />
+    <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
+    <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.obs" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.obs" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.obs" />
+    <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.obs" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>

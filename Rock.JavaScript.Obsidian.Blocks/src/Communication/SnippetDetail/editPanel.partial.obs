@@ -22,8 +22,7 @@
             <div class="col-md-3 mt-4" v-if="isAuthorizedToEdit">
                 <Toggle v-model="isShared"
                         trueText="On"
-                        falseText="Off"
-                        :btnSize="btnSize">
+                        falseText="Off">
                     <template #on>
                         Shared
                     </template>
@@ -95,7 +94,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { EntityType } from "@Obsidian/SystemGuids";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetBag";
     import { SnippetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetDetailOptionsBag";
 
@@ -125,9 +124,9 @@
     const content = propertyRef(props.modelValue.content ?? "", "Content");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const isShared = ref(props.modelValue.ownerPersonAlias == null);
-    const isLava = ref(props.modelValue.content?.includes('{'));
+    const isLava = ref(props.modelValue.content?.includes("{") ?? false);
     const isAuthorizedToEdit = ref(props.options.isAuthorizedToEdit);
-    const ownerPersonAlias = propertyRef(props.modelValue.ownerPersonAlias ?? null, "OwnerPersonAlias");
+    const ownerPersonAlias = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
     const category = propertyRef(props.modelValue.category ?? null, "Category");
     const entityTypeGuid = EntityType.Snippet;
 
@@ -141,7 +140,7 @@
 
     // #region Computed Values
     const ownerHelpText = computed((): string => {
-        const helpText = "When an owner is provided only this person will be able to see the snippet."
+        const helpText = "When an owner is provided only this person will be able to see the snippet.";
         return isAuthorizedToEdit ? helpText : helpText + "To make the snippet public you will need edit access to the SMS snippet type.";
     });
     // #endregion
@@ -162,7 +161,7 @@
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(content, props.modelValue.content ?? "");
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(ownerPersonAlias, props.modelValue.ownerPersonAlias ?? null);
+        updateRefValue(ownerPersonAlias, props.modelValue.ownerPersonAlias ?? undefined);
         updateRefValue(category, props.modelValue.category ?? null);
     });
 

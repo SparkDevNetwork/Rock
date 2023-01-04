@@ -972,8 +972,6 @@
     <Compile Include="Personalization\PersonalizationRequestFilters\PreviousActivityRequestFilter.cs" />
     <Compile Include="Personalization\RequestCookies.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsUpdateCurrentSessions.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Core\ReminderType\NotificationType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderTypeService.cs" />

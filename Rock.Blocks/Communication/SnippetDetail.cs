@@ -73,7 +73,7 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

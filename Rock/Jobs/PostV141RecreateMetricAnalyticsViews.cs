@@ -33,12 +33,12 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v14.1 - Recreate Metric Analytics Views" )]
     [Description( "Recreate the views for Metric Analytics." )]
 
-    public class PostV141RecreateMetricAnalyticsViews : IJob
+    public class PostV141RecreateMetricAnalyticsViews : RockJob
     {
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
             var stopWatch = System.Diagnostics.Stopwatch.StartNew();
             var metricService = new MetricService( new RockContext() );
@@ -47,7 +47,7 @@ namespace Rock.Jobs
             var logMessage = $"[{stopWatch.Elapsed.TotalMilliseconds,5:N0} ms] {this.GetType().FullName}";
             WriteToLog( logMessage );
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( GetJobId() );
         }
 
         /// <summary>
