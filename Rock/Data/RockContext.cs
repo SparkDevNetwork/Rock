@@ -2324,6 +2324,22 @@ namespace Rock.Data
         /// </value>
         public DbSet<PersonalizationSegment> Segments { get; set; }
 
+        /// <summary>
+        /// Gets or sets the snippets.
+        /// </summary>
+        /// <value>
+        /// The snippets.
+        /// </value>
+        public DbSet<Snippet> Snippets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the snippet types.
+        /// </summary>
+        /// <value>
+        /// The snippet types.
+        /// </value>
+        public DbSet<SnippetType> SnippetTypes { get; set; }
+
         #endregion
 
         /// <summary>

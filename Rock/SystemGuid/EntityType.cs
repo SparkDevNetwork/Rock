@@ -1759,5 +1759,9 @@ namespace Rock.SystemGuid
         /// The Test Redirection Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Snippet"/>
+        /// </summary>
+        public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
     }
 }
