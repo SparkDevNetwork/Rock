@@ -1890,7 +1890,7 @@ mission. We are so grateful for your commitment.</p>
             cbGiveAnonymously.Visible = GetAttributeValue( AttributeKey.EnableAnonymousGiving ).AsBoolean();
             cbGiveAnonymously.ToolTip = GetAttributeValue( AttributeKey.AnonymousGivingTooltip );
 
-            if ( GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() )
+            if ( !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() )
             {
                 tglGiveAsOption.Checked = true;
                 SetGiveAsOptions();
