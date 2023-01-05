@@ -1934,7 +1934,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void SetGiveAsOptions()
         {
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
             acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
@@ -2140,7 +2141,8 @@ mission. We are so grateful for your commitment.</p>
                 person = personService.Get( personId );
             }
 
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( create && !givingAsBusiness )
             {
                 // If this is a nameless person, we need to make a new person record and merge it.
@@ -2324,7 +2326,8 @@ mission. We are so grateful for your commitment.</p>
 
         private Person GetPersonOrBusiness( Person person )
         {
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( person != null && givingAsBusiness )
             {
                 var rockContext = new RockContext();
@@ -2485,7 +2488,8 @@ mission. We are so grateful for your commitment.</p>
 
             var errorMessages = new List<string>();
 
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
             if ( caapPromptForAccountAmounts.IsValidAmountSelected() )
             {
@@ -2605,7 +2609,8 @@ mission. We are so grateful for your commitment.</p>
         private void SetConfirmationText()
         {
             ReferencePaymentInfo paymentInfo = GetPaymentInfo();
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
             if ( !givingAsBusiness )
             {
@@ -2770,7 +2775,8 @@ mission. We are so grateful for your commitment.</p>
                     return false;
                 }
 
-                bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+                var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+                bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
                 // only create/update the person if they are giving as a person. If they are giving as a Business, the person shouldn't be created this way
                 Person person = GetPerson( !givingAsBusiness );
