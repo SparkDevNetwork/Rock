@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string StatementYear = "StatementYear";
+            public const string StatementQuarter = "StatementQuarter";
             public const string PersonActionIdentifier = "rckid";
             public const string PersonGuid = "PersonGuid";
         }
@@ -118,6 +119,7 @@ namespace RockWeb.Blocks.Finance
             Person targetPerson = CurrentPerson;
             
             var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
+            var statementQuarter = PageParameter( PageParameterKey.StatementQuarter ).AsIntegerOrNull() ?? 0;
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
             var allowPersonQueryString = GetAttributeValue( AttributeKey.AllowPersonQueryString ).AsBoolean();
@@ -148,8 +150,30 @@ namespace RockWeb.Blocks.Finance
 
             FinancialStatementGeneratorOptions financialStatementGeneratorOptions = new FinancialStatementGeneratorOptions();
             var startDate = new DateTime( statementYear, 1, 1 );
+            int quarter = ( statementQuarter*3+1 );
+
+            if ( quarter >= 12 )
+            {
+                quarter = 1;
+            }
+            else
+            {
+                quarter = ( statementQuarter*3+1 );
+            }
+            
+            var endDate = new DateTime( statementYear, quarter, 1 );
+            
             financialStatementGeneratorOptions.StartDate = startDate;
-            financialStatementGeneratorOptions.EndDate = startDate.AddYears( 1 );
+            
+            if ( statementQuarter < 1 || statementQuarter >= 4 )
+            {
+                financialStatementGeneratorOptions.EndDate = endDate.AddYears( 1 );
+            }
+            else
+            {
+                financialStatementGeneratorOptions.EndDate = endDate;
+            }
+            
             financialStatementGeneratorOptions.RenderMedium = "Html";
 
             var financialStatementTemplateGuid = this.GetAttributeValue( AttributeKey.FinancialStatementTemplate ).AsGuidOrNull() ?? Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT.AsGuid();
