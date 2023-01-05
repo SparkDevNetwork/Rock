@@ -572,11 +572,6 @@ namespace Rock.Communication.SmsActions
                 .GetByPersonId( context.SmsMessage.FromPerson.Id ).Where( a => a.FinancialGatewayId.HasValue );
 
             var defaultAccount = personSavedAccountsQry.Where( sa => sa.IsDefault ).FirstOrDefault();
-            if ( defaultAccount == null )
-            {
-                // If a specific default account is not set, just use the first one.
-                defaultAccount = personSavedAccountsQry.FirstOrDefault();
-            }
 
             return defaultAccount;
         }
