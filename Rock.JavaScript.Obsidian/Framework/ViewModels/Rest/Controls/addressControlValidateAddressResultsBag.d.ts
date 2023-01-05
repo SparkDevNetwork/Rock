@@ -34,6 +34,6 @@ export type AddressControlValidateAddressResultsBag = {
     /** If invalid, this is the message stating what is wrong with the given address */
     errorMessage?: string | null;
 
-    /** Whether the gvien address is valid or not */
+    /** Whether the given address is valid or not */
     isValid: boolean;
 };

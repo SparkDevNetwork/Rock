@@ -31,7 +31,7 @@ namespace Rock.ViewModels.Rest.Controls
         public string ErrorMessage { get; set; }
 
         /// <summary>
-        /// Whether the gvien address is valid or not
+        /// Whether the given address is valid or not
         /// </summary>
         public bool IsValid { get; set; }
 

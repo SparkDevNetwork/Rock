@@ -29,24 +29,24 @@ import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlB
  * the DefinedValuePicker control for adding a new Defined Value
  */
 export type LocationListSaveNewLocationOptionsBag = {
-    /** A collection of attribute values for the new defined value */
+    /** Address data for the new location */
     address?: AddressControlBag | null;
 
-    /** A collection of attribute values for the new defined value */
+    /** Collection of attribute values for the new location */
     attributeValues?: Record<string, string> | null;
 
-    /** The GUID of the defined type of the value we're saving */
+    /** The GUID of the defined type specifying the new location's type */
     locationTypeValueGuid?: Guid | null;
 
-    /** The location's name */
+    /** The new location's name */
     name?: string | null;
 
-    /** The GUID of the defined type of the value we're saving */
+    /** The GUID of the location that will be the new location's parent */
     parentLocationGuid?: Guid | null;
 
-    /** Gets or sets the security grant token to use when performing authorization checks. */
+    /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;
 
-    /** The location's name */
+    /** Whether the city and state should be shown in the name of the returned location */
     showCityState: boolean;
 };
