@@ -3172,10 +3172,30 @@ mission. We are so grateful for your commitment.</p>
                 }
                 else
                 {
-                    string cardType = financialPaymentDetail?.CreditCardTypeValue?.Value;
-                    string accountNumber = financialPaymentDetail?.AccountNumberMasked;
-                    string last4 = accountNumber.Right( 4 );
-                    var accountTitle = $"Text To Give - {cardType} (ending in {last4})";
+                    var accountTitle = $"Text To Give";
+
+                    var currencyTypeId = financialPaymentDetail?.CurrencyTypeValueId;
+                    var creditCardCurrencyTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+                    var achCurrencyTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+
+                    if ( currencyTypeId == creditCardCurrencyTypeId )
+                    {
+                        string cardType = financialPaymentDetail?.CreditCardTypeValue?.Value;
+                        string accountNumber = financialPaymentDetail?.AccountNumberMasked;
+                        string last4 = accountNumber.Right( 4 );
+                        accountTitle = $"Text To Give - {cardType} (ending in {last4})";
+                    }
+                    else if ( currencyTypeId == achCurrencyTypeId )
+                    {
+                        string accountNumber = financialPaymentDetail?.AccountNumberMasked;
+                        string last4 = accountNumber.Right( 4 );
+                        accountTitle = $"Text To Give - ACH (ending in {last4})";
+                    }
+                    else if ( financialPaymentDetail?.CurrencyTypeValue != null )
+                    {
+                        accountTitle = $"Text To Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
+                    }    
+
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
             }
