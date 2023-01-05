@@ -283,7 +283,7 @@ namespace Rock.Communication.SmsActions
             }
 
             var context = new SmsGiveContext( action, message );
-            return context.IsGiveMessage || context.IsRefundMessage || context.IsSetupMessage;
+            return context.IsGiveMessage || context.IsRefundMessage || context.IsSetupMessage || context.IsHelpMessage;
         }
 
         /// <summary>
@@ -317,6 +317,10 @@ namespace Rock.Communication.SmsActions
             {
                 return DoSetup( context, out errorMessage );
             }
+            else if ( context.IsHelpMessage )
+            {
+                return DoHelp( context, out errorMessage );
+            }
             else
             {
                 errorMessage = "The message was not a giving related request.";
@@ -345,6 +349,26 @@ namespace Rock.Communication.SmsActions
         }
 
         #endregion Setup
+
+        #region Help
+
+        /// <summary>
+        /// Process a help request
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="errorMessage"></param>
+        private SmsMessage DoHelp( SmsGiveContext context, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            CreatePersonRecordIfNeeded( context );
+            SetPersonIdentifier( context );
+            SetSetupPageLink( context );
+
+            return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+        }
+
+        #endregion Help
 
         #region Giving
 
@@ -845,6 +869,7 @@ namespace Rock.Communication.SmsActions
                     IsGiveMessage ? GivingKeywords.FirstOrDefault() :
                     IsRefundMessage ? RefundKeywords.FirstOrDefault() :
                     IsSetupMessage ? SetupKeywords.FirstOrDefault() :
+                    IsHelpMessage ? HelpKeywords.FirstOrDefault() :
                     string.Empty;
 
                 LavaMergeFields = new Dictionary<string, object> {
@@ -975,6 +1000,32 @@ namespace Rock.Communication.SmsActions
             public string MatchingSetupKeyword
             {
                 get => SetupKeywords.FirstOrDefault( k => MessageText.Equals( k, StringComparison.CurrentCultureIgnoreCase ) );
+            }
+
+            /// <summary>
+            /// Get the help keywords
+            /// </summary>
+            /// <value>The help keywords.</value>
+            public List<string> HelpKeywords
+            {
+                get => _helpKeywords;
+            }
+            private List<string> _helpKeywords = new List<string> { "HELP" };
+
+            /// <summary>
+            /// True if the message is a help message
+            /// </summary>
+            public bool IsHelpMessage
+            {
+                get => !MatchingHelpKeyword.IsNullOrWhiteSpace();
+            }
+
+            /// <summary>
+            /// The help keyword that matched the message
+            /// </summary>
+            public string MatchingHelpKeyword
+            {
+                get => HelpKeywords.FirstOrDefault( k => MessageText.Equals( k, StringComparison.CurrentCultureIgnoreCase ) );
             }
 
             /// <summary>
