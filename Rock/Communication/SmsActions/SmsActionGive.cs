@@ -110,7 +110,7 @@ namespace Rock.Communication.SmsActions
         EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
-        DefaultValue = "To give, text GIVE & amount. Example: GIVE $250. To update amount text EDIT. More help at XXXXXXXXXX. Msg & data rates may apply. Reply STOP to cancel.",
+        DefaultValue = "To give, text GIVE & amount. Example: GIVE $250. More help at XXXXXXXXXX. Msg & data rates may apply. Reply STOP to cancel.",
         Order = 8,
         Category = "Response",
         Key = AttributeKeys.HelpResponse )]
