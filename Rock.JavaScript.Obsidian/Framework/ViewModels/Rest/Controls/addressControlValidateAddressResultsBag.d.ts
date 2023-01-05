@@ -24,7 +24,7 @@
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
 /** The results from the ValidateAddress API action of the LocationAddressPicker control. */
-export type LocationAddressPickerValidateAddressResultsBag = {
+export type AddressControlValidateAddressResultsBag = {
     /** If the address is valid, this is an HTML string of the address */
     address?: AddressControlBag | null;
 

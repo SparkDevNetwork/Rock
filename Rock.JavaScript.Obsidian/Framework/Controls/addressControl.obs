@@ -76,6 +76,11 @@
         useCountryAbbreviation: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        disableFrontEndValidation: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -222,7 +227,7 @@
     }
 
     function getRules(reqLvl: RequirementLevel): string {
-        return reqLvl == RequirementLevel.Required ? "required" : "";
+        return reqLvl == RequirementLevel.Required && !props.disableFrontEndValidation ? "required" : "";
     }
 
     watch(() => internalValue.country, (currentVal, oldVal) => {

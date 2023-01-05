@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="allowAdd && isShowingAddForm">
+        <RockLabel :help="help">{{ label }}</RockLabel>
+        <Loading :isLoading="isLoading" class="well">
+            <Alert v-if="fetchError" alertType="danger">Error: {{ fetchError }}</Alert>
+            <Alert v-else-if="saveError" alertType="danger">Error: {{ saveError }}</Alert>
+
+            <RockForm v-else @submit="saveNewValue">
+                <RockValidation :errors="validationErrors" />
+                <TextBox label="Location Name" v-model="newLocationName" />
+                <AddressControl label="Address" v-model="newLocationAddress" :rules="addressRules" disableFrontEndValidation />
+                <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
+                <RockButton type="submit" :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall" :disabled="isValidating">
+                    <Loading :isLoading="isValidating">Add</Loading>
+                </RockButton>
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
+            </RockForm>
+
+            <RockButton v-if="fetchError || saveError" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
+        </Loading>
+    </template>
+
+    <template v-else>
+        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource">
+            <template #inputGroupAppend v-if="allowAdd">
+                <span class="input-group-btn">
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                </span>
+            </template>
+            <template #append="{ isInputGroupSupported }" v-if="allowAdd">
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="BtnType.Link">Add Item</RockButton>
+            </template>
+        </BaseAsyncPicker>
+    </template>
+</template>
+
+<script lang="ts" setup>
+    import { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { LocationListGetLocationsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationListGetLocationsOptionsBag";
+    import { LocationListSaveNewLocationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationListSaveNewLocationOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+    import RockLabel from "./rockLabel";
+    import RockForm from "./rockForm";
+    import AttributeValuesContainer from "./attributeValuesContainer";
+    import TextBox from "./textBox";
+    import RockButton from "./rockButton";
+    import Loading from "./loading";
+    import Alert from "./alert.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import AddressControl from "./addressControl.obs";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { validateAddress } from "@Obsidian/Utility/address";
+    import { FormError } from "@Obsidian/Utility/form";
+    import RockValidation from "./rockValidation";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        allowAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        locationTypeValueGuid: {
+            type: String as PropType<Guid>,
+            default: ""
+        },
+
+        parentLocationGuid: {
+            type: String as PropType<Guid>,
+            default: ""
+        },
+
+        showCityState: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isAddressRequired: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    const http = useHttp();
+
+    // #region Picker
+
+    const standardProps = useStandardAsyncPickerProps(props);
+    const securityGrantToken = useSecurityGrantToken();
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
+
+    async function loadItems(): Promise<ListItemBag[]> {
+        const options: Partial<LocationListGetLocationsOptionsBag> = {
+            showCityState: props.showCityState,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        if (props.parentLocationGuid) {
+            options.parentLocationGuid = props.parentLocationGuid;
+        }
+
+        if (props.locationTypeValueGuid) {
+            options.locationTypeValueGuid = props.locationTypeValueGuid;
+        }
+
+        //var locationTypeValueGuid = "C0D7AE35-7901-4396-870E-3AAF472AAE88";
+        const url = "/api/v2/Controls/LocationListGetLocations";
+        const result = await http.post<ListItemBag[]>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            return [];
+        }
+    }
+
+    function fetchValues(): void {
+        itemsSource.value = () => loadItems();
+    }
+
+    watch(() => [props.locationTypeValueGuid, props.parentLocationGuid, props.showCityState], fetchValues);
+
+    fetchValues();
+
+    // #endregion
+
+    // #region Add Value
+
+    const isShowingAddForm = ref(false);
+    const isLoading = ref(false);
+    const isValidating = ref(false);
+    const fetchError = ref<false | string>(false);
+    const saveError = ref<false | string>(false);
+    const validationErrors = ref<FormError[]>([]);
+
+    async function showAddForm(): Promise<void> {
+        if (!props.allowAdd) return;
+
+        isShowingAddForm.value = true;
+
+        if (attributes.value == null) {
+            isLoading.value = true;
+            fetchError.value = false;
+            saveError.value = false;
+
+            const url = "/api/v2/Controls/LocationListGetAttributes";
+            const result = await http.post<PublicAttributeBag[]>(url);
+
+            if (result.isSuccess && result.data) {
+                attributes.value = result.data.reduce(function (acc, val) {
+                    acc[val.key as string] = val;
+                    return acc;
+                }, {});
+            }
+            else {
+                attributes.value = null;
+                fetchError.value = "Unable to fetch attribute data.";
+            }
+
+            isLoading.value = false;
+        }
+    }
+
+    function hideAddForm(): void {
+        isShowingAddForm.value = false;
+        fetchError.value = false;
+        saveError.value = false;
+    }
+
+    async function saveNewValue(): Promise<void> {
+        saveError.value = false;
+
+        if (newLocationAddress.value.street1 || props.isAddressRequired) {
+            isValidating.value = true;
+            const response = await validateAddress({ ...newLocationAddress.value });
+
+            if (response.isSuccess && response.data) {
+                if (response.data.isValid) {
+                    validationErrors.value = [];
+                    newLocationAddress.value = { ...response.data.address } as AddressControlBag;
+                }
+                else {
+                    validationErrors.value = [{ name: "Invalid", text: response.data.errorMessage ?? "Please enter a valid address." }];
+                    isValidating.value = false;
+                    return;
+                }
+            }
+            else {
+                console.error(response.errorMessage ?? "Unknown error while validating address.");
+                validationErrors.value = [{ name: "Server", text: response.errorMessage ?? "An unknown error occurred. Please try again." }];
+                isValidating.value = false;
+                return;
+            }
+        }
+
+        isValidating.value = false;
+        isLoading.value = true;
+
+        const options: Partial<LocationListSaveNewLocationOptionsBag> = {
+            securityGrantToken: securityGrantToken.value,
+            name: newLocationName.value,
+            showCityState: props.showCityState,
+            attributeValues: attributeValues.value
+        };
+
+        if (newLocationAddress.value.street1 || props.isAddressRequired) {
+            options.address = newLocationAddress.value;
+        }
+
+        if (props.parentLocationGuid) {
+            options.parentLocationGuid = props.parentLocationGuid;
+        }
+
+        if (props.locationTypeValueGuid) {
+            options.locationTypeValueGuid = props.locationTypeValueGuid;
+        }
+
+        const url = "/api/v2/Controls/LocationListSaveNewLocation";
+        const result = await http.post<ListItemBag>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            fetchValues();
+
+            if (props.multiple) {
+                if (Array.isArray(internalValue.value)) {
+                    internalValue.value.push(result.data);
+                }
+                else {
+                    internalValue.value = [result.data];
+                }
+            }
+            else {
+                internalValue.value = result.data;
+            }
+
+            hideAddForm();
+            newLocationName.value = "";
+            newLocationAddress.value = {};
+            attributeValues.value = {};
+        }
+        else {
+            saveError.value = "Unable to save new Location.";
+        }
+
+        isLoading.value = false;
+    }
+
+
+    const attributes = ref<Record<string, PublicAttributeBag> | null>(null);
+    const attributeValues = ref<Record<string, string>>({});
+    const newLocationName = ref("");
+    const newLocationAddress = ref<AddressControlBag>({});
+    const addressRules = computed(() => {
+        return props.isAddressRequired ? "required" : "";
+    });
+
+    // #endregion
+</script>

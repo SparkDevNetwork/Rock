@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the ValidateAddress API action of
     /// the LocationAddressPicker control.
     /// </summary>
-    public class LocationAddressPickerValidateAddressOptionsBag
+    public class AddressControlValidateAddressOptionsBag
     {
         /// <summary>
         /// Gets or sets the street1.
@@ -48,6 +48,14 @@ namespace Rock.ViewModels.Rest.Controls
         /// The city.
         /// </value>
         public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the locality.
+        /// </summary>
+        /// <value>
+        /// The locality/county.
+        /// </value>
+        public string Locality { get; set; }
 
         /// <summary>
         /// Gets or sets the state.

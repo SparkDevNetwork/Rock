@@ -16,33 +16,33 @@
 //
 
 using System;
-using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The results from the ValidateAddress API action of the LocationAddressPicker control.
+    /// The options that can be passed to the ValidateAddress API action of
+    /// the LocationAddressPicker control.
     /// </summary>
-    public class LocationAddressPickerValidateAddressResultsBag
+    public class LocationListGetLocationsOptionsBag
     {
         /// <summary>
-        /// If invalid, this is the message stating what is wrong with the given address
+        /// Guid of the location the results should be children of
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public Guid ParentLocationGuid { get; set; }
 
         /// <summary>
-        /// Whether the gvien address is valid or not
+        /// GUID of the Location Type that the locations need to be
         /// </summary>
-        public bool IsValid { get; set; }
+        public Guid LocationTypeValueGuid { get; set; }
 
         /// <summary>
-        /// If the address is valid, this is an HTML string of the address
+        /// Whether to include city and state in the name of the location in the list
         /// </summary>
-        public string AddressString { get; set; }
+        public bool ShowCityState { get; set; } = false;
 
         /// <summary>
-        /// If the address is valid, this is an HTML string of the address
+        /// The security grant token to use when performing authorization checks.
         /// </summary>
-        public AddressControlBag Address { get; set; }
+        public string SecurityGrantToken { get; set; }
     }
 }

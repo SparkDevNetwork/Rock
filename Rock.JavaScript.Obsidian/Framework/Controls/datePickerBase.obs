@@ -159,7 +159,6 @@
 
     onMounted(() => {
         const input = inputEl.value as HTMLInputElement;
-        console.log("MOUNTED");
 
         window.Rock.controls.datePicker.initialize({
             ...(dateLimiterOptions.value),

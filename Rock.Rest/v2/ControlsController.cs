@@ -231,6 +231,60 @@ namespace Rock.Rest.v2
             } );
         }
 
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlValidateAddress" )]
+        [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
+        public IHttpActionResult AddressControlValidateAddress( [FromBody] AddressControlValidateAddressOptionsBag options )
+        {
+            var editedLocation = new Location();
+            string errorMessage = null;
+            string addressString = null;
+
+            editedLocation.Street1 = options.Street1;
+            editedLocation.Street2 = options.Street2;
+            editedLocation.City = options.City;
+            editedLocation.State = options.State;
+            editedLocation.PostalCode = options.PostalCode;
+            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
+
+            var locationService = new LocationService( new RockContext() );
+
+            string validationMessage;
+
+            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
+
+            if ( !isValid )
+            {
+                errorMessage = validationMessage;
+            }
+            else
+            {
+                editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+            }
+
+            return Ok( new AddressControlValidateAddressResultsBag
+            {
+                ErrorMessage = errorMessage,
+                IsValid = isValid,
+                AddressString = addressString,
+                Address = new AddressControlBag
+                {
+                    Street1 = editedLocation.Street1,
+                    Street2 = editedLocation.Street2,
+                    City = editedLocation.City,
+                    State = editedLocation.State,
+                    PostalCode = editedLocation.PostalCode,
+                    Country = editedLocation.Country
+                }
+            } );
+        }
+
         #endregion
 
         #region Assessment Type Picker
@@ -916,96 +970,14 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+            var definedValue = new DefinedValue
             {
-                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
-                var definedValue = new DefinedValue {
-                    Id = 0,
-                    DefinedTypeId = definedType.Id
-                };
+                Id = 0,
+                DefinedTypeId = definedType.Id
+            };
 
-                Type entityType = definedValue.GetType();
-                if ( entityType.IsDynamicProxyType() )
-                {
-                    entityType = entityType.BaseType;
-                }
-
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-                var entityTypeCache = EntityTypeCache.Get( entityType );
-
-                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
-                Dictionary<int, List<int>> inheritedAttributes = null;
-
-                //
-                // If this entity can provide inherited attribute information then
-                // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( definedValue is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
-                {
-                    allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
-                    inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
-                }
-
-                allAttributes = allAttributes ?? new List<AttributeCache>();
-                inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
-
-                //
-                // Get all the attributes that apply to this entity type and this entity's
-                // properties match any attribute qualifiers.
-                //
-                var entityTypeId = entityTypeCache?.Id;
-
-                if ( entityTypeCache != null )
-                {
-                    var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
-                    if ( entityTypeAttributesList.Any() )
-                    {
-                        var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
-                        Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
-                        foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
-                        {
-                            System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
-                            if ( propertyInfo != null )
-                            {
-                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( definedValue, null ) );
-                            }
-                        }
-
-                        var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
-                          string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
-                                 ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
-                                 ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
-                                 ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
-
-                        attributes.AddRange( entityTypeAttributesForQualifier );
-                    }
-                }
-
-                //
-                // Append these attributes to our inherited attributes, in order.
-                //
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
-                {
-                    allAttributes.Add( attribute );
-                }
-                var attributeList = allAttributes
-                    .Where( a => a.IsActive )
-                    .Select( a => new PublicAttributeBag
-                    {
-                        AttributeGuid = a.Guid,
-                        FieldTypeGuid = FieldTypeCache.Get( a.FieldTypeId ).Guid,
-                        Name = a.Name,
-                        Key = a.Key,
-                        Description = a.Description,
-                        IsRequired = a.IsRequired,
-                        Order = a.Order,
-                        ConfigurationValues = a.ConfigurationValues
-                    } )
-                    .ToList();
-
-                return Ok( attributeList );
-            }
+            return Ok( GetAttributes( definedValue ));
         }
 
         /// <summary>
@@ -2370,60 +2342,169 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Location Address Picker
+        #region Location List
 
         /// <summary>
-        /// Validates the given address and returns the string representation of the address
+        /// Gets the child locations, excluding inactive items.
         /// </summary>
-        /// <param name="options">Address details to validate</param>
-        /// <returns>Validation information and a single string representation of the address</returns>
+        /// <param name="options">The options that describe which child locations to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
+        [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "LocationAddressPickerValidateAddress" )]
-        [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
-        public IHttpActionResult LocationAddressPickerValidateAddress( [FromBody] LocationAddressPickerValidateAddressOptionsBag options )
+        [System.Web.Http.Route( "LocationListGetLocations" )]
+        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
+        public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
-            var editedLocation = new Location();
-            string errorMessage = null;
-            string addressString = null;
-
-            editedLocation.Street1 = options.Street1;
-            editedLocation.Street2 = options.Street2;
-            editedLocation.City = options.City;
-            editedLocation.State = options.State;
-            editedLocation.PostalCode = options.PostalCode;
-            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
-
-            var locationService = new LocationService( new RockContext() );
-
-            string validationMessage;
-
-            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
-
-            if ( !isValid )
+            using ( var rockContext = new RockContext() )
             {
-                errorMessage = validationMessage;
-            }
-            else
-            {
-                editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
-                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
-            }
+                List<ListItemBag> locations = null;
+                var locationService = new LocationService( rockContext );
+                int parentLocationId = 0;
+                int locationTypeValueId = 0;
 
-            return Ok( new
-            {
-                ErrorMessage = errorMessage,
-                IsValid = isValid,
-                AddressString = addressString,
-                Address = new AddressControlBag
+                if (options.ParentLocationGuid != null)
                 {
-                    Street1 = editedLocation.Street1,
-                    Street2 = editedLocation.Street2,
-                    City = editedLocation.City,
-                    State = editedLocation.State,
-                    PostalCode = editedLocation.PostalCode,
-                    Country = editedLocation.Country
+                    var parentLocation = locationService.Get( options.ParentLocationGuid );
+                    parentLocationId = parentLocation == null ? 0 : parentLocation.Id;
                 }
-            } );
+
+                if (options.LocationTypeValueGuid != null)
+                {
+                    var locationTypeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
+                    var locationTypeValue = DefinedValueCache.Get( options.LocationTypeValueGuid );
+
+                    // Verify the given GUID is a LocationType GUID
+                    if ( locationTypeValue != null && locationTypeDefinedType.Equals(locationTypeValue.DefinedType))
+                    {
+                        locationTypeValueId = locationTypeValue.Id;
+                    }
+                }
+
+                var locationQuery = locationService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l => l.IsActive )
+                    .Where( l => locationTypeValueId == 0 || l.LocationTypeValueId == locationTypeValueId )
+                    .Where( l => parentLocationId == 0 || l.ParentLocationId == parentLocationId )
+                    .Select( l => new { l.Name, l.City, l.State, l.Guid } )
+                    .ToList()
+                    .OrderBy( l => l.Name );
+
+                if ( options.ShowCityState )
+                {
+                    locations = locationQuery
+                        .Select( l => new ListItemBag { Text = $"{l.Name} ({l.City}, {l.State})", Value = l.Guid.ToString() } )
+                        .ToList();
+                }
+                else
+                {
+                    locations = locationQuery
+                        .Where( l => l.Name.IsNotNullOrWhiteSpace() )
+                        .Select( l => new ListItemBag { Text = $"{l.Name}", Value = l.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return Ok( locations );
+            }
+
+        }
+
+        /// <summary>
+        /// Get the attributes for Locations
+        /// </summary>
+        /// <param name="options">The options needed to find the attributes for Locations</param>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LocationListGetAttributes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e2b28b2f-a46d-40cd-a48d-7e5351383de5" )]
+        public IHttpActionResult LocationListGetAttributes( /*LocationListGetAttributesOptionsBag options*/ )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            return Ok( GetAttributes( new Location { Id = 0 } ) );
+        }
+
+        /// <summary>
+        /// Save a new Location
+        /// </summary>
+        /// <param name="options">The data for the new Location</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the new Location.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LocationListSaveNewLocation" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
+        public IHttpActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+
+                // Create and save new location with data from client
+                var location = new Location
+                {
+                    Name = options.Name,
+                    IsActive = true,
+                };
+
+                if ( options.Address != null )
+                {
+                    location.Street1 = options.Address.Street1;
+                    location.Street2 = options.Address.Street2;
+                    location.City = options.Address.City;
+                    location.County = options.Address.Locality;
+                    location.State = options.Address.State;
+                    location.Country = options.Address.Country;
+                    location.PostalCode = options.Address.PostalCode;
+                }
+
+                if ( options.ParentLocationGuid != null )
+                {
+                    Location parentLocation = locationService.Get( options.ParentLocationGuid );
+                    location.ParentLocation = parentLocation;
+                }
+
+                if ( options.LocationTypeValueGuid != null )
+                {
+                    var locationTypeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
+                    var locationTypeValue = DefinedValueCache.Get( options.LocationTypeValueGuid );
+
+                    // Verify the given GUID is a LocationType GUID
+                    if ( locationTypeValue != null && locationTypeDefinedType.Equals( locationTypeValue.DefinedType ) )
+                    {
+                        location.LocationTypeValueId = locationTypeValue.Id;
+                    }
+                }
+
+                locationService.Add( location );
+
+                rockContext.SaveChanges();
+
+                // Load up the new location's attributes and save those
+                location.LoadAttributes();
+
+                foreach ( KeyValuePair<string, AttributeValueCache> attr in location.AttributeValues )
+                {
+                    location.AttributeValues[attr.Key].Value = options.AttributeValues.GetValueOrNull( attr.Key );
+                }
+
+                if ( !location.IsValid )
+                {
+                    return InternalServerError();
+                }
+
+                location.SaveAttributeValues( rockContext );
+
+                // Return a representation of the location so it can be used right away on the client
+                return Ok( new ListItemBag
+                {
+                    Text = options.ShowCityState ? $"{location.Name} ({location.City}, {location.State})" : location.Name,
+                    Value = location.Guid.ToString()
+                } );
+            }
         }
 
         #endregion
@@ -3478,6 +3559,100 @@ namespace Rock.Rest.v2
 
 
             return items;
+        }
+
+        /// <summary>
+        /// Get the attributes for the given object
+        /// </summary>
+        /// <param name="model">The object to find the attributes of</param>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        public List<PublicAttributeBag> GetAttributes( object model )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+
+                Type entityType = model.GetType();
+                if ( entityType.IsDynamicProxyType() )
+                {
+                    entityType = entityType.BaseType;
+                }
+
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
+                var entityTypeCache = EntityTypeCache.Get( entityType );
+
+                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                Dictionary<int, List<int>> inheritedAttributes = null;
+
+                //
+                // If this entity can provide inherited attribute information then
+                // load that data now. If they don't provide any then generate empty lists.
+                //
+                if ( model is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                {
+                    allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
+                    inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
+                }
+
+                allAttributes = allAttributes ?? new List<AttributeCache>();
+                inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
+
+                //
+                // Get all the attributes that apply to this entity type and this entity's
+                // properties match any attribute qualifiers.
+                //
+                var entityTypeId = entityTypeCache?.Id;
+
+                if ( entityTypeCache != null )
+                {
+                    var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
+                    if ( entityTypeAttributesList.Any() )
+                    {
+                        var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                        Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+                        foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
+                        {
+                            System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                            if ( propertyInfo != null )
+                            {
+                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( model, null ) );
+                            }
+                        }
+
+                        var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
+                          string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
+                                 ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
+                                 ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
+                                 ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
+
+                        attributes.AddRange( entityTypeAttributesForQualifier );
+                    }
+                }
+
+                //
+                // Append these attributes to our inherited attributes, in order.
+                //
+                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
+                {
+                    allAttributes.Add( attribute );
+                }
+                var attributeList = allAttributes
+                    .Where( a => a.IsActive )
+                    .Select( a => new PublicAttributeBag
+                    {
+                        AttributeGuid = a.Guid,
+                        FieldTypeGuid = FieldTypeCache.Get( a.FieldTypeId ).Guid,
+                        Name = a.Name,
+                        Key = a.Key,
+                        Description = a.Description,
+                        IsRequired = a.IsRequired,
+                        Order = a.Order,
+                        ConfigurationValues = a.ConfigurationValues
+                    } )
+                    .ToList();
+
+                return attributeList;
+            }
         }
 
         #endregion

@@ -45,11 +45,9 @@
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
     import AddressControl from "./addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
-    import { post } from "@Obsidian/Utility/http";
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation";
-    import { LocationAddressPickerValidateAddressOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationAddressPickerValidateAddressOptionsBag";
-    import { LocationAddressPickerValidateAddressResultsBag } from "@Obsidian/ViewModels/Rest/Controls/locationAddressPickerValidateAddressResultsBag";
+    import { validateAddress } from "@Obsidian/Utility/address";
     import Loading from "./loading";
 
     const props = defineProps({
@@ -85,8 +83,7 @@
 
     async function select(): Promise<void> {
         isLoading.value = true;
-        const options: LocationAddressPickerValidateAddressOptionsBag = { ...controlValue.value };
-        const response = await post<LocationAddressPickerValidateAddressResultsBag>("/api/v2/Controls/LocationAddressPickerValidateAddress", undefined, options);
+        const response = await validateAddress({ ...controlValue.value });
 
         if (response.isSuccess && response.data) {
             if (response.data.isValid) {

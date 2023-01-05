@@ -25,12 +25,15 @@
  * The options that can be passed to the ValidateAddress API action of
  * the LocationAddressPicker control.
  */
-export type LocationAddressPickerValidateAddressOptionsBag = {
+export type AddressControlValidateAddressOptionsBag = {
     /** Gets or sets the city. */
     city?: string | null;
 
     /** Gets or sets the country. */
     country?: string | null;
+
+    /** Gets or sets the locality. */
+    locality?: string | null;
 
     /** Gets or sets the postal code. */
     postalCode?: string | null;
