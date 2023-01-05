@@ -744,7 +744,16 @@ namespace Rock.Communication.SmsActions
             if ( accountId.HasValue && FinancialAccountCache.Get( accountId.Value ) != null )
             {
                 var amount = context.LavaMergeFields.GetValueOrNull( LavaMergeFieldKeys.Amount ).ToStringSafe();
-                setupPage.Parameters["AccountIds"] = $"{accountId}^{amount}^{false}";
+
+                string accountIdsParameter = $"{accountId}^{amount}^{false}";
+
+                if ( amount.IsNullOrWhiteSpace() )
+                {
+                    // If no amount was specified, we need to allow the user to enter it on the setup page.
+                    accountIdsParameter = $"{accountId}^{amount}^{true}";
+                }
+
+                setupPage.Parameters["AccountIds"] = accountIdsParameter;
             }
 
             // If BuildUrl() throws an exception, it could be because we are in an async task and
