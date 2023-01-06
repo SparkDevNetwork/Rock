@@ -473,9 +473,9 @@ namespace RockWeb.Blocks.Finance
         Category = CategoryKey.Advanced,
         Order = 11 )]
 
-    [BooleanField( "Enable Text To Give Setup",
+    [BooleanField( "Enable Text-To-Give Setup",
         Key = AttributeKey.EnableTextToGiveSetup,
-        Description = "This setting enables specific behavior for setting up Text To Give accounts.",
+        Description = "This setting enables specific behavior for setting up Text-To-Give accounts.",
         DefaultBooleanValue = false,
         Category = CategoryKey.Advanced,
         Order = 12 )]
@@ -1576,7 +1576,7 @@ mission. We are so grateful for your commitment.</p>
 
         private void SetTargetPerson( RockContext rockContext )
         {
-            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean(); // Must allow impersonation if setting up text to give.
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean(); // Must allow impersonation if setting up Text-To-Give.
             var allowImpersonation = enableTextToGiveSetup || ( GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false );
             string personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
 
@@ -3178,7 +3178,7 @@ mission. We are so grateful for your commitment.</p>
                 }
                 else
                 {
-                    var accountTitle = $"Text To Give";
+                    var accountTitle = $"Text-To-Give";
 
                     var currencyTypeId = financialPaymentDetail?.CurrencyTypeValueId;
                     var creditCardCurrencyTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
@@ -3189,17 +3189,17 @@ mission. We are so grateful for your commitment.</p>
                         string cardType = financialPaymentDetail?.CreditCardTypeValue?.Value;
                         string accountNumber = financialPaymentDetail?.AccountNumberMasked;
                         string last4 = accountNumber.Right( 4 );
-                        accountTitle = $"Text To Give - {cardType} (ending in {last4})";
+                        accountTitle = $"Text-To-Give - {cardType} (ending in {last4})";
                     }
                     else if ( currencyTypeId == achCurrencyTypeId )
                     {
                         string accountNumber = financialPaymentDetail?.AccountNumberMasked;
                         string last4 = accountNumber.Right( 4 );
-                        accountTitle = $"Text To Give - ACH (ending in {last4})";
+                        accountTitle = $"Text-To-Give - ACH (ending in {last4})";
                     }
                     else if ( financialPaymentDetail?.CurrencyTypeValue != null )
                     {
-                        accountTitle = $"Text To Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
+                        accountTitle = $"Text-To-Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
                     }    
 
                     CreateSavedAccount( accountTitle, rockContext, true );

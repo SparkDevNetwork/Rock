@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ShowDetail();
 
-            // clean up stale accounts from the text to give settings area.
+            // Clean up stale accounts from the Text-To-Give settings area.
             BindSavedAccounts();
         }
 
@@ -708,7 +708,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlTextToGiveEdit.Visible = false;
             SetTextToGiveDetails();
 
-            // editting text to give settings may affect the display of saved accounts, so rebind this.
+            // Editting Text-To-Give settings may affect the display of saved accounts, so rebind this.
             BindSavedAccountList();
         }
 
@@ -746,7 +746,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Set the Text To Give Details
+        /// Set the Text-To-Give Details
         /// </summary>
         private void SetTextToGiveDetails()
         {
@@ -780,10 +780,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var selectedId = ddlSavedAccount.SelectedValue.AsIntegerOrNull();
             ddlSavedAccount.Items.Clear();
 
-            // Get the saved accounts for the person
+            // Get the saved accounts for the person.
             var savedAccounts = GetSavedAccounts();
 
-            // Bind the accounts
+            // Bind the accounts.
             if ( savedAccounts != null && savedAccounts.Any() )
             {
                 var viewModels = savedAccounts.Select( sa => new
@@ -792,7 +792,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Name = GetSavedAccountName( sa )
                 } ).ToList();
 
-                // Add a blank option to unset the default account altogether
+                // Add a blank option to unset the default account altogether.
                 viewModels.Insert( 0, new
                 {
                     Id = ( int? ) null,
@@ -979,7 +979,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == Person.Id );
             }
 
-            // only show the button if there some inactive scheduled transactions
+            // Only show the button if there some inactive scheduled transactions.
             // 12-JAN-22 DMV: This adds a small performance hit here as this hydrates the query.
             btnShowInactiveScheduledTransactions.Visible = qry.Any( a => !a.IsActive );
 
@@ -991,7 +991,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                // if including Inactive, show both Active and Inactive
+                // If including Inactive, show both Active and Inactive.
                 btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
             }
 
@@ -1003,7 +1003,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var scheduledTransactionList = qry.ToList();
 
-            // Refresh the active transactions
+            // Refresh the active transactions.
             financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
 
             rptScheduledTransaction.DataSource = scheduledTransactionList;
@@ -1061,7 +1061,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
             var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == Person.GivingId ).Select( a => a.Id ).ToList();
 
-            // get the transactions for the person or all the members in the person's giving group (Family)
+            // Get the transactions for the person or all the members in the person's giving group (Family).
             var qry = financialTransactionDetailService.Queryable().AsNoTracking().Where( t =>
                 t.Transaction.AuthorizedPersonAliasId.HasValue
                 && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
