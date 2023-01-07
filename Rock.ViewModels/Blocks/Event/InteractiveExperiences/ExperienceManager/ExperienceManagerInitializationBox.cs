@@ -21,6 +21,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceManager
 {
+    /// <summary>
+    /// Class ExperienceManagerInitializationBox.
+    /// Implements the <see cref="Rock.ViewModels.Blocks.BlockBox" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class ExperienceManagerInitializationBox : BlockBox
     {
         /// <summary>

@@ -297,6 +297,8 @@ export const enum EntityType {
     Site = "7244C10B-5D87-467B-A7F5-12DC29910CA8",
     /** The SMS Conversation Action */
     SmsActionConversation = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
+    /** The EntityType Guid for Rock.Model.Snippet */
+    Snippet = "93548852-201B-4EF6-AF27-BBF535A2CC2B",
     /** The guid for the Step entity type */
     Step = "8EADB0DC-17F4-4541-A46E-53F89E21A622",
     /** The Step Flow entity type */

@@ -64,157 +64,161 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.cs" />
-    <Compile Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.cs" />
-    <Compile Include="Migrations\202211081600377_GroupSchedulingAcceptAll.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211081600377_GroupSchedulingAcceptAll.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211081600377_GroupSchedulingAcceptAll.designer.cs">
       <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.cs" />
-    <Compile Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209232317186_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209232317186_AddStaffFormsWorkflowCategory.designer.cs">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202209291606147_Rollup_20220929.cs" />
-    <Compile Include="Migrations\202209291606147_Rollup_20220929.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929.designer.cs">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.cs" />
-    <Compile Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210031637328_AddInteractiveExperienceOccurrence.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210031637328_AddInteractiveExperienceOccurrence.designer.cs">
       <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210042001360_Rollup_20221004.cs" />
-    <Compile Include="Migrations\202210042001360_Rollup_20221004.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210042001360_Rollup_20221004.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210042001360_Rollup_20221004.designer.cs">
       <DependentUpon>202210042001360_Rollup_20221004.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210042013215_CodeGenerated_20221004.cs" />
-    <Compile Include="Migrations\202210042013215_CodeGenerated_20221004.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210042013215_CodeGenerated_20221004.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210042013215_CodeGenerated_20221004.designer.cs">
       <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.cs" />
-    <Compile Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210101657459_AddOrderToInteractiveExperienceAction.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210101657459_AddOrderToInteractiveExperienceAction.designer.cs">
       <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210181655410_AddRemindersModels.cs" />
-    <Compile Include="Migrations\202210181655410_AddRemindersModels.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210181655410_AddRemindersModels.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210181655410_AddRemindersModels.designer.cs">
       <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210182331163_Rollup_20221018.cs" />
-    <Compile Include="Migrations\202210182331163_Rollup_20221018.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210182331163_Rollup_20221018.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210182331163_Rollup_20221018.designer.cs">
       <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.cs" />
-    <Compile Include="Migrations\202210190005219_CodeGenerated_20221018.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210190005219_CodeGenerated_20221018.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210190005219_CodeGenerated_20221018.designer.cs">
       <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs" />
-    <Compile Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.designer.cs">
       <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.cs" />
-    <Compile Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210211001055_AddRaceAndEthnicityPersonProperties.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210211001055_AddRaceAndEthnicityPersonProperties.designer.cs">
       <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.cs" />
-    <Compile Include="Migrations\202210212133265_BinaryFileSecurity.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210212133265_BinaryFileSecurity.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210212133265_BinaryFileSecurity.designer.cs">
       <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210262309179_InteractionSession1900.cs" />
-    <Compile Include="Migrations\202210262309179_InteractionSession1900.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210262309179_InteractionSession1900.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210262309179_InteractionSession1900.designer.cs">
       <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202210281944003_AddMissingIndexes.cs" />
-    <Compile Include="Migrations\202210281944003_AddMissingIndexes.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210281944003_AddMissingIndexes.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202210281944003_AddMissingIndexes.designer.cs">
       <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211031956456_Rollup_20221103.cs" />
-    <Compile Include="Migrations\202211031956456_Rollup_20221103.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211031956456_Rollup_20221103.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211031956456_Rollup_20221103.designer.cs">
       <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.cs" />
-    <Compile Include="Migrations\202211032103215_CodeGenerated_20221103.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211032103215_CodeGenerated_20221103.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211032103215_CodeGenerated_20221103.designer.cs">
       <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.cs" />
-    <Compile Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns.designer.cs">
       <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.cs" />
-    <Compile Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211091530571_AddSettingsJsonToInteractiveExperience.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211091530571_AddSettingsJsonToInteractiveExperience.designer.cs">
       <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.cs" />
-    <Compile Include="Migrations\202211091822240_AddIsPublicToSchedule.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211091822240_AddIsPublicToSchedule.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211091822240_AddIsPublicToSchedule.designer.cs">
       <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs" />
-    <Compile Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211161538358_AddCampusIdToInteractiveExperienceAnswer.designer.cs">
       <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211171611271_Rollup_20221117.cs" />
-    <Compile Include="Migrations\202211171611271_Rollup_20221117.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211171611271_Rollup_20221117.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211171611271_Rollup_20221117.designer.cs">
       <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.cs" />
-    <Compile Include="Migrations\202211171644271_CodeGenerated_20221117.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211171644271_CodeGenerated_20221117.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211171644271_CodeGenerated_20221117.designer.cs">
       <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs" />
-    <Compile Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.designer.cs">
       <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.cs" />
-    <Compile Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211240015495_AddDisableUseOfReadOnlyContext.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211240015495_AddDisableUseOfReadOnlyContext.designer.cs">
       <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs" />
-    <Compile Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.designer.cs">
       <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.cs" />
-    <Compile Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211282054036_AddReminderPropertiesToGroupEntities.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211282054036_AddReminderPropertiesToGroupEntities.designer.cs">
       <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.cs" />
-    <Compile Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211300749398_UpdateSlidingDateRangeValues.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202211300749398_UpdateSlidingDateRangeValues.designer.cs">
       <DependentUpon>202211300749398_UpdateSlidingDateRangeValues.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs" />
-    <Compile Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212010248547_FixGroupScheduleConfirmationSystemCommunication.designer.cs">
       <DependentUpon>202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212011956416_Rollup_20221201.cs" />
-    <Compile Include="Migrations\202212011956416_Rollup_20221201.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201.designer.cs">
       <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212012101266_CodeGenerated_20221201.cs" />
-    <Compile Include="Migrations\202212012101266_CodeGenerated_20221201.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212012101266_CodeGenerated_20221201.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212012101266_CodeGenerated_20221201.designer.cs">
       <DependentUpon>202212012101266_CodeGenerated_20221201.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212071408173_AddScheduleConfirmationLogic.cs" />
-    <Compile Include="Migrations\202212071408173_AddScheduleConfirmationLogic.Designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212071408173_AddScheduleConfirmationLogic.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212071408173_AddScheduleConfirmationLogic.Designer.cs">
       <DependentUpon>202212071408173_AddScheduleConfirmationLogic.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212121959208_UpdateExternalWorkflowEntryRoutes.cs" />
-    <Compile Include="Migrations\202212121959208_UpdateExternalWorkflowEntryRoutes.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212121959208_UpdateExternalWorkflowEntryRoutes.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212121959208_UpdateExternalWorkflowEntryRoutes.designer.cs">
       <DependentUpon>202212121959208_UpdateExternalWorkflowEntryRoutes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212142127091_Rollup_20221214.cs" />
-    <Compile Include="Migrations\202212142127091_Rollup_20221214.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212142127091_Rollup_20221214.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212142127091_Rollup_20221214.designer.cs">
       <DependentUpon>202212142127091_Rollup_20221214.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202212142150154_CodeGenerated_20221214.cs" />
-    <Compile Include="Migrations\202212142150154_CodeGenerated_20221214.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212142150154_CodeGenerated_20221214.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202212142150154_CodeGenerated_20221214.designer.cs">
       <DependentUpon>202212142150154_CodeGenerated_20221214.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202301031641198_AddTextToGive.cs" />
-    <Compile Include="Migrations\202301031641198_AddTextToGive.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301031641198_AddTextToGive.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301031641198_AddTextToGive.designer.cs">
       <DependentUpon>202301031641198_AddTextToGive.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202301041638242_AddSnippetAndSnippetType.cs" />
-    <Compile Include="Migrations\202301041638242_AddSnippetAndSnippetType.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301041638242_AddSnippetAndSnippetType.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301041638242_AddSnippetAndSnippetType.designer.cs">
       <DependentUpon>202301041638242_AddSnippetAndSnippetType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106.designer.cs">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.designer.cs">
@@ -1470,119 +1474,122 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202209221552523_AddAbbreviatedNameToSchedule.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211081600377_GroupSchedulingAcceptAll.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211081600377_GroupSchedulingAcceptAll.resx">
       <DependentUpon>202211081600377_GroupSchedulingAcceptAll.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202209232317186_AddStaffFormsWorkflowCategory.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202209232317186_AddStaffFormsWorkflowCategory.resx">
       <DependentUpon>202209232317186_AddStaffFormsWorkflowCategory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202209291606147_Rollup_20220929.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929.resx">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210031637328_AddInteractiveExperienceOccurrence.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210031637328_AddInteractiveExperienceOccurrence.resx">
       <DependentUpon>202210031637328_AddInteractiveExperienceOccurrence.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210042001360_Rollup_20221004.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210042001360_Rollup_20221004.resx">
       <DependentUpon>202210042001360_Rollup_20221004.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210042013215_CodeGenerated_20221004.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210042013215_CodeGenerated_20221004.resx">
       <DependentUpon>202210042013215_CodeGenerated_20221004.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210101657459_AddOrderToInteractiveExperienceAction.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210101657459_AddOrderToInteractiveExperienceAction.resx">
       <DependentUpon>202210101657459_AddOrderToInteractiveExperienceAction.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210181655410_AddRemindersModels.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210181655410_AddRemindersModels.resx">
       <DependentUpon>202210181655410_AddRemindersModels.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210182331163_Rollup_20221018.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210182331163_Rollup_20221018.resx">
       <DependentUpon>202210182331163_Rollup_20221018.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210190005219_CodeGenerated_20221018.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210190005219_CodeGenerated_20221018.resx">
       <DependentUpon>202210190005219_CodeGenerated_20221018.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.resx">
       <DependentUpon>202210191714265_AddInteractiveExperienceOccurrenceUniqueOccurrenceConstraint.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210211001055_AddRaceAndEthnicityPersonProperties.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210211001055_AddRaceAndEthnicityPersonProperties.resx">
       <DependentUpon>202210211001055_AddRaceAndEthnicityPersonProperties.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210212133265_BinaryFileSecurity.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210212133265_BinaryFileSecurity.resx">
       <DependentUpon>202210212133265_BinaryFileSecurity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210262309179_InteractionSession1900.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210262309179_InteractionSession1900.resx">
       <DependentUpon>202210262309179_InteractionSession1900.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202210281944003_AddMissingIndexes.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202210281944003_AddMissingIndexes.resx">
       <DependentUpon>202210281944003_AddMissingIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211031956456_Rollup_20221103.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211031956456_Rollup_20221103.resx">
       <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211032103215_CodeGenerated_20221103.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211032103215_CodeGenerated_20221103.resx">
       <DependentUpon>202211032103215_CodeGenerated_20221103.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns.resx">
       <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211091530571_AddSettingsJsonToInteractiveExperience.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211091530571_AddSettingsJsonToInteractiveExperience.resx">
       <DependentUpon>202211091530571_AddSettingsJsonToInteractiveExperience.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211091822240_AddIsPublicToSchedule.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211091822240_AddIsPublicToSchedule.resx">
       <DependentUpon>202211091822240_AddIsPublicToSchedule.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211161538358_AddCampusIdToInteractiveExperienceAnswer.resx">
       <DependentUpon>202211161538358_AddCampusIdToInteractiveExperienceAnswer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211171611271_Rollup_20221117.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211171611271_Rollup_20221117.resx">
       <DependentUpon>202211171611271_Rollup_20221117.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211171644271_CodeGenerated_20221117.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211171644271_CodeGenerated_20221117.resx">
       <DependentUpon>202211171644271_CodeGenerated_20221117.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.resx">
       <DependentUpon>202211211930581_AddGenericExternalWorkflowPageBlockAndRoutes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211240015495_AddDisableUseOfReadOnlyContext.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211240015495_AddDisableUseOfReadOnlyContext.resx">
       <DependentUpon>202211240015495_AddDisableUseOfReadOnlyContext.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.resx">
       <DependentUpon>202211270924221_AddManualTriggerFilterConnectionStatusToConnectionWorkflow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211282054036_AddReminderPropertiesToGroupEntities.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211282054036_AddReminderPropertiesToGroupEntities.resx">
       <DependentUpon>202211282054036_AddReminderPropertiesToGroupEntities.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202211300749398_UpdateSlidingDateRangeValues.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202211300749398_UpdateSlidingDateRangeValues.resx">
       <DependentUpon>202211300749398_UpdateSlidingDateRangeValues.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212010248547_FixGroupScheduleConfirmationSystemCommunication.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212010248547_FixGroupScheduleConfirmationSystemCommunication.resx">
       <DependentUpon>202212010248547_FixGroupScheduleConfirmationSystemCommunication.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212011956416_Rollup_20221201.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201.resx">
       <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212012101266_CodeGenerated_20221201.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212012101266_CodeGenerated_20221201.resx">
       <DependentUpon>202212012101266_CodeGenerated_20221201.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212071408173_AddScheduleConfirmationLogic.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212071408173_AddScheduleConfirmationLogic.resx">
       <DependentUpon>202212071408173_AddScheduleConfirmationLogic.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212121959208_UpdateExternalWorkflowEntryRoutes.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212121959208_UpdateExternalWorkflowEntryRoutes.resx">
       <DependentUpon>202212121959208_UpdateExternalWorkflowEntryRoutes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212142127091_Rollup_20221214.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212142127091_Rollup_20221214.resx">
       <DependentUpon>202212142127091_Rollup_20221214.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202212142150154_CodeGenerated_20221214.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202212142150154_CodeGenerated_20221214.resx">
       <DependentUpon>202212142150154_CodeGenerated_20221214.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202301031641198_AddTextToGive.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301031641198_AddTextToGive.resx">
       <DependentUpon>202301031641198_AddTextToGive.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202301041638242_AddSnippetAndSnippetType.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301041638242_AddSnippetAndSnippetType.resx">
       <DependentUpon>202301041638242_AddSnippetAndSnippetType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106.resx">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202209091915177_PersonNoteColors.resx">
       <DependentUpon>202209091915177_PersonNoteColors.cs</DependentUpon>
@@ -2538,16 +2545,16 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql">
       <DependentUpon>202211031956456_Rollup_20221103.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202212011956416_Rollup_20221201_chartupdate.sql">
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201_chartupdate.sql">
       <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022.sql">
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022.sql">
       <DependentUpon>202212011956416_Rollup_20221201.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
@@ -2697,8 +2704,20 @@
     <Content Include="Migrations\Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance.sql">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates.sql">
+      <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
+    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
-    <None Include="Migrations\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
+    <None Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
       <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
     </None>
     <None Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">

@@ -17,6 +17,11 @@
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.LiveExperienceOccurrences
 {
+    /// <summary>
+    /// Class LiveExperienceOccurrencesInitializationBox.
+    /// Implements the <see cref="Rock.ViewModels.Blocks.BlockBox" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class LiveExperienceOccurrencesInitializationBox : BlockBox
     {
         /// <summary>
