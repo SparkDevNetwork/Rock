@@ -2147,7 +2147,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // If this is a nameless person, we need to make a new person record and merge it.
                 Person namelessPerson = null;
-                if ( person.IsNameless() )
+                if ( person != null && person.IsNameless() )
                 {
                     namelessPerson = person;
                     person = null;
