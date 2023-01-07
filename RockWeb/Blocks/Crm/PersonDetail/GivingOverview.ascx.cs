@@ -423,7 +423,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             var kpi = kpiLast12Months + kpiLast90Days + kpiGivesAs + kpiGivingJourney;
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            lLastGiving.Text = string.Format( @"{{[kpis style:'edgeless' iconbackground:'false' columnmin:'200px' columncount:'4' columncountmd:'4' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
+            lLastGiving.Text = string.Format( @"{{[kpis style:'edgeless' iconbackground:'false' columnmin:'180px' columncount:'4' columncountmd:'4' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
