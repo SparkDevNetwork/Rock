@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Http;
+using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
@@ -3566,7 +3567,7 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="model">The object to find the attributes of</param>
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
-        public List<PublicAttributeBag> GetAttributes( object model )
+        private List<PublicAttributeBag> GetAttributes( IHasInheritedAttributes model )
         {
             using ( var rockContext = new RockContext() )
             {

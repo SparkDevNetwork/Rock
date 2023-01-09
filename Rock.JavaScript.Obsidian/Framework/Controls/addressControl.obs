@@ -78,6 +78,11 @@
             default: false
         },
 
+        /**
+         * If true, doesn't apply any "required" rules to any of the individual fields, preventing
+         * the RockForm from showing an error if they're not filled. This allows parent components to
+         * handle validation, which is especially useful if the address itself isn't required.
+         */
         disableFrontEndValidation: {
             type: Boolean as PropType<boolean>,
             default: false
