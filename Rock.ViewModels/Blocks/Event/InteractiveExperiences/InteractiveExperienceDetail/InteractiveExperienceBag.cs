@@ -22,6 +22,11 @@ using Rock.Enums.Event;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
+    /// <summary>
+    /// Class InteractiveExperienceBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class InteractiveExperienceBag : EntityBagBase
     {
         /// <summary>

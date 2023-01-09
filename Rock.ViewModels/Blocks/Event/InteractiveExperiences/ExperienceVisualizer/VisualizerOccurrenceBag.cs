@@ -21,6 +21,9 @@ using Rock.ViewModels.Event.InteractiveExperiences;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceVisualizer
 {
+    /// <summary>
+    /// Class VisualizerOccurrenceBag.
+    /// </summary>
     public class VisualizerOccurrenceBag
     {
         /// <summary>

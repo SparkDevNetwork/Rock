@@ -71,14 +71,14 @@ export default defineComponent({
         const signatureData = ref<ElectronicSignatureValue | null>(null);
         const signatureSource = ref("");
         const signatureToken = ref("");
-        const clearFormErrors = ref(false);
+        const formResetKey = ref("");
 
         const isNextDisabled = ref(false);
 
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
-            clearFormErrors,
+            formResetKey,
             getRegistrationEntryBlockArgs,
             invokeBlockAction,
             isNextDisabled,
@@ -245,7 +245,7 @@ export default defineComponent({
     },
     methods: {
         onPrevious(): void {
-            this.clearFormErrors = true;
+            this.clearFormErrors();
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
@@ -254,7 +254,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex--;
         },
         async onNext(): Promise<void> {
-            this.clearFormErrors = true;
+            this.clearFormErrors();
             let lastFormIndex = this.formsToShow.length - 1;
 
             // If we have an inline signature then there is an additional form
@@ -291,6 +291,16 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+        },
+
+        /**
+         * Clears any existing errors from the RockForm component. This is
+         * needed since we display multiple registrant forms inside the single
+         * RockForm instance. Otherwise when moving from the first form to
+         * the second form it would immediately validate and display errors.
+         */
+        clearFormErrors(): void {
+            this.formResetKey = newGuid();
         },
 
         async onSigned(): Promise<void> {
@@ -372,7 +382,7 @@ export default defineComponent({
     },
     template: `
 <div>
-    <RockForm @submit="onNext" v-model:clearFormErrors="clearFormErrors">
+    <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">

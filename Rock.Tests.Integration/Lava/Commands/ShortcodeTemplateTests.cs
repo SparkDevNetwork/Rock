@@ -435,7 +435,7 @@ var options = {
         bodyFontColor: '#fff',
         titleFontColor: '#fff',
         callbacks: {
-            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(tooltipItem.yLabel); }
+            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]); }
         }
     },
     scales: {

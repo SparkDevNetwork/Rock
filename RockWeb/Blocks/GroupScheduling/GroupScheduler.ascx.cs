@@ -446,7 +446,7 @@ btnCopyToClipboard.ClientID );
             }
 
             int? selectedGroupId = null;
-            List<int> pickerGroupIds;
+            List<int> pickerGroupIds = new List<int>();
             bool showChildGroups;
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
@@ -475,9 +475,26 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                pickerGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
                 selectedGroupId = this.GetBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
                 showChildGroups = this.GetBlockUserPreference( UserPreferenceKey.ShowChildGroups ).AsBoolean();
+            }
+
+            var userPreferenceGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+            if ( pickerGroupIds.Any() )
+            {
+                var pickerSelectedGroupIds = userPreferenceGroupIds.Where( a => pickerGroupIds.Contains( a ) ).ToList();
+                if ( pickerSelectedGroupIds.Any() )
+                {
+                    pickerGroupIds = pickerSelectedGroupIds;
+                }
+                else
+                {
+                    pickerGroupIds = pickerGroupIds.Take( 1 ).ToList();
+                }
+            }                                       
+            else
+            {
+                pickerGroupIds = userPreferenceGroupIds;
             }
 
             // if there is a 'GroupIds' parameter/userpreference, that defines what groups are shown.
@@ -1324,6 +1341,7 @@ btnCopyToClipboard.ClientID );
             {
                 // sort the occurrenceColumns so the selected Group is in the first column, then order by Group.Order/Name
                 occurrenceColumnDataList = attendanceOccurrencesOrderedList
+                    .Where( a => a.ScheduledDateTime.HasValue )
                     .GroupBy( a => a.Group.Id )
                     .Select( a =>
                     {
@@ -1351,6 +1369,7 @@ btnCopyToClipboard.ClientID );
                 var group = authorizedListedGroups.FirstOrDefault();
 
                 occurrenceColumnDataList = attendanceOccurrencesOrderedList
+                    .Where( a => a.ScheduledDateTime.HasValue )
                     .GroupBy( a => new { ScheduleId = a.Schedule.Id, a.OccurrenceDate } )
                     .Select( a =>
                     {
@@ -2021,7 +2040,7 @@ btnCopyToClipboard.ClientID );
                 .ToList();
 
             var attendanceService = new AttendanceService( rockContext );
-            var sendConfirmationAttendancesQuery = attendanceService.GetPendingScheduledConfirmations()
+            var sendConfirmationAttendancesQuery = attendanceService.GetPendingAndAutoAcceptScheduledConfirmations()
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 

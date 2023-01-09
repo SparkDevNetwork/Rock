@@ -85,7 +85,6 @@ export default defineComponent({
                 .map(b => b.javaScript ?? "").join("");
 
         if (script !== "") {
-            console.log("script", script);
             // Add the script on the next tick to ensure the HTML has been rendered.
             nextTick(() => {
                 const scriptNode = document.createElement("script");

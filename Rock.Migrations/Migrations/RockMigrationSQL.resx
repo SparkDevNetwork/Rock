@@ -284,18 +284,30 @@
     <value>Version 14.0\Version 1.14.0\202208122155278_rollup_20220812_follow20shortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202209291606147_rollup_20220929_addchartgridlinecolorproperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 14.0\Version 1.14.1\202209291606147_rollup_20220929_addchartgridlinecolorproperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202211031956456_rollup_20221103_axislabelsonchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 14.0\Version 1.14.1\202211031956456_rollup_20221103_axislabelsonchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202212011956416_rollup_20221201_update_spanalytics_etl_family_11182022.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>Version 14.0\Version 1.14.1\202212011956416_rollup_20221201_update_spanalytics_etl_family_11182022.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202212011956416_Rollup_20221201_chartupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202212011956416_rollup_20221201_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202212011956416_rollup_20221201_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsupdatevisitdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
 </root>

@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
+    /// <summary>
+    /// Class InteractiveExperienceDetailOptionsBag.
+    /// </summary>
     public class InteractiveExperienceDetailOptionsBag
     {
         /// <summary>

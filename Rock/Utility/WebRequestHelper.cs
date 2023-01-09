@@ -124,11 +124,21 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Gets the IP Address from the X-Forward-For header. 
+        /// Gets the IP Address from the X-Forwarded-For header. 
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
         private static string GetXForwardedForIpAddress( HttpRequestBase request )
+        {
+            return GetXForwardedForIpAddress( request.ServerVariables["HTTP_X_FORWARDED_FOR"] );
+        }
+
+        /// <summary>
+        /// Gets the IP Address from the X-Forwarded-For header. 
+        /// </summary>
+        /// <param name="headerValue">The value of the X-Forwarded-For header.</param>
+        /// <returns></returns>
+        public static string GetXForwardedForIpAddress( string headerValue )
         {
             /* 10/7/2021 - JME 
                Gets the IP Address from the X-Forward-For header. This can be a single address or in complex environments it could be a commma
@@ -136,16 +146,43 @@ namespace Rock.Utility
                Example from parner church with a CDN AND Web Farm: X-Forwarded-For: 68.14.xxx.xx, 147.243.xxx.xxx, 147.243.xxxx.xxx:57275
             */
 
-            var headerValue = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-
             if ( headerValue.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            var ipAddresses = headerValue.Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries ).ToList().FirstOrDefault();
+            var ipAddress = headerValue.Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries ).ToList().FirstOrDefault();
 
-            return ipAddresses;
+            /* 12/20/2022 - DSH
+               The X-Forwarded-For header can contain either an IPv4 or IPv6
+               address, with or without a port number. Therefor the actual content
+               might match one of the following four values:
+               169.254.18.24
+               169.254.18.24:28372
+               fe80::260:97ff:fe02:6ea5
+               [fe80::260:97ff:fe02:6ea5]:28372
+             */
+            if ( ipAddress != null )
+            {
+                // Check for either IPv4 or IPv6 with port number.
+                if ( ipAddress.StartsWith( "[" ) && ipAddress.Contains( "]" ) )
+                {
+                    // IPv6 with port number.
+                    ipAddress = ipAddress.Substring( 1, ipAddress.IndexOf( "]" ) - 1 );
+                }
+                else
+                {
+                    var colonSegments = ipAddress.Split( ':' );
+
+                    // Check for IPv4 with port number.
+                    if ( colonSegments.Length == 2 )
+                    {
+                        ipAddress = colonSegments[0];
+                    }
+                }
+            }
+
+            return ipAddress;
         }
 
         /// <summary>

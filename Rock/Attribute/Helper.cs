@@ -1663,7 +1663,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 rockContext.ExecuteAfterCommit( () =>
                 {
                     var changedValueIds = attributeValuesThatWereChanged.Select( av => av.Id ).ToList();
-                    var attributeValueReferenceValues = new Dictionary<int, string>();
+                    var attributeValueReferenceValues = new List<AttributeValue>();
 
                     using ( var innerContext = new RockContext() )
                     {
@@ -1674,7 +1674,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                         foreach ( var changedAttributeValue in changedAttributeValues )
                         {
-                            var attributeCache = AttributeCache.Get( changedAttributeValue.Id );
+                            var attributeCache = AttributeCache.Get( changedAttributeValue.AttributeId );
 
                             if ( attributeCache != null )
                             {
@@ -1682,7 +1682,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                                 if ( attributeCache.IsReferencedEntityFieldType )
                                 {
-                                    attributeValueReferenceValues.Add( changedAttributeValue.Id, changedAttributeValue.Value );
+                                    attributeValueReferenceValues.Add( changedAttributeValue );
                                 }
                             }
                         }
@@ -2278,7 +2278,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         /// <summary>
         /// Updates all entity references for the given attribute values.
         /// </summary>
-        /// <param name="attributeValues">The dictionary of attribute value identifiers and their new value.</param>
+        /// <param name="attributeValues">The list of attribute values.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <remarks>
         ///     <para>
@@ -2286,13 +2286,13 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         call is required.
         ///     </para>
         /// </remarks>
-        private static void BulkUpdateAttributeValueEntityReferences( Dictionary<int, string> attributeValues, RockContext rockContext )
+        private static void BulkUpdateAttributeValueEntityReferences( List<AttributeValue> attributeValues, RockContext rockContext )
         {
             var referenceDictionary = new Dictionary<int, List<Field.ReferencedEntity>>();
 
             foreach ( var attributeValue in attributeValues )
             {
-                var attributeCache = AttributeCache.Get( attributeValue.Key );
+                var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
 
                 if ( !attributeCache.IsReferencedEntityFieldType )
                 {
@@ -2302,7 +2302,7 @@ WHERE [AV].[AttributeId] = @AttributeId
                 var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
                 var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
-                referenceDictionary.Add( attributeValue.Key, referencedEntities );
+                referenceDictionary.Add( attributeValue.Id, referencedEntities );
             }
 
             BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );

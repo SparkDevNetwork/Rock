@@ -19,6 +19,11 @@ using Rock.ViewModels.Event.InteractiveExperiences;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.LiveExperience
 {
+    /// <summary>
+    /// Class LiveExperienceInitializationBox.
+    /// Implements the <see cref="Rock.ViewModels.Blocks.BlockBox" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class LiveExperienceInitializationBox : BlockBox
     {
         /// <summary>

@@ -341,13 +341,13 @@
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
                                 <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
-                                <Rock:RockLiteralField id="lFullname" HeaderText="Name" SortExpression="NickName,LastName" />
+                                <Rock:RockLiteralField id="lFullname" HeaderText="Name" SortExpression="NickName,LastName" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" />
-                                <Rock:RockLiteralField id="lGroupName" HeaderText="Group" />
-                                <Rock:RockLiteralField id="lConnectorPersonFullname" HeaderText="Connector" />
-                                <Rock:RockLiteralField id="lLastActivityText" HeaderText="Last Activity" />
-                                <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                                <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:RockLiteralField id="lGroupName" HeaderText="Group" ExcelExportBehavior="AlwaysInclude" />
+                                <Rock:RockLiteralField id="lConnectorPersonFullname" HeaderText="Connector" ExcelExportBehavior="AlwaysInclude" />
+                                <Rock:RockLiteralField id="lLastActivityText" HeaderText="Last Activity" ExcelExportBehavior="AlwaysInclude" />
+                                <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" ExcelExportBehavior="AlwaysInclude" />
+                                <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" ExcelExportBehavior="AlwaysInclude"  />
                                 <Rock:SecurityField TitleField="PersonAlias.Person.Fullname" />
                             </Columns>
                         </Rock:Grid>

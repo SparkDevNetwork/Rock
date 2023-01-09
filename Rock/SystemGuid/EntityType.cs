@@ -809,5 +809,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
         /// </summary>
         public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Snippet"/>
+        /// </summary>
+        public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
     }
 }

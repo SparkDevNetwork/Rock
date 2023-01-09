@@ -17,6 +17,11 @@
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceVisualizer
 {
+    /// <summary>
+    /// Class ExperienceVisualizerInitializationBox.
+    /// Implements the <see cref="Rock.ViewModels.Blocks.BlockBox" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class ExperienceVisualizerInitializationBox : BlockBox
     {
         /// <summary>

@@ -504,8 +504,8 @@
                         <asp:Panel ID="pnlGroupPreferenceAssignment" runat="server" >
                             <Rock:DatePicker ID="dpGroupMemberScheduleTemplateStartDate" runat="server" Label="Starting On" />
                             <Rock:RockRadioButtonList ID="rblGroupScheduleAssignmentUpdateOption" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblGroupScheduleAssignmentUpdateOption_SelectedIndexChanged">
-                                <asp:ListItem Text="Update Preference" Value="UpdatePreference" Selected="true" />
-                                <asp:ListItem Text="Append to preference" Value="AppendToPreference" />
+                                <asp:ListItem Text="Replace Preference" Value="UpdatePreference" Selected="true" />
+                                <asp:ListItem Text="Add to Preference" Value="AppendToPreference" />
                             </Rock:RockRadioButtonList>
                         </asp:Panel>
 
