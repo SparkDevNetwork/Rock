@@ -355,13 +355,11 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupPreferenceAssignmentsGrid()
         {
-            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
-            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
             var assignments = GroupMemberAssignmentsState
-                .OrderBy( a => a.Schedule.Order )
-                .ThenBy( a => a.Schedule.GetNextStartDateTime( occurrenceDate ) )
-                .ThenBy( a => a.Schedule.Name )
-                .ThenBy( a => a.Schedule.Id )
+                .OrderBy( a => a.ScheduleOrder )
+                .ThenBy( a => a.ScheduleNextStartDateTime )
+                .ThenBy( a => a.ScheduleName )
+                .ThenBy( a => a.ScheduleId )
                 .ThenBy( a => a.LocationId.HasValue ? a.LocationName : string.Empty )
                 .ToList();
             gGroupPreferenceAssignments.DataSource = assignments;
@@ -703,6 +701,8 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAssignmentsState = new List<GroupMemberAssignmentStateObj>();
                 if ( groupMember.Id != default( int ) )
                 {
+                    // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
+                    var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
                     var groupLocationService = new GroupLocationService( rockContext );
                     var qryGroupLocations = groupLocationService
                         .Queryable()
@@ -733,7 +733,8 @@ namespace RockWeb.Blocks.Groups
                                 LocationName = a.LocationId.HasValue ? a.Location.ToString( true ) : NO_LOCATION_PREFERENCE,
                                 ScheduleName = a.Schedule.Name,
                                 FormattedScheduleName = GetFormattedScheduleForListing( a.Schedule.Name, a.Schedule.StartTimeOfDay ),
-                                Schedule = a.Schedule
+                                ScheduleOrder = a.Schedule.Order,
+                                ScheduleNextStartDateTime =  a.Schedule.GetNextStartDateTime( occurrenceDate )
                             } )
                             .ToList();
                 }
@@ -1742,9 +1743,9 @@ namespace RockWeb.Blocks.Groups
                 a.IsActive
                 && a.IsPublic.HasValue
                 && a.IsPublic.Value
-                && !configuredScheduleIds.Contains( a.Id )
+                && ( !configuredScheduleIds.Contains( a.Id )
                 || ( selectedScheduleId.HasValue
-                    && a.Id == selectedScheduleId.Value ) )
+                    && a.Id == selectedScheduleId.Value ) ) )
              .ToList();
 
             ddlGroupScheduleAssignmentSchedule.Items.Clear();
@@ -1809,9 +1810,12 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAssignmentsState.Add( groupMemberAssignment );
             }
 
+            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
             groupMemberAssignment.ScheduleId = scheduleId.Value;
             groupMemberAssignment.ScheduleName = schedule.Name;
-            groupMemberAssignment.Schedule = schedule;
+            groupMemberAssignment.ScheduleOrder = schedule.Order;
+            groupMemberAssignment.ScheduleNextStartDateTime = schedule.GetNextStartDateTime( occurrenceDate );
             groupMemberAssignment.FormattedScheduleName = GetFormattedScheduleForListing(schedule.Name, schedule.StartTimeOfDay);
             groupMemberAssignment.LocationId = locationId;
             groupMemberAssignment.LocationName = ddlGroupScheduleAssignmentLocation.SelectedItem.Text;
@@ -2253,11 +2257,13 @@ namespace RockWeb.Blocks.Groups
 
             public Guid Guid { get; set; }
 
+            public int ScheduleOrder { get; set; }
+
+            public DateTime? ScheduleNextStartDateTime { get; set; }
+
             public int? LocationId { get; set; }
 
             public string LocationName { get; set; }
-
-            public Schedule Schedule { get; set; }
 
             public string ScheduleName { get; set; }
 
