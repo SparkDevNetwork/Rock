@@ -1391,9 +1391,9 @@ $('#{0}').tooltip();
                     a.IsActive
                     && a.IsPublic.HasValue
                     && a.IsPublic.Value
-                    && !configuredScheduleIds.Contains( a.Id )
+                    && ( !configuredScheduleIds.Contains( a.Id )
                     || ( selectedScheduleId.HasValue
-                        && a.Id == selectedScheduleId.Value ) )
+                        && a.Id == selectedScheduleId.Value ) ) )
                  .ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
