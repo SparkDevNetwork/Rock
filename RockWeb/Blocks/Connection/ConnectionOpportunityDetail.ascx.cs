@@ -1647,6 +1647,8 @@ namespace RockWeb.Blocks.Connection
                         ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                     }
                 }
+
+                rblConnectionStatuses.SelectedValue = workflowTypeStateObj.ManualTriggerFilterConnectionStatusId?.ToString() ?? Rock.Constants.None.IdValue;
             }
         }
 
@@ -1887,6 +1889,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             rblConnectionStatuses.Items.Clear();
+            rblConnectionStatuses.Items.Add( new ListItem { Value = Rock.Constants.None.IdValue, Text = "All" } );
             foreach ( var connectionStatus in connectionOpportunity.ConnectionType.ConnectionStatuses.Select( cs => new ListItem() { Value = cs.Id.ToString(), Text = cs.Name } ) )
             {
                 rblConnectionStatuses.Items.Add( connectionStatus );

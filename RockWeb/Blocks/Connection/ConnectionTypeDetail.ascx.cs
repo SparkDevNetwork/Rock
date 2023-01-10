@@ -1279,6 +1279,7 @@ namespace RockWeb.Blocks.Connection
             gStatuses.DataBind();
 
             rblConnectionStatuses.Items.Clear();
+            rblConnectionStatuses.Items.Add( new ListItem { Value = Rock.Constants.None.IdValue, Text = "All" } );
             StatusesState.ForEach( status => rblConnectionStatuses.Items.Add( new ListItem { Text = status.Name, Value = status.Id.ToString() } ) );
         }
 
@@ -1690,6 +1691,8 @@ namespace RockWeb.Blocks.Connection
                             ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                         }
                     }
+
+                    rblConnectionStatuses.SelectedValue = connectionWorkflow.ManualTriggerFilterConnectionStatusId?.ToString() ?? Rock.Constants.None.IdValue;
                 }
             }
 
