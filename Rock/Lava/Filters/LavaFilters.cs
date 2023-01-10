@@ -6494,6 +6494,61 @@ namespace Rock.Lava
             return color.ToRGBA();
         }
 
+        /// <summary>Gets the hue from the provided color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Hue( string input )
+        {
+            var color = new RockColor( input );
+            
+            return Convert.ToInt32( color.Hue );
+        }
+
+        /// <summary>Saturations the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Saturation( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Saturation * 100 );
+        }
+
+        /// <summary>Luminosities the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Luminosity( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Luminosity * 100 );
+        }
+
+        /// <summary>Calculates the contrast ratio.</summary>
+        /// <param name="inputColor1">The input color1.</param>
+        /// <param name="inputColor2">The input color2.</param>
+        /// <returns>System.Double.</returns>
+        public static double CalculateContrastRatio( string inputColor1, string inputColor2 )
+        {
+            if ( inputColor2.IsNullOrWhiteSpace() )
+            {
+                inputColor2 = "#ffffff";
+            }
+
+            var color1 = new RockColor( inputColor1 );
+            var color2 = new RockColor( inputColor2 );
+
+            return RockColor.CalculateContrastRatio( color1, color2 );
+        }
+
+        /// <summary>Ases the color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>RockColor.</returns>
+        public static RockColor AsColor( string input )
+        {
+            return new RockColor( input );
+        }
+
         #endregion Color Filters
 
         /// <summary>
