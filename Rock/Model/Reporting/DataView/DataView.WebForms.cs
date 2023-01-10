@@ -108,6 +108,8 @@ namespace Rock.Model
         /// </exception>
         public IQueryable<IEntity> GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs )
         {
+            dataViewGetQueryArgs = dataViewGetQueryArgs ?? new DataViewGetQueryArgs();
+
             var dbContext = dataViewGetQueryArgs.DbContext;
             if ( dbContext == null )
             {

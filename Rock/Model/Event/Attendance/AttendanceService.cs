@@ -2326,7 +2326,18 @@ namespace Rock.Model
         /// Updates attendance record to indicate person is not pending, or confirmed, or declined
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
+        [Obsolete( "Use ScheduledPersonClear instead." )]
+        [RockObsolete( "1.14.2" )]
         public void ScheduledPersonRemove( int attendanceId )
+        {
+            ScheduledPersonClear( attendanceId );
+        }
+
+        /// <summary>
+        /// Updates attendance record to indicate person is not pending, or confirmed, or declined
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        public void ScheduledPersonClear( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
 

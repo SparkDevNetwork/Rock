@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -603,7 +604,7 @@ namespace Rock.Model
         /// <summary>
         /// Phone View Model
         /// </summary>
-        public sealed class PhoneViewModel
+        public sealed class PhoneViewModel : RockDynamic
         {
             /// <summary>
             /// Gets or sets the type of the phone.
@@ -619,6 +620,14 @@ namespace Rock.Model
             /// Gets or sets a value indicating whether this instance is messaging enabled.
             /// </summary>
             public bool IsMessagingEnabled { get; set; }
+
+            /// <summary>
+            /// Returns a string that represents the current object.
+            /// </summary>
+            public override string ToString()
+            {
+                return string.Format( "{0}: {1}", PhoneType, FormattedPhoneNumber );
+            }
         }
     }
 }

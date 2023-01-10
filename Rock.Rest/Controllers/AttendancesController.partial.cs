@@ -153,7 +153,7 @@ namespace Rock.Rest.Controllers
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
 
-            attendanceService.ScheduledPersonRemove( attendanceId );
+            attendanceService.ScheduledPersonClear( attendanceId );
             rockContext.SaveChanges();
         }
 

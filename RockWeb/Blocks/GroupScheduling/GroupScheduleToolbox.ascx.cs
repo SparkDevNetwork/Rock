@@ -1778,8 +1778,13 @@ $('#{0}').tooltip();
 
                     if ( attendanceId.HasValue )
                     {
-                        // if there is an attendanceId, this is an attendance that they just signed up for, but they might have either unselected it, or changed the location, so remove it
-                        attendanceService.ScheduledPersonRemove( attendanceId.Value );
+                        // if there is an attendanceId, this is an attendance that they just signed up for,
+                        // but they might have either unselected it, or changed the location, so remove it
+                        var attendance = attendanceService.Get( attendanceId.Value );
+                        if ( attendance != null )
+                        {
+                            attendanceService.Delete( attendance );
+                        }
                     }
 
                     if ( cbSignupSchedule.Checked )

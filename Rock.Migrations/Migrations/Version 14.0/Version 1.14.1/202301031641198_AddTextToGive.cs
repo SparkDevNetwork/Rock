@@ -93,7 +93,7 @@ mission. We are so grateful for your commitment.</p>
 </dl>
 ";
         private const string TEXTTOGIVESETUP_FINISH_LAVA_TEMPLATE = @"
-<p>Thank you for your gift.  Your next gift can be completed by texting the word give followed by the dollar amount.</p>
+<p>Thank you for your gift. Your next gift can be completed by texting the word ""give"" followed by the dollar amount (e.g. ""give $100"").</p>
 
 <dl>
     <dt>Confirmation Code</dt>

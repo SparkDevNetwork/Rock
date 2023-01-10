@@ -101,9 +101,15 @@
                                             <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
-                                                <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                                <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Label="First Name" ValidationGroup="vgFirstName" />
-                                                <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
+                                                        <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Label="First Name" ValidationGroup="vgFirstName" />
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                                    </div>
+                                                </div>
                                             </asp:PlaceHolder>
                                             <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
                                                 <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />

@@ -110,7 +110,7 @@ namespace Rock.Communication.SmsActions
         EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
-        DefaultValue = "To give, text GIVE & amount. Example: GIVE $250. To update amount text EDIT. More help at XXXXXXXXXX. Msg & data rates may apply. Reply STOP to cancel.",
+        DefaultValue = "To give, text GIVE & amount. Example: GIVE $250. More help at XXXXXXXXXX. Msg & data rates may apply. Reply STOP to cancel.",
         Order = 8,
         Category = "Response",
         Key = AttributeKeys.HelpResponse )]
@@ -283,7 +283,7 @@ namespace Rock.Communication.SmsActions
             }
 
             var context = new SmsGiveContext( action, message );
-            return context.IsGiveMessage || context.IsRefundMessage || context.IsSetupMessage;
+            return context.IsGiveMessage || context.IsRefundMessage || context.IsSetupMessage || context.IsHelpMessage;
         }
 
         /// <summary>
@@ -317,6 +317,10 @@ namespace Rock.Communication.SmsActions
             {
                 return DoSetup( context, out errorMessage );
             }
+            else if ( context.IsHelpMessage )
+            {
+                return DoHelp( context, out errorMessage );
+            }
             else
             {
                 errorMessage = "The message was not a giving related request.";
@@ -345,6 +349,26 @@ namespace Rock.Communication.SmsActions
         }
 
         #endregion Setup
+
+        #region Help
+
+        /// <summary>
+        /// Process a help request
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="errorMessage"></param>
+        private SmsMessage DoHelp( SmsGiveContext context, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            CreatePersonRecordIfNeeded( context );
+            SetPersonIdentifier( context );
+            SetSetupPageLink( context );
+
+            return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+        }
+
+        #endregion Help
 
         #region Giving
 
@@ -572,11 +596,6 @@ namespace Rock.Communication.SmsActions
                 .GetByPersonId( context.SmsMessage.FromPerson.Id ).Where( a => a.FinancialGatewayId.HasValue );
 
             var defaultAccount = personSavedAccountsQry.Where( sa => sa.IsDefault ).FirstOrDefault();
-            if ( defaultAccount == null )
-            {
-                // If a specific default account is not set, just use the first one.
-                defaultAccount = personSavedAccountsQry.FirstOrDefault();
-            }
 
             return defaultAccount;
         }
@@ -744,7 +763,16 @@ namespace Rock.Communication.SmsActions
             if ( accountId.HasValue && FinancialAccountCache.Get( accountId.Value ) != null )
             {
                 var amount = context.LavaMergeFields.GetValueOrNull( LavaMergeFieldKeys.Amount ).ToStringSafe();
-                setupPage.Parameters["AccountIds"] = $"{accountId}^{amount}^{false}";
+
+                string accountIdsParameter = $"{accountId}^{amount}^{false}";
+
+                if ( amount.IsNullOrWhiteSpace() )
+                {
+                    // If no amount was specified, we need to allow the user to enter it on the setup page.
+                    accountIdsParameter = $"{accountId}^{amount}^{true}";
+                }
+
+                setupPage.Parameters["AccountIds"] = accountIdsParameter;
             }
 
             // If BuildUrl() throws an exception, it could be because we are in an async task and
@@ -841,6 +869,7 @@ namespace Rock.Communication.SmsActions
                     IsGiveMessage ? GivingKeywords.FirstOrDefault() :
                     IsRefundMessage ? RefundKeywords.FirstOrDefault() :
                     IsSetupMessage ? SetupKeywords.FirstOrDefault() :
+                    IsHelpMessage ? HelpKeywords.FirstOrDefault() :
                     string.Empty;
 
                 LavaMergeFields = new Dictionary<string, object> {
@@ -971,6 +1000,32 @@ namespace Rock.Communication.SmsActions
             public string MatchingSetupKeyword
             {
                 get => SetupKeywords.FirstOrDefault( k => MessageText.Equals( k, StringComparison.CurrentCultureIgnoreCase ) );
+            }
+
+            /// <summary>
+            /// Get the help keywords
+            /// </summary>
+            /// <value>The help keywords.</value>
+            public List<string> HelpKeywords
+            {
+                get => _helpKeywords;
+            }
+            private List<string> _helpKeywords = new List<string> { "HELP" };
+
+            /// <summary>
+            /// True if the message is a help message
+            /// </summary>
+            public bool IsHelpMessage
+            {
+                get => !MatchingHelpKeyword.IsNullOrWhiteSpace();
+            }
+
+            /// <summary>
+            /// The help keyword that matched the message
+            /// </summary>
+            public string MatchingHelpKeyword
+            {
+                get => HelpKeywords.FirstOrDefault( k => MessageText.Equals( k, StringComparison.CurrentCultureIgnoreCase ) );
             }
 
             /// <summary>

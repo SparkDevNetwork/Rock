@@ -38,10 +38,10 @@
                     <div class="giving-text-to-give panel-body border-top border-panel">
                         <div class="row">
                             <div class="col-sm-10">
-                                <h5 class="my-0">Text to Give Settings</h5>
+                                <h5 class="my-0">Text-To-Give Settings</h5>
                             </div>
                             <div class="col-sm-2">
-                                <asp:LinkButton ID="btnEditTextToGive" runat="server" AccessKey="e" ToolTip="Edit Text To Give Settings" Text="<i class='fa fa-pencil'></i>" CssClass="btn btn-default btn-square btn-xs pull-right" OnClick="btnEditTextToGive_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnEditTextToGive" runat="server" AccessKey="e" ToolTip="Edit Text-To-Give Settings" Text="<i class='fa fa-pencil'></i>" CssClass="btn btn-default btn-square btn-xs pull-right" OnClick="btnEditTextToGive_Click" CausesValidation="false" />
                             </div>
                         </div>
 
@@ -68,7 +68,7 @@
                                 </div>
 
                                 <div>
-                                    <asp:LinkButton ID="btnSaveTextToGive" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-sm btn-default" OnClick="btnSaveTextToGive_Click" />
+                                    <asp:LinkButton ID="btnSaveTextToGive" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-sm btn-primary" OnClick="btnSaveTextToGive_Click" />
                                     <asp:LinkButton ID="btnCanceTextToGive" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-sm btn-link" CausesValidation="false" OnClick="btnCanceTextToGive_Click" />
                                 </div>
                             </div>
@@ -79,7 +79,7 @@
                                 <asp:LinkButton ID="lbTextToGiveAdd"
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
-                                    ToolTip="Add Text To Give Configuration"
+                                    ToolTip="Add Text-To-Give Configuration"
                                     Text="<i class='fa fa-plus'></i>"
                                     OnClick="btnEditTextToGive_Click"
                                     CausesValidation="false" />

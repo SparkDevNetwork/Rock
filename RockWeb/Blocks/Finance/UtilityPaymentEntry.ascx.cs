@@ -473,9 +473,9 @@ namespace RockWeb.Blocks.Finance
         Category = CategoryKey.Advanced,
         Order = 11 )]
 
-    [BooleanField( "Enable Text To Give Setup",
+    [BooleanField( "Enable Text-To-Give Setup",
         Key = AttributeKey.EnableTextToGiveSetup,
-        Description = "This setting enables specific behavior for setting up Text To Give accounts.",
+        Description = "This setting enables specific behavior for setting up Text-To-Give accounts.",
         DefaultBooleanValue = false,
         Category = CategoryKey.Advanced,
         Order = 12 )]
@@ -1576,7 +1576,7 @@ mission. We are so grateful for your commitment.</p>
 
         private void SetTargetPerson( RockContext rockContext )
         {
-            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean(); // Must allow impersonation if setting up text to give.
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean(); // Must allow impersonation if setting up Text-To-Give.
             var allowImpersonation = enableTextToGiveSetup || ( GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false );
             string personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
 
@@ -1890,7 +1890,7 @@ mission. We are so grateful for your commitment.</p>
             cbGiveAnonymously.Visible = GetAttributeValue( AttributeKey.EnableAnonymousGiving ).AsBoolean();
             cbGiveAnonymously.ToolTip = GetAttributeValue( AttributeKey.AnonymousGivingTooltip );
 
-            if ( GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() )
+            if ( !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() )
             {
                 tglGiveAsOption.Checked = true;
                 SetGiveAsOptions();
@@ -1934,7 +1934,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void SetGiveAsOptions()
         {
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
             acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
@@ -2140,12 +2141,13 @@ mission. We are so grateful for your commitment.</p>
                 person = personService.Get( personId );
             }
 
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( create && !givingAsBusiness )
             {
                 // If this is a nameless person, we need to make a new person record and merge it.
                 Person namelessPerson = null;
-                if ( person.IsNameless() )
+                if ( person != null && person.IsNameless() )
                 {
                     namelessPerson = person;
                     person = null;
@@ -2324,7 +2326,8 @@ mission. We are so grateful for your commitment.</p>
 
         private Person GetPersonOrBusiness( Person person )
         {
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( person != null && givingAsBusiness )
             {
                 var rockContext = new RockContext();
@@ -2485,7 +2488,8 @@ mission. We are so grateful for your commitment.</p>
 
             var errorMessages = new List<string>();
 
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
             if ( caapPromptForAccountAmounts.IsValidAmountSelected() )
             {
@@ -2605,7 +2609,8 @@ mission. We are so grateful for your commitment.</p>
         private void SetConfirmationText()
         {
             ReferencePaymentInfo paymentInfo = GetPaymentInfo();
-            bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+            var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+            bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
             if ( !givingAsBusiness )
             {
@@ -2770,7 +2775,8 @@ mission. We are so grateful for your commitment.</p>
                     return false;
                 }
 
-                bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
+                var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
+                bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
                 // only create/update the person if they are giving as a person. If they are giving as a Business, the person shouldn't be created this way
                 Person person = GetPerson( !givingAsBusiness );
@@ -3172,10 +3178,30 @@ mission. We are so grateful for your commitment.</p>
                 }
                 else
                 {
-                    string cardType = financialPaymentDetail?.CreditCardTypeValue?.Value;
-                    string accountNumber = financialPaymentDetail?.AccountNumberMasked;
-                    string last4 = accountNumber.Right( 4 );
-                    var accountTitle = $"Text To Give - {cardType} (ending in {last4})";
+                    var accountTitle = $"Text-To-Give";
+
+                    var currencyTypeId = financialPaymentDetail?.CurrencyTypeValueId;
+                    var creditCardCurrencyTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+                    var achCurrencyTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+
+                    if ( currencyTypeId == creditCardCurrencyTypeId )
+                    {
+                        string cardType = financialPaymentDetail?.CreditCardTypeValue?.Value;
+                        string accountNumber = financialPaymentDetail?.AccountNumberMasked;
+                        string last4 = accountNumber.Right( 4 );
+                        accountTitle = $"Text-To-Give - {cardType} (ending in {last4})";
+                    }
+                    else if ( currencyTypeId == achCurrencyTypeId )
+                    {
+                        string accountNumber = financialPaymentDetail?.AccountNumberMasked;
+                        string last4 = accountNumber.Right( 4 );
+                        accountTitle = $"Text-To-Give - ACH (ending in {last4})";
+                    }
+                    else if ( financialPaymentDetail?.CurrencyTypeValue != null )
+                    {
+                        accountTitle = $"Text-To-Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
+                    }    
+
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
             }
