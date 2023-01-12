@@ -2302,7 +2302,7 @@ btnCopyToClipboard.ClientID );
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             var preferencesForGroup = groupMemberAssignmentQuery
-                .Where( a => a.GroupMember.GroupId == groupId && a.GroupMember.PersonId == groupMemberPersonId )
+                .Where( a => !a.GroupMember.IsArchived && a.GroupMember.GroupId == groupId && a.GroupMember.PersonId == groupMemberPersonId )
                 .ToList();
 
             nbGroupScheduleAssignmentUpdatePreferenceInformation.Text = string.Empty;
@@ -2481,7 +2481,8 @@ btnCopyToClipboard.ClientID );
 
             var locationPreferenceForSchedule = groupMemberAssignmentQuery
                 .Where( a =>
-                    a.GroupMember.PersonId == groupMemberPersonId
+                    !a.GroupMember.IsArchived
+                    && a.GroupMember.PersonId == groupMemberPersonId
                     && a.ScheduleId.HasValue
                     && a.ScheduleId == scheduleId.Value ).FirstOrDefault();
 
