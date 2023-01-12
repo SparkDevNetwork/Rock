@@ -21,7 +21,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { MergeTemplateTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "MergeTemplatePicker",

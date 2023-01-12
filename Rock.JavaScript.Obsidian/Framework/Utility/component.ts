@@ -18,8 +18,8 @@ import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncCo
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
-import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
-import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
 
@@ -193,8 +193,8 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
 
     /** The method the picker should use to load data. */
     lazyMode: {
-        type: PropType<ControlLazyModeType>,
-        default: ControlLazyMode.OnDemand
+        type: PropType<ControlLazyMode>,
+        default: "onDemand"
     },
 
     /** True if the picker should allow multiple items to be selected. */
@@ -211,8 +211,8 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
 
     /** The visual style to use when displaying the picker. */
     displayStyle: {
-        type: PropType<PickerDisplayStyleType>,
-        default: PickerDisplayStyle.Auto
+        type: PropType<PickerDisplayStyle>,
+        default: "auto"
     },
 
     /** The number of columns to use when displaying the items in a list. */
@@ -232,7 +232,7 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     },
 
     lazyMode: {
-        type: String as PropType<ControlLazyModeType>,
+        type: String as PropType<ControlLazyMode>,
         default: ControlLazyMode.OnDemand
     },
 
@@ -247,7 +247,7 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     },
 
     displayStyle: {
-        type: String as PropType<PickerDisplayStyleType>,
+        type: String as PropType<PickerDisplayStyle>,
         default: PickerDisplayStyle.Auto
     },
 
@@ -320,10 +320,10 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 /**
  * Creates a Ref that contains extended data to better identify this ref
  * when you have multiple refs to work with.
- * 
+ *
  * @param value The initial value of the Ref.
  * @param extendedData The additional context data to put on the Ref.
- * 
+ *
  * @returns An ExtendedRef object that can be used like a regular Ref object.
  */
 export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedRef<T> {
@@ -336,7 +336,7 @@ export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedR
 
 /**
  * Creates an extended Ref with the specified property name in the context.
- * 
+ *
  * @param value The initial value of the Ref.
  * @param propertyName The property name to use for the context.
  *

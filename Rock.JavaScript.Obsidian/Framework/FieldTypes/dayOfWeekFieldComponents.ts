@@ -16,7 +16,7 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({

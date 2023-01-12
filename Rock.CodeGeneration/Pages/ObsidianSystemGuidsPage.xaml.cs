@@ -62,7 +62,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the target path.</returns>
         private string GetPath()
         {
-            return Path.Combine( "Rock.JavaScript.Obsidian", "Framework", "SystemGuids", "CodeGenerated" );
+            return Path.Combine( "Rock.JavaScript.Obsidian", "Framework", "SystemGuids" );
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.CamelCase()}.d.ts";
+            return $"{type.Name.CamelCase()}.ts";
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Rock.CodeGeneration.Pages
                 var selectedTypes = GetSelectedTypes();
                 var files = new List<GeneratedFile>();
 
-                PreviewProgressBar.Maximum = selectedTypes.Count + 1;
+                PreviewProgressBar.Maximum = selectedTypes.Count;
                 PreviewProgressBar.Value = 0;
                 PreviewProgressBar.IsIndeterminate = false;
                 PreviewProgressBar.Visibility = Visibility.Visible;
@@ -153,12 +153,6 @@ namespace Rock.CodeGeneration.Pages
 
                         Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
                     }
-
-                    // Generate an index file that references all the types.
-                    var indexSource = generator.GenerateSystemGuidIndexForTypes( GetSystemGuidTypes() );
-                    files.Add( new GeneratedFile( "generated-index.d.ts", GetPath(), indexSource ) );
-
-                    Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
                 } );
 
                 await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );

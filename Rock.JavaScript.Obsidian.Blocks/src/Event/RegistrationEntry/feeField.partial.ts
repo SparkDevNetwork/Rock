@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";

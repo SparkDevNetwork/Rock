@@ -19,7 +19,7 @@ import Panel from "@Obsidian/Controls/panel";
 import Modal from "@Obsidian/Controls/modal";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
@@ -398,7 +398,7 @@ export default defineComponent({
         /**
          * Gets the CSS class to use for an action when it is displayed
          * as a plain icon.
-         * 
+         *
          * @param action The action to be displayed.
          *
          * @returns A string that contains the CSS classes to apply to the DOM element.
@@ -416,7 +416,7 @@ export default defineComponent({
         /**
          * Gets the CSS class to use for an action when it is displayed
          * as a label.
-         * 
+         *
          * @param action The action to be displayed.
          *
          * @returns A string that contains the CSS classes to apply to the DOM element.
@@ -437,7 +437,7 @@ export default defineComponent({
         /**
          * Get the icon CSS class to use for the action when it is displayed
          * as a plain icon.
-         * 
+         *
          * @param action The action to be displayed.
          *
          * @returns A string that contains the CSS classes to apply to the DOM element.
@@ -475,7 +475,7 @@ export default defineComponent({
         /**
          * Called when the security button has been clicked.
          * Shows the edit security modal.
-         * 
+         *
          * @param event The event that triggered this handler.
          */
         const onSecurityClick = (event: Event): void => {
@@ -661,7 +661,7 @@ export default defineComponent({
         /**
          * Called when any of the panel actions have been clicked. If there is
          * an event handler attached then trigger the handler.
-         * 
+         *
          * @param action The action that was clicked.
          * @param event The DOM event that triggered the click.
          */

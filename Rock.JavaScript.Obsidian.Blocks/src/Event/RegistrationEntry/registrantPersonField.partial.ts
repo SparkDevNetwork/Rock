@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType } from "vue";
-import AddressControl from "@Obsidian/Controls/addressControl.vue";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
@@ -26,7 +26,7 @@ import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types";
 

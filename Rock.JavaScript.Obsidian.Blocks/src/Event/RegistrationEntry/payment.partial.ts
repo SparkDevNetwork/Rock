@@ -16,10 +16,12 @@
 //
 
 import { defineComponent, inject, ref } from "vue";
-import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -37,7 +39,7 @@ export default defineComponent({
         RockValidation
     },
     setup() {
-        const submitPayment = prepareSubmitPayment();
+        const submitPayment = provideSubmitPayment();
 
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
         const invokeBlockAction = useInvokeBlockAction();
@@ -74,7 +76,7 @@ export default defineComponent({
 
     computed: {
         /** The settings for the gateway (MyWell, etc) control */
-        gatewayControlModel(): GatewayControlModel {
+        gatewayControlModel(): GatewayControlBag {
             return this.viewModel.gatewayControl;
         },
 
@@ -215,9 +217,9 @@ export default defineComponent({
 
         /**
          * Get the unique identifier of the option to use on the input control.
-         * 
+         *
          * @param option The option that represents the saved account.
-         * 
+         *
          * @returns A string that contains the unique control identifier.
          */
         getOptionUniqueId(option: SavedFinancialAccountListItemBag): string {
@@ -228,7 +230,7 @@ export default defineComponent({
 
         /**
          * Gets the image to display for the saved account input control.
-         * 
+         *
          * @param option The option that represents the saved account.
          *
          * @returns A string with the URL of the image to display.
@@ -250,7 +252,7 @@ export default defineComponent({
 
         /**
          * Gets the descriptive text to display for the saved account input control.
-         * 
+         *
          * @param option The option that represents the saved account.
          *
          * @returns A string with the user friendly description of the saved account.

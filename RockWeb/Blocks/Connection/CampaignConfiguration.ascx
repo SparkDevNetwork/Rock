@@ -63,7 +63,7 @@
                 <span class="text-muted">The settings determine if connection should be created on periodic basis.</span>
                 <hr class="margin-t-sm" >
                 <Rock:NumberBox ID="nbNumberOfDays" runat="server" Label="Number of Days Between Connection"
-                    Help="The number of days since the last connection request was completed before a new connection request should be created." Required="true" CssClass="input-width-md" />
+                    Help="The number of days since the last connection request was modified before a new connection request should be created." Required="true" CssClass="input-width-md" />
                 <Rock:RockCheckBox ID="cbPreferPreviousConnector" runat="server" Label="Prefer Previous Connector"
                     Help="When creating a new request, should the previous connector be used if they are still a connector." />
 

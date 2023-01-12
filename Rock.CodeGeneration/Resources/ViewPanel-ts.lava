@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";{% if UseIsSystem == true %}
-    import Alert from "@Obsidian/Controls/alert.vue";{% endif %}{% if UseAttributeValues == true %}
+    import Alert from "@Obsidian/Controls/alert.obs";{% endif %}{% if UseAttributeValues == true %}
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";

@@ -244,6 +244,8 @@ namespace RockWeb.Blocks.Communication
                 ddlSmsNumbers.DataTextField = "Description";
                 ddlSmsNumbers.DataBind();
 
+                ddlMessageFilter.BindToEnum<CommunicationMessageFilter>();
+
                 string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
 
                 string smsNumberUserPref = this.GetUserPreference( keyPrefix + "smsNumber" ) ?? string.Empty;
@@ -261,7 +263,7 @@ namespace RockWeb.Blocks.Communication
                 hlSmsNumber.Text = smsDetails.Select( v => v.Description ).FirstOrDefault();
                 hfSmsNumber.SetValue( smsNumbers.Count() > 1 ? ddlSmsNumbers.SelectedValue.AsInteger() : smsDetails.Select( v => v.Id ).FirstOrDefault() );
 
-                tglShowRead.Checked = this.GetUserPreference( keyPrefix + "showRead" ).AsBooleanOrNull() ?? true;
+                ddlMessageFilter.SelectedValue = this.GetUserPreference( keyPrefix + "messageFilter" ) ?? CommunicationMessageFilter.ShowUnreadReplies.ToString();
             }
             else
             {
@@ -312,11 +314,11 @@ namespace RockWeb.Blocks.Communication
                     int months = GetAttributeValue( AttributeKey.ShowConversationsFromMonthsAgo ).AsInteger();
 
                     var startDateTime = RockDateTime.Now.AddMonths( -months );
-                    bool showRead = tglShowRead.Checked;
 
                     var maxConversations = this.GetAttributeValue( AttributeKey.MaxConversations ).AsIntegerOrNull() ?? 1000;
+                    var messageFilterOption = ddlMessageFilter.SelectedValue.ConvertToEnum<CommunicationMessageFilter>();
 
-                    var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, showRead, maxConversations, personId );
+                    var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, maxConversations, messageFilterOption, personId );
 
                     // don't display conversations if we're rebinding the recipient list
                     rptConversation.Visible = false;
@@ -472,7 +474,7 @@ namespace RockWeb.Blocks.Communication
                 this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString() );
             }
 
-            this.SetUserPreference( keyPrefix + "showRead", tglShowRead.Checked.ToString() );
+            this.SetUserPreference( keyPrefix + "messageFilter", ddlMessageFilter.SelectedValue );
         }
 
         /// <summary>
@@ -591,17 +593,6 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the tglShowRead control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglShowRead_CheckedChanged( object sender, EventArgs e )
-        {
-            SaveSettings();
-            LoadResponseListing();
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnCreateNewMessage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -629,6 +620,17 @@ namespace RockWeb.Blocks.Communication
             }
 
             LoadResponseListing( ppPersonFilter.PersonId );
+        }
+
+        /// <summary>
+        /// Handles the Message filter changed event
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlMessageFilter_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SaveSettings();
+            LoadResponseListing();
         }
 
         /// <summary>

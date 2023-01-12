@@ -22,14 +22,14 @@ import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DatePicker from "@Obsidian/Controls/datePicker.vue";
+import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import { PropType } from "vue";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";
 

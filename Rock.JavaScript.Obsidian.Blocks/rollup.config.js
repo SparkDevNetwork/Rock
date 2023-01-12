@@ -7,7 +7,7 @@ import * as glob from "glob";
 function generateAutoBundles(srcPath, outPath) {
     const files = glob.sync(srcPath + "/**/*.@(js)")
         .map(f => path.normalize(f).substring(cwd.length + 1))
-        .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.js") && !f.endsWith(".partial.vue.js"));
+        .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.js") && !f.endsWith(".partial.vue.js") && !f.endsWith(".partial.obs.js"));
 
     return {
         input: files,

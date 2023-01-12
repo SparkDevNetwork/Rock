@@ -1152,7 +1152,7 @@ namespace Rock.Migrations.Migrations {
         ///
         ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
         ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
-        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        ///    {%- assign xaxistype = &apos;&apos;st [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202212011956416_Rollup_20221201_chartupdate {
             get {
@@ -1161,15 +1161,7 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to USE [RockRMS_v1141]
-        ///GO
-        ////****** Object:  StoredProcedure [dbo].[spAnalytics_ETL_Family]    Script Date: 18-11-2022 22:24:40 ******/
-        ///SET ANSI_NULLS ON
-        ///GO
-        ///SET QUOTED_IDENTIFIER ON
-        ///GO
-        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
-        ///ALTER PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spAnalytics_ETL_Family]
         ///AS
         ///BEGIN
         ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
@@ -1177,11 +1169,127 @@ namespace Rock.Migrations.Migrations {
         ///        ,@RecordStatusActiveId INT = (
         ///            SELECT TOP 1 Id
         ///            FROM DefinedValue
-        ///       [rest of string was truncated]&quot;;.
+        ///            WHERE [Guid] = &apos;618F906C-C33D-4FA3-8AEF-E58CB7B63F1E&apos;
+        ///            )
+        ///        ,@GroupTypeFamilyId INT = (
+        ///            SELECT TOP 1 Id
+        ///            FROM GroupType
+        ///            WHERE [Guid] = &apos;790E3215-3B10-442B-AF69-616C0DCB9 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022 {
             get {
                 return ResourceManager.GetString("_202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure updates several attributes related to a person&apos;s
+        ///		attendance.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the critieria.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCrm_FamilyAnalyticsAttendance] 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsAttendance]
+        ///
+        ///AS
+        ///BEGIN
+        ///	
+        ///	-- configuration of the duration in weeks
+        ///	DECLARE @EntryAttendanceDurationWeeks int = 16
+        ///		
+        ///	DECLARE @cACTIVE_RECORD_STATUS_VALUE_GUID uniqueid [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;
+        ///		For eRA we only consider adults for the crit [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure updates several attributes related to a person&apos;s
+        ///		giving.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the critieria.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///AS
+        ///BEGIN
+        ///	
+        ///	-- configuration of the duration in weeks
+        ///	DECLARE @GivingDurationLongWeeks int = 52
+        ///	DECLARE @GivingDurationShortWeeks int = 6
+        ///	
+        ///	DECLARE @cACTIVE_RECORD [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
+        ///
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin date
+        ///		  is within 14 days of the record being created. This helps eliminate bad  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsUpdateVisitDates", resourceCulture);
             }
         }
     }

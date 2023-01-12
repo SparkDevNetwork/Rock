@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
 import LocationPicker from "@Obsidian/Controls/locationItemPicker";
@@ -31,7 +31,7 @@ import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { DefinedType } from "@Obsidian/SystemGuids";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
 export default defineComponent({
     name: "Core.CampusDetail.EditPanel",

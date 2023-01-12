@@ -451,8 +451,15 @@ function doPostBack() {{
         /// <param name="accounts"></param>
         public void SetValues( IEnumerable<FinancialAccount> accounts )
         {
-            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
-            SetValuesFromCache( financialAccountsCache );
+            if ( accounts != null )
+            {
+                var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
+                SetValuesFromCache( financialAccountsCache );
+            }
+            else
+            {
+                SetValuesFromCache( null );
+            }
         }
 
         /// <summary>

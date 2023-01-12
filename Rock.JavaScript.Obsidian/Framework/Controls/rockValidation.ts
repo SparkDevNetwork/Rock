@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import Alert from "./alert.vue";
+import Alert from "./alert.obs";
 import { computed, defineComponent, PropType } from "vue";
 import { FormError } from "@Obsidian/Utility/form";
 

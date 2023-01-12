@@ -18,10 +18,10 @@
 import { computed, defineComponent, ref } from "vue";
 import Panel from "@Obsidian/Controls/panel";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
 import EditPanel from "./FormTemplateDetail/editPanel.partial";

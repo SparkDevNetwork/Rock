@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
@@ -235,7 +235,7 @@ export default defineComponent({
                 reloadBlock();
             }
             else {
-                alert(result.errorMessage || "Unable to save block settings."); 
+                alert(result.errorMessage || "Unable to save block settings.");
             }
         };
 
@@ -440,7 +440,7 @@ export default defineComponent({
 
         <SectionHeader title="Personalization"
             description="The settings below allow you to boost items based on personalization settings in Rock." />
-        
+
         <div class="row">
             <div class="col-md-4">
                 <CheckBox v-model="boostMatchingSegments"

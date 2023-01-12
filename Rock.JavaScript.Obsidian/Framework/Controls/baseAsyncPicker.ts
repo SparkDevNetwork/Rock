@@ -18,12 +18,12 @@ import { standardAsyncPickerProps, updateRefValue, useStandardRockFormFieldProps
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { useSuspense } from "@Obsidian/Utility/suspense";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CheckBoxList from "./checkBoxList";
 import DropDownList from "./dropDownList";
 import RadioButtonList from "./radioButtonList";
-import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
 /**
  * Convert a model value to the internal value. Basically, this extracts the

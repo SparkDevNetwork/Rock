@@ -15,26 +15,32 @@
 		}
 	],
 	"settings": {
+		"files.associations": {
+			"*.obs": "vue"
+		},
 		"volar.format.initialIndent": {
 			"typescript": true,
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"volar.vueserver.additionalExtensions": [
+			"obs"
+		],
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
 		"editor.codeActionsOnSave": {
-		  "source.fixAll.eslint": true
+			"source.fixAll.eslint": true
 		},
 		"eslint.validate": [
-		  "javascript",
-		  "javascriptreact",
-		  "typescript",
-		  "typescriptreact",
-		  "vue"
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact",
+			"vue"
 		],
 		"[vue]": {
-		  "editor.defaultFormatter": "Vue.volar"
+			"editor.defaultFormatter": "Vue.volar"
 		},
 		"css.format.spaceAroundSelectorSeparator": true
 	},
@@ -46,6 +52,7 @@
 				"type": "shell",
 				"command": "npm run build-fast",
 				"presentation": {
+					"panel": "dedicated",
 					"showReuseMessage": false,
 					"clear": true,
 					"group": "build"
@@ -56,6 +63,9 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
+				},
+				"problemMatcher": {
+					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -73,6 +83,9 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
+				},
+				"problemMatcher": {
+					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -90,32 +103,46 @@
 			{
 				"label": "Watch Obsidian Components",
 				"type": "shell",
-				"command": "npm run watch -s",
+				"command": "npm run --silent watch",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true,
-					"group": "watch"
+					"echo": false,
+					"panel":"dedicated"
 				},
 				"options": {
-					"cwd": "../Rock.JavaScript.Obsidian"
+					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}"
 				},
 				"isBackground": true,
-				"problemMatcher": []
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"background": {
+						"beginsPattern": "^\\[    0.000s\\]",
+						"endsPattern": "(Build completed.|Build failed.)$"
+					}
+				}
 			},
 			{
 				"label": "Watch Obsidian Blocks",
 				"type": "shell",
-				"command": "npm run watch -s",
+				"command": "npm run --silent watch",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true,
-					"group": "watch"
+					"echo": false,
+					"panel": "dedicated"
 				},
 				"options": {
-					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
+					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}"
 				},
 				"isBackground": true,
-				"problemMatcher": []
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"background": {
+						"beginsPattern": "^\\[    0.000s\\]",
+						"endsPattern": "(Build completed.|Build failed.)$"
+					}
+				}
 			},
 			{
 				"label": "Watch All Obsidian",

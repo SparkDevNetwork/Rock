@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1759,5 +1759,15 @@ namespace Rock.SystemGuid
         /// The Test Redirection Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Snippet"/>
+        /// </summary>
+        public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SnippetType"/> 
+        /// </summary>
+        public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
     }
 }

@@ -29,7 +29,7 @@
       "@Obsidian/Enums/*": [ "../Rock.JavaScript.Obsidian/Framework/Enums/*" ],
       "@Obsidian/Libs/*": [ "../Rock.JavaScript.Obsidian/Framework/Libs/*" ],
       "@Obsidian/PageState": [ "../Rock.JavaScript.Obsidian/Framework/PageState" ],
-      "@Obsidian/SystemGuids": [ "../Rock.JavaScript.Obsidian/Framework/SystemGuids" ],
+      "@Obsidian/SystemGuids/*": [ "../Rock.JavaScript.Obsidian/Framework/SystemGuids/*" ],
       "@Obsidian/Templates/*": [ "../Rock.JavaScript.Obsidian/Framework/Templates/*" ],
       "@Obsidian/Types": [ "../Rock.JavaScript.Obsidian/Framework/Types" ],
       "@Obsidian/Types/*": [ "../Rock.JavaScript.Obsidian/Framework/Types/*" ],
@@ -43,15 +43,17 @@
     { "path": "../Rock.JavaScript.Obsidian/Framework/Controls" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Core" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Directives" },
+    { "path": "../Rock.JavaScript.Obsidian/Framework/Enums" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Libs" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/PageState" },
+    { "path": "../Rock.JavaScript.Obsidian/Framework/SystemGuids" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Templates" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Utility" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/ValidationRules" }
   ],
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.vue"
+    "./src/**/*.obs"
   ],
   "exclude": [
     "./Tests/**/*"

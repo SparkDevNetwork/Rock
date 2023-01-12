@@ -17,11 +17,11 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
 import DropDownList from "./dropDownList";
-import DatePicker from "./datePicker.vue";
+import DatePicker from "./datePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useHttp } from "@Obsidian/Utility/http";
-import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "@Obsidian/Utility/slidingDateRange";
+import { SlidingDateRange, rangeTypeOptions, timeUnitOptions, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
 
 export default defineComponent({
     name: "SlidingDateRangePicker",
@@ -131,7 +131,7 @@ export default defineComponent({
             // These two checks could probably use isTimeUnit and isNumberVisible,
             // but I'm not sure if watch() runs before or after computed().
             if (rangeType.value === "0" || rangeType.value === "1" || rangeType.value === "4" || rangeType.value === "8" || rangeType.value === "16") {
-                newValue.timeUnit = toNumberOrNull(timeUnit.value) ?? undefined;
+                newValue.timeUnit = toNumberOrNull(timeUnit.value) as TimeUnit ?? undefined;
             }
 
             if (rangeType.value === "0" || rangeType.value === "4" || rangeType.value === "8" || rangeType.value === "16") {

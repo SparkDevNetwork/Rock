@@ -1,141 +1,83 @@
-import vue from "rollup-plugin-vue";
-import typescript from "rollup-plugin-typescript2";
 import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
-//import babel from "@rollup/plugin-babel";
 import postcss from "rollup-plugin-postcss";
 import { terser } from "rollup-plugin-terser";
 import cssnano from "cssnano";
-import ttypescript from "ttypescript";
-import copy from "rollup-plugin-copy";
 import * as process from "process";
 import * as path from "path";
 import * as glob from "glob";
+import * as fs from "fs";
 
-function fixStyleInjectPlugin() {
+function virtual(modules) {
+    const resolvedIds = new Map();
+
+    Object.keys(modules).forEach(id => {
+        resolvedIds.set(path.resolve(id), modules[id]);
+    });
+
     return {
-        name: "fix-style-external",
-        resolveId(source) {
-            if (source.indexOf("node_modules/style-inject") !== -1) {
-                return { id: "style-inject", external: true };
+        name: "virtual",
+
+        resolveId(id, importer) {
+            if (id in modules) {
+                return id;
             }
 
-            return null;
+            if (importer) {
+                const resolved = path.resolve(path.dirname(importer), id);
+                if (resolvedIds.has(resolved)) {
+                    return resolved;
+                }
+            }
+        },
+
+        load(id) {
+            if (id in modules) {
+                return modules[id];
+            }
+            else {
+                return resolvedIds.get(id);
+            }
         }
     };
 }
 
-function generateConfig(files, srcPath, outPath, tsConfig) {
-    return {
-        input: files,
+// eslint-disable-next-line
+function createFakeIndexes(indexes, srcPath) {
+    const entries = fs.readdirSync(srcPath);
+    let indexContent = "";
 
-        output: {
-            format: "system",
-            dir: outPath,
-            entryFileNames: (chunk) => {
-                if (chunk.facadeModuleId.indexOf(srcPath) === 0) {
-                    return path.join(path.dirname(chunk.facadeModuleId.replace(srcPath, "").substring(1)), "[name].js");
-                }
+    entries.forEach(f => {
+        const filePath = path.join(srcPath, f);
 
-                return "[name].js";
-            }
-        },
+        if (fs.statSync(filePath).isDirectory()) {
+            indexContent += `export * as ${f} from "./${f}/fake-generated-index.js";\n`;
+            createFakeIndexes(indexes, filePath);
+        }
+        else if (f.endsWith(".js")) {
+            indexContent += `export * as ${f.split(".")[0]} from "./${f}";\n`;
+        }
+    });
 
-        external: (target, source, c) => {
-            if (["vue", "luxon", "axios", "mitt", "tslib"].includes(target)) {
-                return true;
-            }
+    const fakeIndexPath = path.join(srcPath, "fake-generated-index.js").substring(cwd.length + 1).replace(/\\/g, "/");
+    indexes[fakeIndexPath] = indexContent;
 
-            if (target.startsWith("@")) {
-                return true;
-            }
-
-            // Check if this is a primary bundle.
-            if (source === undefined) {
-                return false;
-            }
-
-            // Check if it is a .vue file reference to itself.
-            if (target.indexOf(".vue?vue&") !== -1) {
-                return false;
-            }
-
-            // Check if it is a reference to a partial file.
-            if (target.endsWith(".partial.ts") || target.endsWith(".partial.vue")) {
-                return false;
-            }
-
-            if (target.startsWith(".")) {
-                const targetPath = path.normalize(path.join(path.dirname(source), target));
-
-                if (!targetPath.startsWith(srcPath)) {
-                    return true;
-                }
-
-                return false;
-            }
-            else {
-                if (!target.startsWith(srcPath)) {
-                    return true;
-                }
-
-                console.log(target, source, c, srcPath);
-            }
-
-            throw `Unexpected target '${target}'`;
-        },
-
-        plugins: [
-            vue(),
-
-            fixStyleInjectPlugin(),
-
-            resolve({
-                extensions: [".js", ".ts", ".vue"],
-                resolveOnly: ["style-inject"]
-            }),
-
-            // Process only `<style module>` blocks.
-            postcss({
-                modules: {
-                    generateScopedName: "[local]___[hash:base64:5]",
-                },
-                include: /&module=.*\.css$/,
-            }),
-
-            // Process all `<style>` blocks except `<style module>`.
-            postcss({ include: /(?<!&module=.*)\.css$/ }),
-
-            commonjs(),
-
-            typescript({
-                typescript: ttypescript,
-                tsconfig: tsConfig,
-                tsconfigOverride: {
-                    compilerOptions: {
-                        module: "ESNext"
-                    }
-                },
-                useTsconfigDeclarationDir: true
-            }),
-
-            copy({
-                targets: [
-                    {
-                        src: "dist/Framework/*",
-                        dest: "../RockWeb/Obsidian/"
-                    }
-                ],
-                hook: "closeBundle"
-            }),
-        ]
-    };
-
+    return fakeIndexPath;
 }
 
-function generateBundle(srcPath, outPath) {
+// eslint-disable-next-line
+function generateBundle(srcPath, outPath, autoIndex) {
+    let virtualPlugin = void 0;
+    let indexFile = path.join(srcPath, "index.js");
+
+    if (autoIndex) {
+        const virtualData = {};
+        indexFile = createFakeIndexes(virtualData, srcPath);
+        virtualPlugin = virtual(virtualData);
+    }
+
     return {
-        input: [path.join(srcPath, "index.js")],
+        input: [indexFile],
 
         output: {
             format: "system",
@@ -168,6 +110,8 @@ function generateBundle(srcPath, outPath) {
         },
 
         plugins: [
+            virtualPlugin,
+
             resolve({
                 extensions: [".js", ".ts"]
             }),
@@ -177,6 +121,7 @@ function generateBundle(srcPath, outPath) {
     };
 }
 
+// eslint-disable-next-line
 function generateAutoBundles(srcPath, outPath, alwaysBundleExternals, minify) {
     const files = glob.sync(srcPath + "/**/*.@(js)")
         .map(f => path.normalize(f).substring(cwd.length + 1))
@@ -258,15 +203,24 @@ function generateAutoBundles(srcPath, outPath, alwaysBundleExternals, minify) {
 
 
 const cwd = process.cwd();
+const frameworkPath = path.join(cwd, "dist", "Framework");
+const bundledPath = path.join(cwd, "dist", "FrameworkBundled");
+const configs = [];
 
-const libsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Libs"), path.join(cwd, "dist", "FrameworkBundled", "Libs"), true, true);
-const utilityConfig = generateBundle(path.join(cwd, "dist", "Framework", "Utility"), path.join(cwd, "dist", "FrameworkBundled", "Utility.js"));
-const validationRulesConfig = generateBundle(path.join(cwd, "dist", "Framework", "ValidationRules"), path.join(cwd, "dist", "FrameworkBundled", "ValidationRules.js"));
-const pageStateConfig = generateBundle(path.join(cwd, "dist", "Framework", "PageState"), path.join(cwd, "dist", "FrameworkBundled", "PageState.js"));
-const coreConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Core"), path.join(cwd, "dist", "FrameworkBundled", "Core"));
-const directivesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Directives"), path.join(cwd, "dist", "FrameworkBundled", "Directives"));
-const controlsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Controls"), path.join(cwd, "dist", "FrameworkBundled", "Controls"));
-const fieldTypesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "FieldTypes"), path.join(cwd, "dist", "FrameworkBundled", "FieldTypes"));
-const templatesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Templates"), path.join(cwd, "dist", "FrameworkBundled", "Templates"));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "Libs"), path.join(cwd, "dist", "FrameworkBundled", "Libs"), true, true));
+configs.push(generateBundle(path.join(cwd, "dist", "Framework", "Utility"), path.join(cwd, "dist", "FrameworkBundled", "Utility.js"), true));
+configs.push(generateBundle(path.join(cwd, "dist", "Framework", "ValidationRules"), path.join(cwd, "dist", "FrameworkBundled", "ValidationRules.js")));
+configs.push(generateBundle(path.join(cwd, "dist", "Framework", "PageState"), path.join(cwd, "dist", "FrameworkBundled", "PageState.js")));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "Core"), path.join(cwd, "dist", "FrameworkBundled", "Core")));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "Directives"), path.join(cwd, "dist", "FrameworkBundled", "Directives")));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "Controls"), path.join(cwd, "dist", "FrameworkBundled", "Controls")));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "FieldTypes"), path.join(cwd, "dist", "FrameworkBundled", "FieldTypes")));
+configs.push(generateAutoBundles(path.join(cwd, "dist", "Framework", "Templates"), path.join(cwd, "dist", "FrameworkBundled", "Templates")));
+configs.push(generateAutoBundles(path.join(frameworkPath, "SystemGuids"), path.join(bundledPath, "SystemGuids"), false, true));
 
-export default [libsConfig, utilityConfig, validationRulesConfig, pageStateConfig, coreConfig, directivesConfig, controlsConfig, fieldTypesConfig, templatesConfig];
+const enumsPath = path.join(frameworkPath, "Enums");
+fs.readdirSync(enumsPath).filter(d => fs.statSync(path.join(enumsPath, d)).isDirectory()).forEach(d => {
+    configs.push(generateBundle(path.join(enumsPath, d), path.join(bundledPath, "Enums", `${d}.js`), true));
+});
+
+export default configs;

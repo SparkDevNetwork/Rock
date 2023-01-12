@@ -366,12 +366,7 @@ namespace Rock
         /// <returns></returns>
         public static string Right( this string str, int length )
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return str.Substring( str.Length - length );
+            return str.SubstringSafe( str.Length - length );
         }
 
         /// <summary>
@@ -729,18 +724,7 @@ namespace Rock
         /// <returns></returns>
         public static string Left( this string str, int length )
         {
-            if ( str == null )
-            {
-                return null;
-            }
-            else if ( str.Length <= length )
-            {
-                return str;
-            }
-            else
-            {
-                return str.Substring( 0, length );
-            }
+            return str.SubstringSafe( 0, length );
         }
 
         /// <summary>

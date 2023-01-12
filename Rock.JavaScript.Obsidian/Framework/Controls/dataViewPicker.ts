@@ -21,7 +21,7 @@ import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps }
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { DataViewTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import TreeItemPicker from "./treeItemPicker.vue";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "DataViewPicker",

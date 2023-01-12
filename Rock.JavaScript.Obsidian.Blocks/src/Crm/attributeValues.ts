@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref } from "vue";
 import Block from "@Obsidian/Templates/block";
 import Loading from "@Obsidian/Controls/loading";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { useStore } from "@Obsidian/PageState";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";

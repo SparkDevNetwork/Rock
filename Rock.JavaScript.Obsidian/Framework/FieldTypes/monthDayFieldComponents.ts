@@ -18,7 +18,7 @@ import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { MonthDayValue } from "@Obsidian/ViewModels/Controls/monthDayValue";
-import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
 
 export const EditComponent = defineComponent({
     name: "MonthDayField.Edit",

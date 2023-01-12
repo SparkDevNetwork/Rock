@@ -17,7 +17,7 @@
                     <asp:HiddenField ID="hfSmsNumber" runat="server" />
                     <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
 
-                    <a href="#" class="btn btn-xs btn-default btn-square ml-2 pull-left" onclick="$('.js-sms-configuration').slideToggle()">
+                    <a href="#" class="btn btn-xs btn-default btn-square ml-2 pull-left" style="display: none" onclick="$('.js-sms-configuration').slideToggle()">
                         <i class="fa fa-cog"></i>
                     </a>
                 </div>
@@ -28,8 +28,6 @@
                 <div class="well mb-0 border-top-0 border-right-0 border-left-0 rounded-0">
                     <div class="row">
                         <div class="col-md-3">
-                            <%-- The list of phone numbers that do not have "Enable Mobile Conversations" enabled --%>
-                            <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
                         </div>
                     </div>
                 </div>
@@ -46,6 +44,9 @@
                             </div>
                             <div id="divPersonFilter" runat="server" class="js-person-filter" style="display: none;">
                                 <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
+                            </div>
+                            <div class="js-person-filter mt-2" style="display: none; width:225px;">
+                                <Rock:RockDropDownList runat="server" ID="ddlMessageFilter" FormGroupCssClass="mt-2 mb-0" OnSelectedIndexChanged="ddlMessageFilter_SelectedIndexChanged" AutoPostBack="true" />
                             </div>
                         </div>
                         <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">

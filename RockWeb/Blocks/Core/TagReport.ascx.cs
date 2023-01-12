@@ -320,6 +320,12 @@ namespace RockWeb.Blocks.Core
                             EntityId = e.Id,
                         } );
 
+                var sortProperty = gReport.SortProperty;
+                if ( gReport.AllowSorting && sortProperty != null )
+                {
+                    results = results.Sort( sortProperty );
+                }
+
                 // Tell the grid that it has a list of the EntityType for the Tag (Person, Group, etc).
                 // Also tell it to get the Entities (Group, Person, etc) using EntityId (instead of Id)
                 gReport.EntityTypeId = TagEntityType.Id;

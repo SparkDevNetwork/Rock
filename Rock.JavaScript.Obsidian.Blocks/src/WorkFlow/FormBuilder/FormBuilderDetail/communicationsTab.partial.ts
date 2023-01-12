@@ -18,7 +18,7 @@
 import { computed } from "vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import { FormError } from "@Obsidian/Utility/form";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ConfirmationEmail from "../Shared/confirmationEmail";

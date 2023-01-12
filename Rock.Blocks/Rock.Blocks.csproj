@@ -65,6 +65,7 @@
     <Compile Include="Cms\MediaFolderDetail.cs" />
     <Compile Include="Cms\PersistedDatasetDetail.cs" />
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
+    <Compile Include="Communication\SnippetDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />

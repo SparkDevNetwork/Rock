@@ -15,8 +15,8 @@
 // </copyright>
 //
 
-import { defineComponent, onMounted, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import { defineComponent, onMounted, ref, shallowRef, watch } from "vue";
+import Alert from "@Obsidian/Controls/alert.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
 import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -241,8 +241,8 @@ export default defineComponent({
 
         const blockError = ref(config.errorMessage);
         const filters = config.filters ?? [];
-        const searchContainerElement = ref<HTMLElement | null>(null);
-        const searchResultContainerElement = ref<HTMLElement | null>(null);
+        const searchContainerElement = shallowRef<HTMLElement | null>(null);
+        const searchResultContainerElement = shallowRef<HTMLElement | null>(null);
         const query = ref(urlSearchParams.get("q") || urlSearchParams.get("Q") || "");
         const filterValues = ref<Record<string, string>>(getQueryStringFilterValues(filters.map(f => f.label ?? "")));
         const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.Relevance.toString());
@@ -273,7 +273,7 @@ export default defineComponent({
                 filters: filterValues.value,
                 sourceGuid: sourceGuid,
                 offset: offset,
-                order: toNumber(sortOrder.value)
+                order: toNumber(sortOrder.value) as SearchOrder
             };
 
             const data = {

@@ -438,6 +438,11 @@
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
@@ -478,8 +483,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TimeZoneConverter, Version=3.5.0.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
-      <HintPath>..\packages\TimeZoneConverter.3.5.0\lib\net471\TimeZoneConverter.dll</HintPath>
+    <Reference Include="TimeZoneConverter, Version=6.0.1.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
+      <HintPath>..\packages\TimeZoneConverter.6.0.1\lib\net462\TimeZoneConverter.dll</HintPath>
     </Reference>
     <Reference Include="Twilio, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Twilio.5.1.0\lib\net451\Twilio.dll</HintPath>
@@ -894,6 +899,7 @@
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateSlidingDateRangeFormat.cs" />
+    <Compile Include="Jobs\PostV141RecreateMetricAnalyticsViews.cs" />
     <Compile Include="Jobs\PostV141UpdateValueAsColumns.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
@@ -927,6 +933,12 @@
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
+    <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
@@ -965,8 +977,6 @@
     <Compile Include="Personalization\PersonalizationRequestFilters\PreviousActivityRequestFilter.cs" />
     <Compile Include="Personalization\RequestCookies.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsUpdateCurrentSessions.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Core\ReminderType\NotificationType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderTypeService.cs" />
@@ -1817,7 +1827,6 @@
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
     <Compile Include="Utility\Enums\RockCacheablityType.cs" />
-    <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Utility\Enums\IntervalTimeUnit.cs" />
@@ -2034,6 +2043,7 @@
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />

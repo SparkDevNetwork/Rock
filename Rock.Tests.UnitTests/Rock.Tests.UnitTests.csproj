@@ -140,6 +140,7 @@
     <Compile Include="Rock\Model\BinaryFileTypeTests.cs" />
     <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\RequestExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateKeyExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringHtmlExtensionsTests.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="Rock\Utility\ReflectionTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
     <Compile Include="Rock\Utility\MethodRetryTests.cs" />
+    <Compile Include="Rock\Utility\WebRequestHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
