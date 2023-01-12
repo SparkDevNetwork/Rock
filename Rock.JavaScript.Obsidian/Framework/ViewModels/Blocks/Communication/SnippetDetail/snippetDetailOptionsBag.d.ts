@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Class SnippetDetailOptionsBag. */
 export type SnippetDetailOptionsBag = {
     /** Gets or sets a value indicating whether this instance is authorized to edit. */
     isAuthorizedToEdit: boolean;
