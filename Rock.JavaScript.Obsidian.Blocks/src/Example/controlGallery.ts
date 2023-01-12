@@ -6656,7 +6656,7 @@ const locationListGallery = defineComponent({
     <LocationList label="Location" v-model="value" :multiple="multiple" :locationTypeValueGuid="locationType?.value" :allowAdd="allowAdd" :showCityState="showCityState" :showBlankItem="showBlankItem" :isAddressRequired="isAddressRequired" :parentLocationGuid="parentLocationGuid" />
 
     <template #settings>
-        <div class="row mb-3">
+        <div class="row">
             <div class="col-md-3">
                 <CheckBox v-model="showCityState" label="Show City/State" />
             </div>
@@ -6723,8 +6723,8 @@ const ethnicityPickerGallery = defineComponent({
         :showBlankItem="showBlankItem" />
 
     <template #settings>
-        <div class="row">
-            <div class="col-md-3 mb-3">
+        <div class="row mb-3">
+            <div class="col-md-3">
                 <CheckBox label="Multiple" v-model="multiple" />
             </div>
 
@@ -6791,7 +6791,7 @@ const racePickerGallery = defineComponent({
         :showBlankItem="showBlankItem" />
 
     <template #settings>
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-md-3">
                 <CheckBox label="Multiple" v-model="multiple" />
             </div>
