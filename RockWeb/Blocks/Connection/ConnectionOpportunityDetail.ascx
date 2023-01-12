@@ -263,7 +263,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <Rock:RockRadioButtonList ID="rblConnectionStatuses" runat="server" RepeatDirection="Horizontal" Label="Manual Trigger Status Filter" Help="Filters workflows to display based on the current status of the workflow" />
+                        <Rock:RockRadioButtonList ID="rblConnectionStatuses" runat="server" RepeatDirection="Horizontal" Label="Manual Trigger Status Filter" Help="Filters workflows to display based on the current status of the connection request." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" ValidationGroup="WorkflowDetails" />
