@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202301102307054_rollup_20230110.cs" />
+    <Compile Include="Migrations\202301102307054_rollup_20230110.designer.cs">
+      <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
@@ -1474,6 +1478,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202301102307054_rollup_20230110.resx">
+      <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>
     </EmbeddedResource>
