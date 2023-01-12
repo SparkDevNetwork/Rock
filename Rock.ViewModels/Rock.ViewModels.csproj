@@ -116,6 +116,8 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\RacePickerGetRacesResultsBag.cs" />
+    <Compile Include="Rest\Controls\EthnicityPickerGetEthnicitiesResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />

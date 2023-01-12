@@ -1351,6 +1351,31 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Ethnicity Picker
+
+        /// <summary>
+        /// Gets the ethnicities that can be displayed in the ethnicity picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the ethnicities and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EthnicityPickerGetEthnicities" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a04bddf8-4169-47f8-8b03-ee8e2f110b35" )]
+        public IHttpActionResult EthnicityPickerGetEthnicities()
+        {
+            var ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY ).DefinedValues
+                .Select(e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() })
+                .ToList();
+
+            return Ok( new EthnicityPickerGetEthnicitiesResultsBag
+            {
+                Ethnicities = ethnicities,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+            } );
+        }
+
+        #endregion
+
         #region Event Calendar Picker
 
         /// <summary>
@@ -2892,6 +2917,31 @@ namespace Rock.Rest.v2
 
             // Chain to the v1 controller.
             return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+        }
+
+        #endregion
+
+        #region Race Picker
+
+        /// <summary>
+        /// Gets the races that can be displayed in the race picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the races and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RacePickerGetRaces" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "126eec10-7a19-49af-9646-909bd92ea516" )]
+        public IHttpActionResult RacePickerGetRaces()
+        {
+            var races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE ).DefinedValues
+                .Select( e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() } )
+                .ToList();
+
+            return Ok( new RacePickerGetRacesResultsBag
+            {
+                Races = races,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+            } );
         }
 
         #endregion

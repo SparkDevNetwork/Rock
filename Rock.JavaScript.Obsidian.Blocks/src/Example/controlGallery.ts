@@ -197,6 +197,8 @@ import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.obs";
 import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
 import LocationList from "@Obsidian/Controls/locationList.obs";
+import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+import RacePicker from "@Obsidian/Controls/racePicker.obs";
 
 // #region Gallery Support
 
@@ -6682,6 +6684,140 @@ const locationListGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates ethnicity picker */
+const ethnicityPickerGallery = defineComponent({
+    name: "EthnicityPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        EthnicityPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("ethnicityPicker"),
+            exampleCode: `<EthnicityPicker v-model="value" :multiple="false" :showBlankItem="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <EthnicityPicker
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates race picker */
+const racePickerGallery = defineComponent({
+    name: "RacePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        RacePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("racePicker"),
+            exampleCode: `<RacePicker v-model="value" :multiple="false" :showBlankItem="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RacePicker
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
     attributeValuesContainerGallery,
@@ -6807,6 +6943,8 @@ const controlGalleryComponents: Record<string, Component> = [
     locationAddressPickerGallery,
     locationPickerGallery,
     locationListGallery,
+    ethnicityPickerGallery,
+    racePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
