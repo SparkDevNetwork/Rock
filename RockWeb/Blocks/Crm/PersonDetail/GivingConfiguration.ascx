@@ -48,17 +48,19 @@
                         <asp:Panel ID="pnlTextToGive" runat="server" Visible="false">
                             <div id="pnlTextToGiveView" runat="server">
                                 <div class="row">
-                                    <div class="col-sm-6">
-                                        <asp:Literal ID="lDescriptionLeft" runat="server" />
+                                    <div class="col-md-6 col-sm-12">
+                                        <strong class="d-block text-sm">Default Account</strong>
+                                        <span class="d-block text-sm text-muted margin-b-sm"><asp:Literal ID="lTTGDefaultAccount" runat="server" /></span>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <asp:Literal ID="lDescriptionRight" runat="server" />
+                                    <div class="col-md-6 col-sm-12">
+                                        <strong class="d-block text-sm">Saved Account</strong>
+                                        <span class="d-block text-sm text-muted"><asp:Literal ID="lTTGSavedAccount" runat="server" /></span>
                                     </div>
                                 </div>
                             </div>
 
                             <div id="pnlTextToGiveEdit" runat="server" visible="false">
-                                <div class="row">
+                                <div class="row margin-t-sm">
                                     <div class="col-md-5 col-sm-12">
                                         <Rock:AccountPicker ID="apAccountPicker" runat="server" Label="Default Account" />
                                     </div>

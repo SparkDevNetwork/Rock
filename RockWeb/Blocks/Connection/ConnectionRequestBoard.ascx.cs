@@ -2283,6 +2283,8 @@ namespace RockWeb.Blocks.Connection
                     gRequests.Columns.Remove( column );
                 }
 
+                gRequests.ObjectList = new Dictionary<string, object>();
+                _ConnectionRequestViewModelsWithFullModel.ForEach( i => gRequests.ObjectList.Add( i.Id.ToString(), i.ConnectionRequest ) );
                 gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => (ConnectionRequestViewModel)a ).AsQueryable() );
             }
             else

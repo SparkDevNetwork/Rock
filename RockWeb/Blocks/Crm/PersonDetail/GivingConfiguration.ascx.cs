@@ -678,16 +678,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             apAccountPicker.SetValue( financialAccount );
 
             var defaultSavedAccount = GetDefaultSavedAccount();
+            ddlSavedAccount.AddCssClass( "text-sm" );
             ddlSavedAccount.SelectedValue = defaultSavedAccount == null ? string.Empty : defaultSavedAccount.Id.ToString();
-
-            var descriptionListLeft = new DescriptionList();
-            descriptionListLeft.Add( "Default Account", financialAccount == null ? "None" : financialAccount.PublicName );
-
-            var descriptionListRight = new DescriptionList();
-            descriptionListRight.Add( "Saved Account", defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount ) );
-
-            lDescriptionLeft.Text = descriptionListLeft.Html;
-            lDescriptionRight.Text = descriptionListRight.Html;
         }
 
         protected void btnSaveTextToGive_Click( object sender, EventArgs e )
@@ -762,14 +754,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlTextToGive.Visible = true;
 
             var financialAccount = GetDefaultFinancialAccount();
-            var descriptionListLeft = new DescriptionList();
-            descriptionListLeft.Add( "Default Account", financialAccount == null ? "None" : financialAccount.PublicName );
-            lDescriptionLeft.Text = descriptionListLeft.Html;
+            lTTGDefaultAccount.Text = financialAccount == null ? "None" : financialAccount.PublicName;
 
             var defaultSavedAccount = GetDefaultSavedAccount();
-            var descriptionListRight = new DescriptionList();
-            descriptionListRight.Add( "Saved Account", defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount ) );
-            lDescriptionRight.Text = descriptionListRight.Html;
+            lTTGSavedAccount.Text = defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount );
         }
 
         /// <summary>
