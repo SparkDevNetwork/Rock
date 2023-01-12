@@ -23,6 +23,7 @@
 
 import { ExperienceStyleBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceStyleBag";
 
+/** Class VisualizerOccurrenceBag. */
 export type VisualizerOccurrenceBag = {
     /** Gets or sets the experience token used to authenticate to the RealTime topic. */
     experienceToken?: string | null;
