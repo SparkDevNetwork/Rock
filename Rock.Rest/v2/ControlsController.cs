@@ -2413,7 +2413,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Get the attributes for Locations
         /// </summary>
-        /// <param name="options">The options needed to find the attributes for Locations</param>
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetAttributes" )]

@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Communication.SnippetDetail
 {
+    /// <summary>
+    /// Class SnippetDetailOptionsBag.
+    /// </summary>
     public class SnippetDetailOptionsBag
     {
         /// <summary>

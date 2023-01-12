@@ -19,6 +19,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.SnippetDetail
 {
+    /// <summary>
+    /// Class SnippetBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class SnippetBag : EntityBagBase
     {
         /// <summary>
