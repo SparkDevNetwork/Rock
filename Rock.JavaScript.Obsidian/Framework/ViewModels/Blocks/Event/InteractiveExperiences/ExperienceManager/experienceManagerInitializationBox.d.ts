@@ -23,6 +23,10 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/**
+ * Class ExperienceManagerInitializationBox.
+ * Implements the Rock.ViewModels.Blocks.BlockBox
+ */
 export type ExperienceManagerInitializationBox = {
     /** Gets or sets the actions configured for this experience. */
     actions?: ListItemBag[] | null;

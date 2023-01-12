@@ -23,6 +23,10 @@
 
 import { ExperienceStyleBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceStyleBag";
 
+/**
+ * Class LiveExperienceInitializationBox.
+ * Implements the Rock.ViewModels.Blocks.BlockBox
+ */
 export type LiveExperienceInitializationBox = {
     /**
      * Gets or sets the error message. A non-empty value indicates that

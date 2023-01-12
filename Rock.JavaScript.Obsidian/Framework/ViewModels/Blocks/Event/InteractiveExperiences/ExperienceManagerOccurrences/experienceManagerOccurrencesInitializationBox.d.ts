@@ -23,6 +23,10 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/**
+ * Class ExperienceManagerOccurrencesInitializationBox.
+ * Implements the Rock.ViewModels.Blocks.BlockBox
+ */
 export type ExperienceManagerOccurrencesInitializationBox = {
     /**
      * Gets or sets the error message. A non-empty value indicates that
