@@ -1296,7 +1296,14 @@ namespace Rock.Model
 
                 if ( dataView != null )
                 {
-                    personQry = dataView.GetQuery() as IQueryable<Person>;
+                    /*
+                        SK - 01-13-2023
+                        It's necessary to pass rockContext to dataview GetQuery method as the result is being used as part of subquery later
+                        which may result in two different rockContext if not passed.
+                    */
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                    dataViewGetQueryArgs.DbContext = rockContext;
+                    personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                 }
             }
 
