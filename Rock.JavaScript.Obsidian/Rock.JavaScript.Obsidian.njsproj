@@ -54,6 +54,7 @@
     <Content Include="Framework\Controls\locationAddressPicker.obs" />
     <Content Include="Framework\Controls\locationList.obs" />
     <Content Include="Framework\Controls\locationPicker.obs" />
+    <Content Include="Framework\Controls\mediaElementPicker.obs" />
     <Content Include="Framework\Controls\monthDayPicker.obs" />
     <Content Include="Framework\Controls\monthYearPicker.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
@@ -893,6 +894,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListGetLocationsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListSaveNewLocationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListSaveNewValueOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaElementsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaFoldersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricCategoryPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricItemPickerGetChildrenOptionsBag.d.ts" />

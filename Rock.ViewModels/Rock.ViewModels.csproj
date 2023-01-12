@@ -118,6 +118,10 @@
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
     <Compile Include="Rest\Controls\RacePickerGetRacesResultsBag.cs" />
     <Compile Include="Rest\Controls\EthnicityPickerGetEthnicitiesResultsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaTreeResultsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaTreeOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaElementsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
