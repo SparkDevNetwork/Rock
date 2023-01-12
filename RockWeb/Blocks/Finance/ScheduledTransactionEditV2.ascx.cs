@@ -864,6 +864,22 @@ mission. We are so grateful for your commitment.</p>
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
             referencePaymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
 
+            // Validate that an amount was entered
+            if ( selectedAccountAmounts.Sum( a => a.Amount ) <= 0 )
+            {
+                nbUpdateScheduledPaymentWarning.Text = "Make sure you've entered an amount for at least one account";
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                return;
+            }
+
+            // Validate that no negative amounts were entered
+            if ( selectedAccountAmounts.Any( a => a.Amount < 0 ) )
+            {
+                nbUpdateScheduledPaymentWarning.Text = "Make sure the amount you've entered for each account is a positive amount";
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                return;
+            }
+
             var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
             try
             {
