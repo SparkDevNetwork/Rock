@@ -235,12 +235,17 @@ namespace RockWeb.Blocks.Administration
 
             nbUiSettings.Visible = true;
 
+            // Save Race and Ethnicity label values
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_RACE_LABEL, rtbPersonRaceLabel.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_ETHNICITY_LABEL, rtbPersonEthnicityLabel.Text );
 
+            // Save Captcha keys
+            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SITE_KEY, rtbCaptchaSiteKey.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, rtbCaptchaSecretKey.Text );
+
             nbUiSettings.NotificationBoxType = NotificationBoxType.Success;
             nbUiSettings.Title = string.Empty;
-            nbUiSettings.Text = "Setting saved successfully.";
+            nbUiSettings.Text = "Settings saved successfully.";
         }
 
         #endregion
@@ -439,6 +444,9 @@ namespace RockWeb.Blocks.Administration
         {
             rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL, "Race" );
             rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
+
+            rtbCaptchaSiteKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY );
+            rtbCaptchaSecretKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY );
         }
 
         #endregion

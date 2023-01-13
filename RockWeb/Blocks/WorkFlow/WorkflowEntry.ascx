@@ -80,6 +80,8 @@
                             <%-- Workflow Form Attribute Controls  --%>
                             <asp:PlaceHolder ID="phWorkflowFormAttributes" runat="server" />
 
+                            <Rock:Captcha ID="cpCaptcha" runat="server" />
+
                             <asp:Literal ID="lFormFooterText" runat="server" />
 
                             <div class="actions">

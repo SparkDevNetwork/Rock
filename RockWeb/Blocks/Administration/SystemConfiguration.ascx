@@ -43,6 +43,15 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbCaptchaSiteKey" runat="server" Label="Captcha Site Key" ValidationGroup="UISettings" Help="The Captcha site key."></Rock:RockTextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbCaptchaSecretKey" runat="server" Label="Captcha Secret Key" ValidationGroup="UISettings" Help="The Captcha secret key."></Rock:RockTextBox>
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnUiSettingSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnUiSettingSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="UISettings"></Rock:BootstrapButton>
                     </div>

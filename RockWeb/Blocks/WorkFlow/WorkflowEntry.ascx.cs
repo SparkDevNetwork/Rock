@@ -106,6 +106,13 @@ namespace RockWeb.Blocks.WorkFlow
         DefaultBooleanValue = true,
         Order = 7 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If enabled, prevents the use of captcha verification on the form.",
+        Key = AttributeKey.DisableCaptchaSupport,
+        DefaultBooleanValue = false,
+        Order = 8
+        )]
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY )]
@@ -126,6 +133,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string DisablePassingWorkflowTypeId = "DisablePassingWorkflowTypeId";
             public const string LogInteractionOnView = "LogInteractionOnView";
             public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #endregion Attribute Keys
@@ -363,6 +371,13 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            {
+                ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
+                return;
+            }
+
             /* 
                 05/18/2022 MDP
 
@@ -418,6 +433,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             // Get the block setting to disable passing WorkflowTypeID set.
             bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            cpCaptcha.Visible = !disableCaptchaSupport;
 
             if ( workflowType == null )
             {
