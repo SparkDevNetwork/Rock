@@ -19,6 +19,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -124,13 +125,10 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            gSnippets.DataKeyNames = new string[] { "Id" };
-            gSnippets.Actions.ShowAdd = true;
-            gSnippets.Actions.AddClick += gSnippets_AddClick;
-            gSnippets.GridRebind += gSnippets_GridRebind;
+            InitializeGrid();
+
             BlockUpdated += SnippetList_BlockUpdated;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            SetSecurityFieldEntityType();
         }
 
         /// <summary>
@@ -159,6 +157,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void SnippetList_BlockUpdated( object sender, EventArgs e )
         {
+            InitializeGrid();
             BindGrid();
             ToggleTypeFilterVisibility();
         }
@@ -210,12 +209,21 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
             var snippetService = new SnippetService( rockContext );
             var snippet = snippetService.Get( e.RowKeyId );
-            if ( snippet != null )
+
+            if ( snippet == null )
             {
-                snippetService.Delete( snippet );
-                rockContext.SaveChanges();
+                ShowMessage( "The snippet type could not be found.", NotificationBoxType.Warning );
+                return;
             }
 
+            if ( snippetService.CanDelete( snippet, out string errorMessage ) )
+            {
+                ShowMessage( errorMessage, NotificationBoxType.Warning );
+                return;
+            }
+
+            snippetService.Delete( snippet );
+            rockContext.SaveChanges();
             BindGrid();
         }
 
@@ -303,7 +311,7 @@ namespace RockWeb.Blocks.Communication
             var snippetService = new SnippetService( rockContext );
             var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
 
-            var snippets = snippetService.Queryable().Where( s => s.SnippetType.Guid == snippetTypeGuid ).Select(s => new SnippetListViewModel()
+            var snippets = snippetService.Queryable().Where( s => s.SnippetType.Guid == snippetTypeGuid ).Select( s => new SnippetListViewModel()
             {
                 Description = s.Description,
                 Id = s.Id,
@@ -371,6 +379,52 @@ namespace RockWeb.Blocks.Communication
                 var showPersonalColumn = GetAttributeValue( AttributeKey.ShowPersonalColumn ).AsBoolean();
                 personalColumn.Visible = showPersonalColumn;
             }
+        }
+
+        private void InitializeGrid()
+        {
+            gSnippets.DataKeyNames = new string[] { "Id" };
+            gSnippets.GridRebind += gSnippets_GridRebind;
+
+            var isUserAuthorized = IsUserAuthorized( Authorization.EDIT );
+            var isDetailPageSet = IsDetailPageSet();
+
+            var canDelete = isUserAuthorized;
+            var canAddAndEdit = isUserAuthorized && isDetailPageSet;
+
+            gSnippets.Actions.ShowAdd = canAddAndEdit;
+            gSnippets.IsDeleteEnabled = canDelete;
+
+            if ( canAddAndEdit )
+            {
+                gSnippets.Actions.AddClick += gSnippets_AddClick;
+                gSnippets.RowSelected += gSnippets_Edit;
+            }
+
+            SetSecurityFieldEntityType();
+        }
+
+        /// <summary>
+        /// Determines whether the detail page attribute has a value.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is detail page set]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsDetailPageSet()
+        {
+            return !GetAttributeValue( AttributeKey.DetailPage ).IsNullOrWhiteSpace();
+        }
+
+        /// <summary>
+        /// Shows the message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="notificationBoxType">The notification box type.</param>
+        private void ShowMessage( string errorMessage, NotificationBoxType notificationBoxType )
+        {
+            nbMessage.Text = errorMessage;
+            nbMessage.NotificationBoxType = notificationBoxType;
+            nbMessage.Visible = true;
         }
 
         #endregion

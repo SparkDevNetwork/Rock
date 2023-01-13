@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,27 +15,35 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Communication.SnippetDetail
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Communication.SnippetTypeDetail
 {
-    /// <summary>
-    /// Class SnippetDetailOptionsBag.
-    /// </summary>
-    public class SnippetDetailOptionsBag
+    public class SnippetTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is authorized to edit.
+        /// Gets or sets the description.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is authorized to edit; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsAuthorizedToEdit { get; set; }
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        public string HelpText { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is personal allowed.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is personal allowed; otherwise, <c>false</c>.
-        /// </value>
         public bool IsPersonalAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is shared allowed.
+        /// </summary>
+        public bool IsSharedAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        public string Name { get; set; }
     }
 }

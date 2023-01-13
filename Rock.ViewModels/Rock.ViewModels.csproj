@@ -70,6 +70,8 @@
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetBag.cs" />
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />

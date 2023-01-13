@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockError" alertType="warning" v-html="blockError"></Alert>
+    <Alert v-if="blockError" alertType="warning">{{ blockError }}</Alert>
 
-    <Alert v-if="errorMessage" alertType="danger" v-html="errorMessage"></Alert>
+    <Alert v-if="errorMessage" alertType="danger">{{ errorMessage }}</Alert>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -22,11 +22,11 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="snippetViewBag" :options="options" />
+            <ViewPanel :modelValue="snippetTypeViewBag" :options="options" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="snippetEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="snippetTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -38,16 +38,16 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import EditPanel from "./SnippetDetail/editPanel.partial.obs";
-    import ViewPanel from "./SnippetDetail/viewPanel.partial.obs";
+    import EditPanel from "./SnippetTypeDetail/editPanel.partial.obs";
+    import ViewPanel from "./SnippetTypeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./SnippetDetail/types";
+    import { NavigationUrlKey } from "./SnippetTypeDetail/types";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetBag";
-    import { SnippetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetDetailOptionsBag";
+    import { SnippetTypeBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeBag";
+    import { SnippetTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeDetailOptionsBag";
 
-    const config = useConfigurationValues<DetailBlockBox<SnippetBag, SnippetDetailOptionsBag>>();
+    const config = useConfigurationValues<DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
 
@@ -56,10 +56,10 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const snippetViewBag = ref(config.entity);
-    const snippetEditBag = ref<SnippetBag>({} as SnippetBag);
+    const snippetTypeViewBag = ref(config.entity);
+    const snippetTypeEditBag = ref<SnippetTypeBag>({} as SnippetTypeBag);
 
-    const entityTypeGuid = EntityType.Snippet;
+    const entityTypeGuid = EntityType.SnippetType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
@@ -67,16 +67,14 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "category",
         "description",
-        "isActive",
-        "content",
-        "name",
-        "order",
-        "ownerPersonAlias"
+        "helpText",
+        "isPersonalAllowed",
+        "isSharedAllowed",
+        "name"
     ];
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(snippetEditBag, validProperties, invokeBlockAction), undefined, true);
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(snippetTypeEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -86,18 +84,18 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return snippetViewBag.value?.name ?? "";
+        return snippetTypeViewBag.value?.name ?? "";
     });
 
     const entityTypeName = computed((): string => {
-        return snippetViewBag.value?.name ?? "New Snippet";
+        return snippetTypeViewBag.value?.name ?? "New Snippet Type";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return snippetViewBag.value?.idKey ?? "";
+        return snippetTypeViewBag.value?.idKey ?? "";
     });
 
     /**
@@ -110,21 +108,6 @@
             return undefined;
         }
 
-        if (snippetViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
         return labels;
     });
 
@@ -132,8 +115,8 @@
         return config.isEditable === true;
     });
 
-    const options = computed((): SnippetDetailOptionsBag => {
-        return config.options ?? { isAuthorizedToEdit: false, isPersonalAllowed: false };
+    const options = computed((): SnippetTypeDetailOptionsBag => {
+        return config.options ?? {};
     });
 
     // #endregion
@@ -151,7 +134,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!snippetEditBag.value?.idKey) {
+        if (!snippetTypeEditBag.value?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -172,14 +155,14 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: snippetViewBag.value?.idKey
+            key: snippetTypeViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
             return result.data;
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete snippet.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete snippet type.";
 
             return false;
         }
@@ -192,25 +175,25 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<SnippetBag, SnippetDetailOptionsBag>>("Edit", {
-            key: snippetViewBag.value?.idKey
+        const result = await invokeBlockAction<DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag>>("Edit", {
+            key: snippetTypeViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            snippetEditBag.value = result.data.entity;
+            snippetTypeEditBag.value = result.data.entity;
 
             return true;
         }
         else {
             return false;
         }
-    }
+    };
 
     /**
      * Event handler for when a value has changed that has an associated
      * C# property name. This is used to detect changes to values that
      * might cause qualified attributes to either show up or not show up.
-     *
+     * 
      * @param propertyName The name of the C# property that was changed.
      */
     function onPropertyChanged(propertyName: string): void {
@@ -232,19 +215,19 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> = {
-            entity: snippetEditBag.value,
+        const data: DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag> = {
+            entity: snippetTypeEditBag.value,
             isEditable: true,
             validProperties: validProperties
         };
 
-        const result = await invokeBlockAction<SnippetBag | string>("Save", {
+        const result = await invokeBlockAction<SnippetTypeBag | string>("Save", {
             box: data
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                snippetViewBag.value = result.data;
+                snippetTypeViewBag.value = result.data;
 
                 return true;
             }
@@ -253,7 +236,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save snippet.";
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save snippet type.";
 
         return false;
     }
@@ -267,10 +250,10 @@
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
-        blockError.value = "The specified snippet could not be viewed.";
+        blockError.value = "The specified snippet type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        snippetEditBag.value = config.entity;
+        snippetTypeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

@@ -21,11 +21,30 @@
 // </copyright>
 //
 
-/** Class SnippetDetailOptionsBag. */
-export type SnippetDetailOptionsBag = {
-    /** Gets or sets a value indicating whether this instance is authorized to edit. */
-    isAuthorizedToEdit: boolean;
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+export type SnippetTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the description. */
+    description?: string | null;
+
+    /** Gets or sets the help text. */
+    helpText?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is personal allowed. */
     isPersonalAllowed: boolean;
+
+    /** Gets or sets a value indicating whether this instance is shared allowed. */
+    isSharedAllowed: boolean;
+
+    /** Gets or sets the name. */
+    name?: string | null;
 };
