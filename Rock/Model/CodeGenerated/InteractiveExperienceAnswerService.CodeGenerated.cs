@@ -86,9 +86,10 @@ namespace Rock.Model
                 CampusId = model.CampusId,
                 InteractionSessionId = model.InteractionSessionId,
                 InteractiveExperienceActionId = model.InteractiveExperienceActionId,
-                InteractiveExperienceScheduleId = model.InteractiveExperienceScheduleId,
+                InteractiveExperienceOccurrenceId = model.InteractiveExperienceOccurrenceId,
                 PersonAliasId = model.PersonAliasId,
                 Response = model.Response,
+                ResponseDataJson = model.ResponseDataJson,
                 ResponseDateTime = model.ResponseDateTime,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -165,9 +166,10 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.InteractionSessionId = source.InteractionSessionId;
             target.InteractiveExperienceActionId = source.InteractiveExperienceActionId;
-            target.InteractiveExperienceScheduleId = source.InteractiveExperienceScheduleId;
+            target.InteractiveExperienceOccurrenceId = source.InteractiveExperienceOccurrenceId;
             target.PersonAliasId = source.PersonAliasId;
             target.Response = source.Response;
+            target.ResponseDataJson = source.ResponseDataJson;
             target.ResponseDateTime = source.ResponseDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

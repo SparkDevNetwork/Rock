@@ -34,6 +34,12 @@ export type RegistrationTemplateBag = {
     /** Gets or sets a value indicating whether [allow multiple registrants]. */
     allowMultipleRegistrants: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the batch name prefix. */
     batchNamePrefix?: string | null;
 
@@ -54,6 +60,12 @@ export type RegistrationTemplateBag = {
 
     /** Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false). */
     cost: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).
@@ -82,6 +94,9 @@ export type RegistrationTemplateBag = {
     /** Gets or sets the group type that this registration template applies to */
     groupTypeId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
@@ -96,6 +111,12 @@ export type RegistrationTemplateBag = {
 
     /** Gets or sets the minimum initial payment (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false). */
     minimumInitialPayment?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the registration template */
     name?: string | null;
@@ -117,6 +138,9 @@ export type RegistrationTemplateBag = {
 
     /** Gets or sets the payment reminder time span in days. */
     paymentReminderTimeSpan?: number | null;
+
+    /** Gets or sets the plural registrant term. */
+    pluralRegistrantTerm?: string | null;
 
     /** Gets or sets flag indicating if registrants registered for this template are typically in same family. values are ( yes, no, ask ). */
     registrantsSameFamily: number;
@@ -192,28 +216,4 @@ export type RegistrationTemplateBag = {
 
     /** Gets or sets the wait list transition subject. */
     waitListTransitionSubject?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the plural registrant term. */
-    pluralRegistrantTerm?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

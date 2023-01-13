@@ -21,6 +21,7 @@ import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";
 import { updateRefValue } from "@Obsidian/Utility/component";
+import { LiteralUnion } from "@Obsidian/Types/Utility/support";
 
 
 declare global {
@@ -43,9 +44,6 @@ type ThemeTypes = "rock"
 type ModeTypes = "text" | "css" | "html" | "lava"
     | "javascript" | "less" | "powershell" | "sql"
     | "typescript" | "csharp" | "markdown" | "xml";
-
-// TODO: Move this to @Obsidan/Types somewhere.
-type LiteralUnion<T extends U, U = string> = T | (U & Record<never, never>);
 
 // Start loading the signature pad script so that it is available for us
 // to use later when the control becomes visible.

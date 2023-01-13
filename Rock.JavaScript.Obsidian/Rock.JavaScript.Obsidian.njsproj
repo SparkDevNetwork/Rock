@@ -33,7 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
-    <Content Include="Framework\Controls\alert.ts" />
+    <Content Include="Framework\Controls\alert.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
@@ -107,6 +107,14 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceVisualizer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\" />
@@ -117,6 +125,8 @@
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Crm\" />
     <Folder Include="Framework\ViewModels\Entities\" />
+    <Folder Include="Framework\ViewModels\Event\" />
+    <Folder Include="Framework\ViewModels\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Finance\" />
     <Folder Include="Framework\ViewModels\Reporting\" />
     <Folder Include="Framework\ViewModels\Rest\" />
@@ -131,6 +141,15 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
+    <TypeScriptCompile Include="Build\obsidian-tsc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\sfc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Build\typescript.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\Controls\achievementTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assessmentTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
@@ -153,6 +172,8 @@
     <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\groupPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepStatusPicker.ts" />
@@ -237,6 +258,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\followingEventType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\signatureDocumentTemplate.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\alert.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
@@ -352,6 +374,7 @@
     <TypeScriptCompile Include="Framework\Types\Utility\block.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\component.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\http.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Utility\support.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\fullscreen.ts" />
@@ -368,7 +391,6 @@
     <TypeScriptCompile Include="Framework\Utility\numberUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\stringUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\url.ts" />
-    <TypeScriptCompile Include="Framework\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\PageState\index.ts" />
     <TypeScriptCompile Include="Framework\PageState\state.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\achievementType.d.ts" />
@@ -455,6 +477,18 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowGetDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\experienceManagerOccurrencesInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\experienceManagerInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceVisualizer\experienceVisualizerInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceVisualizer\visualizerOccurrenceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceActionTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceVisualizerTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\liveExperienceOccurrencesInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\liveExperienceInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\assignmentScheduleAndLocationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\preferencePageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\personScheduleSignupBag.d.ts" />
@@ -471,6 +505,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Connection\connectionRequestCountsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\campusPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
@@ -614,6 +649,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceAnswerBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceOccurrenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\interactiveExperienceScheduleCampusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\lavaShortcodeBag.d.ts" />
@@ -664,6 +700,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\registrationTemplateFormFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\registrationTemplatePlacementBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\relatedEntityBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\reminderBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\reminderTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\remoteAuthenticationSessionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\reportBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\reportFieldBag.d.ts" />
@@ -711,6 +749,16 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\workflowFormBuilderTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\workflowTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\entity.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\actionRenderConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceActionStyleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceAnswerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceOccurrenceStateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experiencePlaceholderStyleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceStyleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceVisualizerStyleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\joinExperienceResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\visualizerRenderConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Finance\savedFinancialAccountListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\index.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
@@ -725,6 +773,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgePickerGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewsPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
@@ -743,6 +792,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingSetFollowingOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
@@ -758,7 +808,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeCategoryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicComparisonValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicEditableAttributeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressLogBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressStatusBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressUpdateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\treeItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\validPropertiesBox.d.ts" />
     <TypeScriptCompile Include="System\core.ts" />
     <TypeScriptCompile Include="System\shims.d.ts" />
     <TypeScriptCompile Include="System\vendor.ts" />

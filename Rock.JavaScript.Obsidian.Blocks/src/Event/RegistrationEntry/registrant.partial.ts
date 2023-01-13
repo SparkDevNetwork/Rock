@@ -25,7 +25,7 @@ import StringFilter from "@Obsidian/Utility/stringUtils";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm";
@@ -71,12 +71,14 @@ export default defineComponent({
         const signatureData = ref<ElectronicSignatureValue | null>(null);
         const signatureSource = ref("");
         const signatureToken = ref("");
+        const formResetKey = ref("");
 
         const isNextDisabled = ref(false);
 
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
+            formResetKey,
             getRegistrationEntryBlockArgs,
             invokeBlockAction,
             isNextDisabled,
@@ -243,6 +245,7 @@ export default defineComponent({
     },
     methods: {
         onPrevious(): void {
+            this.clearFormErrors();
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
@@ -251,6 +254,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex--;
         },
         async onNext(): Promise<void> {
+            this.clearFormErrors();
             let lastFormIndex = this.formsToShow.length - 1;
 
             // If we have an inline signature then there is an additional form
@@ -289,6 +293,16 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex++;
         },
 
+        /**
+         * Clears any existing errors from the RockForm component. This is
+         * needed since we display multiple registrant forms inside the single
+         * RockForm instance. Otherwise when moving from the first form to
+         * the second form it would immediately validate and display errors.
+         */
+        clearFormErrors(): void {
+            this.formResetKey = newGuid();
+        },
+
         async onSigned(): Promise<void> {
             // Send all the signed document information to the server. This will
             // prepare the final signed document data that will be later sent
@@ -313,7 +327,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember) {
+            if (!this.familyMember || this.registrationEntryState.navBack) {
                 // Nothing to copy
                 return;
             }
@@ -368,7 +382,7 @@ export default defineComponent({
     },
     template: `
 <div>
-    <RockForm @submit="onNext">
+    <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
@@ -384,7 +398,7 @@ export default defineComponent({
             <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
                 <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
                     <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                    <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" />
+                    <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
                     <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
                 </template>
             </ItemsWithPreAndPostHtml>

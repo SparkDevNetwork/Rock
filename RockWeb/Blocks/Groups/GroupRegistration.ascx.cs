@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 7 )]
-    [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8)]
+    [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8 )]
     [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 9 )]
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Groups
 
                         var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         if ( location != null )
-                        { 
+                        {
                             if ( homeLocation == null )
                             {
                                 homeLocation = new GroupLocation();
@@ -335,36 +335,59 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                // Save the person/spouse and change history 
-                rockContext.SaveChanges();
-
-                // Check to see if a workflow should be launched for each person
-                WorkflowTypeCache workflowType = null;
-                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                if ( workflowTypeGuid.HasValue )
-                {
-                    workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                }
-
                 // Save the registrations ( and launch workflows )
                 var newGroupMembers = new List<GroupMember>();
-                AddPersonToGroup( rockContext, person, workflowType, newGroupMembers );
-                AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers );
+                // Save the person/spouse and change history 
+                var isAddingPeopleToGroupSuccessful = rockContext.WrapTransactionIf( () =>
+                {
+                    rockContext.SaveChanges();
 
-                // Show the results
-                pnlView.Visible = false;
-                pnlResult.Visible = true;
+                    // Check to see if a workflow should be launched for each person
+                    WorkflowTypeCache workflowType = null;
+                    Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                    if ( workflowTypeGuid.HasValue )
+                    {
+                        workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                    }
 
-                // Show lava content
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Group", _group );
-                mergeFields.Add( "GroupMembers", newGroupMembers );
+                    var errorMessage = string.Empty;
+                    cvGroupMember.IsValid = AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, out errorMessage );
+                    if ( !cvGroupMember.IsValid )
+                    {
+                        cvGroupMember.ErrorMessage = errorMessage;
+                        return false;
+                    }
 
-                string template = GetAttributeValue( "ResultLavaTemplate" );
-                lResult.Text = template.ResolveMergeFields( mergeFields );
+                    if ( spouse != null )
+                    {
+                        cvGroupMember.IsValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
+                        if ( !cvGroupMember.IsValid )
+                        {
+                            cvGroupMember.ErrorMessage = errorMessage;
+                            return false;
+                        }
+                    }
 
-                // Will only redirect if a value is specified
-                NavigateToLinkedPage( "ResultPage" );
+                    return true;
+                } );
+
+                if ( isAddingPeopleToGroupSuccessful )
+                {
+                    // Show the results
+                    pnlView.Visible = false;
+                    pnlResult.Visible = true;
+
+                    // Show lava content
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "Group", _group );
+                    mergeFields.Add( "GroupMembers", newGroupMembers );
+
+                    string template = GetAttributeValue( "ResultLavaTemplate" );
+                    lResult.Text = template.ResolveMergeFields( mergeFields );
+
+                    // Will only redirect if a value is specified
+                    NavigateToLinkedPage( "ResultPage" );
+                }
             }
         }
 
@@ -467,7 +490,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
-               
+
                 if ( GetAttributeValue( "PreventOvercapacityRegistrations" ).AsBoolean() )
                 {
                     int openGroupSpots = 2;
@@ -522,57 +545,81 @@ namespace RockWeb.Blocks.Groups
         /// <param name="person">The person.</param>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers )
+        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
         {
-            if (person != null )
+            errorMessage = string.Empty;
+            if ( person == null )
             {
-                GroupMember groupMember = null;
-                if ( !_group.Members
-                    .Any( m => 
-                        m.PersonId == person.Id &&
-                        m.GroupRoleId == _defaultGroupRole.Id))
+                errorMessage = "Not able to find the correct person.";
+                return false;
+            }
+
+            GroupMember groupMember = null;
+            if ( !_group.Members
+                .Any( m =>
+                    m.PersonId == person.Id &&
+                    m.GroupRoleId == _defaultGroupRole.Id ) )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                groupMember = new GroupMember();
+                groupMember.PersonId = person.Id;
+                groupMember.GroupRoleId = _defaultGroupRole.Id;
+                groupMember.GroupMemberStatus = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                groupMember.GroupId = _group.Id;
+                if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    var groupMemberService = new GroupMemberService(rockContext);
-                    groupMember = new GroupMember();
-                    groupMember.PersonId = person.Id;
-                    groupMember.GroupRoleId = _defaultGroupRole.Id;
-                    groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
-                    groupMember.GroupId = _group.Id;
                     groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
+                    groupMembers.Add( groupMember );
                 }
                 else
                 {
-                    GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
-                    groupMember = _group.Members.Where( m =>
-                       m.PersonId == person.Id &&
-                       m.GroupRoleId == _defaultGroupRole.Id ).FirstOrDefault();
-                    if (groupMember.GroupMemberStatus != status)
-                    {
-                        var groupMemberService = new GroupMemberService( rockContext );
-
-                        // reload this group member in the current context
-                        groupMember = groupMemberService.Get( groupMember.Id );
-                        groupMember.GroupMemberStatus = status;
-                        rockContext.SaveChanges();
-                    }
-
-                }
-
-                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
-                {
-                    try
-                    {
-                        List<string> workflowErrors;
-                        var workflow = Workflow.Activate( workflowType, person.FullName );
-                        new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, this.Context );
-                    }
+                    errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    return false;
                 }
             }
+            else
+            {
+                GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                groupMember = _group.Members.Where( m =>
+                    m.PersonId == person.Id &&
+                    m.GroupRoleId == _defaultGroupRole.Id ).FirstOrDefault();
+                if ( groupMember.GroupMemberStatus != status )
+                {
+                    var groupMemberService = new GroupMemberService( rockContext );
+
+                    // reload this group member in the current context
+                    groupMember = groupMemberService.Get( groupMember.Id );
+                    groupMember.GroupMemberStatus = status;
+                    if ( groupMember.IsValidGroupMember( rockContext ) )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        errorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                        return false;
+                    }
+                }
+
+            }
+
+            if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                try
+                {
+                    List<string> workflowErrors;
+                    var workflow = Workflow.Activate( workflowType, person.FullName );
+                    new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, this.Context );
+                }
+            }
+
+
+            return true;
         }
 
         /// <summary>
@@ -714,7 +761,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    if ( phoneNumber.Id <= 0)
+                    if ( phoneNumber.Id <= 0 )
                     {
                         person.PhoneNumbers.Add( phoneNumber );
                     }

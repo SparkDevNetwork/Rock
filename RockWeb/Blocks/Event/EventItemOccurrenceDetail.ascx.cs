@@ -855,6 +855,18 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
+                /*
+                     9/23/2022 - NA
+
+                     Force the eventItemOccurrence.ModifiedDateTime to be set here so that
+                     the EventItemOccurrence PreSaveChanges event is fired in order to set
+                     the NextStartDateTime which may have changed if/when the schedule is
+                     changed.
+
+                     Reason: NextStartDateTime is not updated unless PreSaveChanges is called.
+                */
+                eventItemOccurrence.ModifiedDateTime = RockDateTime.Now;
+
                 rockContext.SaveChanges();
                 eventItemOccurrence.SaveAttributeValues( rockContext );
 

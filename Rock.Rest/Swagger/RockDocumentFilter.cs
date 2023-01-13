@@ -37,6 +37,33 @@ namespace Rock.Rest.Swagger
         {
             // sort the definitions and paths
             swaggerDoc.definitions = swaggerDoc.definitions.OrderBy( a => a.Key ).ToDictionary( x => x.Key, x => x.Value );
+            foreach ( var definition in swaggerDoc.definitions )
+            {
+                /* 11-2-2022 MDP
+
+                  For IEntity, specify a simple example of the type instead of letting Swagger auto-generate it.
+                  This reduces the amount of memory the webpage needs and fixes an issue where Swagger could
+                  auto-generate deeply nested properties and consume lots of memory.
+
+                */
+
+                var type = Rock.Reflection.FindType( typeof( Rock.Data.IEntity ), definition.Key );
+                if ( type != null )
+                {
+                    
+                    try
+                    {
+                        definition.Value.example = System.Activator.CreateInstance( type );
+                    }
+                    catch
+                    {
+                        // Just in case we get an exception, have the example just be object. This will
+                        // cause the example JSON to be empty.
+                        definition.Value.example = new object();
+                    }
+                }
+            }
+
             swaggerDoc.paths = swaggerDoc.paths.OrderBy( a => a.Key ).ToDictionary( x => x.Key, x => x.Value );
         }
     }

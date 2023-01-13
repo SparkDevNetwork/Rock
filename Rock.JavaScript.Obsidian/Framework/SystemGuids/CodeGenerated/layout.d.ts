@@ -23,18 +23,18 @@
 
 /** System Layouts */
 export const enum Layout {
-    /** Gets the Left Sidebar layout (Internal Site) */
-    LeftSidebar = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
-    /** Gets the Full Width layout (External Site) */
-    FullWidth = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD",
-    /** Gets the Person Detail layout (Internal Site) */
-    PersonDetail = "F66758C6-3E3D-4598-AF4C-B317047B5987",
-    /** The Person Profile Home layout GUID (Internal Site) */
-    PersonProfileHome = "92A60013-B8D4-403A-BDFB-C3DA4D867B12",
-    /** The Person Profile Detail layout GUID (Internal Site) */
-    PersonProfileDetail = "6AD84AFC-B3A1-4E30-B53B-C6E57B513839",
-    /** Gets the Full Width layout (Internal Site) */
-    FullWidthInternalSite = "D65F783D-87A9-4CC9-8110-E83466A0EADB",
     /** Gets the Left Sidebar layout (Checkin Manager Site) */
     CheckinManagerLeftSidebar = "2669A579-48A5-4160-88EA-C3A10024E1E1",
+    /** Gets the Full Width layout (External Site) */
+    FullWidth = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD",
+    /** Gets the Full Width layout (Internal Site) */
+    FullWidthInternalSite = "D65F783D-87A9-4CC9-8110-E83466A0EADB",
+    /** Gets the Left Sidebar layout (Internal Site) */
+    LeftSidebar = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
+    /** Gets the Person Detail layout (Internal Site) */
+    PersonDetail = "F66758C6-3E3D-4598-AF4C-B317047B5987",
+    /** The Person Profile Detail layout GUID (Internal Site) */
+    PersonProfileDetail = "6AD84AFC-B3A1-4E30-B53B-C6E57B513839",
+    /** The Person Profile Home layout GUID (Internal Site) */
+    PersonProfileHome = "92A60013-B8D4-403A-BDFB-C3DA4D867B12",
 }

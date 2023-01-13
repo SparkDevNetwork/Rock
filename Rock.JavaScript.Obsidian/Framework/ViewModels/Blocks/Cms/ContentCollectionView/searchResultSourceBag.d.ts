@@ -29,6 +29,15 @@ import { Guid } from "@Obsidian/Types";
  */
 export type SearchResultSourceBag = {
     /**
+     * Gets or sets a value indicating whether this source has more results
+     * available to load.
+     */
+    hasMore: boolean;
+
+    /** Gets or sets the rendered HTML that describes each of the results. */
+    results?: string[] | null;
+
+    /**
      * Gets or sets the source unique identifier. This will be an empty
      * Guid if grouping has not been enabled in the block settings.
      */
@@ -40,12 +49,6 @@ export type SearchResultSourceBag = {
      */
     template?: string | null;
 
-    /** Gets or sets the rendered HTML that describes each of the results. */
-    results?: string[] | null;
-
-    /**
-     * Gets or sets a value indicating whether this source has more results
-     * available to load.
-     */
-    hasMore: boolean;
+    /** Gets or sets the total number of matching results found in the index. */
+    totalResultCount: number;
 };

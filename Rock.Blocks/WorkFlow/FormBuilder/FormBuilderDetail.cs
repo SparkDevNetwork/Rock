@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "A61C5E3C-2267-4CF7-B305-D8AF0DB9660B")]
     public class FormBuilderDetail : RockObsidianBlockType
     {
         private static class PageParameterKey
@@ -203,6 +204,15 @@ namespace Rock.Blocks.Workflow.FormBuilder
             var nextAttributeOrder = actionForm.FormAttributes != null && actionForm.FormAttributes.Any()
                 ? actionForm.FormAttributes.Select( a => a.Order ).Max() + 1
                 : 0;
+
+
+            // If no attributes have been added yet then we need to take into account the attributes auto added when a form builder workflow is created.
+            if ( nextAttributeOrder == 0 )
+            {
+                var defaultAttributesMaxOrder = attributeService.Queryable().Where( a => a.EntityTypeQualifierValue == workflowType.Id.ToString() && a.EntityTypeQualifierColumn == "WorkflowTypeId" ).Select( m => m.Order ).Max();
+                nextAttributeOrder += defaultAttributesMaxOrder;
+            }
+
 
             if ( formSettings.Sections != null )
             {

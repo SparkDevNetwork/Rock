@@ -25,39 +25,39 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupMemberAssignment View Model */
 export type GroupMemberAssignmentBag = {
-    /** The date and time when the confirmation is sent. */
-    confirmationSentDateTime?: string | null;
-
-    /** Gets or sets the Rock.Model.GroupMember identifier. */
-    groupMemberId: number;
-
-    /** The date and time when the last RSVP reminder sent. */
-    lastRSVPReminderSentDateTime?: string | null;
-
-    /** Gets or sets the Rock.Model.Location identifier. */
-    locationId?: number | null;
-
-    /** Gets or sets the Rock.Model.Schedule identifier. */
-    scheduleId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** The date and time when the confirmation is sent. */
+    confirmationSentDateTime?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the Rock.Model.GroupMember identifier. */
+    groupMemberId: number;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** The date and time when the last reminder was sent. */
+    lastReminderSentDateTime?: string | null;
+
+    /** Gets or sets the Rock.Model.Location identifier. */
+    locationId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
+    /** Gets or sets the Rock.Model.Schedule identifier. */
+    scheduleId?: number | null;
 };

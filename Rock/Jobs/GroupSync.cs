@@ -147,6 +147,13 @@ namespace Rock.Jobs
                         // Get the person id's from the data view (source)
                         var dataViewGetQueryArgs = new DataViewGetQueryArgs
                         {
+                            /*
+
+                                11/28/2022 - CWR
+                                In order to prevent potential context conflicts with allowing a new Rock context being created here,
+                                this DbContext will stay set to the rockContextReadOnly that was passed in.
+
+                             */
                             DbContext = rockContextReadOnly,
                             DatabaseTimeoutSeconds = commandTimeout
                         };

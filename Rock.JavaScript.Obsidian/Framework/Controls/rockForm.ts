@@ -37,6 +37,16 @@ export default defineComponent({
         hideErrors: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * This value can be used to reset the form to it's initial state.
+         * Any time this value changes the submission count and error list
+         * will be reset. This does not effect the values in the form controls.
+         */
+        formResetKey: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
 
@@ -121,6 +131,13 @@ export default defineComponent({
 
             errorValues.value = values;
             emit("validationChanged", errorValues.value);
+        });
+
+        watch(() => props.formResetKey, () => {
+            formState.submitCount = 0;
+            updateRefValue(errors, {});
+            updateRefValue(visibleErrors, []);
+            emit("visibleValidationChanged", visibleErrors.value);
         });
 
         return {

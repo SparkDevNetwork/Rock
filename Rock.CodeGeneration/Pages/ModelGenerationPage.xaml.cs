@@ -542,7 +542,7 @@ namespace Rock.CodeGeneration.Pages
             var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
             if ( missingDbSets.Any() )
             {
-                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n" );
+                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) );
             }
 
             foreach ( var rockAssembly in rockAssemblyList )
@@ -643,9 +643,11 @@ namespace Rock.CodeGeneration.Pages
                            NOTE: This won't catch all of them, but hopefully most
                          */
 
-                        // types that OK based on how they are used
+                        // types that OK based on how they are used.
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Elasticsearch),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Lucene)
                         };
 
                         var ignoredThreadSafeFieldWarning = new string[]
@@ -653,6 +655,9 @@ namespace Rock.CodeGeneration.Pages
                             // fields that OK based on how we use them
                             "Rock.Extension.Component.Attributes",
                             "Rock.Extension.Component.AttributeValues",
+                            "Rock.Extension.Component._typeId",
+                            "Rock.Extension.Component._typeGuid",
+                            "Rock.Extension.Component._typeName",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
                             "Rock.Field.FieldType.QualifierUpdated",
 
@@ -752,6 +757,7 @@ namespace Rock.CodeGeneration.Pages
             if ( missingDbSetWarnings.Length > 0 )
             {
                 hasWarnings = true;
+                warnings.AppendLine();
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }

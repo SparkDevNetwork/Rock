@@ -17,7 +17,7 @@
 
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
@@ -72,8 +72,8 @@ export default defineComponent({
         const configurationValues = useConfigurationValues<StepFlowInitializationBox>();
 
         const flowNodes = ref<FlowNodeDiagramNodeBag[]>([]);
-
         const flowEdges = ref<FlowNodeDiagramEdgeBag[]>([]);
+        const legendHtml = ref<string>("");
 
         const isLoading = ref(false);
 
@@ -95,8 +95,9 @@ export default defineComponent({
         const settings = ref<FlowNodeDiagramSettingsBag>({
             nodeWidth: configurationValues.nodeWidth,
             nodeVerticalSpacing: configurationValues.nodeVerticalSpacing,
-            nodeHorizontalSpacing: configurationValues.nodeHorizontalSpacing,
-            chartHeight: configurationValues.chartHeight
+            chartWidth: configurationValues.chartWidth,
+            chartHeight: configurationValues.chartHeight,
+            legendHtml: configurationValues.legendHtml
         });
 
         // #endregion
@@ -150,6 +151,7 @@ export default defineComponent({
         return {
             flowNodes,
             flowEdges,
+            legendHtml,
             isLoading,
             dateRange,
             maxLevels,

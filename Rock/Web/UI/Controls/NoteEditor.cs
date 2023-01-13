@@ -496,7 +496,7 @@ namespace Rock.Web.UI.Controls
 
             _tbNote = new RockTextBox();
             _hfNoteId = new HiddenFieldWithClass();
-            _tbNote.Placeholder = "Write a note...";
+            _tbNote.Placeholder = "Write a " + this._noteTerm.ToLower().Trim() + "...";
             _ddlNoteType = new DropDownList();
             _hfHasUnselectableNoteType = new HiddenFieldWithClass();
             _cbAlert = new CheckBox();
@@ -526,7 +526,7 @@ namespace Rock.Web.UI.Controls
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
             _tbNote.Rows = 3;
-            _tbNote.CssClass = "js-notetext";
+            _tbNote.CssClass = "note-text js-notetext";
             _tbNote.ValidateRequestMode = ValidateRequestMode.Disabled;
             _tbNote.Required = true;
             _tbNote.RequiredFieldValidator.ErrorMessage = "Note is required.";
@@ -680,7 +680,8 @@ $@"Rock.controls.noteEditor.initialize({{
             if ( _hasAttributes )
             {
                 noteCss.Append( " note-editor-attributes" );
-                _tbNote.Label = "Note";
+                _tbNote.Label = this._noteTerm;
+                _tbNote.FormGroupCssClass = "note-editor-text";
             }
             else
             {
@@ -799,15 +800,12 @@ $@"Rock.controls.noteEditor.initialize({{
 
             _mdEditWarning.RenderControl( writer );
 
-            if ( NoteOptions.DisplayType == NoteDisplayType.Full )
+            // Don't show the security button when adding because the ID is not set.
+            if ( NoteOptions.DisplayType == NoteDisplayType.Full && NoteOptions.ShowSecurityButton && this.NoteId.IsNotNullOrZero() )
             {
-                // Don't show the security button when adding because the ID is not set.
-                if ( NoteOptions.ShowSecurityButton && this.NoteId != 0)
-                {
-                    _aSecurity.Attributes["data-title"] = this.Label;
-                    _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
-                    _aSecurity.RenderControl( writer );
-                }
+                _aSecurity.Attributes["data-title"] = this.Label;
+                _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
+                _aSecurity.RenderControl( writer );
             }
 
             if ( !NoteOptions.AddAlwaysVisible )

@@ -19,6 +19,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
 import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
+import { DayOfWeek, RockDateTime } from "./rockDateTime";
 
 // This file contains helper functions and tooling required to work with sliding
 // date ranges. A sliding date range is one that, generally, is anchored to whatever
@@ -142,7 +143,7 @@ export function getRangeTypeText(rangeType: RangeType): string {
 /**
  * Gets the user friendly text that represents the TimeUnit value.
  *
- * @param rangeType The TimeUnit value to be represented.
+ * @param timeUnit The TimeUnit value to be represented.
  *
  * @returns A human readable string that represents the TimeUnit value.
  */
@@ -169,8 +170,8 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
 
     // Find the matching range types and time units (should be 0 or 1) that
     // match the values in the string.
-    const rangeTypes = rangeTypeOptions.filter(o => (o.text ?? "").replace(" ", "").toLowerCase() === segments[0].toLowerCase());
-    const timeUnits = timeUnitOptions.filter(o => (o.text ?? "").toLowerCase() === segments[2].toLowerCase());
+    const rangeTypes = rangeTypeOptions.filter(o => (o.text ?? "").replace(" ", "").toLowerCase() === segments[0].toLowerCase() || o.value === segments[0]);
+    const timeUnits = timeUnitOptions.filter(o => (o.text ?? "").toLowerCase() === segments[2].toLowerCase() || o.value === segments[2]);
 
     if (rangeTypes.length === 0) {
         return null;
@@ -224,4 +225,174 @@ export function slidingDateRangeToString(value: SlidingDateRange): string {
         default:
             return `${getTextForValue(value.rangeType.toString(), rangeTypeOptions)}|${value.timeValue ?? ""}|${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
     }
+}
+
+/**
+ * Calculates the start and end dates in a sliding date range.
+ *
+ * @param value The sliding date range to use when calculating dates.
+ * @param currentDateTime The date and time to use in any "now" calculations.
+ *
+ * @returns An object that contains the start and end dates and times.
+ */
+export function calculateSlidingDateRange(value: SlidingDateRange, currentDateTime: RockDateTime | null | undefined = undefined): { start: RockDateTime | null, end: RockDateTime | null } {
+    const result: { start: RockDateTime | null, end: RockDateTime | null } = {
+        start: null,
+        end: null
+    };
+
+    if (!currentDateTime) {
+        currentDateTime = RockDateTime.now();
+    }
+
+    if (value.rangeType === RangeType.Current) {
+        if (value.timeUnit === TimeUnit.Hour) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, currentDateTime.day, currentDateTime.hour, 0, 0);
+            result.end = result.start?.addHours(1) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Day) {
+            result.start = currentDateTime.date;
+            result.end = result.start.addDays(1);
+        }
+        else if (value.timeUnit === TimeUnit.Week) {
+            // TODO: This needs to be updated to get the FirstDayOfWeek from server.
+            let diff = currentDateTime.dayOfWeek - DayOfWeek.Monday;
+
+            if (diff < 0) {
+                diff += 7;
+            }
+
+            result.start = currentDateTime.addDays(-1 * diff).date;
+            result.end = result.start.addDays(7);
+        }
+        else if (value.timeUnit === TimeUnit.Month) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, 1);
+            result.end = result.start?.addMonths(1) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Year) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, 1, 1);
+            result.end = RockDateTime.fromParts(currentDateTime.year + 1, 1, 1);
+        }
+    }
+    else if (value.rangeType === RangeType.Last || value.rangeType === RangeType.Previous) {
+        // The number of time units to adjust by.
+        const count = value.timeValue ?? 1;
+
+        // If we are getting "Last" then round up to include the
+        // current day/week/month/year.
+        const roundUpCount = value.rangeType === RangeType.Last ? 1 : 0;
+
+        if (value.timeUnit === TimeUnit.Hour) {
+            result.end = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, currentDateTime.day, currentDateTime.hour, 0, 0)
+                ?.addHours(roundUpCount) ?? null;
+            result.start = result.end?.addHours(-count) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Day) {
+            result.end = currentDateTime.date.addDays(roundUpCount);
+            result.start = result.end?.addDays(-count) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Week) {
+            // TODO: This needs to be updated to get the FirstDayOfWeek from server.
+            let diff = currentDateTime.dayOfWeek - DayOfWeek.Monday;
+
+            if (diff < 0) {
+                diff += 7;
+            }
+
+            result.end = currentDateTime.addDays(-1 * diff).date.addDays(7 * roundUpCount);
+            result.start = result.end.addDays(-count * 7);
+        }
+        else if (value.timeUnit === TimeUnit.Month) {
+            result.end = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, 1)?.addMonths(roundUpCount) ?? null;
+            result.start = result.end?.addMonths(-count) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Year) {
+            result.end = RockDateTime.fromParts(currentDateTime.year, 1, 1)?.addYears(roundUpCount) ?? null;
+            result.start = result.end?.addYears(-count) ?? null;
+        }
+
+        // don't let Last,Previous have any future dates
+        const cutoffDate = currentDateTime.date.addDays(1);
+        if (result.end && result.end.date > cutoffDate) {
+            result.end = cutoffDate;
+        }
+    }
+    else if (value.rangeType === RangeType.Next || value.rangeType === RangeType.Upcoming) {
+        // The number of time units to adjust by.
+        const count = value.timeValue ?? 1;
+
+        // If we are getting "Upcoming" then round up to include the
+        // current day/week/month/year.
+        const roundUpCount = value.rangeType === RangeType.Upcoming ? 1 : 0;
+
+        if (value.timeUnit === TimeUnit.Hour) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, currentDateTime.day, currentDateTime.hour, 0, 0)
+                ?.addHours(roundUpCount) ?? null;
+            result.end = result.start?.addHours(count) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Day) {
+            result.start = currentDateTime.date.addDays(roundUpCount);
+            result.end = result.start.addDays(count);
+        }
+        else if (value.timeUnit === TimeUnit.Week) {
+            // TODO: This needs to be updated to get the FirstDayOfWeek from server.
+            let diff = currentDateTime.dayOfWeek - DayOfWeek.Monday;
+
+            if (diff < 0) {
+                diff += 7;
+            }
+
+            result.start = currentDateTime.addDays(-1 * diff)
+                .date.addDays(7 * roundUpCount);
+            result.end = result.start.addDays(count * 7);
+        }
+        else if (value.timeUnit === TimeUnit.Month) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, currentDateTime.month, 1)
+                ?.addMonths(roundUpCount) ?? null;
+            result.end = result.start?.addMonths(count) ?? null;
+        }
+        else if (value.timeUnit === TimeUnit.Year) {
+            result.start = RockDateTime.fromParts(currentDateTime.year, 1, 1)
+                ?.addYears(roundUpCount) ?? null;
+            result.end = result.start?.addYears(count) ?? null;
+        }
+
+        // don't let Next,Upcoming have any past dates
+        if (result.start && result.start.date < currentDateTime.date) {
+            result.start = currentDateTime.date;
+        }
+    }
+    else if (value.rangeType === RangeType.DateRange) {
+        result.start = RockDateTime.parseISO(value.lowerDate ?? "");
+        result.end = RockDateTime.parseISO(value.upperDate ?? "");
+
+        // Sliding date range does not use ISO dates (though might be changed
+        // in the future). So if we can't parse as an ISO date then try a
+        // natural parse.
+        if (!result.start && value.lowerDate) {
+            result.start = RockDateTime.fromJSDate(new Date(value.lowerDate));
+        }
+
+        if (!result.end && value.upperDate) {
+            result.end = RockDateTime.fromJSDate(new Date(value.upperDate));
+        }
+
+        if (result.end) {
+            // Add a day to the end so that we get the entire day when comparing.
+            result.end = result.end.addDays(1);
+        }
+    }
+
+    // To avoid confusion about the day or hour of the end of the date range,
+    // subtract a millisecond off our 'less than' end date. For example, if our
+    // end date is 2019-11-7, we actually want all the data less than 2019-11-8,
+    // but if a developer does EndDate.DayOfWeek, they would want 2019-11-7 and
+    // not 2019-11-8 So, to make sure we include all the data for 2019-11-7, but
+    // avoid the confusion about what DayOfWeek of the end, we'll compromise by
+    // subtracting a millisecond from the end date
+    if (result.end && value.timeUnit != TimeUnit.Hour) {
+        result.end = result.end.addMilliseconds(-1);
+    }
+
+    return result;
 }

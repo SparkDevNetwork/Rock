@@ -4908,7 +4908,13 @@ namespace Rock.Lava
                 queryParameterValues = allParameters.Where( x => !routeParameterNames.Contains( x.Key ) )
                     .ToDictionary( k => k.Key, v => v.Value );
 
-                uriBuilder.Path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                var path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                if ( string.IsNullOrEmpty( path ) )
+                {
+                    path = $"/page/{outputPageId}";
+                }
+
+                uriBuilder.Path = path;
             }
             else
             {
@@ -5075,6 +5081,31 @@ namespace Rock.Lava
             var rockDateTime = LavaDateTime.ParseToOffset( input.ToString() );
 
             return rockDateTime;
+        }
+
+        /// <summary>
+        /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
+        /// If the input value does not specify an offset, the current Rock time zone is assumed.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
+        public static DateTimeOffset? AsDateTimeUtc( object input )
+        {
+            DateTimeOffset? utc;
+            if ( input is DateTime dt )
+            {
+                utc = LavaDateTime.ConvertToDateTimeOffset( dt ).ToUniversalTime();
+            }
+            else if ( input is DateTimeOffset dto )
+            {
+                utc = dto.ToUniversalTime();
+            }
+            else
+            {
+                utc = LavaDateTime.ParseToUtc( input.ToStringSafe() );
+            }
+
+            return utc;
         }
 
         /// <summary>

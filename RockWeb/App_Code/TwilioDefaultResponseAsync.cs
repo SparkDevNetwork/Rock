@@ -144,6 +144,12 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     /// <param name="workItemState">State of the work item.</param>
     private void StartAsyncTask( object workItemState )
     {
+        // There might be some code using HttpContext.Current, but
+        // since we are in an async task, we'll have to set it to what
+        // it was before we started the task, and hopefully something is awaiting
+        // this task before the request finishes and disposes the context.
+        HttpContext.Current = _context;
+
         var request = _context.Request;
         var response = _context.Response;
 

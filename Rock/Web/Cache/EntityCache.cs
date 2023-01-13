@@ -135,6 +135,35 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets a cached item using a generic key.
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the cached entity.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The cached <typeparamref name="T"/> or <c>null</c> if not found in cache or the database.</returns>
+        internal static T Get( string key, bool allowIntegerIdentifier )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return Get( guid.Value );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? Get( id.Value ) : default;
+        }
+
+        /// <summary>
         /// Gets the cached object by guid.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>

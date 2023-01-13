@@ -25,14 +25,29 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonDuplicate View Model */
 export type PersonDuplicateBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the capacity.
      * The max possible score based on what items they have values for.
      */
     capacity?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the duplicate person alias identifier. */
     duplicatePersonAliasId: number;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /**
      * Gets or sets a value indicating whether [ignore until score changes].
@@ -42,6 +57,12 @@ export type PersonDuplicateBag = {
 
     /** Gets or sets a value indicating whether this instance is confirmed as not duplicate. */
     isConfirmedAsNotDuplicate: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the person alias identifier. */
     personAliasId: number;
@@ -60,25 +81,4 @@ export type PersonDuplicateBag = {
      * The max possible score if they had values for all matchable items
      */
     totalCapacity?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

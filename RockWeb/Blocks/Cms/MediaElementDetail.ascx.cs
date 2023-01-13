@@ -1402,7 +1402,7 @@ namespace RockWeb.Blocks.Cms
                     Isp = i.InteractionSession?.InteractionSessionLocation?.ISP,
                     OperatingSystem = i.InteractionSession?.DeviceType?.OperatingSystem,
                     Application = i.InteractionSession?.DeviceType?.Application,
-                    InteractionsCount = interactionQuery.Where( m => m.PersonAliasId == i.PersonAliasId ).Count()
+                    InteractionsCount = interactionQuery.Where( m => m.PersonAliasId != null && m.PersonAliasId == i.PersonAliasId ).Count()
                 } );
 
             return new BlockActionResult( System.Net.HttpStatusCode.OK, new {

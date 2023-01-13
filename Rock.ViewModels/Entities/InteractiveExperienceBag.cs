@@ -162,6 +162,14 @@ namespace Rock.ViewModels.Entities
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the JSON representing the additional settings.
+        /// </summary>
+        /// <value>
+        /// The JSON representing the additional settings.
+        /// </value>
+        public string ExperienceSettingsJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsActive flag for the Rock.Model.InteractiveExperience.
         /// </summary>
         /// <value>
@@ -216,6 +224,22 @@ namespace Rock.ViewModels.Entities
         /// A System.String representing the Public Label of the InteractiveExperience.
         /// </value>
         public string PublicLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the detail message of the push notification.
+        /// </summary>
+        /// <value>
+        /// The detail message of the push notification.
+        /// </value>
+        public string PushNotificationDetail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of the push notification.
+        /// </summary>
+        /// <value>
+        /// The title of the push notification.
+        /// </value>
+        public string PushNotificationTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the push notification type.

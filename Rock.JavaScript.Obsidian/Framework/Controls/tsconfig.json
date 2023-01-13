@@ -2,10 +2,15 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "jsx": "preserve",
     "module": "ESNext"
   },
-  "include": [ "./*.ts" ],
+  "include": [
+    "./*.ts",
+    "./*.vue"
+  ],
   "references": [
-    { "path": "../Core" }
+    { "path": "../Core" },
+    { "path": "../Libs" }
   ]
 }

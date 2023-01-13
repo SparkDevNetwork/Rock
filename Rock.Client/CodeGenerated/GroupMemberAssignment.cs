@@ -47,7 +47,7 @@ namespace Rock.Client
         public int GroupMemberId { get; set; }
 
         /// <summary />
-        public DateTime? LastRSVPReminderSentDateTime { get; set; }
+        public DateTime? LastReminderSentDateTime { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }
@@ -97,7 +97,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
-            this.LastRSVPReminderSentDateTime = source.LastRSVPReminderSentDateTime;
+            this.LastReminderSentDateTime = source.LastReminderSentDateTime;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ScheduleId = source.ScheduleId;

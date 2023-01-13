@@ -19,6 +19,7 @@ import LoadingIndicator from "./loadingIndicator";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
 import { CollectJSOptions, InputField, ResponseCallback, TimeoutCallback, TokenResponse, ValidationCallback } from "./nmiGatewayControlTypes";
+import { FormError } from "@Obsidian/Utility/form";
 
 const enum NMIPaymentType {
     Card = 0,
@@ -452,9 +453,8 @@ export default defineComponent({
          *
          * @returns An object that describes if all the inputs are valid.
          */
-        const validateInputs = function (): { isValid: boolean, errors: Record<string, string> } {
-            let hasValidationError = false;
-            const errors: Record<string, string> = {};
+        const validateInputs = function (): FormError[] {
+            const errors: FormError[] = [];
 
             for (const validationFieldKey in validationFieldStatus) {
                 const validationField = validationFieldStatus[validationFieldKey];
@@ -464,18 +464,16 @@ export default defineComponent({
                 const fieldVisible = (inputField?.offsetWidth ?? 0) !== 0 || (inputField?.offsetHeight ?? 0) !== 0;
 
                 if (fieldVisible && !validationField.status) {
-                    hasValidationError = true;
-
                     const validationFieldTitle = getFieldFriendlyName(validationFieldKey);
 
-                    errors[validationFieldTitle] = validationField.message || "unknown validation error";
+                    errors.push({
+                        name: validationFieldTitle,
+                        text: validationField.message || "unknown validation error"
+                    });
                 }
             }
 
-            return {
-                isValid: !hasValidationError,
-                errors
-            };
+            return errors;
         };
 
         /**
@@ -493,10 +491,10 @@ export default defineComponent({
 
             // Since we don't know exactly what happened, lets see if it might
             // be invalid inputs by checking them all manually.
-            const validationResult = validateInputs();
+            const validationErrors = validateInputs();
 
-            if (!validationResult.isValid) {
-                emit(GatewayEmitStrings.Validation, validationResult.errors);
+            if (validationErrors.length > 0) {
+                emit(GatewayEmitStrings.Validation, validationErrors);
             }
             else {
                 // Inputs seem to be valid, so show a message to let them
@@ -532,10 +530,10 @@ export default defineComponent({
                 message: message
             };
 
-            const validationResult = validateInputs();
+            const validationErrors = validateInputs();
 
             if (hasAttemptedSubmit && !(CollectJS?.inSubmission ?? false) && !hasReceivedToken) {
-                emit(GatewayEmitStrings.Validation, validationResult.errors);
+                emit(GatewayEmitStrings.Validation, validationErrors);
             }
         };
 
@@ -549,14 +547,14 @@ export default defineComponent({
 
             // The delay allows field validation when losing field focus.
             setTimeout(() => {
-                const validationResult = validateInputs();
+                const validationErrors = validateInputs();
 
                 hasAttemptedSubmit = true;
-                if (validationResult.isValid) {
+                if (validationErrors.length === 0) {
                     CollectJS?.startPaymentRequest();
                 }
                 else {
-                    emit(GatewayEmitStrings.Validation, validationResult.errors);
+                    emit(GatewayEmitStrings.Validation, validationErrors);
                 }
             }, 0);
         });

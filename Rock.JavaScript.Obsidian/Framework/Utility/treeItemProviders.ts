@@ -23,6 +23,7 @@ import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Res
 import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationPickerGetActiveChildrenOptionsBag";
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
+import { GroupPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupPickerGetChildrenOptionsBag";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -284,6 +285,73 @@ export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
      */
     async getRootItems(): Promise<TreeItemBag[]> {
         return await this.getItems();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving groups from the server and displaying
+ * them inside a tree list.
+ */
+export class GroupTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** GUID of the group you want to use as the root. */
+    public rootGroupGuid: Guid | null = null;
+
+    /** List of group types GUIDs to limit to groups of those types. */
+    public includedGroupTypeGuids: Guid[] = [];
+
+    /** Whether to include inactive groups or not. */
+    public includeInactiveGroups: boolean = false;
+
+    /** Whether to limit to only groups that have scheduling enabled. */
+    public limitToSchedulingEnabled: boolean = false;
+
+    /** Whether to limit to only groups that have RSVPs enabled. */
+    public limitToRSVPEnabled: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<GroupPickerGetChildrenOptionsBag> = {
+            guid: parentGuid,
+            rootGroupGuid: this.rootGroupGuid,
+            includedGroupTypeGuids: this.includedGroupTypeGuids,
+            includeInactiveGroups: this.includeInactiveGroups,
+            limitToSchedulingEnabled: this.limitToSchedulingEnabled,
+            limitToRSVPEnabled: this.limitToRSVPEnabled,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/GroupPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
     }
 
     /**

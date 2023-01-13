@@ -56,9 +56,11 @@
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="<%= GetColumnStyle(3) %>">
+                                    <Rock:RockLiteral ID="lFirstName1" runat="server" Label="First Name" Visible="false" />
                                     <Rock:DataTextBox ID="tbFirstName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                                 </div>
                                 <div class="<%= GetColumnStyle(3) %>">
+                                    <Rock:RockLiteral ID="lLastName1" runat="server" Label="Last Name" Visible="false" />
                                     <Rock:DataTextBox ID="tbLastName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Label="Last Name" />
                                 </div>
                                 <asp:Panel runat="server" ID="pnlGender1">
@@ -137,9 +139,11 @@
 
                             <div class="row">
                                 <div class="<%= GetColumnStyle(3) %>">
+                                    <Rock:RockLiteral ID="lFirstName2" runat="server" Label="First Name" Visible="false" />
                                     <Rock:DataTextBox ID="tbFirstName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                                 </div>
                                 <div class="<%= GetColumnStyle(3) %>">
+                                    <Rock:RockLiteral ID="lLastName2" runat="server" Label="Last Name" Visible="false" />
                                     <Rock:DataTextBox ID="tbLastName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Label="Last Name" />
                                 </div>
                                 <asp:Panel runat="server" ID="pnlGender2">

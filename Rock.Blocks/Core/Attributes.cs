@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -110,6 +110,7 @@ namespace Rock.Blocks.Core
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "A7D9C259-1CD0-42C2-B708-4D95F2469B18")]
+    [Rock.SystemGuid.BlockTypeGuid( "791DB49B-58A4-44E1-AEF5-ABFF2F37E197")]
     public class Attributes : RockObsidianBlockType
     {
         public static class AttributeKey

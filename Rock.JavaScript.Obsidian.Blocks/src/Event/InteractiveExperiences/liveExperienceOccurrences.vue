@@ -1,0 +1,108 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="blockErrorMessage"
+           alertType="warning">
+        {{ blockErrorMessage }}
+    </Alert>
+
+    <div ref="contentElement"></div>
+</template>
+
+<script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
+    import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { LiveExperienceOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperienceOccurrences/liveExperienceOccurrencesInitializationBox";
+    import { computed, ref } from "vue";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+
+    const config = useConfigurationValues<LiveExperienceOccurrencesInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const contentElement = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Get the device's current location.
+     *
+     * @param alwaysRequest If false then we only get the location if we already have permission.
+     */
+    async function getDeviceLocation(alwaysRequest: boolean): Promise<GeolocationCoordinates | null> {
+        // If we are not configured to always request permissions
+        // then check first.
+        if (!alwaysRequest) {
+            // Check if we already have permission. If it is an older browser
+            // that doesn't support determining existing permissions values then
+            // just continue and ask.
+            if (navigator.permissions) {
+                const status = await navigator.permissions.query({ name: "geolocation" });
+
+                if (status.state !== "granted") {
+                    return null;
+                }
+            }
+        }
+
+        // getCurrentPosition is does not follow the async pattern and uses
+        // callbacks instead, so we have to fake it.
+        const completionSource = new PromiseCompletionSource<GeolocationCoordinates | null>();
+
+        navigator.geolocation.getCurrentPosition(position => {
+            completionSource.resolve(position.coords);
+        }, () => {
+            completionSource.reject(new Error("Unable to get device location."));
+        });
+
+        try {
+            return await completionSource.promise;
+        }
+        catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    /**
+     * Updates the content by requesting new HTML results from the server.
+     *
+     * @param alwaysRequestLocation If true then the location will be requested even if we haven't already been granted permission.
+     */
+    async function updateContent(alwaysRequestLocation: boolean): Promise<void> {
+        const location = await getDeviceLocation(alwaysRequestLocation);
+
+        const result = await invokeBlockAction<{ content: string }>("GetContent", {
+            latitude: location?.latitude ?? null,
+            longitude: location?.longitude ?? null
+        });
+
+        if (contentElement.value && result.data?.content) {
+            contentElement.value.innerHTML = result.data.content;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    if (config.provideLocationKey) {
+        window[config.provideLocationKey] = () => updateContent(true);
+    }
+
+    updateContent(config.alwaysRequestLocation);
+</script>

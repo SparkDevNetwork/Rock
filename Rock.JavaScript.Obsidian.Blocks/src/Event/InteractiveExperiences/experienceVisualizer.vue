@@ -1,0 +1,412 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="config.errorMessage" alertType="warning">
+        {{ config.errorMessage }}
+    </Alert>
+
+    <div v-else class="experience-visualizer-body" :style="experienceStyles">
+        <component v-if="activeVisualizerComponent"
+                   :is="activeVisualizerComponent"
+                   :renderConfiguration="activeRenderConfiguration"
+                   :responses="activeResponses" />
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-visualizer-body {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    padding: 18px;
+    color: var(--experience-visualizer-color);
+    background-color: var(--experience-visualizer-bg, inherit);
+    background-image: var(--experience-visualizer-bg-image, initial);
+}
+
+.experience-visualizer-body .experience-visualizer {
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
+    import BarChart from "./ExperienceVisualizer/barChart.partial.vue";
+    import WordCloud from "./ExperienceVisualizer/wordCloud.partial.vue";
+    import { Component as VueComponent, reactive, ref, watch } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { IParticipantTopic } from "./types";
+    import { ExperienceVisualizerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceVisualizer/experienceVisualizerInitializationBox";
+    import { VisualizerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceVisualizer/visualizerOccurrenceBag";
+    import { VisualizerRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/visualizerRenderConfigurationBag";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { ExperienceAnswerBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceAnswerBag";
+    import { InteractiveExperienceApprovalStatus } from "@Obsidian/Enums/Event/interactiveExperienceApprovalStatus";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ExperienceStyleBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceStyleBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const config = useConfigurationValues<ExperienceVisualizerInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const actionTypeLookup: Record<Guid, VueComponent> = {
+        "b1dfd377-9ef7-407f-9097-6206b98aec0d": BarChart,
+        "dc35f0f7-83e5-47d8-aa27-b448962b60dd": WordCloud
+    };
+
+    // #region Values
+
+    const experienceToken = ref<string | null>(null);
+    const experienceStyles = ref(getExperienceStyles(null));
+    const eventId = ref<string | null>(null);
+    const activeActionId = ref<string | null>(null);
+    const activeVisualizerComponent = ref<VueComponent | null>(null);
+    const activeRenderConfiguration = ref<VisualizerRenderConfigurationBag | null>(null);
+    const occurrenceResponses = reactive<ExperienceAnswerBag[]>([]);
+    const activeResponses = ref<ExperienceAnswerBag[]>([]);
+
+    let realTimeTopic: ITopic<IParticipantTopic> | null = null;
+    let occurrenceEndDateTime: RockDateTime | null = null;
+
+    const styleNode = document.createElement("style");
+    styleNode.textContent = "";
+    document.head.appendChild(styleNode);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    async function startRealTime(): Promise<void> {
+        var topic = await getTopic<IParticipantTopic>("Rock.RealTime.Topics.InteractiveExperienceParticipantTopic");
+
+        topic.onReconnect(async server => {
+            if (experienceToken.value) {
+                await joinExperience(server, experienceToken.value);
+            }
+        });
+
+        setupTopicListeners(topic);
+
+        realTimeTopic = topic;
+        setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+    }
+
+    async function joinExperience(server: IParticipantTopic, token: string): Promise<void> {
+        if (!realTimeTopic) {
+            return;
+        }
+
+        try {
+            // Clear out any existing responses.
+            occurrenceResponses.slice();
+
+            const response = await server.joinExperience(token);
+
+            eventId.value = response.occurrenceIdKey ?? null;
+
+            // If there is already a visualizer active then show it.
+            if (response.currentVisualizerActionIdKey && response.currentVisualizerConfiguration) {
+                setupVisualizerComponent(response.currentVisualizerActionIdKey, response.currentVisualizerConfiguration);
+            }
+
+            await getAllAnswers(token);
+        }
+        catch (error) {
+            eventId.value = null;
+            experienceToken.value = null;
+            activeVisualizerComponent.value = null;
+            activeActionId.value = null;
+            activeRenderConfiguration.value = null;
+
+            throw error;
+        }
+    }
+
+    function setupVisualizerComponent(actionId: string | null, renderConfiguration: VisualizerRenderConfigurationBag | null): void {
+        if (renderConfiguration === null || !renderConfiguration.visualizerTypeGuid || !actionTypeLookup[renderConfiguration.visualizerTypeGuid]) {
+            activeVisualizerComponent.value = null;
+            activeActionId.value = null;
+            activeRenderConfiguration.value = null;
+            return;
+        }
+
+        activeVisualizerComponent.value = actionTypeLookup[renderConfiguration.visualizerTypeGuid];
+        activeActionId.value = actionId;
+        activeRenderConfiguration.value = renderConfiguration;
+    }
+
+    function getExperienceStyles(style: ExperienceStyleBag | null | undefined): Record<string, string> {
+        const styles: Record<string, string> = {};
+
+        if (style?.visualizer?.backgroundColor) {
+            styles["--experience-visualizer-bg"] = style.visualizer.backgroundColor;
+        }
+
+        if (style?.visualizer?.backgroundImage) {
+            styles["--experience-visualizer-bg-image"] = `url('${style.visualizer.backgroundImage}')`;
+        }
+
+        if (style?.visualizer?.textColor) {
+            styles["--experience-visualizer-color"] = style.visualizer.textColor;
+        }
+        else {
+            styles["--experience-visualizer-color"] = "var(--text-color)";
+        }
+
+        if (style?.visualizer?.primaryColor) {
+            styles["--experience-visualizer-primary-bg"] = style.visualizer.primaryColor;
+        }
+        else {
+            styles["--experience-visualizer-primary-bg"] = "var(--brand-primary)";
+        }
+
+        if (style?.visualizer?.secondaryColor) {
+            styles["--experience-visualizer-secondary-color"] = style.visualizer.secondaryColor;
+        }
+        else {
+            styles["--experience-visualizer-secondary-color"] = "var(--brand-success)";
+        }
+
+        if (style?.visualizer?.accentColor) {
+            styles["--experience-visualizer-accent-color"] = style.visualizer.accentColor;
+        }
+        else {
+            styles["--experience-visualizer-accent-color"] = "var(--brand-info)";
+        }
+
+        return styles;
+    }
+
+    function setupCustomStyles(style: ExperienceStyleBag | null | undefined): void {
+        styleNode.textContent = style?.visualizer?.customCss ?? "";
+    }
+
+    /**
+     * Called during startup as well as anytime the realTimeTopic prop
+     * value changes. Add all the listeners needed to the topic.
+     */
+    function setupTopicListeners(topic: ITopic<IParticipantTopic>): void {
+        topic.on("showVisualizer", onShowVisualizer);
+        topic.on("clearVisualizer", onClearVisualizer);
+        topic.on("answerSubmitted", onAnswerSubmitted);
+        topic.on("answerUpdated", onAnswerUpdated);
+        topic.on("answerRemoved", onAnswerRemoved);
+    }
+
+    /**
+     * Updates an existing answer. If the answer is found it is replaced with
+     * the new answer data. Otherwise it is appended to the list of answers.
+     *
+     * @param answer The answer details that were updated.
+     */
+    function updateAnswer(answer: ExperienceAnswerBag): void {
+        const answerIndex = occurrenceResponses.findIndex(a => a.idKey === answer.idKey);
+
+        if (answerIndex !== -1) {
+            occurrenceResponses.splice(answerIndex, 1, answer);
+        }
+        else {
+            occurrenceResponses.push(answer);
+        }
+    }
+
+    /**
+     * Removes an answer from the list of answers.
+     *
+     * @param answerIdKey The identifier key of the answer to be removed.
+     */
+    function removeAnswer(answerIdKey: string): void {
+        const answerIndex = occurrenceResponses.findIndex(a => a.idKey === answerIdKey);
+
+        if (answerIndex !== -1) {
+            occurrenceResponses.splice(answerIndex, 1);
+        }
+    }
+
+    /**
+     * Gets all answers from the server. This will also clear the existing
+     * list of answers. Otherwise we might still get out of sync when the
+     * results come back due to a RealTime message arriving before the
+     * results are returned.
+     *
+     * @param token The token to retrieve answers for.
+     */
+    async function getAllAnswers(token: string): Promise<void> {
+        // Clear the array.
+        occurrenceResponses.slice();
+
+        const response = await invokeBlockAction<ExperienceAnswerBag[]>("GetExperienceAnswers", { token: token });
+
+        if (response.isSuccess && response.data) {
+            for (const answer of response.data) {
+                updateAnswer(answer);
+            }
+        }
+    }
+
+    async function clearExperience(): Promise<void> {
+        if (eventId.value && realTimeTopic) {
+            await realTimeTopic.server.leaveExperience(eventId.value);
+        }
+
+        experienceToken.value = null;
+        experienceStyles.value = getExperienceStyles(null);
+        occurrenceEndDateTime = null;
+        eventId.value = null;
+
+        setupVisualizerComponent(null, null);
+    }
+
+    async function checkForNewOccurrence(): Promise<void> {
+        try {
+            // If we already have an occurrence and it hasn't ended yet then
+            // don't check for a new one. Otherwise we might switch visualizers
+            // in the middle of an experience.
+            if (occurrenceEndDateTime) {
+                if (RockDateTime.now().toMilliseconds() < occurrenceEndDateTime.toMilliseconds()) {
+                    return;
+                }
+                else {
+                    return clearExperience();
+                }
+            }
+
+            const result = await invokeBlockAction<VisualizerOccurrenceBag | null>("GetCurrentOccurrence");
+
+            if (result.isSuccess) {
+                await updateOccurrence(result.data);
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error trying to get current occurrence.");
+            }
+        }
+        finally {
+            // Re-check every minute.
+            setTimeout(checkForNewOccurrence, 60_000);
+        }
+    }
+
+    async function updateOccurrence(occurrence: VisualizerOccurrenceBag | null): Promise<void> {
+        if (realTimeTopic == null) {
+            experienceToken.value = occurrence?.experienceToken ?? null;
+            experienceStyles.value = getExperienceStyles(occurrence?.style);
+            occurrenceEndDateTime = RockDateTime.parseISO(occurrence?.occurrenceEndDateTime ?? "");
+
+            return;
+        }
+
+        await clearExperience();
+
+        if (!occurrence) {
+            return;
+        }
+
+        experienceStyles.value = getExperienceStyles(occurrence.style);
+        occurrenceEndDateTime = RockDateTime.parseISO(occurrence.occurrenceEndDateTime ?? "");
+
+        if (occurrence.experienceToken) {
+            await joinExperience(realTimeTopic.server, occurrence?.experienceToken);
+        }
+    }
+
+    async function startup(): Promise<void> {
+        await startRealTime();
+        await checkForNewOccurrence();
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onShowVisualizer(id: string, actionId: string, renderConfiguration: VisualizerRenderConfigurationBag | null): Promise<void> {
+        if (eventId.value === id) {
+            setupVisualizerComponent(actionId, renderConfiguration);
+        }
+    }
+
+    function onClearVisualizer(id: string): void {
+        if (eventId.value === id) {
+            activeVisualizerComponent.value = null;
+            activeActionId.value = null;
+            activeRenderConfiguration.value = null;
+        }
+    }
+
+    /**
+     * Event handler for when a new answer has been submitted via the RealTime engine.
+     *
+     * @param idKey The identifier key of the occurrence the answer was submitted to.
+     * @param answer The answer details that were submitted.
+     */
+    function onAnswerSubmitted(idKey: string, answer: ExperienceAnswerBag): void {
+        if (idKey !== eventId.value) {
+            return;
+        }
+
+        updateAnswer(answer);
+    }
+
+    /**
+     * Event handler for when an existing answer has been updated via the
+     * RealTime engine.
+     *
+     * @param idKey The identifier key of the occurrence the answer was updated for.
+     * @param answer The answer details that were updated.
+     */
+    function onAnswerUpdated(idKey: string, answer: ExperienceAnswerBag): void {
+        if (idKey !== eventId.value) {
+            return;
+        }
+
+        updateAnswer(answer);
+    }
+
+    /**
+     * Event handler for when an existing answer has been removed via the
+     * RealTime engine.
+     *
+     * @param idKey The identifier key of the occurrence the answer was removed from.
+     * @param answerIdKey The identifier key of the answer that was removed.
+     */
+    function onAnswerRemoved(idKey: string, answerIdKey: string): void {
+        if (idKey !== eventId.value) {
+            return;
+        }
+
+        removeAnswer(answerIdKey);
+    }
+
+    /**
+     * Call every keepAliveInterval duration to inform the server that we
+     * are still here and listening for events.
+     */
+    async function onPingTimer(): Promise<void> {
+        try {
+            if (realTimeTopic && eventId.value) {
+                await realTimeTopic.server.pingExperience(eventId.value);
+            }
+        }
+        finally {
+            setTimeout(onPingTimer, config.keepAliveInterval * 1000);
+        }
+    }
+
+    // #endregion
+
+    watch([activeActionId, occurrenceResponses], () => {
+        updateRefValue(activeResponses, occurrenceResponses.filter(r => r.actionIdKey === activeActionId.value && r.status === InteractiveExperienceApprovalStatus.Approved));
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    setupCustomStyles(null);
+    startup();
+</script>

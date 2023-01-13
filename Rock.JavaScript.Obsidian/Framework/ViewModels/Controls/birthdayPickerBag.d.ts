@@ -23,12 +23,12 @@
 
 /** Birthday Picker View Model */
 export type BirthdayPickerBag = {
-    /** Gets or sets the year. */
-    year: number;
+    /** Gets or sets the day. */
+    day: number;
 
     /** Gets or sets the month. */
     month: number;
 
-    /** Gets or sets the day. */
-    day: number;
+    /** Gets or sets the year. */
+    year: number;
 };

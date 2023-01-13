@@ -43,7 +43,7 @@ namespace Rock.Field.Types
         {
             var entity = GetEntity( entityGuid.ToString() );
 
-            return entity.Name;
+            return entity?.Name ?? string.Empty;
         }
 
         /// <summary>

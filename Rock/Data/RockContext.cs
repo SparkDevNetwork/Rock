@@ -1355,6 +1355,14 @@ namespace Rock.Data
         public DbSet<InteractiveExperienceAnswer> InteractiveExperienceAnswers { get; set; }
 
         /// <summary>
+        /// Gets or sets the Interactive Experience Occurrences.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Occurrences.
+        /// </value>
+        public DbSet<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interactive Experience Schedules.
         /// </summary>
         /// <value>
@@ -2083,6 +2091,18 @@ namespace Rock.Data
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
+        /// Gets or sets the Reminders
+        /// </summary>
+        /// <value>The reminders.</value>
+        public DbSet<Reminder> Reminders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ReminderTypes
+        /// </summary>
+        /// <value>The reminder types.</value>
+        public DbSet<ReminderType> ReminderTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Streaks.
         /// </summary>
         /// <value>
@@ -2299,6 +2319,22 @@ namespace Rock.Data
         /// The segments.
         /// </value>
         public DbSet<PersonalizationSegment> Segments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the snippets.
+        /// </summary>
+        /// <value>
+        /// The snippets.
+        /// </value>
+        public DbSet<Snippet> Snippets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the snippet types.
+        /// </summary>
+        /// <value>
+        /// The snippet types.
+        /// </value>
+        public DbSet<SnippetType> SnippetTypes { get; set; }
 
         #endregion
 

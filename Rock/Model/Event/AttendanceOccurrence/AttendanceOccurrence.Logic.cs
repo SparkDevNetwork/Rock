@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 using Rock.Data;
@@ -33,6 +34,7 @@ namespace Rock.Model
         ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
         /// </value>
         [LavaVisible]
+        [NotMapped]
         public virtual bool AttendanceEntered
         {
             get
@@ -62,7 +64,7 @@ namespace Rock.Model
         /// The attendance rate which is the number of attendance records marked as did attend
         /// divided by the total number of attendance records for this occurrence.
         /// </value>
-        public double AttendanceRate
+        public virtual double AttendanceRate
         {
             get
             {

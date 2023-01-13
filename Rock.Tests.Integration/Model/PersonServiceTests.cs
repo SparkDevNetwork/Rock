@@ -435,5 +435,134 @@ namespace Rock.Tests.Integration.Model
         }
 
         #endregion Person Match tests
+
+        #region Age Classification
+
+        [TestMethod]
+        public void ShouldAssignAppropriateValueToAgeClassification()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var personTurnedAdult = new Person
+            {
+                FirstName = "Adult",
+                LastName = "AgeClassificationTest",
+                AgeClassification = AgeClassification.Child,
+                IsLockedAsChild = false
+            };
+            personTurnedAdult.SetBirthDate( RockDateTime.Now.AddYears( -20 ) );
+
+            // Adult locked as child
+            var adultLockedAsChild = new Person
+            {
+                FirstName = "AdultLockedAsChild",
+                LastName = "AgeClassificationTest",
+                AgeClassification = AgeClassification.Child,
+                IsLockedAsChild = true
+            };
+            adultLockedAsChild.SetBirthDate( RockDateTime.Now.AddYears( -20 ) );
+
+            // Person without birthday
+            var personWithoutBirthday = new Person
+            {
+                FirstName = "PersonWithoutBirthday",
+                LastName = "AgeClassificationTest"
+            };
+            personWithoutBirthday.SetBirthDate( null );
+
+            var personWithUnkownAgeClassificiationLockedAsChild = new Person
+            {
+                FirstName = "PersonWithoutBirthday",
+                LastName = "AgeClassificationTest",
+                AgeClassification = AgeClassification.Unknown,
+                IsLockedAsChild = true
+            };
+
+            var personWithoutFamilyOrBirthday = new Person
+            {
+                FirstName = "PersonWithoutFamilyOrBirthday",
+                LastName = "AgeClassificationTest",
+                AgeClassification = AgeClassification.Unknown,
+                IsLockedAsChild = true // locking the person as child so that the Age Classification does not change While being inserted into database
+            };
+            personWithoutFamilyOrBirthday.SetBirthDate( null );
+
+            PersonService.SaveNewPerson( personTurnedAdult, rockContext );
+            PersonService.SaveNewPerson( adultLockedAsChild, rockContext );
+            PersonService.SaveNewPerson( personWithoutBirthday, rockContext );
+            PersonService.SaveNewPerson( personWithUnkownAgeClassificiationLockedAsChild, rockContext );
+
+            Group familyGroup = PersonService.SaveNewPerson( personWithoutFamilyOrBirthday, rockContext );
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            groupMemberService.Delete( groupMemberService.Queryable().Where( gm => gm.PersonId == personWithoutFamilyOrBirthday.Id && gm.GroupId == familyGroup.Id ).First() ); // remove from family
+            personService.Queryable()
+                .Where( p => p.Id == personWithoutFamilyOrBirthday.Id )
+                .First().IsLockedAsChild = false; // reset the locking as Child that was done to prevent changes to AgeClassification attribute of the person on being saved to the database.
+            rockContext.SaveChanges();
+
+            PersonService.UpdatePersonAgeClassificationAll( rockContext );
+            rockContext.SaveChanges();
+
+            var personTurnedAdultFromDatabaseAgeClassification = personService.Queryable()
+                .Where( p => p.Id == personTurnedAdult.Id )
+                .Select( p => p.AgeClassification )
+                .First();
+            var adultLockedAsChildFromDatabaseAgeClassification = personService.Queryable()
+                .Where( p => p.Id == adultLockedAsChild.Id )
+                .Select( p => p.AgeClassification )
+                .First();
+            var personWithoutBirthdayFromDatabaseAgeClassification = personService.Queryable()
+                .Where( p => p.Id == personWithoutBirthday.Id )
+                .Select( p => p.AgeClassification )
+                .First();
+            var personWithUnkownAgeClassificiationLockedAsChildAgeClassification = personService.Queryable()
+                .Where( p => p.Id == personWithUnkownAgeClassificiationLockedAsChild.Id )
+                .Select( p => p.AgeClassification )
+                .First();
+            var personWithoutFamilyOrBirthdayAgeClassification = personService.Queryable()
+                .Where( p => p.Id == personWithoutFamilyOrBirthday.Id )
+                .Select( p => p.AgeClassification )
+                .First();
+
+
+            // Clean up the created accounts
+            // Motive: If any of the assertions fail, the test will be terminated midway. If the clean up code happens to be after the assert, it won't get executed if any of the
+            // assertions fail. Thus, cleaning up the code before the assertions.
+
+            new PersonAliasService( rockContext ).DeleteRange( personTurnedAdult.Aliases );
+            new PersonSearchKeyService( rockContext ).DeleteRange( personTurnedAdult.GetPersonSearchKeys( rockContext ).ToList() );
+            personService.Delete( personTurnedAdult );
+
+            new PersonAliasService( rockContext ).DeleteRange( adultLockedAsChild.Aliases );
+            new PersonSearchKeyService( rockContext ).DeleteRange( adultLockedAsChild.GetPersonSearchKeys( rockContext ).ToList() );
+            personService.Delete( adultLockedAsChild );
+
+            new PersonAliasService( rockContext ).DeleteRange( personWithoutBirthday.Aliases );
+            new PersonSearchKeyService( rockContext ).DeleteRange( personWithoutBirthday.GetPersonSearchKeys( rockContext ).ToList() );
+            personService.Delete( personWithoutBirthday );
+
+            new PersonAliasService( rockContext ).DeleteRange( personWithUnkownAgeClassificiationLockedAsChild.Aliases );
+            new PersonSearchKeyService( rockContext ).DeleteRange( personWithUnkownAgeClassificiationLockedAsChild.GetPersonSearchKeys( rockContext ).ToList() );
+            personService.Delete( personWithUnkownAgeClassificiationLockedAsChild );
+
+            new PersonAliasService( rockContext ).DeleteRange( personWithoutFamilyOrBirthday.Aliases );
+            new PersonSearchKeyService( rockContext ).DeleteRange( personWithoutFamilyOrBirthday.GetPersonSearchKeys( rockContext ).ToList() );
+            personService.Delete( personWithoutFamilyOrBirthday );
+
+            rockContext.SaveChanges();
+
+            // Assertions
+
+            Assert.AreEqual( AgeClassification.Adult, personTurnedAdultFromDatabaseAgeClassification, "Age Classification of adult person should be set to Adult" );
+            Assert.AreEqual( AgeClassification.Child, adultLockedAsChildFromDatabaseAgeClassification, "Age Classification of adult person locked as child should not be set to Adult" );
+            Assert.AreEqual( AgeClassification.Adult, personWithoutBirthdayFromDatabaseAgeClassification,
+                "Age Classification of person without birthday but is not a child in any family should be set to Adult" );
+            Assert.AreEqual( AgeClassification.Unknown, personWithUnkownAgeClassificiationLockedAsChildAgeClassification,
+                "Age Classification of person without age classification but locked as child should not be altered" );
+            Assert.AreEqual( AgeClassification.Unknown, personWithoutFamilyOrBirthdayAgeClassification, "Age Classification of person without age or family should be set to Unknown" );
+        }
+
+        #endregion Age Classification
     }
 }

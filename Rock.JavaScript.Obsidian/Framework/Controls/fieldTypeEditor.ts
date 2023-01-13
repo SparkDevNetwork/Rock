@@ -17,7 +17,7 @@
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "./rockField";
-import Alert from "./alert";
+import Alert from "./alert.vue";
 import DropDownList from "./dropDownList";
 import StaticFormControl from "./staticFormControl";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";

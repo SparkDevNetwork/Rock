@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -679,7 +680,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Represents an enrollment for a row in the grid
         /// </summary>
-        public class AttemptViewModel
+        public class AttemptViewModel : RockDynamic
         {
             public int Id { get; set; }
             public string AchieverName { get; set; }

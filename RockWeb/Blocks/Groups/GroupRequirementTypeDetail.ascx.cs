@@ -13,23 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
-using Rock.Constants;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -82,7 +76,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
         }
 
         #endregion
@@ -111,20 +104,30 @@ namespace RockWeb.Blocks.Groups
                 groupRequirementType = new GroupRequirementType { Id = 0 };
                 groupRequirementType.RequirementCheckType = RequirementCheckType.Manual;
                 lActionTitle.Text = ActionTitle.Add( GroupRequirementType.FriendlyTypeName ).FormatAsHtmlTitle();
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
+            rblDueDate.Items.Clear();
+
+            foreach ( var ddt in Enum.GetValues( typeof( DueDateType ) ).Cast<DueDateType>() )
+            {
+                rblDueDate.Items.Add( new System.Web.UI.WebControls.ListItem( ddt.ConvertToString( true ), ddt.ConvertToString( false ) ) );
+            }
+
+            rblDueDate.DataBind();
+
             hfGroupRequirementTypeId.Value = groupRequirementType.Id.ToString();
             tbName.Text = groupRequirementType.Name;
             tbDescription.Text = groupRequirementType.Description;
-            tbPositiveLabel.Text = groupRequirementType.PositiveLabel;
-            tbNegativeLabel.Text = groupRequirementType.NegativeLabel;
-            tbWarningLabel.Text = groupRequirementType.WarningLabel;
-            tbCheckboxLabel.Text = groupRequirementType.CheckboxLabel;
-            cbCanExpire.Checked = groupRequirementType.CanExpire;
-            nbExpireInDays.Text = groupRequirementType.ExpireInDays.ToString();
+            tbIconCssClass.Text = groupRequirementType.IconCssClass;
+            cpCategory.SetValue( groupRequirementType.Category != null
+                    ? groupRequirementType.Category
+                    : null );
+            tbSummary.Text = groupRequirementType.Summary;
 
+            // Requirement Criteria section
             nbSQLHelp.InnerHtml = @"A SQL expression that returns a list of Person Ids that meet the criteria. Example:
 <pre>
 SELECT [Id] FROM [Person]
@@ -160,6 +163,30 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             dpWarningDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
             dpWarningDataView.SetValue( groupRequirementType.WarningDataViewId );
 
+            tbCheckboxLabel.Text = groupRequirementType.CheckboxLabel;
+
+            // Descriptive Labels section
+            tbPositiveLabel.Text = groupRequirementType.PositiveLabel;
+            tbNegativeLabel.Text = groupRequirementType.NegativeLabel;
+            tbWarningLabel.Text = groupRequirementType.WarningLabel;
+
+            // Workflows section
+            wtpDoesNotMeetWorkflowType.SetValue( groupRequirementType.DoesNotMeetWorkflowTypeId );
+            cbAutoInitiateDoesNotMeetRequirementWorkflow.Checked = groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow;
+            tbDoesNotMeetRequirementWorkflowTypeLinkText.Text = groupRequirementType.DoesNotMeetWorkflowLinkText;
+
+            wtpWarningWorkflowType.SetValue( groupRequirementType.WarningWorkflowTypeId );
+            cbAutoInitiateWarningRequirementWorkflow.Checked = groupRequirementType.ShouldAutoInitiateWarningWorkflow;
+            tbWarningRequirementWorkflowTypeLinkText.Text = groupRequirementType.WarningWorkflowLinkText;
+
+            // Additional Settings section
+            cbCanExpire.Checked = groupRequirementType.CanExpire;
+            nbExpireInDays.Text = groupRequirementType.ExpireInDays.ToString();
+
+            rblDueDate.SetValue( groupRequirementType.DueDateType.ConvertToString( false ) );
+            ShowDueDateOffset( groupRequirementType.DueDateType );
+            nbDueDateOffset.IntegerValue = groupRequirementType.DueDateOffsetInDays;
+
             hfRequirementCheckType.Value = groupRequirementType.RequirementCheckType.ConvertToInt().ToString();
         }
 
@@ -187,7 +214,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
 
             int groupRequirementTypeId = hfGroupRequirementTypeId.Value.AsInteger();
 
-            if (groupRequirementTypeId == 0)
+            if ( groupRequirementTypeId == 0 )
             {
                 groupRequirementType = new GroupRequirementType();
             }
@@ -198,11 +225,26 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
 
             groupRequirementType.Name = tbName.Text;
             groupRequirementType.Description = tbDescription.Text;
+            groupRequirementType.IconCssClass = tbIconCssClass.Text;
+            groupRequirementType.CategoryId = cpCategory.SelectedValueAsInt();
+            groupRequirementType.Summary = tbSummary.Text;
+
+            groupRequirementType.DoesNotMeetWorkflowTypeId = wtpDoesNotMeetWorkflowType.SelectedValueAsId();
+            groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow = cbAutoInitiateDoesNotMeetRequirementWorkflow.Checked;
+            groupRequirementType.DoesNotMeetWorkflowLinkText = tbDoesNotMeetRequirementWorkflowTypeLinkText.Text;
+
+            groupRequirementType.WarningWorkflowTypeId = wtpWarningWorkflowType.SelectedValueAsId();
+            groupRequirementType.ShouldAutoInitiateWarningWorkflow = cbAutoInitiateWarningRequirementWorkflow.Checked;
+            groupRequirementType.WarningWorkflowLinkText = tbWarningRequirementWorkflowTypeLinkText.Text;
+
             groupRequirementType.CanExpire = cbCanExpire.Checked;
             groupRequirementType.ExpireInDays = groupRequirementType.CanExpire ? nbExpireInDays.Text.AsIntegerOrNull() : null;
+            groupRequirementType.DueDateType = rblDueDate.SelectedValue.ConvertToEnum<DueDateType>();
+            groupRequirementType.DueDateOffsetInDays = nbDueDateOffset.Visible ? nbDueDateOffset.IntegerValue : null;
+
             groupRequirementType.RequirementCheckType = hfRequirementCheckType.Value.ConvertToEnum<RequirementCheckType>( RequirementCheckType.Manual );
 
-            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Sql)
+            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
                 groupRequirementType.SqlExpression = ceSqlExpression.Text;
                 groupRequirementType.WarningSqlExpression = ceWarningSqlExpression.Text;
@@ -213,7 +255,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
                 groupRequirementType.WarningSqlExpression = null;
             }
 
-            if (groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview)
+            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
             {
                 groupRequirementType.DataViewId = dpDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpDataView.SelectedValue.AsIntegerOrNull();
                 groupRequirementType.WarningDataViewId = dpWarningDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpWarningDataView.SelectedValue.AsIntegerOrNull();
@@ -250,6 +292,27 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             NavigateToParentPage();
         }
 
+        protected void rblDueDate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var dueDateType = rblDueDate.SelectedValue.ConvertToEnum<DueDateType>();
+            ShowDueDateOffset( dueDateType );
+        }
+
+        /// <summary>
+        /// Changes the visibility of the Due Date Offset number box.
+        /// </summary>
+        /// <param name="dueDateType"></param>
+        private void ShowDueDateOffset( DueDateType dueDateType )
+        {
+            if ( dueDateType == DueDateType.GroupAttribute || dueDateType == DueDateType.DaysAfterJoining )
+            {
+                nbDueDateOffset.Visible = true;
+            }
+            else
+            {
+                nbDueDateOffset.Visible = false;
+            }
+        }
         #endregion
     }
 }

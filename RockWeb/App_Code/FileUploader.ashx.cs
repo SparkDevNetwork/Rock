@@ -56,6 +56,8 @@ namespace RockWeb
             public const string RootFolder = "rootFolder";
             public const string FileTypeGuid = "fileTypeGuid";
             public const string IsTemporary = "IsTemporary";
+            public const string ParentEntityTypeId = "ParentEntityTypeId";
+            public const string ParentEntityId = "ParentEntityId";
         }
 
         #endregion Constants
@@ -344,6 +346,8 @@ namespace RockWeb
 
             // assume file is temporary unless specified otherwise so that files that don't end up getting used will get cleaned up
             binaryFile.IsTemporary = context.Request.QueryString[ParameterKey.IsTemporary].AsBooleanOrNull() ?? true;
+            binaryFile.ParentEntityTypeId = context.Request.QueryString[ParameterKey.ParentEntityTypeId].AsIntegerOrNull();
+            binaryFile.ParentEntityId = context.Request.QueryString[ParameterKey.ParentEntityId].AsIntegerOrNull();
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileSize = uploadedFile.ContentLength;

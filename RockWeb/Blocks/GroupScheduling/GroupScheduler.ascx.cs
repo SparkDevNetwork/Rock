@@ -48,6 +48,13 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [BooleanField(
+        "Disallow Group Selection If Specified",
+        Description = "When enabled it will hide the group picker if there is a GroupId in the query string.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.DisallowGroupSelectionIfSpecified )]
     [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
@@ -60,6 +67,11 @@ namespace RockWeb.Blocks.GroupScheduling
             /// The future weeks to show
             /// </summary>
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+
+            /// <summary>
+            /// The disallow group selection if specified
+            /// </summary>
+            public const string DisallowGroupSelectionIfSpecified = "DisallowGroupSelectionIfSpecified";
         }
 
         #region PageParameterKeys
@@ -434,7 +446,7 @@ btnCopyToClipboard.ClientID );
             }
 
             int? selectedGroupId = null;
-            List<int> pickerGroupIds;
+            List<int> pickerGroupIds = new List<int>();
             bool showChildGroups;
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
@@ -444,6 +456,12 @@ btnCopyToClipboard.ClientID );
                 var pageParameterGroupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                 if ( pageParameterGroupId.HasValue )
                 {
+                    /*
+                      SK - 11/09/2022
+                      This will hide the group picker if there is a GroupId in the query string.
+                      If there is a GroupIds query string parm. This will not lock the group selection.
+                     */
+                    gpPickedGroups.Enabled = !GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() || pageParameterGroupIds.Any();
                     selectedGroupId = pageParameterGroupId.Value;
                     if ( !pageParameterGroupIds.Contains( selectedGroupId.Value ) )
                     {
@@ -457,9 +475,26 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                pickerGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
                 selectedGroupId = this.GetBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
                 showChildGroups = this.GetBlockUserPreference( UserPreferenceKey.ShowChildGroups ).AsBoolean();
+            }
+
+            var userPreferenceGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+            if ( pickerGroupIds.Any() )
+            {
+                var pickerSelectedGroupIds = userPreferenceGroupIds.Where( a => pickerGroupIds.Contains( a ) ).ToList();
+                if ( pickerSelectedGroupIds.Any() )
+                {
+                    pickerGroupIds = pickerSelectedGroupIds;
+                }
+                else
+                {
+                    pickerGroupIds = pickerGroupIds.Take( 1 ).ToList();
+                }
+            }                                       
+            else
+            {
+                pickerGroupIds = userPreferenceGroupIds;
             }
 
             // if there is a 'GroupIds' parameter/userpreference, that defines what groups are shown.
@@ -1306,6 +1341,7 @@ btnCopyToClipboard.ClientID );
             {
                 // sort the occurrenceColumns so the selected Group is in the first column, then order by Group.Order/Name
                 occurrenceColumnDataList = attendanceOccurrencesOrderedList
+                    .Where( a => a.ScheduledDateTime.HasValue )
                     .GroupBy( a => a.Group.Id )
                     .Select( a =>
                     {
@@ -1333,6 +1369,7 @@ btnCopyToClipboard.ClientID );
                 var group = authorizedListedGroups.FirstOrDefault();
 
                 occurrenceColumnDataList = attendanceOccurrencesOrderedList
+                    .Where( a => a.ScheduledDateTime.HasValue )
                     .GroupBy( a => new { ScheduleId = a.Schedule.Id, a.OccurrenceDate } )
                     .Select( a =>
                     {
@@ -1637,13 +1674,13 @@ btnCopyToClipboard.ClientID );
 
                 // Single Group mode, so show column header with Schedule Info
                 var lSingleGroupModeColumnHeadingOccurrenceDate = e.Item.FindControl( "lSingleGroupModeColumnHeadingOccurrenceDate" ) as Literal;
-                var lSingleGroupModeColumnHeadingOccurrenceTime = e.Item.FindControl( "lSingleGroupModeColumnHeadingOccurrenceTime" ) as Literal;
+                var lSingleGroupModeColumnHeadingOccurrenceScheduleName = e.Item.FindControl( "lSingleGroupModeColumnHeadingOccurrenceScheduleName" ) as Literal;
 
                 // show date in 'Sunday, June 15' format
                 lSingleGroupModeColumnHeadingOccurrenceDate.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
                 // show time in '10:30 AM' format
-                lSingleGroupModeColumnHeadingOccurrenceTime.Text = occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                lSingleGroupModeColumnHeadingOccurrenceScheduleName.Text = occurrenceColumnItem.Schedule?.AbbreviatedName ?? occurrenceColumnItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
             }
             else
             {
@@ -1701,7 +1738,7 @@ btnCopyToClipboard.ClientID );
             if ( attendanceOccurrenceRowItem.ScheduledDateTime.HasValue )
             {
                 var lMultiGroupModeOccurrenceScheduledDate = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledDate" ) as Literal;
-                var lMultiGroupModeOccurrenceScheduledTime = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledTime" ) as Literal;
+                var lMultiGroupModeOccurrenceScheduleName = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduleName" ) as Literal;
 
                 if ( !attendanceOccurrenceRowItem.LocationId.HasValue )
                 {
@@ -1711,8 +1748,8 @@ btnCopyToClipboard.ClientID );
                 // show date in 'Sunday, June 15' format
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
 
-                // show time in '10:30 AM' format
-                lMultiGroupModeOccurrenceScheduledTime.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
+                // show schedule name if null show time in '10:30 AM' format
+                lMultiGroupModeOccurrenceScheduleName.Text = attendanceOccurrenceRowItem.Schedule?.AbbreviatedName ?? attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "h:mm tt" );
                 pnlScheduledOccurrence.Attributes["data-attendanceoccurrence-date"] = attendanceOccurrenceRowItem.ScheduledDateTime.Value.Date.ToISO8601DateString();
             }
 
@@ -2003,7 +2040,7 @@ btnCopyToClipboard.ClientID );
                 .ToList();
 
             var attendanceService = new AttendanceService( rockContext );
-            var sendConfirmationAttendancesQuery = attendanceService.GetPendingScheduledConfirmations()
+            var sendConfirmationAttendancesQuery = attendanceService.GetPendingAndAutoAcceptScheduledConfirmations()
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
@@ -2027,7 +2064,7 @@ btnCopyToClipboard.ClientID );
 
             if ( sendMessageResult.Warnings.Any() )
             {
-                if( alertType != ModalAlertType.Alert )
+                if ( alertType != ModalAlertType.Alert )
                 {
                     alertType = ModalAlertType.Warning;
                 }
@@ -2265,7 +2302,7 @@ btnCopyToClipboard.ClientID );
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             var preferencesForGroup = groupMemberAssignmentQuery
-                .Where( a => a.GroupMember.GroupId == groupId && a.GroupMember.PersonId == groupMemberPersonId )
+                .Where( a => !a.GroupMember.IsArchived && a.GroupMember.GroupId == groupId && a.GroupMember.PersonId == groupMemberPersonId )
                 .ToList();
 
             nbGroupScheduleAssignmentUpdatePreferenceInformation.Text = string.Empty;
@@ -2444,7 +2481,8 @@ btnCopyToClipboard.ClientID );
 
             var locationPreferenceForSchedule = groupMemberAssignmentQuery
                 .Where( a =>
-                    a.GroupMember.PersonId == groupMemberPersonId
+                    !a.GroupMember.IsArchived
+                    && a.GroupMember.PersonId == groupMemberPersonId
                     && a.ScheduleId.HasValue
                     && a.ScheduleId == scheduleId.Value ).FirstOrDefault();
 

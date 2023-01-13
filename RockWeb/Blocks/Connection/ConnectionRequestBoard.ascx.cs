@@ -187,8 +187,10 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private List<ConnectionRequestViewModelWithModel> _ConnectionRequestViewModelsWithFullModel;
+        private bool _isExporting = false;
 
         #endregion
+
         #region Properties
 
         /// <summary>
@@ -907,22 +909,6 @@ namespace RockWeb.Blocks.Connection
         #region Helper Methods
 
         /// <summary>
-        /// Gets the email link markup.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="emailAddress">The email address.</param>
-        /// <returns></returns>
-        private string GetEmailLinkMarkup( int? personId, string emailAddress )
-        {
-            if ( !personId.HasValue || emailAddress.IsNullOrWhiteSpace() )
-            {
-                return string.Empty;
-            }
-
-            return string.Format( @"<a href=""/Communication?person={0}"">{1}</a>", personId, emailAddress );
-        }
-
-        /// <summary>
         /// Gets the status icon HTML.
         /// </summary>
         /// <returns></returns>
@@ -995,7 +981,7 @@ namespace RockWeb.Blocks.Connection
             divRequestModalViewModePhoto.Attributes["style"] = string.Format( "background-image: url( '{0}' );", viewModel.PersonPhotoUrl );
             lRequestModalViewModeStatusIcons.Text = GetStatusIconHtml( viewModel );
             lRequestModalViewModePersonFullName.Text = viewModel.PersonFullname;
-            lRequestModalViewModeEmail.Text = GetEmailLinkMarkup( viewModel.PersonId, viewModel.PersonEmail );
+            lRequestModalViewModeEmail.Text = requesterPerson.GetEmailTag( ResolveRockUrl( "/" ) );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
 
@@ -1272,7 +1258,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( @"<div class=""panel-labels"" style=""text-align: right;"">" );
+            stringBuilder.AppendLine( @"<div class=""panel-labels text-right"">" );
 
             if ( !viewModel.CampusName.IsNullOrWhiteSpace() )
             {
@@ -2092,6 +2078,7 @@ namespace RockWeb.Blocks.Connection
         private void BindManualWorkflows()
         {
             var connectionOpportunity = GetConnectionOpportunity();
+            var connectionRequest = GetConnectionRequest();
 
             if ( connectionOpportunity == null )
             {
@@ -2102,7 +2089,8 @@ namespace RockWeb.Blocks.Connection
             var manualWorkflows = connectionWorkflows
                 .Where( w =>
                     w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
-                    w.WorkflowType != null )
+                    w.WorkflowType != null &&
+                    ( w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
                 .OrderBy( w => w.WorkflowType.Name )
                 .Distinct();
 
@@ -2201,7 +2189,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
+                var message = string.Format( "A '{0}' workflow was started.", workflowType.Name );
                 mdWorkflowLaunched.Show( message, ModalAlertType.Information );
             }
         }
@@ -2240,8 +2228,9 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Get the grid panel.
         /// </summary>
-        private void BindRequestsGrid()
+        private void BindRequestsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             var connectionRequestEntityId = ConnectionRequestEntityTypeId;
 
             gRequests.EntityIdField = "Id";
@@ -2265,8 +2254,25 @@ namespace RockWeb.Blocks.Connection
             var rockContext = new RockContext();
             var modelQuery = GetConnectionRequestModelWithFullModelQuery( rockContext );
             _ConnectionRequestViewModelsWithFullModel = modelQuery.ToList();
-            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
-            gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            if ( isExporting )
+            {
+                var connectionOpportunity = GetConnectionOpportunity();
+                gRequests.ExportFilename = connectionOpportunity.Name + "_" + RockDateTime.Now.ToString( "yyyyMMdd_hhmmtt" );
+                foreach ( var column in gRequests.Columns.OfType<SecurityField>().ToList() )
+                {
+                    gRequests.Columns.Remove( column );
+                }
+
+                gRequests.ObjectList = new Dictionary<string, object>();
+                _ConnectionRequestViewModelsWithFullModel.ForEach( i => gRequests.ObjectList.Add( i.Id.ToString(), i.ConnectionRequest ) );
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => (ConnectionRequestViewModel)a ).AsQueryable() );
+            }
+            else
+            {
+                gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            }
+
             gRequests.DataBind();
         }
 
@@ -2292,7 +2298,7 @@ namespace RockWeb.Blocks.Connection
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRequestsGrid();
+            BindRequestsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -2340,7 +2346,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var model = e.Row.DataItem as ConnectionRequest;
+            dynamic model = e.Row.DataItem as ConnectionRequest;
+            if ( _isExporting )
+            {
+                model = e.Row.DataItem as ConnectionRequestViewModel;
+            }
+
             if ( model == null )
             {
                 return;
@@ -4205,12 +4216,14 @@ namespace RockWeb.Blocks.Connection
             {
                 upnlBoardView.Visible = true;
                 upnlGridView.Visible = false;
+                pnlView.CssClass = "panel panel-block connection-board-view";
                 BindBoard();
             }
             else
             {
                 upnlBoardView.Visible = false;
                 upnlGridView.Visible = true;
+                pnlView.CssClass = "panel panel-block connection-grid-view";
                 GetRequestsGrid();
             }
         }

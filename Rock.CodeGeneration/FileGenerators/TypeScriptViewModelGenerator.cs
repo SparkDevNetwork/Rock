@@ -61,7 +61,7 @@ namespace Rock.CodeGeneration.FileGenerators
             // Loop through each sorted property and emit the declaration.
             for ( int i = 0; i < sortedProperties.Count; i++ )
             {
-                var property = properties[i];
+                var property = sortedProperties[i];
                 var isNullable = !IsNonNullType( property.PropertyType );
 
                 if ( i > 0 )
@@ -164,6 +164,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             // Get all the values to be included.
             var values = type.GetFields( BindingFlags.Static | BindingFlags.Public )
+                .OrderBy( f => f.Name )
                 .Select( f => new
                 {
                     Field = f,

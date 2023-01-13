@@ -120,7 +120,7 @@ namespace Rock.Jobs
 
                 // Get all who have not already been notified( attendance.ScheduleConfirmationSent = false ) and who have been requested to attend.
                 var sendConfirmationAttendancesQuery = new AttendanceService( rockContext )
-                    .GetPendingScheduledConfirmations()
+                    .GetPendingAndAutoAcceptScheduledConfirmations()
                     .Where( a => a.ScheduleConfirmationSent != true );
 
                 // if the root group is configured on the Job then limit to the group and its child groups

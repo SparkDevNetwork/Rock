@@ -172,17 +172,7 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
-            if ( this.Required )
-            {
-                this.RequiredFieldValidator = new RequiredFieldValidator();
-                this.RequiredFieldValidator.ID = this.ID + "_rfv";
-                this.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
-                this.RequiredFieldValidator.CssClass = "validation-error help-inline";
-                this.RequiredFieldValidator.Enabled = true;
-                this.RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
-                Controls.Add( this.RequiredFieldValidator );
-            }
+            var requiredErrorMessage = this.RequiredErrorMessage.IsNotNullOrWhiteSpace() ? this.RequiredErrorMessage : this.Label + " is required.";
 
             if ( EnhanceForLongLists )
             {
@@ -190,29 +180,25 @@ namespace Rock.Web.UI.Controls
                 _lboxDefinedValues.ID = this.ID + "_lboxDefinedValues";
                 _lboxDefinedValues.Style.Add( "width", "85%" );
                 _lboxDefinedValues.AutoPostBack = true;
+                _lboxDefinedValues.ValidationGroup = this.ValidationGroup;
                 _lboxDefinedValues.SelectedIndexChanged += lboxDefinedValues_SelectedIndexChanged;
                 Controls.Add( _lboxDefinedValues );
-
-                if ( this.Required )
-                {
-                    this.RequiredFieldValidator.ControlToValidate = _lboxDefinedValues.ID;
-                }
+                this._lboxDefinedValues.Required = this.Required;
+                this._lboxDefinedValues.RequiredErrorMessage = requiredErrorMessage;
             }
             else
             {
                 _cblDefinedValues = new RockCheckBoxList();
                 _cblDefinedValues.ID = this.ID + "_cblDefinedValues";
                 _cblDefinedValues.Style.Add( "width", "85%" );
+                _cblDefinedValues.ValidationGroup = this.ValidationGroup;
                 _cblDefinedValues.RepeatColumns = this.RepeatColumns;
                 _cblDefinedValues.RepeatDirection = this.RepeatDirection;
                 _cblDefinedValues.AutoPostBack = true;
                 _cblDefinedValues.SelectedIndexChanged += cblDefinedValues_SelectedIndexChanged;
                 Controls.Add( _cblDefinedValues );
-
-                if ( this.Required )
-                {
-                    this.RequiredFieldValidator.ControlToValidate = _cblDefinedValues.ID;
-                }
+                this._cblDefinedValues.Required = this.Required;
+                this._cblDefinedValues.RequiredErrorMessage = requiredErrorMessage;
             }
 
             LinkButtonAddDefinedValue = new LinkButton();

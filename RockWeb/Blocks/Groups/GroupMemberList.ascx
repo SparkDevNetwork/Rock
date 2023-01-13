@@ -31,72 +31,120 @@
                         </div>
                     </div>
 
+
                     <div class="panel-body">
+
                         <Rock:NotificationBox ID="nbRoleWarning" runat="server" CssClass="alert-grid" NotificationBoxType="Warning" Title="No roles!" Visible="false" />
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
+
+                        <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
+                            <ul class="nav nav-pills margin-b-lg">
+                                <li id="liGroupMembers" runat="server" class="active"><asp:LinkButton ID="lbGroupMembersTab" runat="server" Text="Group Members" OnClick="lbGroupMembersTab_Click"></asp:LinkButton></li>
+                                <li id="liRequirements" runat="server"><asp:LinkButton ID="lbRequirementsTab" runat="server" Text="Requirements" OnClick="lbRequirementsTab_Click"></asp:LinkButton></li>
+                            </ul>
+                            <asp:HiddenField ID="hfActivePill" runat="server" />
+                        </asp:PlaceHolder>
                         <div class="grid grid-panel">
-                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnClearFilterClick="rFilter_ClearFilterClick">
-                                <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
-                                <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
-                                <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                                <Rock:RockCheckBoxList ID="cblGroupMemberStatus" runat="server" Label="Group Member Status" RepeatDirection="Horizontal" />
-                                <Rock:CampusPicker ID="cpCampusFilter" runat="server" Label="Family Campus" />
-                                <Rock:RockCheckBoxList ID="cblGenderFilter" runat="server" RepeatDirection="Horizontal" Label="Gender">
-                                    <asp:ListItem Text="Male" Value="Male" />
-                                    <asp:ListItem Text="Female" Value="Female" />
-                                    <asp:ListItem Text="Unknown" Value="Unknown" />
-                                </Rock:RockCheckBoxList>
-                                <Rock:RockDropDownList ID="ddlRegistration" runat="server" Label="Registration" DataTextField="Name" DataValueField="Id" />
-                                <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" >
-                                    <asp:ListItem Text="" Value="" />
-                                    <asp:ListItem Text="Yes" Value="Yes" />
-                                    <asp:ListItem Text="No" Value="No" />
-                                </Rock:RockDropDownList>
-                                <Rock:DateRangePicker ID="drpDateAdded" runat="server" Label="Date Added" />
-                                <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
-                            </Rock:GridFilter>
-                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" OnRowDataBound="gGroupMembers_RowDataBound" ExportSource="ColumnOutput" OnRowCreated="gGroupMembers_RowCreated" >
-                                <Columns>
-                                    <Rock:SelectField></Rock:SelectField>
-                                    <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" ExcelExportBehavior="NeverInclude" />
+                            <div class="tab-content">
+                                <div id="divGroupMembers" runat="server" class="tab-pane active">
+                                    <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnClearFilterClick="rFilter_ClearFilterClick">
+                                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
+                                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                                        <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                                        <Rock:RockCheckBoxList ID="cblGroupMemberStatus" runat="server" Label="Group Member Status" RepeatDirection="Horizontal" />
+                                        <Rock:CampusPicker ID="cpCampusFilter" runat="server" Label="Family Campus" />
+                                        <Rock:RockCheckBoxList ID="cblGenderFilter" runat="server" RepeatDirection="Horizontal" Label="Gender">
+                                            <asp:ListItem Text="Male" Value="Male" />
+                                            <asp:ListItem Text="Female" Value="Female" />
+                                            <asp:ListItem Text="Unknown" Value="Unknown" />
+                                        </Rock:RockCheckBoxList>
+                                        <Rock:RockDropDownList ID="ddlRegistration" runat="server" Label="Registration" DataTextField="Name" DataValueField="Id" />
+                                        <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document">
+                                            <asp:ListItem Text="" Value="" />
+                                            <asp:ListItem Text="Yes" Value="Yes" />
+                                            <asp:ListItem Text="No" Value="No" />
+                                        </Rock:RockDropDownList>
+                                        <Rock:DateRangePicker ID="drpDateAdded" runat="server" Label="Date Added" />
+                                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                                    </Rock:GridFilter>
+                                    <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" OnRowDataBound="gGroupMembers_RowDataBound" ExportSource="ColumnOutput" OnRowCreated="gGroupMembers_RowCreated">
+                                        <Columns>
+                                            <Rock:SelectField></Rock:SelectField>
+                                            <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" ExcelExportBehavior="NeverInclude" />
 
-                                    <%-- Fields that are shown based on GroupType settings --%>
-                                    <Rock:RockLiteralField ID="lMaritalStatusValue" HeaderText="Marital Status" SortExpression="Person.MaritalStatusValue.Value" ExcelExportBehavior="AlwaysInclude"/>
-                                    <Rock:RockLiteralField ID="lConnectionStatusValue" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value" ExcelExportBehavior="AlwaysInclude"/>
+                                            <%-- Fields that are shown based on GroupType settings --%>
+                                            <Rock:RockLiteralField ID="lMaritalStatusValue" HeaderText="Marital Status" SortExpression="Person.MaritalStatusValue.Value" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lConnectionStatusValue" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value" ExcelExportBehavior="AlwaysInclude" />
 
-                                    <%-- Only shown if a registration is associated --%>
-                                    <Rock:RockLiteralField ID="lRegistration" HeaderText="Registration" OnRowSelectedEnabled="false" ExcelExportBehavior="NeverInclude" />
+                                            <%-- Only shown if a registration is associated --%>
+                                            <Rock:RockLiteralField ID="lRegistration" HeaderText="Registration" OnRowSelectedEnabled="false" ExcelExportBehavior="NeverInclude" />
 
-                                    <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
-                                    <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
-                                    <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
+                                            <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
+                                            <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
+                                            <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
 
-                                    <%-- Fields that are only shown when ShowAttendance is enabled: NOTE: This used to support Sorting, but that can cause performance issues with large groups. --%>
-                                    <Rock:RockLiteralField ID="lFirstAttended" HeaderText="First Attended" />
-                                    <Rock:RockLiteralField ID="lLastAttended" HeaderText="Last Attended" />
+                                            <%-- Fields that are only shown when ShowAttendance is enabled: NOTE: This used to support Sorting, but that can cause performance issues with large groups. --%>
+                                            <Rock:RockLiteralField ID="lFirstAttended" HeaderText="First Attended" />
+                                            <Rock:RockLiteralField ID="lLastAttended" HeaderText="Last Attended" />
 
-                                    <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
+                                            <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
 
-                                    <%-- Fields that are only shown when exporting --%>
-                                    <Rock:RockBoundField DataField="Person.NickName" HeaderText="Nick Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.LastName" HeaderText="Last Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.BirthDate" HeaderText="Birth Date" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.RecordStatusValueId" HeaderText="RecordStatusValueId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:DefinedValueField DataField="Person.RecordStatusValueId" HeaderText="Record Status" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockBoundField DataField="Person.IsDeceased" HeaderText="Is Deceased" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <%-- Fields that are only shown when exporting --%>
+                                            <Rock:RockBoundField DataField="Person.NickName" HeaderText="Nick Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.LastName" HeaderText="Last Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.BirthDate" HeaderText="Birth Date" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.RecordStatusValueId" HeaderText="RecordStatusValueId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:DefinedValueField DataField="Person.RecordStatusValueId" HeaderText="Record Status" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.IsDeceased" HeaderText="Is Deceased" Visible="false" ExcelExportBehavior="AlwaysInclude" />
 
-                                    <Rock:RockLiteralField ID="lExportHomePhone" HeaderText="Home Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lExportCellPhone" HeaderText="Cell Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                </Columns>
-                            </Rock:Grid>
+                                            <Rock:RockLiteralField ID="lExportHomePhone" HeaderText="Home Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lExportCellPhone" HeaderText="Cell Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                                <div id="divRequirements" runat="server" class="tab-pane">
+                                    <Rock:GridFilter ID="filterRequirements" runat="server" OnApplyFilterClick="filterRequirements_ApplyFilterClick" OnDisplayFilterValue="filterRequirements_DisplayFilterValue" OnClearFilterClick="filterRequirements_ClearFilterClick">
+                                        <Rock:RockCheckBoxList ID="cblRequirementsRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                                        <Rock:RockDropDownList ID="ddlRequirementType" runat="server" Label="Requirement Type" DataTextField="Name" DataValueField="Id" />
+                                        <Rock:RockCheckBoxList ID="cblRequirementState" runat="server" Label="Requirement State" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                                        <asp:PlaceHolder ID="phRequirementsAttributeFilters" runat="server" />
+                                    </Rock:GridFilter>
+                                    <Rock:Grid ID="gGroupMemberRequirements" runat="server" DisplayType="Full" AllowSorting="true" CssClass="js-grid-group-members" ExportSource="ColumnOutput" OnRowCreated="gGroupMemberRequirements_RowCreated" OnRowDataBound="gGroupMemberRequirements_RowDataBound" OnRowSelected="gGroupMemberRequirements_RowSelected">
+                                        <Columns>
+                                            <Rock:SelectField></Rock:SelectField>
+                                            <Rock:RockLiteralField ID="lRequirementExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockLiteralField ID="lRequirementNameWithHtml" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" ExcelExportBehavior="NeverInclude" />
+
+                                            <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
+                                            <Rock:RockLiteralField ID="lRequirementStates" HeaderText="Requirements" Visible="true" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
+
+                                            <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
+
+                                            <%-- Fields that are only shown when exporting --%>
+                                            <Rock:RockBoundField DataField="Person.NickName" HeaderText="Nick Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.LastName" HeaderText="Last Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.BirthDate" HeaderText="Birth Date" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.RecordStatusValueId" HeaderText="RecordStatusValueId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:DefinedValueField DataField="Person.RecordStatusValueId" HeaderText="Record Status" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                            <Rock:RockBoundField DataField="Person.IsDeceased" HeaderText="Is Deceased" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -175,8 +223,9 @@
                         });
                     });
 
-                });
-            </script>
+                } );
+
+             </script>
             <Rock:ModalDialog ID="mdActiveRecords" runat="server" Visible="false" Title="Include Inactive Group Members" CancelLinkVisible="false" CloseLinkVisible="false">
                 <Content>
                     <p>The selection contains inactive records.  Do you want to include the inactive records?</p>

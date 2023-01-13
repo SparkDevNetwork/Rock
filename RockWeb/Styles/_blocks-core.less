@@ -87,10 +87,10 @@
   box-shadow: none !important;
 
   > .panel-heading {
-    border-radius: @panel-border-radius @panel-border-radius 0 0;
-    padding: 18px;
     position: relative;
+    padding: 18px;
     background: @panel-section-heading-bg;
+    border-radius: @panel-border-radius @panel-border-radius 0 0;
     &::after {
       position: absolute;
       right: (@panel-body-padding - 4px);
@@ -111,11 +111,10 @@
   }
 
   > .panel-body {
-    border-radius: 0 0 @panel-border-radius @panel-border-radius;
     background: @panel-section-body-bg;
+    border-radius: 0 0 @panel-border-radius @panel-border-radius;
   }
 }
-
 
 
 // Fancy Scrollbars
@@ -194,17 +193,17 @@
 
 .avatar {
   position: relative;
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   overflow: hidden;
   font-size: 24px;
   line-height: 1;
-  background: @gray-100;
   color: @text-muted;
   text-align: center;
+  background: @gray-100;
   border-radius: 50%;
 
   img {

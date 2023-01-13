@@ -105,6 +105,7 @@ namespace Rock.Model
                 PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
                 PersonEntryDescription = model.PersonEntryDescription,
                 PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
+                PersonEntryEthnicityEntryOption = ( int ) model.PersonEntryEthnicityEntryOption,
                 PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
                 PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption,
                 PersonEntryGroupLocationTypeValueId = model.PersonEntryGroupLocationTypeValueId,
@@ -114,6 +115,7 @@ namespace Rock.Model
                 PersonEntryPersonAttributeGuid = model.PersonEntryPersonAttributeGuid,
                 PersonEntryPostHtml = model.PersonEntryPostHtml,
                 PersonEntryPreHtml = model.PersonEntryPreHtml,
+                PersonEntryRaceEntryOption = ( int ) model.PersonEntryRaceEntryOption,
                 PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId,
                 PersonEntrySectionTypeValueId = model.PersonEntrySectionTypeValueId,
                 PersonEntryShowHeadingSeparator = model.PersonEntryShowHeadingSeparator,
@@ -212,6 +214,7 @@ namespace Rock.Model
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryDescription = source.PersonEntryDescription;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
+            target.PersonEntryEthnicityEntryOption = source.PersonEntryEthnicityEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
             target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
@@ -221,6 +224,7 @@ namespace Rock.Model
             target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             target.PersonEntryPostHtml = source.PersonEntryPostHtml;
             target.PersonEntryPreHtml = source.PersonEntryPreHtml;
+            target.PersonEntryRaceEntryOption = source.PersonEntryRaceEntryOption;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;

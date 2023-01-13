@@ -18,15 +18,20 @@
 using System;
 using System.Linq;
 
-using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks
 {
     internal static class IValidPropertiesBoxExtensions
     {
+        public static bool IsValidProperty( this IValidPropertiesBox box, string propertyName )
+        {
+            return box.ValidProperties.Contains( propertyName, StringComparer.OrdinalIgnoreCase );
+        }
+
         public static void IfValidProperty( this IValidPropertiesBox box, string propertyName, Action executeIfValid )
         {
-            if ( box.ValidProperties.Contains( propertyName, StringComparer.OrdinalIgnoreCase ) )
+            if ( IsValidProperty( box, propertyName ) )
             {
                 executeIfValid();
             }
@@ -34,7 +39,7 @@ namespace Rock.Blocks
 
         public static TReturn IfValidProperty<TReturn>( this IValidPropertiesBox box, string propertyName, Func<TReturn> executeIfValid, TReturn defaultValue )
         {
-            if ( box.ValidProperties.Contains( propertyName, StringComparer.OrdinalIgnoreCase ) )
+            if ( IsValidProperty( box, propertyName ) )
             {
                 return executeIfValid();
             }

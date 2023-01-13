@@ -24,6 +24,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Rock;
 using Rock.Data;
+using TimeZoneConverter;
 using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Model
@@ -39,16 +40,16 @@ namespace Rock.Model
         /// <returns></returns>
         public string CreateICalendar( GetCalendarEventFeedArgs args )
         {
-            // Get a list of Rock Calendar Events filtered by calendarProps
+            // Get a list of Rock Calendar Events that match the specified filter.
             var eventItems = GetEventItems( args );
 
             // Create the iCalendar.
-            // Allow ICal to create the VTimeZone object from the local time zone to ensure that we get the correct name and daylight saving offset.
-            var vtz = new VTimeZone( RockDateTime.OrgTimeZoneInfo.Id );
             var icalendar = new Calendar();
-            icalendar.AddTimeZone( vtz );
 
-            var timeZoneId = vtz.TzId;
+            // Specify the calendar timezone using the Internet Assigned Numbers Authority (IANA) identifier, because most third-party applications
+            // require this to interpret event times correctly.
+            var timeZoneId = TZConvert.WindowsToIana( RockDateTime.OrgTimeZoneInfo.Id );
+            icalendar.AddTimeZone( VTimeZone.FromDateTimeZone( timeZoneId ) );
 
             // Create each of the events for the calendar(s)
             foreach ( EventItem eventItem in eventItems )
@@ -67,6 +68,40 @@ namespace Rock.Model
                         var ievent = icalEvent.Copy<CalendarEvent>();
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+                        ievent.Uid = occurrence.Guid.ToString();
+
+                        // Determine the start and end time for the event.
+                        // For an all-day event, omit the End date.
+                        // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
+                        ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
+
+                        if ( !ievent.Start.HasTime
+                            && ( ievent.End != null && !ievent.End.HasTime )
+                            && ievent.Duration == null || ievent.Duration.Ticks == 0 )
+                        {
+                            ievent.End = null;
+                        }
+                        else
+                        {
+                            ievent.End = new CalDateTime( icalEvent.End.Value, timeZoneId );
+                        }
+
+                        /*
+                            2022-10-19 - DL
+
+                            This code contains a number of workarounds for exporting recurring events in a format that can be processed by
+                            external calendar applications such as Microsoft Outlook, namely:
+                            1. The iCalendar PERIOD type is not recognized by some applications.
+                               We need to ensure that recurrence settings are always specified using the DATE type.
+                            2. Exception dates must have exactly the same start time and time zone as the template event, and the time zone
+                               must be expressed as an IANA name.
+                            3. Duplicate events may be imported if the template event date is also included in the list of recurrence dates.
+                               We need to remove the template event date (DTSTART) from the list of recurrences (RDATE).
+                            4. If a set of ad-hoc recurrence dates exist, events for these dates may not be created unless
+                               a recurrence rule also exists.
+
+                             Reason: To allow recurring events to be imported correctly to third-party calendar applications.
+                        */
 
                         // Create the list of exceptions.
                         // Exceptions must meet RFC 5545 iCalendar specifications to be correctly processed by third-party calendar applications
@@ -74,34 +109,25 @@ namespace Rock.Model
                         // and time zone as the template event, and the time zone must be expressed as an IANA name.
                         // The most recent version of iCal.Net (v2.3.5) that supports .NET framework v4.5.2 has some inconsistencies in the
                         // iCalendar serialization process, so we need to force the Start, End and Exception dates to render in exactly the same format.
-                        ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
-                        ievent.End = new CalDateTime( icalEvent.End.Value, timeZoneId );
 
                         var eventStartTime = new TimeSpan( ievent.DtStart.Hour, ievent.DtStart.Minute, ievent.DtStart.Second );
-                        var newExceptionDatesList = new List<PeriodList>();
 
-                        foreach ( var exceptionDateList in ievent.ExceptionDates )
-                        {
-                            var newDateList = new PeriodList() { TzId = timeZoneId };
-                            foreach ( var exceptionDate in exceptionDateList )
-                            {
-                                var newDateTime = exceptionDate.StartTime.HasTime ? exceptionDate.StartTime.Value : exceptionDate.StartTime.Value.Add( eventStartTime );
-                                newDateTime = new DateTime( newDateTime.Year, newDateTime.Month, newDateTime.Day, newDateTime.Hour, newDateTime.Minute, newDateTime.Second, newDateTime.Millisecond, DateTimeKind.Local );
+                        ievent.ExceptionDates = ConvertPeriodListElementsToDateType( ievent.ExceptionDates, timeZoneId, eventStartTime );
 
-                                var newDate = new CalDateTime( newDateTime );
-                                newDateList.Add( newDate );
-                            }
+                        // Microsoft Outlook does not import a recurrence date of type PERIOD, only DATE or DATETIME.
+                        // If the Recurrence Dates do not specify a Start Time, set the start time to the same as the event.
+                        // If this is an all day event, set the Start Time to 12:00am.
+                        ievent.RecurrenceDates = ConvertPeriodListElementsToDateType( ievent.RecurrenceDates, timeZoneId, eventStartTime );
 
-                            newExceptionDatesList.Add( newDateList );
-                        }
-
-                        ievent.ExceptionDates = newExceptionDatesList;
+                        // If the recurrence dates include the calendar event start date, remove it.
+                        // If we don't, Microsoft Outlook will create a duplicate entry for that date.
+                        ievent.RecurrenceDates = RemoveDateFromPeriodList( ievent.RecurrenceDates, ievent.DtStart );
 
                         // If one-time recurrence dates exist, create a placeholder recurrence rule to ensure that the iCalendar file
                         // can be correctly imported by Outlook.
                         // Fixes Issue #4112. Refer https://github.com/SparkDevNetwork/Rock/issues/4112
                         if ( ievent.RecurrenceRules.Count == 0
-                             && ievent.RecurrenceDates.Count > 0 )
+                            && ievent.RecurrenceDates.Count > 0 )
                         {
                             ievent.RecurrenceRules.Add( new RecurrencePattern( "FREQ=DAILY;COUNT=1" ) );
                         }
@@ -176,6 +202,76 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Convert the elements of a PeriodList from the iCalendar PERIOD type to the DATE type.
+        /// </summary>
+        /// <param name="periodLists"></param>
+        /// <param name="tzId"></param>
+        /// <param name="eventStartTime"></param>
+        /// <returns></returns>
+        private IList<PeriodList> ConvertPeriodListElementsToDateType( IList<PeriodList> periodLists, string tzId, TimeSpan eventStartTime )
+        {
+            // It's important to create and return a new PeriodList object here rather than simply removing elements of the existing collection,
+            // because iCal.Net has some issues with synchronising changes to PeriodList elements that cause problems downstream.
+            var newDatesList = new List<PeriodList>();
+
+            foreach ( var periodList in periodLists )
+            {
+                var newPeriodList = new PeriodList() { TzId = tzId };
+                foreach ( var period in periodList )
+                {
+                    var newDateTime = period.StartTime.HasTime
+                        ? period.StartTime.Value
+                        : period.StartTime.Value.Add( eventStartTime );
+                    newDateTime = new DateTime( newDateTime.Year, newDateTime.Month, newDateTime.Day, newDateTime.Hour, newDateTime.Minute, newDateTime.Second, newDateTime.Millisecond, DateTimeKind.Local );
+
+                    var newDate = new CalDateTime( newDateTime );
+
+                    // Set the HasTime property to ensure that iCal.Net serializes the date value as an iCalendar "DATE" rather than a "PERIOD".
+                    // Microsoft Outlook ignores date values that are expressed using the iCalendar "PERIOD" type.
+                    // (see: MS-STANOICAL - v20210817 - 2.2.86)
+                    newDate.HasTime = true;
+                    var newPeriod = new Period( newDate );
+
+                    newPeriodList.Add( newPeriod );
+                }
+
+                newDatesList.Add( newPeriodList );
+            }
+
+            return newDatesList;
+        }
+
+        /// <summary>
+        /// Removes instances of the specified date from a collection of PeriodList objects.
+        /// </summary>
+        /// <param name="periodLists"></param>
+        /// <param name="removeDate"></param>
+        /// <returns></returns>
+        private IList<PeriodList> RemoveDateFromPeriodList( IList<PeriodList> periodLists, IDateTime removeDate )
+        {
+            // It's important to create and return a new PeriodList object here rather than simply removing elements of the existing collection,
+            // because iCal.Net has some issues with synchronising changes to PeriodList elements that cause problems downstream.
+            var newPeriodLists = new List<PeriodList>();
+
+            foreach ( var periodList in periodLists )
+            {
+                var newPeriodList = new PeriodList() { TzId = periodList.TzId };
+                foreach ( var period in periodList )
+                {
+                    if ( period.StartTime.Ticks == removeDate.Ticks )
+                    {
+                        continue;
+                    }
+                    newPeriodList.Add( period );
+                }
+
+                newPeriodLists.Add( newPeriodList );
+            }
+
+            return newPeriodLists;
+        }
+
+        /// <summary>
         /// Creates the event description from the lava template. Default is used if one is not specified in the request.
         /// </summary>
         /// <param name="calendarProps"></param>
@@ -203,9 +299,17 @@ namespace Rock.Model
             var rockContext = new RockContext();
 
             var eventCalendarItemService = new EventCalendarItemService( rockContext );
-            var eventIdsForCalendar = eventCalendarItemService
+            var eventItemQuery = eventCalendarItemService
                 .Queryable()
-                .Where( i => i.EventCalendarId == calendarProps.CalendarId )
+                .Where( i => i.EventCalendarId == calendarProps.CalendarId );
+
+            // Filter by Event Item.
+            if ( calendarProps.EventItemIds != null && calendarProps.EventItemIds.Any() )
+            {
+                eventItemQuery = eventItemQuery.Where( eci => calendarProps.EventItemIds.Contains( eci.EventItemId ) );
+            }
+
+            var eventIdsForCalendar = eventItemQuery
                 .Select( i => i.EventItemId )
                 .ToList();
 
@@ -213,7 +317,7 @@ namespace Rock.Model
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= ( o.Schedule.EffectiveEndDate == null ? o.Schedule.EffectiveStartDate : o.Schedule.EffectiveEndDate ) ) )
+                .Where( e => e.EventItemOccurrences.Any( o => ( o.Schedule.EffectiveStartDate == null || o.Schedule.EffectiveStartDate <= calendarProps.EndDate ) && ( o.Schedule.EffectiveEndDate == null || calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
@@ -315,6 +419,14 @@ namespace Rock.Model
         /// The Lava template to be used for the Event Item summaries.
         /// </summary>
         public string EventCalendarLavaTemplate { get; set; } = "";
+
+        /// <summary>
+        /// Gets or sets the Event Item identifiers to be included. If not set, this filter is ignored.
+        /// </summary>
+        /// <value>
+        /// A collection of Event Item identifiers.
+        /// </value>
+        public List<int> EventItemIds { get; set; }
     }
 
     #endregion

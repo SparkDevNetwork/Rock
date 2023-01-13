@@ -859,7 +859,8 @@ namespace Rock.Blocks.Cms
                     {
                         var item = new ContentChannelItem
                         {
-                            ContentChannelId = c.Id
+                            ContentChannelId = c.Id,
+                            ContentChannelTypeId = c.ContentChannelTypeId
                         };
 
                         item.LoadAttributes( rockContext );

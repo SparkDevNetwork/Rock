@@ -406,6 +406,16 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                if ( !HasAnyTemplates() )
+                {
+                    _hfTemplateKey.Value = _CustomGuid.ToString();
+                    _btnStandard.Visible = false;
+                }
+                else
+                {
+                    _btnStandard.Visible = true;
+                }
+
                 RequiredFieldValidator.InitialValue = "";
                 if ( _hfTemplateKey.Value.AsGuidOrNull() == _CustomGuid )
                 {
@@ -502,6 +512,33 @@ namespace Rock.Web.UI.Controls
             RegisterClientScript();
         }
 
+        /// <summary>
+        /// Determines whether we have any valid templates to choose from. If not then
+        /// we should configure as custom content only.
+        /// </summary>
+        /// <returns>A boolean that indicates if we have any block templates.</returns>
+        private bool HasAnyTemplates()
+        {
+            if ( _templateBlockValueId.HasValue )
+            {
+                var blockTemplateDefinedValue = DefinedValueCache.Get( _templateBlockValueId.Value );
+
+                if ( blockTemplateDefinedValue != null )
+                {
+                    var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TEMPLATE );
+
+                    foreach ( var item in definedType.DefinedValues )
+                    {
+                        if ( item.GetAttributeValue( "TemplateBlock" ).AsGuid() == blockTemplateDefinedValue.Guid )
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
 
         private void RegisterClientScript()
         {

@@ -362,12 +362,12 @@ namespace Rock.Model
                     {
                         if ( !string.IsNullOrEmpty( this.OldValue ) )
                         {
-                            stringBuilder.Append( $" old value of <span class='field-name'>{this.OldValue}</span>, " );
+                            stringBuilder.Append( $" Old value of <span class='field-name'>{this.OldValue}</span>. " );
                         }
 
                         if ( !string.IsNullOrEmpty( this.NewValue ) )
                         {
-                            stringBuilder.Append( $" new value of <span class='field-name'>{this.NewValue}</span>, " );
+                            stringBuilder.Append( $" New value of <span class='field-name'>{this.NewValue}</span>. " );
                         }
                     }
 

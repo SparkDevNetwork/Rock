@@ -7120,16 +7120,17 @@ END
         /// <param name="header">The header.</param>
         /// <param name="footer">The footer.</param>
         /// <param name="actions">The actions.</param>
-        /// <param name="systemEmailGuid">The system email unique identifier.</param>
+        /// <param name="systemCommunicationGuid">The system communication unique identifier.</param>
         /// <param name="includeActionsInNotification">if set to <c>true</c> [include actions in notification].</param>
         /// <param name="actionAttributeGuid">The action attribute unique identifier.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemEmailGuid,
+        public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemCommunicationGuid,
             bool includeActionsInNotification, string actionAttributeGuid, string guid )
         {
             Migration.Sql( string.Format( @"
 
                 DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
+                DECLARE @SystemCommunicationId int = (SELECT [Id] FROM [SystemCommunication] WHERE [Guid] = '{3}')
 
                 IF EXISTS ( SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] =  '{6}' )
                 BEGIN
@@ -7138,6 +7139,7 @@ END
                         [Footer] = '{1}',
                         [Actions] = '{2}',
                         [NotificationSystemEmailId] = @SystemEmailId,
+                        [NotificationSystemCommunicationId] = @SystemCommunicationId,
                         [IncludeActionsInNotification] = {4},
                         [ActionAttributeGuid] = {5}
                     WHERE [Guid] = '{6}'
@@ -7145,14 +7147,14 @@ END
                 ELSE
                 BEGIN
                     INSERT INTO [WorkflowActionForm] (
-                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
-                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, {4}, {5}, '{6}' )
+                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
+                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, @SystemCommunicationId, {4}, {5}, '{6}' )
                 END
 ",
                     header.Replace( "'", "''" ),
                     footer.Replace( "'", "''" ),
                     actions,
-                    ( string.IsNullOrWhiteSpace( systemEmailGuid ) ? Guid.Empty.ToString() : systemEmailGuid ),
+                    ( string.IsNullOrWhiteSpace( systemCommunicationGuid ) ? Guid.Empty.ToString() : systemCommunicationGuid ),
                     ( includeActionsInNotification ? "1" : "0" ),
                     ( string.IsNullOrWhiteSpace( actionAttributeGuid ) ? "NULL" : "'" + actionAttributeGuid + "'" ),
                     guid )
@@ -8109,6 +8111,20 @@ END
         public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes )
         {
             var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes );
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Creates the index if it doesn't exist.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The indexed columns.</param>
+        /// <param name="includes">The non-indexed columns to include ( the INCLUDE clause ).</param>
+        /// <param name="isUnique">if set to <c>true</c> [is unique].</param>
+        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes, bool isUnique )
+        {
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, isUnique );
             Migration.Sql( sql );
         }
 

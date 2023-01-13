@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -49,6 +50,15 @@ namespace RockWeb.Blocks.Groups
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
+            var securityField = gList.ColumnsOfType<SecurityField>().FirstOrDefault();
+
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( GroupRequirementType ) ).Id;
+                securityField.Visible = canAdministrate;
+            }
 
             gList.DataKeyNames = new string[] { "Id" };
             gList.Actions.AddClick += gList_Add;

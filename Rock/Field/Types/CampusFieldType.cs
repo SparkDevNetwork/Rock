@@ -686,6 +686,37 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                var selectedValues = values[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                if ( selectedValues.Count == 0 )
+                {
+                    return new ComparisonValue
+                    {
+                        Value = string.Empty
+                    };
+                }
+                else
+                {
+                    return new ComparisonValue
+                    {
+                        ComparisonType = ComparisonType.Contains,
+                        Value = selectedValues.Select( v => GetPublicEditValue( v, privateConfigurationValues ) ).JoinStrings( "," )
+                    };
+                }
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
+        }
+
         /// <summary>
         /// Gets the filters expression.
         /// </summary>

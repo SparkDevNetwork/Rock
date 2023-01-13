@@ -37,11 +37,23 @@ export type GroupBag = {
     /** Gets or sets the attendance record required for check in. */
     attendanceRecordRequiredForCheckIn: number;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Id of the Rock.Model.Campus that this Group is associated with. */
     campusId?: number | null;
 
     /** Gets or sets the confirmation additional details. */
     confirmationAdditionalDetails?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the optional description of the group. */
     description?: string | null;
@@ -77,6 +89,9 @@ export type GroupBag = {
     /** Gets or sets the Id of the Rock.Model.GroupType that this Group is a member belongs to. This property is required. */
     groupTypeId: number;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the date that this group became inactive */
     inactiveDateTime?: string | null;
 
@@ -104,6 +119,12 @@ export type GroupBag = {
     /** Gets or sets a flag indicating if this Group is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Name of the Group. This property is required. */
     name?: string | null;
 
@@ -116,11 +137,17 @@ export type GroupBag = {
     /** Gets or sets the Id of the Group's Parent Group. */
     parentGroupId?: number | null;
 
+    /** Gets or sets the reminder additional details. */
+    reminderAdditionalDetails?: string | null;
+
+    /** Gets or sets the number of days prior to an event date that a reminder should be sent. */
+    reminderOffsetDays?: number | null;
+
+    /** Gets or sets the system communication to use for sending a reminder. */
+    reminderSystemCommunicationId?: number | null;
+
     /** Gets or sets the required signature document type identifier. */
     requiredSignatureDocumentTemplateId?: number | null;
-
-    /** Gets or sets the rsvp additional reminder details. */
-    rSVPReminderAdditionalDetails?: string | null;
 
     /** Gets or sets the number of days prior to the RSVP date that a reminder should be sent. */
     rSVPReminderOffsetDays?: number | null;
@@ -131,6 +158,9 @@ export type GroupBag = {
     /** Gets or sets the PersonAliasId of the person to notify when a person cancels */
     scheduleCancellationPersonAliasId?: number | null;
 
+    /** Gets or sets the schedule confirmation logic. */
+    scheduleConfirmationLogic?: number | null;
+
     /** Gets or sets the Rock.Model.Schedule identifier. */
     scheduleId?: number | null;
 
@@ -139,25 +169,4 @@ export type GroupBag = {
 
     /** Gets or sets the Group Status Id.  DefinedType depends on this group's Rock.Model.GroupType.GroupStatusDefinedType */
     statusValueId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

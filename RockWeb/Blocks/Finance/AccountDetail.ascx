@@ -55,7 +55,7 @@
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
                         <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Is Public" />
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Show Publicly" />
                         </div>
                     </div>
 

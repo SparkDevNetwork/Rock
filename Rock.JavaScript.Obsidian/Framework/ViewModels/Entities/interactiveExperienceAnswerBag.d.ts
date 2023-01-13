@@ -28,8 +28,26 @@ export type InteractiveExperienceAnswerBag = {
     /** Gets or sets the approval status. */
     approvalStatus: number;
 
-    /** Gets or sets the Rock.Model.Campus associated with Interactive Experience Answer. */
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /**
+     * Gets or sets the identifier of the Rock.Model.InteractiveExperienceAnswer.Campus the answer
+     * originated from.
+     */
     campusId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.InteractionSession Session. */
     interactionSessionId?: number | null;
@@ -37,8 +55,14 @@ export type InteractiveExperienceAnswerBag = {
     /** Gets or sets the Id of the Rock.Model.InteractiveExperienceAction that this Interactive Experience Answer is associated with. This property is required. */
     interactiveExperienceActionId: number;
 
-    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceSchedule that this Interactive Experience Answer is associated with. This property is required. */
-    interactiveExperienceScheduleId: number;
+    /** Gets or sets the Id of the Rock.Model.InteractiveExperienceOccurrence that this Interactive Experience Answer is associated with. This property is required. */
+    interactiveExperienceOccurrenceId: number;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;
@@ -46,27 +70,12 @@ export type InteractiveExperienceAnswerBag = {
     /** Gets or sets the response. */
     response?: string | null;
 
+    /**
+     * Gets or sets the custom response data JSON. This will hold additional
+     * information that does not need referential integrity.
+     */
+    responseDataJson?: string | null;
+
     /** Gets or sets the response date time. */
     responseDateTime?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -26,6 +26,17 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+/*
+ * 8/18/2022 - DSH
+ * 
+ * This field type persists values about the Location. It tracks all the different
+ * properties that might change and will update if those change. However, addresses
+ * get formatted by Lava. We could mark this field type as Volatile, but that could
+ * be a decent performance hit for something that will probably never happen. If an
+ * admin does change the Lava for a countries address formatting, the nightly job
+ * to update persisted attribute values will eventually get these back in sync.
+ */
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -395,7 +406,7 @@ namespace Rock.Field.Types
         #region Persistence
 
         /// <inheritdoc/>
-        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
             var textValue = string.Empty;
 

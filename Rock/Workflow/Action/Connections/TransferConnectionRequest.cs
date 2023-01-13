@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -39,9 +39,40 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of the new connection opportunity.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
     [WorkflowTextOrAttribute("Transfer Note", "Transfer Note Attribute", "The note to include with the transfer activity.", false, "", "", 2 )]
+    [EnumField( "Connection State",
+        Description = "The connection State to set the connection request.",
+        EnumSourceType = typeof( ConnectionState ),
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.ConnectionState )]
+    [IntegerField( "Connection Status Id",
+        Description = "The connection status id that request apply to",
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKey.ConnectionStatusId )]
     [Rock.SystemGuid.EntityTypeGuid( "308B46FD-6D87-471B-AA98-AAE1894B0D49")]
     public class TransferConnectionRequest : ActionComponent
     {
+        #region Workflow Attributes
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The connection state
+            /// </summary>
+            public const string ConnectionState = "ConnectionState";
+
+            /// <summary>
+            /// The connection status identifier
+            /// </summary>
+            public const string ConnectionStatusId = "ConnectionStatusId";
+        }
+
+        #endregion Workflow Attributes
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -68,10 +99,20 @@ namespace Rock.Workflow.Action
             // Get the opportunity
             ConnectionOpportunity opportunity = null;
             Guid opportunityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionOpportunityAttribute" ).AsGuid() ).AsGuid();
-            opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityTypeGuid );
+            opportunity = new ConnectionOpportunityService( rockContext )
+                .Queryable( "ConnectionType.ConnectionStatuses" )
+                .AsNoTracking()
+                .FirstOrDefault(opp => opp.Guid == opportunityTypeGuid );
             if ( opportunity == null )
             {
                 errorMessages.Add( "Invalid Connection Opportunity Attribute or Value!" );
+                return false;
+            }
+
+            var status = opportunity.ConnectionType.ConnectionStatuses.Where( s => s.IsDefault ).FirstOrDefault();
+            if ( status == null )
+            {
+                errorMessages.Add( "Connection Type is not in valid state. Connection Type must be having at least one default status." );
                 return false;
             }
 
@@ -81,6 +122,29 @@ namespace Rock.Workflow.Action
             if ( request != null && opportunity != null )
             {
                 request.ConnectionOpportunityId = opportunity.Id;
+                var connectionStatusId = GetAttributeValue( action, AttributeKey.ConnectionStatusId ).AsIntegerOrNull();
+                if ( connectionStatusId.HasValue )
+                {
+                    if ( opportunity.ConnectionType.ConnectionStatuses.Any( s => s.Id == connectionStatusId.Value ) )
+                    {
+                        request.ConnectionStatusId = connectionStatusId.Value;
+                    }
+                    else
+                    {
+                        errorMessages.Add( "The provided Connection Status Id was not valid for the Connection Type the request is being transferred to, therefore the default Status was used instead." );
+                        request.ConnectionStatusId = status.Id;
+                    }
+                }
+                else if ( request.ConnectionTypeId != opportunity.ConnectionTypeId )
+                {
+                    request.ConnectionStatusId = status.Id;
+                }
+
+                var connectionState = this.GetAttributeValue( action, AttributeKey.ConnectionState ).ConvertToEnumOrNull<ConnectionState>();
+                if ( connectionState.HasValue )
+                {
+                    request.ConnectionState = connectionState.Value;
+                }
 
                 var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
                 var transferredActivityId = new ConnectionActivityTypeService( rockContext )

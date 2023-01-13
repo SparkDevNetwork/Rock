@@ -156,4 +156,85 @@ export abstract class FieldTypeBase implements IFieldType {
 
         return text ? `'${text}'` : text;
     }
+
+    public doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
+        if (!filterValue.comparisonType) {
+            return false;
+        }
+
+        if (!filterValue.value) {
+            // No comparison value was specified. Attempt to filter on specific
+            // comparison types that don't need a value.
+            if (filterValue.comparisonType === ComparisonType.IsBlank) {
+                return (value ?? "") === "";
+            }
+            else if (filterValue.comparisonType === ComparisonType.IsNotBlank) {
+                return (value ?? "") !== "";
+            }
+            else if (this.getSupportedComparisonTypes() & ComparisonType.IsBlank) {
+                // If this filter supports an IsBlank comparison type then
+                // translate "EqualTo" and "NotEqualTo" to be "IsBlank" and
+                // "IsNotBlank" respectively.
+                if (filterValue.comparisonType === ComparisonType.EqualTo) {
+                    return (value ?? "") === "";
+                }
+                else if (filterValue.comparisonType === ComparisonType.NotEqualTo) {
+                    return (value ?? "") !== "";
+                }
+            }
+
+            return false;
+        }
+
+        const numericFilterValue = parseFloat(filterValue.value);
+        const numericValue = parseFloat(value ?? "");
+        const isNumericComparison = !Number.isNaN(numericFilterValue) && !Number.isNaN(numericValue);
+
+        if (filterValue.comparisonType === ComparisonType.Contains) {
+            return (value ?? "").toLowerCase().includes(filterValue.value.toLowerCase());
+        }
+        else if (filterValue.comparisonType === ComparisonType.DoesNotContain) {
+            return !(value ?? "").toLowerCase().includes(filterValue.value.toLowerCase());
+        }
+        else if (filterValue.comparisonType === ComparisonType.StartsWith) {
+            return (value ?? "").toLowerCase().startsWith(filterValue.value.toLowerCase());
+        }
+        else if (filterValue.comparisonType === ComparisonType.EndsWith) {
+            return (value ?? "").toLowerCase().endsWith(filterValue.value.toLowerCase());
+        }
+        else if (filterValue.comparisonType === ComparisonType.EqualTo) {
+            return (value ?? "").toLowerCase() === filterValue.value.toLowerCase();
+        }
+        else if (filterValue.comparisonType === ComparisonType.NotEqualTo) {
+            return (value ?? "").toLowerCase() !== filterValue.value.toLowerCase();
+        }
+        else if (filterValue.comparisonType === ComparisonType.IsBlank) {
+            return (value ?? "").toLowerCase().trim() === "";
+        }
+        else if (filterValue.comparisonType === ComparisonType.IsNotBlank) {
+            return (value ?? "").toLowerCase().trim() !== "";
+        }
+        else if (filterValue.comparisonType === ComparisonType.LessThan) {
+            return isNumericComparison
+                ? numericValue < numericFilterValue
+                : (value ?? "").toLowerCase() < filterValue.value.toLowerCase();
+        }
+        else if (filterValue.comparisonType === ComparisonType.LessThanOrEqualTo) {
+            return isNumericComparison
+                ? numericValue <= numericFilterValue
+                : (value ?? "").toLowerCase() <= filterValue.value.toLowerCase();
+        }
+        else if (filterValue.comparisonType === ComparisonType.GreaterThan) {
+            return isNumericComparison
+                ? numericValue > numericFilterValue
+                : (value ?? "").toLowerCase() > filterValue.value.toLowerCase();
+        }
+        else if (filterValue.comparisonType === ComparisonType.GreaterThanOrEqualTo) {
+            return isNumericComparison
+                ? numericValue >= numericFilterValue
+                : (value ?? "").toLowerCase() >= filterValue.value.toLowerCase();
+        }
+
+        return false;
+    }
 }
