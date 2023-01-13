@@ -351,7 +351,15 @@ namespace RockWeb.Blocks.Reminders
                 foreach ( var reminder in reminders.ToList() )
                 {
                     var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                    reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    string personProfilePhoto = string.Empty;
+                    if ( entity.TypeName == "Rock.Model.Person" )
+                    {
+                        reminderDTOs.Add( new ReminderDTO( reminder, entity, Person.GetPersonPhotoUrl( entity.Id ) ) );
+                    }
+                    else
+                    {
+                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                    }
                 }
             }
 
@@ -458,6 +466,33 @@ namespace RockWeb.Blocks.Reminders
                 var reminder = reminderService.Get( reminderId );
                 reminderService.Delete( reminder );
                 rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Get the IconCss for the GroupType of a Group.
+        /// </summary>
+        /// <param name="groupId">The Group identifier.</param>
+        /// <returns></returns>
+        private string GetGroupTypeIconCss( int groupId )
+        {
+            string defaultGroupIconCss = "fa fa-users";
+
+            using ( var rockContext = new RockContext() )
+            {
+                var group = new GroupService( rockContext ).Get( groupId );
+
+                if ( group == null )
+                {
+                    return defaultGroupIconCss;
+                }
+
+                if ( group.GroupType.IconCssClass.IsNullOrWhiteSpace() )
+                {
+                    return defaultGroupIconCss;
+                }
+
+                return group.GroupType.IconCssClass;
             }
         }
 
@@ -704,6 +739,14 @@ namespace RockWeb.Blocks.Reminders
                 var litProfilePhoto = e.Item.FindControl( "litProfilePhoto" ) as Literal;
                 litProfilePhoto.Visible = true;
                 litProfilePhoto.Text = string.Format( litProfilePhoto.Text, photoUrl );
+            }
+
+            if ( reminder.IsGroupReminder )
+            {
+                var iconCss = GetGroupTypeIconCss( reminder.EntityId );
+                var litGroupIcon = e.Item.FindControl( "litGroupIcon" ) as Literal;
+                litGroupIcon.Visible = true;
+                litGroupIcon.Text = string.Format( litGroupIcon.Text, iconCss );
             }
         }
 

@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Reminders
             var rockContext = new RockContext();
             var reminderTypeService = new ReminderTypeService( rockContext );
 
-            var reminderTypes = reminderTypeService.Queryable().OrderBy( dt => dt.Order ).ToList();
+            var reminderTypes = reminderTypeService.Queryable().OrderBy( rt => rt.Order ).ToList();
             reminderTypeService.Reorder( reminderTypes, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
@@ -197,6 +197,12 @@ namespace RockWeb.Blocks.Reminders
             {
                 reminderType = new ReminderType();
                 reminderTypeService.Add( reminderType );
+
+                var orders = reminderTypeService.Queryable()
+                    .Select( d => d.Order )
+                    .ToList();
+
+                reminderType.Order = orders.Any() ? orders.Max() + 1 : 0;
             }
             else
             {
@@ -209,7 +215,6 @@ namespace RockWeb.Blocks.Reminders
             reminderType.NotificationType = rddlNotificationType.SelectedValueAsEnum<ReminderNotificationType>();
             reminderType.NotificationWorkflowTypeId = rwtpWorkflowType.SelectedValueAsId();
             reminderType.ShouldShowNote = rcbShouldShowNote.Checked;
-            reminderType.Order = rtbOrder.Text.AsInteger();
             reminderType.EntityTypeId = retpEntityType.SelectedValueAsId().Value;
             reminderType.ShouldAutoCompleteWhenNotified = rcbShouldAutoComplete.Checked;
             reminderType.HighlightColor = cpHighlightColor.Text;
@@ -276,7 +281,6 @@ namespace RockWeb.Blocks.Reminders
                 rddlNotificationType.SelectedValue = string.Empty;
                 rwtpWorkflowType.SetValue( null );
                 rcbShouldShowNote.Checked = true;
-                rtbOrder.Text = "0";
                 retpEntityType.SetValue( "0" );
                 rcbShouldAutoComplete.Checked = false;
                 cpHighlightColor.Text = string.Empty;
@@ -297,7 +301,6 @@ namespace RockWeb.Blocks.Reminders
                 rddlNotificationType.SelectedValue = ( ( int ) reminderType.NotificationType ).ToString();
                 rwtpWorkflowType.SetValue( reminderType.NotificationWorkflowTypeId );
                 rcbShouldShowNote.Checked = reminderType.ShouldShowNote;
-                rtbOrder.Text = reminderType.Order.ToString();
                 retpEntityType.SetValue( reminderType.EntityType );
                 rcbShouldAutoComplete.Checked = reminderType.ShouldAutoCompleteWhenNotified;
                 cpHighlightColor.Text = reminderType.HighlightColor;
