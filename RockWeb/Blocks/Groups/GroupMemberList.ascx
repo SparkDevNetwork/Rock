@@ -37,12 +37,13 @@
                         <Rock:NotificationBox ID="nbRoleWarning" runat="server" CssClass="alert-grid" NotificationBoxType="Warning" Title="No roles!" Visible="false" />
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-                        <asp:HiddenField ID="hfActivePill" runat="server" />
+
                         <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                             <ul class="nav nav-pills margin-b-lg">
                                 <li id="liGroupMembers" runat="server" class="active"><asp:LinkButton ID="lbGroupMembersTab" runat="server" Text="Group Members" OnClick="lbGroupMembersTab_Click"></asp:LinkButton></li>
                                 <li id="liRequirements" runat="server"><asp:LinkButton ID="lbRequirementsTab" runat="server" Text="Requirements" OnClick="lbRequirementsTab_Click"></asp:LinkButton></li>
                             </ul>
+                            <asp:HiddenField ID="hfActivePill" runat="server" />
                         </asp:PlaceHolder>
                         <div class="grid grid-panel">
                             <div class="tab-content">
