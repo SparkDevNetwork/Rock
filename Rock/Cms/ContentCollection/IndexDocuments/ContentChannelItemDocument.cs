@@ -47,7 +47,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 EntityId = contentChannelItem.Id,
                 Name = contentChannelItem.Title,
                 NameSort = contentChannelItem.Title,
-                Content = contentChannelItem.Content,
+                Content = SanitizeAndDecodeHtml( contentChannelItem.Content ),
                 SourceId = source.Id,
                 SourceGuid = source.Guid,
                 SourceIdKey = IdHasher.Instance.GetHash( source.Id ),
@@ -66,6 +66,23 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
 
             return document;
         }
+
+        /// <summary>
+        /// Santizes an HTML string by stripping out any HTML elements and also
+        /// decodes any HTML entities such as &amp;amp;.
+        /// </summary>
+        /// <param name="html">The HTML string to be sanitized and decoded.</param>
+        /// <returns>A string that represents the plain text.</returns>
+        private static string SanitizeAndDecodeHtml( string html )
+        {
+            // Just to add clarify to the above. This method will remove <p>
+            // but it will leave "&amp;" as "&amp;".
+            var sanitizedHtml = html.SanitizeHtml();
+
+            // This method will change "&amp;" to just "&".
+            return System.Net.WebUtility.HtmlDecode( sanitizedHtml );
+        }
+
 
         #endregion
     }

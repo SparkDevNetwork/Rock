@@ -103,4 +103,16 @@ export const enum Category {
     RegistrationAttributeEndOfRegistration = "4648196E-CEB8-4D76-8F27-273EBBC35A08",
     /** Hosting Metrics Metric Category Guid */
     MetricHostingMetrics = "370FBBD8-7766-4B3F-81A9-F13EE819A832",
+    /** The GUID for the WorkflowType category "Check-in" */
+    WorkflowTypeCheckin = "8F8B272D-D351-485E-86D6-3EE5B7C84D99",
+    /** The GUID for the WorkflowType category "Data Integrity" */
+    WorkflowTypeDataIntegrity = "BBAE05FD-8192-4616-A71E-903A927E0D90",
+    /** The GUID for the WorkflowType category "Requests" */
+    WorkflowTypeRequests = "78E38655-D951-41DB-A0FF-D6474775CFA1",
+    /** The GUID for the WorkflowType category "Safety &amp; Security" */
+    WorkflowTypeSafetyAndSecurity = "6F8A431C-BEBD-4D33-AAD6-1D70870329C2",
+    /** The GUID for the WorkflowType "Category Samples" */
+    WorkflowTypeSamples = "CB99421E-9ADC-488E-8C71-94BB14F27F56",
+    /** The GUID for the WorkflowType category "Staff Forms" */
+    WorkflowTypeStaffForms = "25E6844F-59BA-4C0D-9284-ED2A558E18EC",
 }

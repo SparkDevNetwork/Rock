@@ -305,6 +305,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "04712F3D-9667-4901-A49D-4507573EF7AD".AsGuid(), "Login Status", "Login", @"", @"", 0, "A87E9E32-5EA6-461A-8590-526B1E0B0C3A" );
 
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "19C2140D-498A-4675-B8A2-18B281736F6E", "A87E9E32-5EA6-461A-8590-526B1E0B0C3A" );
+
             // Add Block Attribute Value
             // Block: Login Status
             // BlockType: Login Status
@@ -331,6 +334,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74".AsGuid(), "Smart Search", "Header", @"", @"", 0, "4A6902BC-6594-48FE-8750-7BF935DEFB2C" );
 
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B01F3EF1-ECB9-4C7E-AB92-B45C4C29D5C0", "4A6902BC-6594-48FE-8750-7BF935DEFB2C" );
+
             #endregion Smart Search Block
 
             #region Menu Block
@@ -341,6 +347,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Menu", "Navigation", @"", @"", 0, "61BE0C07-D64A-4748-9F51-AD27830E0BAA" );
+
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "148E5996-00DE-4341-8541-20CB3FFB7C74", "61BE0C07-D64A-4748-9F51-AD27830E0BAA" );
 
             // Add Block Attribute Value
             //   Block: Menu
@@ -396,6 +405,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Sub Page Menu", "ProfileNavigation", @"", @"", 0, "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A" );
+            
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "F82E5FF2-F412-405C-9CC5-BF6E0401EB38", "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A" );
 
             // Add Block Attribute Value
             // Block: Sub Page Menu
@@ -440,7 +452,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "8C94620B-0FC1-4C39-9474-1714546E7D9E".AsGuid(), "Person Edit", "ProfileNavigationRight", @"", @"", 0, "9EECF41A-36C6-489C-93DF-2480A3E3BD9B" );
-
+            
             #endregion Person Edit Block
 
             #region Badges Block
@@ -451,6 +463,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "2412C653-9369-4772-955E-80EE8FA051E3".AsGuid(), "Badges", "BadgeBar", @"", @"", 0, "B2680AB4-CC89-47D5-80CD-58F3BA575A08" );
+            
+            // Copy the security settings (source is badge 1, 2, and 3 blocks.
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "98A30DD7-8665-4C6D-B1BB-A8380E862A04", "B2680AB4-CC89-47D5-80CD-58F3BA575A08" );
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "AA588E23-D34C-433A-BA3D-B0B82797A22F", "B2680AB4-CC89-47D5-80CD-58F3BA575A08" );
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "F3E6CC14-C540-4FFC-A5A9-48AD9CC0A61B", "B2680AB4-CC89-47D5-80CD-58F3BA575A08" );
 
             // Add Block Attribute Value
             // Block: Badges
@@ -502,6 +519,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "7249D05F-0FD1-4F44-88EB-AD46DEB1DAEA".AsGuid(), "Person Bio Summary", "Profile", @"", @"", 0, "C9523ABF-7FFA-4F43-ACEE-EE20D5D2C9E5" );
 
+            // Copy the security settings from the old bio block
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "C9523ABF-7FFA-4F43-ACEE-EE20D5D2C9E5" );
+
             // Add Block Attribute Value
             //   Block: Person Bio Summary
             //   BlockType: Person Bio Summary
@@ -528,6 +548,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "04712F3D-9667-4901-A49D-4507573EF7AD".AsGuid(), "Login Status", "Login", @"", @"", 0, "7E9F8B26-BD00-464B-B209-F4D60FFD829C" );
 
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "19C2140D-498A-4675-B8A2-18B281736F6E", "7E9F8B26-BD00-464B-B209-F4D60FFD829C" );
+
             // Add Block Attribute Value from the v1 value
             // Block: Login Status
             // BlockType: Login Status
@@ -553,6 +576,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Home
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74".AsGuid(), "Smart Search", "Header", @"", @"", 0, "34BE95FD-1CC9-4A08-BB8C-15088CAAAB8B" );
+            
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B01F3EF1-ECB9-4C7E-AB92-B45C4C29D5C0", "34BE95FD-1CC9-4A08-BB8C-15088CAAAB8B" );
 
             #endregion Smart Search Block
 
@@ -564,6 +590,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Layout: Person Profile Home
             // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Menu", "Navigation", @"", @"", 0, "6A62DC1C-1A29-4156-A431-B3355A3B84AB" );
+            
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "148E5996-00DE-4341-8541-20CB3FFB7C74", "6A62DC1C-1A29-4156-A431-B3355A3B84AB" );
 
             // Add Block Attribute Value from the v1 value
             // Block: Menu
@@ -609,6 +638,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "35D091FA-8311-42D1-83F7-3E67B9EE9675".AsGuid(), "Family Navigation", "ProfileNavigationLeft", @"", @"", 0, "B54D1924-BEE5-43C5-8F19-91B320DF99EC" );
 
+            // Copy the security settings from the bio permissions
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "B54D1924-BEE5-43C5-8F19-91B320DF99EC" );
+
             #endregion Family Navigation Block
 
             #region Sub Page Menu Block
@@ -619,6 +651,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Layout: Person Profile Home
             // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Sub Page Menu", "ProfileNavigation", @"", @"", 0, "CB964B6B-107E-44D4-8731-7A2D40A9F15B" );
+            
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "F82E5FF2-F412-405C-9CC5-BF6E0401EB38", "CB964B6B-107E-44D4-8731-7A2D40A9F15B" );
 
             // Add Block Attribute Value
             // Block: Sub Page Menu
@@ -664,6 +699,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "8C94620B-0FC1-4C39-9474-1714546E7D9E".AsGuid(), "Person Edit", "ProfileNavigationRight", @"", @"", 0, "99AD76C5-0D75-44CB-95AA-7AED3E9FC860" );
 
+            // Copy the security settings from the bio permissions
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "99AD76C5-0D75-44CB-95AA-7AED3E9FC860" );
+
             #endregion Person Edit Block
 
             #region Person Bio Block
@@ -674,6 +712,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Home
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "030CCDDC-8D43-40F8-A298-78B416F9E828".AsGuid(), "Person Bio", "Profile", @"", @"", 0, "1E6AF671-9C1A-4C6C-8156-36B6D7589F34" );
+            
+            // Copy the security settings from the old bio block
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "1E6AF671-9C1A-4C6C-8156-36B6D7589F34" );
 
             // Add Block Attribute Value from the v1 value
             // Block: Person Bio
@@ -739,6 +780,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Layout: Person Profile Home
             // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F".AsGuid(), "Family Members", "Profile", @"", @"", 1, "0E6D894F-EF32-45F4-A189-32E05E5559CB" );
+            
+            // Copy the security settings from the old bio block
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "4CC50BE8-72ED-43E0-8D11-7E2A590453CC", "0E6D894F-EF32-45F4-A189-32E05E5559CB" );
 
             // Add Block Attribute Value
             // Block: Family Members
@@ -777,6 +821,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Layout: Person Profile Home
             // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "2412C653-9369-4772-955E-80EE8FA051E3".AsGuid(), "Badges", "BadgeBar", @"", @"", 0, "E82F7A07-FBD5-417B-A976-AC63CC53BF68" );
+
+            // Copy the security settings (source is badge 1, 2, and 3 blocks.
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "98A30DD7-8665-4C6D-B1BB-A8380E862A04", "E82F7A07-FBD5-417B-A976-AC63CC53BF68" );
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "AA588E23-D34C-433A-BA3D-B0B82797A22F", "E82F7A07-FBD5-417B-A976-AC63CC53BF68" );
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "F3E6CC14-C540-4FFC-A5A9-48AD9CC0A61B", "E82F7A07-FBD5-417B-A976-AC63CC53BF68" );
 
             // Add Block Attribute Value
             // Block: Badges
@@ -827,6 +876,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Layout: Person Profile Home
             // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "19B61D65-37E3-459F-A44F-DEF0089118A3".AsGuid(), "Footer Content", "Footer", @"", @"", 0, "85A5921B-41CE-4E90-BAB4-24C51F8C1D23" );
+
+            // Copy the security settings
+            RockMigrationHelper.CopySecurityForEntity( Rock.SystemGuid.EntityType.BLOCK, "AE29A24E-6F85-4BC8-8C14-A8BF97A5D263", "85A5921B-41CE-4E90-BAB4-24C51F8C1D23" );
 
             // Add/Update HtmlContent for Block: Footer Content
             var footerContentHtmlSql = $@"

@@ -380,7 +380,7 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                         Fields = new Nest.Field( searchField.Name, searchField.Boost )
                     };
 
-                    if (!searchField.IsPhrase)
+                    if ( !searchField.IsPhrase )
                     {
                         // If this is enabled on attribute value searches they fail.
                         qry.Analyzer = "whitespace_lowercase";
