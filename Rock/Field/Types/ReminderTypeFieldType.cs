@@ -170,6 +170,7 @@ namespace Rock.Field.Types
                 {
                     o.Guid,
                     o.Name,
+                    EntityTypeName = o.EntityType.FriendlyName,
                 } )
                 .ToList();
 
@@ -177,7 +178,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var type in types )
                 {
-                    var listItem = new ListItem( type.Name, type.Guid.ToString().ToUpper() );
+                    var listItem = new ListItem( $"{type.Name} ({type.EntityTypeName})", type.Guid.ToString().ToUpper() );
                     editControl.Items.Add( listItem );
                 }
 

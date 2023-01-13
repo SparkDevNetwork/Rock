@@ -178,6 +178,11 @@
                                                 <asp:Literal ID="litProfilePhoto" runat="server" Visible="false"><div class="meta-figure">
                                                     <div class="avatar avatar-lg"><img src="{0}&w=50"></div>
                                                 </div></asp:Literal>
+                                                <asp:Literal ID="litGroupIcon" runat="server" Visible="false"><div class="meta-figure">
+                                                    <div class="avatar avatar-icon avatar-lg">
+                                                        <i class="IconCSSClass"></i>
+                                                    </div>
+                                                </div></asp:Literal>
                                                 <div class="meta-body">
                                                     <span class="note-caption">
                                                         <asp:Literal ID="lEntity" runat="server" />

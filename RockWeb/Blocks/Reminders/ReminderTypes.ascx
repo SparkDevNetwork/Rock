@@ -62,12 +62,9 @@
                         <Rock:RockCheckBox ID="rcbShouldShowNote" runat="server" Label="Should Show Note" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="rtbOrder" runat="server" Label="Order" />
+                        <Rock:EntityTypePicker ID="retpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
                     </div>
                 </div>
-                
-                <Rock:EntityTypePicker ID="retpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
-
 
                 <div class="row">
                     <div class="col-md-6">
