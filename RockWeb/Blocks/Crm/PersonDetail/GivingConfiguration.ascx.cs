@@ -774,20 +774,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // Bind the accounts.
             if ( savedAccounts != null && savedAccounts.Any() )
             {
-                var viewModels = savedAccounts.Select( sa => new
+                var savedAccountDataItems = savedAccounts.Select( sa => new
                 {
                     Id = ( int? ) sa.Id,
                     Name = GetSavedAccountName( sa )
                 } ).ToList();
 
                 // Add a blank option to unset the default account altogether.
-                viewModels.Insert( 0, new
+                savedAccountDataItems.Insert( 0, new
                 {
                     Id = ( int? ) null,
                     Name = string.Empty,
                 } );
 
-                ddlSavedAccount.DataSource = viewModels;
+                ddlSavedAccount.DataSource = savedAccountDataItems;
                 ddlSavedAccount.Enabled = true;
             }
             else
