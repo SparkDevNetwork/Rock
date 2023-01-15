@@ -395,6 +395,12 @@ namespace Rock.Jobs
                         rockContext.SaveChanges();
                     }
                 }
+                else
+                {
+                    var messageErrors = new System.Text.StringBuilder( string.Empty );
+                    result.Errors.ForEach( e => messageErrors.AppendLine( e ) );
+                    WriteError( $"Failed to send SystemCommunication for for Reminders for recipient {recipient.Id}: { messageErrors }" );
+                }
             }
             catch ( Exception ex )
             {
