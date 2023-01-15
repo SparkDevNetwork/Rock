@@ -732,6 +732,11 @@ namespace RockWeb.Blocks.Reminders
                 var lEntity = e.Item.FindControl( "lEntity" ) as Literal;
                 lEntity.Text = $"<a href=\"{entityUrl}\">{reminder.EntityDescription}</a>";
             }
+            else
+            {
+                var lEntity = e.Item.FindControl( "lEntity" ) as Literal;
+                lEntity.Text = $"{reminder.EntityDescription}";
+            }
 
             if ( reminder.IsPersonReminder )
             {

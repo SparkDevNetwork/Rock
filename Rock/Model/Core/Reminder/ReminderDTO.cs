@@ -117,7 +117,7 @@ namespace Rock.Model
             this.ReminderDate = reminder.ReminderDate.ToShortDateString();
             this.Note = reminder.Note;
             this.IsPersonReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
-            this.IsGroupReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
+            this.IsGroupReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Group" );
             this.EntityId = reminder.EntityId;
             this.EntityUrl = string.Empty;
             this.PersonProfilePictureUrl = personProfilePictureUrl;
