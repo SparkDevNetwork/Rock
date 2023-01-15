@@ -1850,16 +1850,16 @@ mission. We are so grateful for your commitment.</p>
 
             // Set heading visibility
             var showPanelHeadings = GetAttributeValue( AttributeKey.ShowPanelHeadings ).AsBoolean();
-            pnlHeading1.Visible = showPanelHeadings;
-            pnlHeading2.Visible = showPanelHeadings;
-            pnlHeading3.Visible = showPanelHeadings;
-            pnlHeading4.Visible = showPanelHeadings;
-            pnlHeading5.Visible = showPanelHeadings;
-            pnlHeading6.Visible = showPanelHeadings;
+            pnlHeadingSelection.Visible = showPanelHeadings;
+            pnlHeadingConfirmation.Visible = showPanelHeadings;
+            pnlHeadingContributionInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingPersonalInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingPaymentInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingConfirmationTitle.Visible = showPanelHeadings;
 
             // Set page/panel titles
-            lPanelTitle1.Text = GetAttributeValue( AttributeKey.PanelTitle );
-            lPanelTitle2.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lPanelTitleSelection.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lPanelTitleConfirmation.Text = GetAttributeValue( AttributeKey.PanelTitle );
             lContributionInfoTitle.Text = GetAttributeValue( AttributeKey.ContributionInfoTitle );
             lPersonalInfoTitle.Text = GetAttributeValue( AttributeKey.PersonalInfoTitle );
             lPaymentInfoTitle.Text = GetAttributeValue( AttributeKey.PaymentInfoTitle );

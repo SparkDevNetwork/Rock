@@ -42,9 +42,9 @@
 
             <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
-                <asp:Panel ID="pnlHeading1" runat="server" CssClass="panel-heading">
+                <asp:Panel ID="pnlHeadingSelection" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
-                        <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
+                        <asp:Literal ID="lPanelTitleSelection" runat="server" /></h1>
                 </asp:Panel>
                 <div class="panel-body">
 
@@ -57,7 +57,7 @@
                                 <% } %>
                                 <asp:Literal ID="lTransactionHeader" runat="server" />
                                 <div class="panel panel-default contribution-info">
-                                    <asp:Panel ID="pnlHeading3" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingContributionInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3>
                                     </asp:Panel>
                                     <div class="panel-body">
@@ -84,7 +84,7 @@
                                 <% } %>
 
                                 <div class="panel panel-default contribution-personal">
-                                    <asp:Panel ID="pnlHeading4" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingPersonalInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title">
                                             <asp:Literal ID="lPersonalInfoTitle" runat="server" />
                                             <div class="panel-labels">
@@ -156,7 +156,7 @@
 
                                 <asp:Panel ID="pnlPayment" runat="server" CssClass="panel panel-default contribution-payment">
 
-                                    <asp:Panel ID="pnlHeading5" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingPaymentInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                     </asp:Panel>
                                     <div class="panel-body">
@@ -206,15 +206,15 @@
 
             <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block contribution-confirmation" runat="server" Visible="false">
 
-                <asp:Panel ID="pnlHeading2" runat="server" CssClass="panel-heading">
+                <asp:Panel ID="pnlHeadingConfirmation" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
-                        <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
+                        <asp:Literal ID="lPanelTitleConfirmation" runat="server" /></h1>
                 </asp:Panel>
 
                 <div class="panel-body">
                     <div class="panel panel-default">
 
-                        <asp:Panel ID="pnlHeading6" runat="server" CssClass="panel-heading">
+                        <asp:Panel ID="pnlHeadingConfirmationTitle" runat="server" CssClass="panel-heading">
                             <h1 class="panel-title">
                                 <asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
                         </asp:Panel>
