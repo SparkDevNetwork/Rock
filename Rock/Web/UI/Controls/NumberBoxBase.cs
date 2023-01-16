@@ -41,6 +41,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+
+            set
+            {
+                base.ValidationGroup = value;
+
+                EnsureChildControls();
+
+                if ( _customValidator != null )
+                {
+                    _customValidator.ValidationGroup = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
         /// </summary>
         public override string Text
@@ -49,9 +73,16 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                // An input type of Number (or currency) will not render the value correctly if it contains a comma 
-                // ( or any other character besides numbers and decimals), so strip those characters out first
-                base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^-0-9.]", "" );
+                if ( NumberType == ValidationDataType.Double || NumberType == ValidationDataType.Currency )
+                {
+                    // An input type of Number (or currency) will not render the value correctly if it contains a comma 
+                    // ( or any other character besides numbers and decimals), so strip those characters out first
+                    base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^-0-9.]", "" );
+                }
+                else
+                {
+                    base.Text = value;
+                }
             }
         }
 
