@@ -8,6 +8,20 @@
   .text {
     color: @link-color;
   }
+
+  &.is-followed {
+    background: @link-color;
+    border-color: @link-color;
+    color: #fff;
+
+    &:hover {
+      background: @link-hover-color;
+    }
+
+    .text {
+      color: #fff;
+    }
+  }
 }
 
 .profile-actions {
