@@ -406,7 +406,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Gets the group attendances for the children groups of the specified regional group.
+        /// Gets the group attendances for the active children groups of the specified regional group.
         /// </summary>
         /// <param name="regionalGroup">The regional group.</param>
         /// <param name="startDate">The start date.</param>
@@ -415,11 +415,11 @@ namespace Rock.Jobs
         private IList<GroupAttendance> GetChildrenGroupAttendances( Group regionalGroup, DateTime startDate, DateTime endDate )
         {
             // Get the groups under this regional group.
-            var groups = _groupService.Queryable( "Schedule" )
-                .AsNoTracking()
-                .Where( g => g.ParentGroupId == regionalGroup.Id ) // Is a child of the parent regional group;
-                .Where( g => g.GroupType.TakesAttendance )         // Allows taking attendance;
-                .Where( g => g.ScheduleId.HasValue )               // Has a schedule defined.
+            var groups = _groupService.Queryable( "Schedule" ).AsNoTracking()
+                .Where( g => g.ParentGroupId == regionalGroup.Id
+                    && g.IsActive
+                    && g.GroupType.TakesAttendance 
+                    && g.ScheduleId.HasValue )
                 .ToList();
 
             if ( !groups.Any() )
