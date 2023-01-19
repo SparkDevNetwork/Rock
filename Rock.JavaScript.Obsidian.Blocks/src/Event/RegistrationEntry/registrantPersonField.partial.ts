@@ -143,6 +143,7 @@ export default defineComponent({
                     break;
 
                 case RegistrationPersonFieldType.Address:
+                    componentProps.label = "Address";
                     break;
 
                 case RegistrationPersonFieldType.MaritalStatus:
