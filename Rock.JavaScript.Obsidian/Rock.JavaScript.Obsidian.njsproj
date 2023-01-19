@@ -49,6 +49,7 @@
     <Content Include="Framework\Controls\geoPicker.obs" />
     <Content Include="Framework\Controls\geoPickerMap.obs" />
     <Content Include="Framework\Controls\groupTypePicker.obs" />
+    <Content Include="Framework\Controls\inputGroupDropDown.obs" />
     <Content Include="Framework\Controls\intervalPicker.obs" />
     <Content Include="Framework\Controls\kpi.obs" />
     <Content Include="Framework\Controls\locationAddressPicker.obs" />
@@ -57,6 +58,7 @@
     <Content Include="Framework\Controls\mediaElementPicker.obs" />
     <Content Include="Framework\Controls\monthDayPicker.obs" />
     <Content Include="Framework\Controls\monthYearPicker.obs" />
+    <Content Include="Framework\Controls\phoneNumberBox.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
@@ -416,7 +418,6 @@
     <TypeScriptCompile Include="Framework\Controls\numberUpDown.ts" />
     <TypeScriptCompile Include="Framework\Controls\numberUpDownGroup.ts" />
     <TypeScriptCompile Include="Framework\Controls\panelWidget.ts" />
-    <TypeScriptCompile Include="Framework\Controls\phoneNumberBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\progressBar.ts" />
     <TypeScriptCompile Include="Framework\Controls\progressTracker.ts" />
     <TypeScriptCompile Include="Framework\Controls\radioButtonList.ts" />
@@ -495,10 +496,17 @@
     <TypeScriptCompile Include="Framework\Types\Utility\http.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\support.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
+    <TypeScriptCompile Include="Framework\Utility\address.ts" />
+    <TypeScriptCompile Include="Framework\Utility\arrayUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\fullscreen.ts" />
+    <TypeScriptCompile Include="Framework\Utility\geo.ts" />
+    <TypeScriptCompile Include="Framework\Utility\internetCalendar.ts" />
+    <TypeScriptCompile Include="Framework\Utility\objectUtils.ts" />
+    <TypeScriptCompile Include="Framework\Utility\phone.ts" />
     <TypeScriptCompile Include="Framework\Utility\popover.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
+    <TypeScriptCompile Include="Framework\Utility\realTime.ts" />
     <TypeScriptCompile Include="Framework\Utility\suspense.ts" />
     <TypeScriptCompile Include="Framework\Utility\tooltip.ts" />
     <TypeScriptCompile Include="Framework\Utility\validationRules.ts" />
@@ -910,6 +918,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetSelectedPageHierarchyOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberCountryCodeRulesConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\racePickerGetRacesResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationTemplatePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\reportPickerGetChildrenOptionsBag.d.ts" />

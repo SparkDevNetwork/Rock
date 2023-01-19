@@ -215,7 +215,7 @@
                     <a id="DropDowns"></a>
                     <h1 runat="server">Drop Downs</h1>
 
-                    <Rock:RacePicker Label="My Race" runat="server" />
+                    <Rock:PhoneNumberBox ID="something" Label="Phone Number" runat="server" />
 
                     <a id="DataDropDownList"></a>
                     <div runat="server" class="r-example">

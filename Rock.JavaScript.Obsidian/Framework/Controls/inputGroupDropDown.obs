@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="input-group-btn" :class="{ open: expanded }">
+        <button class="btn btn-default dropdown-toggle" type="button" @click.prevent="expanded = !expanded">{{ internalValue }}&nbsp;<span class="caret"></span></button>
+        <TransitionVerticalCollapse>
+            <ul class="dropdown-menu" v-show="expanded">
+                <li v-for="(item, index) in items" :key="item?.value ?? index"><a href="#" @click.prevent="select(item.value ?? '')">{{ item.text }}</a></li>
+            </ul>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script lang="ts" setup>
+    import { PropType, ref } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        items: {
+            type: Object as PropType<ListItemBag[]>,
+            default: []
+        }
+    });
+
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const expanded = ref(false);
+
+    function select(value: string): void {
+        internalValue.value = value;
+        expanded.value = false;
+    }
+
+</script>

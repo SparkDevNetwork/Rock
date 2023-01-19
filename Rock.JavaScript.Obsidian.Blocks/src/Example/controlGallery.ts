@@ -77,7 +77,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import Dialog from "@Obsidian/Controls/dialog";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import DatePartsPicker, { DatePartsPickerValue } from "@Obsidian/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker";
@@ -936,13 +936,16 @@ const phoneNumberBoxGallery = defineComponent({
     name: "PhoneNumberBoxGallery",
     components: {
         GalleryAndResult,
-        PhoneNumberBox
+        PhoneNumberBox,
+        RockForm,
+        RockButton
     },
     setup() {
         return {
-            phoneNumber: ref("8005551234"),
-            importCode: getControlImportPath("phoneNumberBox"),
-            exampleCode: `<PhoneNumberBox label="Phone 2" v-model="phoneNumber" />`
+            phoneNumber: ref(null),
+            submit: ref(false),
+            importCode: getSfcControlImportPath("phoneNumberBox"),
+            exampleCode: `<PhoneNumberBox label="Phone Number" v-model="phoneNumber" />`
         };
     },
     template: `
@@ -951,7 +954,11 @@ const phoneNumberBoxGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
+
+    <RockForm v-model:submit="submit">
+        <PhoneNumberBox label="Phone Number" v-model="phoneNumber" />
+        <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
 
     <template #settings>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>

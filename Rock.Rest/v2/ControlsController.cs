@@ -3186,6 +3186,59 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Phone Number Box
+
+        /// <summary>
+        /// Get the phone number configuration related to country codes and number formats
+        /// </summary>
+        /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
+        [Authenticate]
+        [Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
+        [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
+        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        {
+            var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            string defaultCountryCode = null;
+
+            if ( definedType != null )
+            {
+                var definedValues = definedType.DefinedValues;
+
+                foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
+                {
+                    var rules = new List<PhoneNumberCountryCodeRulesConfigurationBag>();
+
+                    if (defaultCountryCode == null)
+                    {
+                        defaultCountryCode = countryCode;
+                    }
+
+                    foreach ( var definedValue in definedValues.Where( v => v.Value == countryCode ).OrderBy( v => v.Order ) )
+                    {
+                        string match = definedValue.GetAttributeValue( "MatchRegEx" );
+                        string replace = definedValue.GetAttributeValue( "FormatRegEx" );
+                        if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
+                        {
+                            rules.Add( new PhoneNumberCountryCodeRulesConfigurationBag { Match = match, Format = replace } );
+                        }
+                    }
+
+                    countryCodeRules.Add( countryCode, rules );
+                }
+            }
+
+            return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+            {
+                Rules = countryCodeRules,
+                DefaultCountryCode = defaultCountryCode
+            } );
+        }
+
+        #endregion
+
         #region Race Picker
 
         /// <summary>
