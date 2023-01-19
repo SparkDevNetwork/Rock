@@ -2010,6 +2010,9 @@ namespace RockWeb.Blocks.Connection
                     dlgConnectionStatuses.Hide();
                     break;
                 case "CONNECTIONWORKFLOWS":
+                    ddlTriggerType.SetValue( 0 );
+                    wpWorkflowType.SetValue( null );
+                    rblConnectionStatuses.SelectedValue = null;
                     dlgConnectionWorkflow.Hide();
                     break;
                 case "CONNECTIONREQUESTATTRIBUTES":
