@@ -5021,6 +5021,7 @@ namespace RockWeb.Blocks.Connection
 
                 var opportunityQuery = connectionOpportunityService.Queryable()
                     .AsNoTracking()
+                    .Include( a => a.ConnectionOpportunityCampuses )
                     .Where( co => co.IsActive && co.ConnectionType.IsActive );
 
                 var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
