@@ -431,7 +431,7 @@ namespace Rock.Jobs
                         errorOutput = "Unknown error.";
                     }
 
-                    WriteError( $"Failed to send SystemCommunication for for Reminders for recipient {recipient.Id}: { messageErrors }" );
+                    WriteError( $"Failed to send SystemCommunication for for Reminders for recipient {recipient.Id}: { errorOutput }" );
                 }
             }
             catch ( Exception ex )
