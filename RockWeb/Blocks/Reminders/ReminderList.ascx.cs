@@ -348,9 +348,17 @@ namespace RockWeb.Blocks.Reminders
                     }
                 }
 
+                var invalidReminders = new List<Reminder>();
+
                 foreach ( var reminder in reminders.ToList() )
                 {
                     var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
+                    if ( entity == null )
+                    {
+                        invalidReminders.Add( reminder );
+                        continue;
+                    }
+
                     string personProfilePhoto = string.Empty;
                     if ( entity.TypeName == "Rock.Model.Person" )
                     {
@@ -360,6 +368,13 @@ namespace RockWeb.Blocks.Reminders
                     {
                         reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
                     }
+                }
+
+                if ( invalidReminders.Any() )
+                {
+                    reminderService.DeleteRange( invalidReminders );
+                    rockContext.SaveChanges();
+                    NavigateToCurrentPageReference();
                 }
             }
 
