@@ -81,7 +81,7 @@ const promiseCache: Record<string, Promise<unknown> | undefined> = {};
  * @param key Key for identifying the cached values
  * @param fn Function that returns a Promise that we want to cache the value of
  */
-function cachePromise<T>(key: string, fn: (...args: unknown[]) => Promise<T>): (...args: unknown[]) => Promise<T> {
+function cachePromise<T>(key: string, fn: (...args: unknown[]) => Promise<T>, expiration: RockDateTime | null = null): (...args: unknown[]) => Promise<T> {
     return async function (...args: unknown[]): Promise<T> {
         // If it's cached, grab it
         const cachedResult = get<T>(key);
@@ -96,7 +96,7 @@ function cachePromise<T>(key: string, fn: (...args: unknown[]) => Promise<T>): (
 
         // Once it's resolved, cache the result
         promiseCache[key]?.then((result) => {
-            set(key, result);
+            set(key, result, expiration);
             return result;
         }).catch((e: Error) => {
             // Something's wrong, let's get rid of the stored promise, so we can try again.
