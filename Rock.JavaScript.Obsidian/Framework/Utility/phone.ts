@@ -38,7 +38,7 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
  * Fetch the configuration for phone numbers and their possible formats for different countries.
  * Cacheable version of fetchPhoneNumberConfiguration cacheable
  */
-export const getPhoneNumberConfiguration = Cache.cachePromise<PhoneNumberBoxGetConfigurationResultsBag>("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
+export const getPhoneNumberConfiguration = Cache.cachePromise("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
 
 
 /**
