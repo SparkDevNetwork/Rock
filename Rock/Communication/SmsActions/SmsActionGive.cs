@@ -341,6 +341,13 @@ namespace Rock.Communication.SmsActions
         {
             errorMessage = string.Empty;
 
+            // Get any configured account id
+            if ( context.SmsActionCache.GetAttributeValue( AttributeKeys.FinancialAccount ).IsNotNullOrWhiteSpace() )
+            {
+                var financialAccount = GetFinancialAccount( context );
+                context.LavaMergeFields[LavaMergeFieldKeys.AccountId] = financialAccount?.Id;
+            }
+
             CreatePersonRecordIfNeeded( context );
             SetPersonIdentifier( context );
             SetSetupPageLink( context );
