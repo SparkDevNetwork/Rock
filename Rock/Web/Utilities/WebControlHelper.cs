@@ -167,15 +167,14 @@ namespace Rock.Web.Utilities
         }
 
         /// <summary>
-        ///     Retrieves a control from the specified collection by Name.
+        /// Retrieves a control from the specified collection by Name.
         /// </summary>
-        /// <typeparam name="TControl"></typeparam>
-        /// <param name="controls"></param>
-        /// <param name="controlName">
-        ///     The name of the control which distinguishes it from other controls in the supplied
-        ///     collection. The parent name prefix is not required if the controls in the collection have the same parent.
-        /// </param>
-        /// <returns></returns>
+        /// <typeparam name="TControl">The type of the t control.</typeparam>
+        /// <param name="controls">The controls.</param>
+        /// <param name="controlName">The name of the control which distinguishes it from other controls in the supplied
+        /// collection. The parent name prefix is not required if the controls in the collection have the same parent.</param>
+        /// <param name="searchDepth">The search depth.</param>
+        /// <returns>TControl.</returns>
         public static TControl TryGetByName<TControl>( this IEnumerable<Control> controls, string controlName, SearchDepthSpecifier searchDepth = SearchDepthSpecifier.IncludeChildControls )
             where TControl : System.Web.UI.Control
         {

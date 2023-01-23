@@ -2540,8 +2540,7 @@ namespace Rock.Rest.v2
         /// Gets the media accounts that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a tree view control.
         /// </summary>
-        /// <param name="options">The options that describe which media accounts to load.</param>
-        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent media accounts.</returns>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
         [HttpPost]
         [System.Web.Http.Route( "MediaElementPickerGetMediaAccounts" )]
         [Authenticate]
@@ -2778,7 +2777,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Get a list of all the Media Elements for the given Media Account
         /// </summary>
-        /// <param name="mediaAccount">MediaFolder object we want to get the child Media Elements of</param>
+        /// <param name="mediaFolder">The media folder.</param>
         /// <param name="rockContext">DB context</param>
         /// <returns>List of ListItemBags representing all of the Media Elements for the given Media Folder</returns>
         private List<ListItemBag> GetMediaElementsForFolder( MediaFolder mediaFolder, RockContext rockContext )

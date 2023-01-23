@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.SnippetTypeDetail
 {
+    /// <summary>
+    /// Class SnippetTypeBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class SnippetTypeBag : EntityBagBase
     {
         /// <summary>
