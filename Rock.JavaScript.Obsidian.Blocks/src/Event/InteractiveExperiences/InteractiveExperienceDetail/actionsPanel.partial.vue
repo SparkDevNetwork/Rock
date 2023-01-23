@@ -27,7 +27,7 @@
                         <div class="title text-lg">{{ action.title }}</div>
                         <div class="subtitle text-sm text-muted">{{ getActionTypeName(action) }}</div>
                     </div>
-                    <div class="grid-columncommand">
+                    <div class="action-columncommand">
                         <a href="#" class="btn btn-default btn-sm btn-square mr-2" @click.prevent="onEditActionClick(action)">
                             <i class="fa fa-pencil"></i>
                         </a>
@@ -149,7 +149,7 @@
     cursor: grab;
 }
 
-.action-item .grid-columncommand {
+.action-item .action-columncommand {
     visibility: hidden;
     opacity: 0;
     transition: opacity .2s ease-in-out;
@@ -159,7 +159,7 @@
     font-weight: 600;
 }
 
-.action-item:hover .grid-columncommand {
+.action-item:hover .action-columncommand {
     visibility: visible;
     opacity: 1;
 }
