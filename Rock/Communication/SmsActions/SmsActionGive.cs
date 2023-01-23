@@ -100,7 +100,7 @@ namespace Rock.Communication.SmsActions
     [IntegerField( "Processing Delay Minutes",
         Description = "The number of minutes to delay processing the gifts and allow refunds (if the refund keyword is set). Delaying allows SMS requested refunds to completely bypass the financial gateway. Set to zero or leave blank to process gifts immediately and disallow refunds.",
         IsRequired = false,
-        DefaultIntegerValue = 30,
+        DefaultIntegerValue = 10,
         Order = 7,
         Category = "Refund",
         Key = AttributeKeys.ProcessingDelayMinutes )]
