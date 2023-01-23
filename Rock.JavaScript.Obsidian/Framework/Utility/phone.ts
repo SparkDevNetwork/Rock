@@ -38,13 +38,33 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
  * Fetch the configuration for phone numbers and their possible formats for different countries.
  * Cacheable version of fetchPhoneNumberConfiguration cacheable
  */
-export const getPhoneNumberConfiguration = Cache.cachePromise("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
+export const getPhoneNumberConfiguration = Cache.cachePromiseFactory("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
 
+const defaultRulesConfig = [
+    {
+        "match": "^(\\d{3})(\\d{4})$",
+        "format": "$1-$2"
+    },
+    {
+        "match": "^(\\d{3})(\\d{3})(\\d{4})$",
+        "format": "($1) $2-$3"
+    },
+    {
+        "match": "^1(\\d{3})(\\d{3})(\\d{4})$",
+        "format": "($1) $2-$3"
+    }
+];
 
 /**
  * Format a phone number according to a given configuration
+ *
+ * e.g. from the default configuration:
+ * 3214567 => 321-4567
+ * 3214567890 => (321) 456-7890
  */
-export function formatPhoneNumber(value: string, rules: PhoneNumberCountryCodeRulesConfigurationBag[]): string {
+export function formatPhoneNumber(value: string, rules: PhoneNumberCountryCodeRulesConfigurationBag[] = defaultRulesConfig): string {
+    value = stripPhoneNumber(value);
+
     if (!value || rules.length == 0) {
         return value;
     }
@@ -59,3 +79,26 @@ export function formatPhoneNumber(value: string, rules: PhoneNumberCountryCodeRu
 
     return value;
 }
+
+/**
+ * Strips special characters from the phone number.
+ * (321) 456-7890 => 3214567890
+ * @param str
+ */
+export function stripPhoneNumber(str: string): string {
+    if (!str) {
+        return "";
+    }
+
+    return str.replace(/\D/g, "");
+}
+
+export default {
+    getPhoneNumberConfiguration,
+    formatPhoneNumber,
+    stripPhoneNumber
+};
+
+/* eslint-disable */
+// @ts-ignore
+window.formatPhoneNumber = formatPhoneNumber;

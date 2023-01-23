@@ -25,10 +25,9 @@
     import RockFormField from "./rockFormField";
     import { PhoneNumberBoxGetConfigurationResultsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationResultsBag";
     import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberCountryCodeRulesConfigurationBag";
-    import { stripPhoneNumber } from "@Obsidian/Utility/stringUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { normalizeRules } from "@Obsidian/ValidationRules";
-    import { getPhoneNumberConfiguration, formatPhoneNumber } from "@Obsidian/Utility/phone";
+    import { getPhoneNumberConfiguration, formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import InputGroupDropDown from "./inputGroupDropDown.obs";
 

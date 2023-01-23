@@ -215,8 +215,6 @@
                     <a id="DropDowns"></a>
                     <h1 runat="server">Drop Downs</h1>
 
-                    <Rock:PhoneNumberBox ID="something" Label="Phone Number" runat="server" />
-
                     <a id="DataDropDownList"></a>
                     <div runat="server" class="r-example">
                         <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/RockDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
