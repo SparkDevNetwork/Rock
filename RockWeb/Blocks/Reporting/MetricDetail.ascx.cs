@@ -492,7 +492,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 {
                     metric.ScheduleId = null;
                 }
-                
+
                 if ( metric.Id == 0 )
                 {
                     metricService.Add( metric );
@@ -500,7 +500,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     // save to make sure we have a metricId
                     rockContext.SaveChanges();
                 }
-                
+
                 // safely, add the attribute values.
                 avcEditAttributeValues.GetEditValues( metric );
 
@@ -1316,6 +1316,18 @@ The Lava can include Lava merge fields:";
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
         }
 
+        private ChartStyle getChartStyle()
+        {
+            var chartStyleDefinedValueGuid = this.GetAttributeValue( AttributeKey.ChartStyle ).AsGuidOrNull();
+            var definedValue = DefinedValueCache.Get( chartStyleDefinedValueGuid.Value );
+            if ( definedValue == null )
+            {
+                return new ChartStyle();
+            }
+            var chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
+            return chartStyle;
+        }
+
         /// <summary>
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
@@ -1353,16 +1365,18 @@ The Lava can include Lava merge fields:";
                     x.Key,
                     Value = x.Select( a => a.YValue.Value )
                 } )
-                .ToList()
                .Select( x => new ChartDatasetInfo
                {
                    MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
                    MetricValueType = x.Key.MetricValueType,
                    DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                    Value = x.Value.Sum()
-               } );
+               } )
+               .ToList();
 
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+
+            var chartStyle = getChartStyle();
 
             var dataSeriesDatasets = dataPoints
                 .Select( x => x.MetricValuePartitionEntityIds )
@@ -1371,14 +1385,24 @@ The Lava can include Lava merge fields:";
             var combineValues = GetAttributeValue( AttributeKey.CombineChartSeries ).AsBooleanOrNull() ?? false;
             var datapointsByMetricTypeValue = dataPoints
                                 .GroupBy( d => d.MetricValueType );
+
             if ( combineValues )
             {
                 foreach ( var datapoint in datapointsByMetricTypeValue )
                 {
-                    var metricValueType = datapoint.Key;
+                    var name = $"{metric.YAxisLabel ?? "value"}";
+                    var borderColor = chartStyle.SeriesColors[0];
+
+                    if ( datapoint.Key == MetricValueType.Goal )
+                    {
+                        name += $" {datapoint.Key}";
+                        borderColor = chartStyle.GoalSeriesColor;
+                    }
+
                     var dataset = new ChartJsTimeSeriesDataset
                     {
-                        Name = $"{metric.YAxisLabel ?? "value"} {metricValueType}",
+                        Name = name,
+                        BorderColor = borderColor,
                         DataPoints = datapoint
                             .GroupBy( a => a.DateTime )
                             .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
@@ -1402,10 +1426,19 @@ The Lava can include Lava merge fields:";
                 {
                     foreach ( var datapoint in datapointsByMetricTypeValue )
                     {
-                        var metricValueType = datapoint.Key;
+                        var name = $"{metric.YAxisLabel ?? "value"}";
+                        var fillColor = chartStyle.SeriesColors[0];
+
+                        if ( datapoint.Key == MetricValueType.Goal )
+                        {
+                            name += $"{datapoint.Key}";
+                            fillColor = chartStyle.GoalSeriesColor;
+                        }
+
                         var dataset = new ChartJsTimeSeriesDataset
                         {
-                            Name = $"{seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value"} {metricValueType}",
+                            Name = name,
+                            BorderColor = fillColor,
                             DataPoints = datapoint
                                 .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
                                 .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
