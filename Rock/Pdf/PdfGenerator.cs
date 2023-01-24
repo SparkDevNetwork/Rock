@@ -213,6 +213,12 @@ namespace Rock.Pdf
         public bool PrintBackground { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the footer HTML. This value will override the default. To use the default leave blank/null.
+        /// </summary>
+        /// <value>The footer HTML.</value>
+        public string FooterHtml { get; set; }
+
+        /// <summary>
         /// Initializes the chrome engine.
         /// </summary>
         private void InitializeChromeEngine()
@@ -400,13 +406,21 @@ namespace Rock.Pdf
             // set HeaderTemplate to something so that it doesn't end up using the default, which is Page Title and Date
             pdfOptions.HeaderTemplate = "<!-- -->";
 
-            // Set footer template to show pageNumber/totalPages on the bottom right.
-            // See chromium source code at  https://source.chromium.org/chromium/chromium/src/+/main:components/printing/resources/print_header_footer_template_page.html
-            pdfOptions.FooterTemplate = @"
+            if( this.FooterHtml.IsNullOrWhiteSpace() )
+            {
+
+                // Set footer template to show pageNumber/totalPages on the bottom right.
+                // See chromium source code at  https://source.chromium.org/chromium/chromium/src/+/main:components/printing/resources/print_header_footer_template_page.html
+                pdfOptions.FooterTemplate = @"
 <div class='text left grow'></div>
 <div class='text right'>
     <span class='pageNumber'></span>/<span class='totalPages'></span>
 </div>;";
+            }
+            else
+            {
+                pdfOptions.FooterTemplate = this.FooterHtml;
+            }
 
             var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 
