@@ -90,7 +90,7 @@
     const historyCount = propertyRef(props.modelValue.historyCount, "HistoryCount");
     const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
     const lastStatusMessage = ref(props.modelValue.lastStatusMessage);
-    let cronDescription = ref(props.modelValue.cronDescription);
+    const cronDescription = ref(props.modelValue.cronDescription);
     const invokeBlockAction = useInvokeBlockAction();
     const jobTypeOptions = props.options.jobTypeOptions ?? [];
     const jobTypeClass = propertyRef(props.modelValue.class ?? "", "Class");
@@ -112,6 +112,8 @@
         });
         if (response.isSuccess && response.data) {
             cronDescription.value = response.data.cronDescription;
+        } else {
+            cronDescription.value = "";
         }
     }
 
@@ -128,6 +130,7 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(cronDescription, props.modelValue.cronDescription ?? "");
         updateRefValue(cronExpression, props.modelValue.cronExpression ?? "");
         updateRefValue(historyCount, props.modelValue.historyCount);
         updateRefValue(notificationEmails, props.modelValue.notificationEmails ?? "");

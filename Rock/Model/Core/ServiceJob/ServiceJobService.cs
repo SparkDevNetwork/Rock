@@ -351,16 +351,16 @@ namespace Rock.Model
             var jobTypes = new List<ListItemBag>();
             foreach ( var job in jobsList.OrderBy( a => a.FullName ) )
             {
-                jobTypes.Add( new ListItemBag { Text = CreateJobTypeFriendlyName( job.FullName ), Value = job.FullName } );
+                jobTypes.Add( new ListItemBag { Text = GetJobTypeFriendlyName( job.FullName ), Value = job.FullName } );
             }
 
             return jobTypes;
         }
 
         /// <summary>
-        /// Create Job Type Friendly Name
+        /// Get Job Type Friendly Name
         /// </summary>
-        private static string CreateJobTypeFriendlyName( string jobType )
+        private static string GetJobTypeFriendlyName( string jobType )
         {
             string friendlyName;
             if ( jobType.Contains( "Rock.Jobs." ) )
