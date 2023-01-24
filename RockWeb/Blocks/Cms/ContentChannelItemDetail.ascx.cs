@@ -280,6 +280,8 @@ namespace RockWeb.Blocks.Cms
                 phAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
 
+                BindSlugs( item );
+
                 ShowDialog();
             }
         }
@@ -1035,8 +1037,7 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
 
-                rSlugs.DataSource = contentItem.ContentChannelItemSlugs;
-                rSlugs.DataBind();
+                BindSlugs( contentItem );
 
                 htmlContent.Visible = false;
                 sceContent.Visible = false;
@@ -1163,6 +1164,12 @@ namespace RockWeb.Blocks.Cms
                 nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentChannelItem.FriendlyTypeName );
                 pnlEditDetails.Visible = false;
             }
+        }
+
+        private void BindSlugs( ContentChannelItem contentItem )
+        {
+            rSlugs.DataSource = contentItem.ContentChannelItemSlugs;
+            rSlugs.DataBind();
         }
 
         private void BindRequestFilterListBox( ContentChannelItem contentItem )

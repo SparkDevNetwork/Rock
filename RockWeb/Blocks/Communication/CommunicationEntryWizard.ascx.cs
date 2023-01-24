@@ -139,6 +139,13 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 13 )]
 
+    [BooleanField( "Enable Person Picker",
+        Key = AttributeKey.EnablePersonPicker,
+        Description = "When enabled, the Person picker would show up in the Communication Entry Wizard.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 14 )]
+
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
@@ -163,6 +170,7 @@ namespace RockWeb.Blocks.Communication
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
+            public const string EnablePersonPicker = "EnablePersonPicker";
         }
 
         #endregion Attribute Keys
@@ -352,6 +360,9 @@ function onTaskCompleted( resultData )
 
             // set the email preview visible = false on every load so that it doesn't stick around after previewing then navigating
             pnlEmailPreview.Visible = false;
+
+            // show person picker only if the block attribute setting for Enable Person Picker is true.
+            ppAddPerson.Visible = GetAttributeValue( AttributeKey.EnablePersonPicker ).AsBoolean();
 
             // Reset the Task Activity controls on the page.
             SignalRTaskActivityUiHelper.SetTaskActivityControlMode( this.RockPage, SignalRTaskActivityUiHelper.ControlModeSpecifier.Hidden );
