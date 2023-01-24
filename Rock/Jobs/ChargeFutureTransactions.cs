@@ -46,7 +46,6 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     public class ChargeFutureTransactions : RockJob
-    
     {
         #region Attribute Keys
 
