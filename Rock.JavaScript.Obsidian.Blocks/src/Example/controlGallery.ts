@@ -172,7 +172,7 @@ import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import TabbedContent from "@Obsidian/Controls/tabbedContent";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
-import PagePicker from "@Obsidian/Controls/pagePicker";
+import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
@@ -5632,7 +5632,7 @@ const pagePickerGallery = defineComponent({
                     text: "Universal Search"
                 }
             }),
-            importCode: getControlImportPath("pagePicker"),
+            importCode: getSfcControlImportPath("pagePicker"),
             exampleCode: `<PagePicker label="Page" v-model="value" :multiple="false" promptForPageRoute showSelectCurrentPage />`
         };
     },
