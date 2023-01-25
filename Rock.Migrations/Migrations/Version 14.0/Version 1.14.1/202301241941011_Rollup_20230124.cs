@@ -48,7 +48,7 @@ namespace Rock.Migrations
         private void PageBlockAttributeMigrationsUp()
         {
             // Attribute for BlockType: Communication Entry Wizard:Person Picker Visible
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Person Picker", "EnablePersonPicker", "Enable Person Picker", @"When enabled, the Person picker would show up in the Communication Entry Wizard.", 14, "False", "41A1906E-33D8-4C27-9025-C293C7B18EDC" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Disable Adding Individuals to Recipient Lists", "DisableAddingIndividualsToRecipientLists", "Disable Adding Individuals to Recipient Lists", @"When enabled, the person picker will be hidden so that additional individuals cannot be added to the recipient list.", 14, "False", "41A1906E-33D8-4C27-9025-C293C7B18EDC" );
 
         }
 
