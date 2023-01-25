@@ -125,13 +125,19 @@ namespace Rock.Web.UI.Controls
                     var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
                     if ( entityType != null )
                     {
-                        var componentName = component.Value.Key;
+                        var componentEntityType = EntityTypeCache.Get( entityType.Guid );
+                        var componentName = Rock.Reflection.GetDisplayName( componentEntityType.GetEntityType() );
 
-                        // If the component name already has a space then trust
-                        // that they are using the exact name formatting they want.
-                        if ( !componentName.Contains( ' ' ) )
+                        // If it has a DisplayName use it as is, otherwise use the original logic
+                        if ( string.IsNullOrWhiteSpace( componentName ) )
                         {
-                            componentName = componentName.SplitCase();
+                            componentName = component.Value.Key;
+                            // If the component name already has a space then trust
+                            // that they are using the exact name formatting they want.
+                            if ( !componentName.Contains( ' ' ) )
+                            {
+                                componentName = componentName.SplitCase();
+                            }
                         }
 
                         Items.Add( new ListItem( componentName, entityType.Guid.ToString().ToUpper() ) );
