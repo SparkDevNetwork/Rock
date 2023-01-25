@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Communication
 
     [BooleanField( "Disable Adding Individuals to Recipient Lists",
         Key = AttributeKey.DisableAddingIndividualsToRecipientLists,
-        Description = "When enabled, the person picker will be hidden so that additional individuals cannot be added to the recipient list.",
+        Description = "When set to 'Yes' the person picker will be hidden so that additional individuals cannot be added to the recipient list.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 14 )]
