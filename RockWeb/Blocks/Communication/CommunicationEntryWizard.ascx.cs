@@ -139,9 +139,9 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 13 )]
 
-    [BooleanField( "Enable Person Picker",
-        Key = AttributeKey.EnablePersonPicker,
-        Description = "When enabled, the Person picker would show up in the Communication Entry Wizard.",
+    [BooleanField( "Disable Adding Individuals to Recipient Lists",
+        Key = AttributeKey.DisableAddingIndividualsToRecipientLists,
+        Description = "When set to 'Yes' the person picker will be hidden so that additional individuals cannot be added to the recipient list.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 14 )]
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Communication
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
-            public const string EnablePersonPicker = "EnablePersonPicker";
+            public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
         }
 
         #endregion Attribute Keys
@@ -357,8 +357,8 @@ function onTaskCompleted( resultData )
             // set the email preview visible = false on every load so that it doesn't stick around after previewing then navigating
             pnlEmailPreview.Visible = false;
 
-            // show person picker only if the block attribute setting for Enable Person Picker is true.
-            ppAddPerson.Visible = GetAttributeValue( AttributeKey.EnablePersonPicker ).AsBoolean();
+            // hide person picker if the block attribute setting for DisableAddingIndividualsToRecipientLists is true.
+            ppAddPerson.Visible = !GetAttributeValue( AttributeKey.DisableAddingIndividualsToRecipientLists ).AsBoolean();
 
             // Reset the Task Activity controls on the page.
             SignalRTaskActivityUiHelper.SetTaskActivityControlMode( this.RockPage, SignalRTaskActivityUiHelper.ControlModeSpecifier.Hidden );
