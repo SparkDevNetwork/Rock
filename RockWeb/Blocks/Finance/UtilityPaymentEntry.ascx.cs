@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Finance
         Order = 13 )]
 
     [BooleanField(
-        "Use Account Campus mapping logic.",
+        "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
         <ul>
           <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
