@@ -297,5 +297,15 @@ namespace Rock.SystemKey
         /// The name of the standard Rock Context for Read Only queries.
         /// </summary>
         public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
+
+        /// <summary>
+        /// The Captcha site key.
+        /// </summary>
+        public const string CAPTCHA_SITE_KEY = "core_CaptchaSiteKey";
+
+        /// <summary>
+        /// The Captcha secret key.
+        /// </summary>
+        public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
     }
 }

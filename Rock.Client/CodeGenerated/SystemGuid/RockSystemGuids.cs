@@ -1141,6 +1141,7 @@ namespace Rock.Client.SystemGuid
         public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
         public const string SMS_PIPELINE = "64DA3A06-FD39-4E5B-8126-38404FB0092A";
         public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
+        public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
         public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
         public const string STEP_FLOW = "308D8252-7712-4A45-8DE4-737C3EEAEA8F";
         public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";

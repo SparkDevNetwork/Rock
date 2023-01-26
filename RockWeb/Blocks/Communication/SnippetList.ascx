@@ -15,7 +15,7 @@
                         <Rock:RockDropDownList ID="ddlTypeFilter" runat="server" Label="Ownership Type" />
                         <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gSnippets" runat="server" AllowSorting="true" OnRowSelected="gSnippets_Edit" RowItemText="Snippets">
+                    <Rock:Grid ID="gSnippets" runat="server" AllowSorting="true" RowItemText="Snippets">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />

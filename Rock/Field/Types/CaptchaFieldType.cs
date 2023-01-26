@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Web;
 
 namespace Rock.Field.Types
 {
@@ -96,8 +97,8 @@ namespace Rock.Field.Types
             };
             controls.Add( infoBox );
 
-            var siteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
-            var secretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
+            var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
+            var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
 
             if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
             {

@@ -22,11 +22,15 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+
+using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -336,7 +340,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 PersonEmail = request.PersonAlias.Person.Email,
                 PersonMobileNumber = request.PersonAlias.Person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.NumberFormatted,
                 PersonConnectionStatusName = request.PersonAlias.Person.ConnectionStatusValue?.Value,
-                PersonProfilePhotoUrl = request.PersonAlias.Person.PhotoId != null ? $"{baseUrl}{request.PersonAlias.Person.PhotoUrl}" : null,
+                PersonProfilePhotoUrl = $"{baseUrl}{request.PersonAlias.Person.PhotoUrl}",
                 PlacementGroupGuid = request.AssignedGroup?.Guid,
                 PlacementGroupName = request.AssignedGroup?.Name,
                 RequestDate = request.CreatedDateTime?.ToRockDateTimeOffset(),
@@ -534,7 +538,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 connectorList.AddRange( additionalPeople );
             }
-             
+
             // Distinct by both the person Guid and the CampusGuid. We could
             // still have duplicate people, but that will be up to the client
             // to sort out. Then apply final sorting.
@@ -1098,6 +1102,61 @@ namespace Rock.Blocks.Types.Mobile.Connection
             return true;
         }
 
+        /// <summary>
+        /// This gets a specific set of information about a connection activity that is ultimately passed down to the mobile shell.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <returns>System.ValueTuple&lt;ConnectionRequestActivity, List&lt;ConnectorItemViewModel&gt;, List&lt;Common.Mobile.ViewModel.ListItemViewModel&gt;, BlockActionResult&gt;.</returns>
+        private (ConnectionRequestActivity Activity, List<ConnectorItemViewModel> Connectors, List<Common.Mobile.ViewModel.ListItemViewModel> ActivityTypes, BlockActionResult Error) GetConnectionRequestActivityBag( RockContext rockContext, Guid connectionRequestGuid, Guid? activityGuid )
+        {
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+            var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+
+            // Load the connection request and include the opportunity and type
+            // to speed up the security check.
+            var request = connectionRequestService.Queryable()
+                .Include( r => r.ConnectionOpportunity.ConnectionType )
+                .AsNoTracking()
+                .Where( r => r.Guid == connectionRequestGuid )
+                .FirstOrDefault();
+
+            if ( request == null )
+            {
+                return (null, null, null, ActionNotFound());
+            }
+            else if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                // Require edit access in order to see the available activity types
+                // since they are only required when editing.
+                return (null, null, null, ActionUnauthorized());
+            }
+
+            // Load up the activity types for this connection request and pull
+            // in the Guid an Name to send to the client.
+            var activityTypes = connectionActivityTypeService.Queryable()
+                .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId )
+                .Select( a => new Common.Mobile.ViewModel.ListItemViewModel
+                {
+                    Value = a.Guid.ToString(),
+                    Text = a.Name
+                } )
+                .ToList();
+
+            // Get the list of connectors that are available to pick from
+            // for the client to use.
+            var connectors = GetAvailableConnectors( request, rockContext );
+
+            ConnectionRequestActivity activity = null;
+            if ( activityGuid != null )
+            {
+                activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid.Value );
+            }
+
+            return (activity, connectors, activityTypes, null);
+        }
+
         #endregion
 
         #region Action Methods
@@ -1150,6 +1209,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             using ( var rockContext = new RockContext() )
             {
+
                 var connectionRequestService = new ConnectionRequestService( rockContext );
 
                 // Load the connection request and include the opportunity and type
@@ -1220,7 +1280,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Set the future follow up date.
                 if ( request.ConnectionState == ConnectionState.FutureFollowUp )
                 {
-                    if (  !requestDetails.FutureFollowUpDate.HasValue )
+                    if ( !requestDetails.FutureFollowUpDate.HasValue )
                     {
                         return ActionBadRequest( "Invalid data." );
                     }
@@ -1400,47 +1460,72 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                var connectionRequestService = new ConnectionRequestService( rockContext );
-                var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+                var requestActivityBag = GetConnectionRequestActivityBag( rockContext, connectionRequestGuid, null );
 
-                // Load the connection request and include the opportunity and type
-                // to speed up the security check.
-                var request = connectionRequestService.Queryable()
-                    .Include( r => r.ConnectionOpportunity.ConnectionType )
-                    .AsNoTracking()
-                    .Where( r => r.Guid == connectionRequestGuid )
-                    .FirstOrDefault();
-
-                if ( request == null )
+                if ( requestActivityBag.Error != null )
                 {
-                    return ActionNotFound();
-                }
-                else if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    // Require edit access in order to see the available activity types
-                    // since they are only required when editing.
-                    return ActionUnauthorized();
+                    return requestActivityBag.Error;
                 }
 
-                // Load up the activity types for this connection request and pull
-                // in the Guid an Name to send to the client.
-                var activityTypes = connectionActivityTypeService.Queryable()
-                    .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId )
-                    .Select( a => new ListItemBag
+                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityOptionsViewModel
+                {
+                    ActivityTypes = requestActivityBag.ActivityTypes,
+                    Connectors = requestActivityBag.Connectors
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the existing activity options.
+        /// </summary>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <returns>BlockActionResult.</returns>
+        [BlockAction]
+        public BlockActionResult GetExistingActivityOptions( Guid connectionRequestGuid, Guid activityGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var requestActivityBag = GetConnectionRequestActivityBag( rockContext, connectionRequestGuid, activityGuid );
+
+                if( requestActivityBag.Error != null )
+                {
+                    return requestActivityBag.Error;
+                }
+
+                Guid connectorGuid = Guid.Empty;
+                string activityNote = "";
+                Guid activityTypeGuid = Guid.Empty;
+                if ( activityGuid != null )
+                {
+                    var activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid );
+
+                    if ( activity != null )
                     {
-                        Value = a.Guid.ToString(),
-                        Text = a.Name
-                    } )
-                    .ToList();
+                        if ( activity.ConnectorPersonAliasId.HasValue )
+                        {
+                            connectorGuid = new PersonAliasService( rockContext ).Get( activity.ConnectorPersonAliasId.Value ).Guid;
+                        }
 
-                // Get the list of connectors that are available to pick from
-                // for the client to use.
-                var connectors = GetAvailableConnectors( request, rockContext );
+                        if ( activity.Note.IsNotNullOrWhiteSpace() )
+                        {
+                            activityNote = activity.Note;
+                        }
 
-                return ActionOk( new ActivityOptionsViewModel
+                        activityTypeGuid = activity.ConnectionActivityType.Guid;
+                    }
+                }
+
+                return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ConnectionRequestActivityDetailBag
                 {
-                    ActivityTypes = activityTypes,
-                    Connectors = connectors
+                    ActivityOptions = new ActivityOptionsViewModel
+                    {
+                        ActivityTypes = requestActivityBag.ActivityTypes,
+                        Connectors = requestActivityBag.Connectors
+                    },
+                    ActivityCurrentConnectorGuid = connectorGuid,
+                    Note = activityNote,
+                    ActivityTypeGuid = activityTypeGuid
                 } );
             }
         }
@@ -1530,6 +1615,118 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 connectionRequestActivityService.Add( requestActivity );
 
                 rockContext.SaveChanges();
+
+                return ActionOk( GetRequestViewModel( request, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Updates a connection request activity.
+        /// </summary>
+        /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="activity">The activity.</param>
+        /// <returns>The view model data that should be displayed.</returns>
+        [BlockAction]
+        public BlockActionResult UpdateActivity( Guid activityGuid, Guid connectionRequestGuid, AddActivityViewModel activity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var activityService = new ConnectionRequestActivityService( rockContext );
+                var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+
+                var activityToUpdate = activityService.Get( activityGuid );
+
+                if ( activityToUpdate == null )
+                {
+                    return ActionNotFound();
+                }
+
+                // Load the connection request. Include the connection opportunity
+                // and type for security check.
+                var request = connectionRequestService.Queryable()
+                    .Where( r => r.Guid == connectionRequestGuid )
+                    .Include( r => r.ConnectionOpportunity.ConnectionType )
+                    .FirstOrDefault();
+
+                // Validate the request exists and the current person has permission
+                // to make changes to it.
+                if ( request == null )
+                {
+                    return ActionNotFound();
+                }
+                else if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionUnauthorized();
+                }
+
+                var connectionActivityType = connectionActivityTypeService.Get( activity.ActivityTypeGuid );
+                if ( connectionActivityType == null )
+                {
+                    return ActionBadRequest( "Unable to find that connection activity type." );
+                }
+
+                var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
+
+                if ( !connectorAliasId.HasValue )
+                {
+                    return ActionBadRequest( "Invalid connector was specified." );
+                }
+
+                activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
+                activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                activityToUpdate.Note = activity.Note;
+                activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
+
+                rockContext.SaveChanges();
+                return ActionOk( GetRequestViewModel( request, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Deletes a connection request activity.
+        /// </summary>
+        /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <returns>The view model data that should be displayed.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteActivity( Guid activityGuid, Guid connectionRequestGuid, int currentPersonAliasId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // only allow deleting if current user created the activity, and not a system activity
+                var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+
+                var activity = connectionRequestActivityService.Get( activityGuid );
+                var request = connectionRequestService.Get( connectionRequestGuid );
+
+                if( activity == null )
+                {
+                    return ActionNotFound( "Unable to find that specific activity." );
+                }
+
+                if( request == null )
+                {
+                    return ActionNotFound( "Unable to find that specific connection request." );
+                }
+
+                // Make sure we have permission to delete this activity.
+                if ( ( activity.CreatedByPersonAliasId.Equals( currentPersonAliasId )
+                    || activity.ConnectorPersonAliasId.Equals( currentPersonAliasId ) )
+                    && activity.ConnectionActivityType.ConnectionTypeId.HasValue )
+                {
+                    connectionRequestActivityService.Delete( activity );
+                    rockContext.SaveChanges();
+                }
+                // If we don't have permission.
+                else
+                {
+                    return ActionForbidden( "You don't have permission to delete that activity." );
+                }
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
@@ -2350,67 +2547,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The statuses that can be chosen for this role.
             /// </value>
             public List<GroupMemberStatus> Statuses { get; set; }
-        }
-
-        /// <summary>
-        /// Contains the details about a connector person.
-        /// </summary>
-        public class ConnectorItemViewModel
-        {
-            /// <summary>
-            /// Gets or sets the person unique identifier.
-            /// </summary>
-            /// <value>
-            /// The person unique identifier.
-            /// </value>
-            public Guid Guid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the first name.
-            /// </summary>
-            /// <value>
-            /// The first name.
-            /// </value>
-            public string FirstName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the last name.
-            /// </summary>
-            /// <value>
-            /// The last name.
-            /// </value>
-            public string LastName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the campus unique identifier to limit this connector to.
-            /// </summary>
-            /// <value>
-            /// The campus unique identifier to limit this connector to.
-            /// </value>
-            public Guid? CampusGuid { get; set; }
-        }
-
-        /// <summary>
-        /// Contains the details about what options are available when adding
-        /// a new activity.
-        /// </summary>
-        public class ActivityOptionsViewModel
-        {
-            /// <summary>
-            /// Gets or sets the activity types available to pick from.
-            /// </summary>
-            /// <value>
-            /// The activity types available to pick from.
-            /// </value>
-            public List<ListItemBag> ActivityTypes { get; set; }
-
-            /// <summary>
-            /// Gets or sets the connectors available.
-            /// </summary>
-            /// <value>
-            /// The connectors available.
-            /// </value>
-            public List<ConnectorItemViewModel> Connectors { get; set; }
         }
 
         /// <summary>

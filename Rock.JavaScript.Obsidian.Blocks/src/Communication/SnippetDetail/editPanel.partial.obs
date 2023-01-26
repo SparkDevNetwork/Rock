@@ -19,26 +19,28 @@
                  textMode="multiline" />
 
         <div class="row">
-            <div class="col-md-3 mt-4" v-if="isAuthorizedToEdit">
-                <Toggle v-model="isShared"
-                        trueText="On"
-                        falseText="Off">
-                    <template #on>
-                        Shared
-                    </template>
-                    <template #off>
-                        Personal
-                    </template>
-                </Toggle>
+            <div class="col-md-6" v-if="isPersonalAllowed">
+                <div class="col-md-6 mt-4" v-if="isAuthorizedToEdit">
+                    <Toggle v-model="isShared"
+                            trueText="On"
+                            falseText="Off">
+                        <template #on="">
+                            Shared
+                        </template>
+                        <template #off="">
+                            Personal
+                        </template>
+                    </Toggle>
+                </div>
+                <div class="col-md-6">
+                    <PersonPicker v-model="ownerPersonAlias"
+                                  v-if="!isShared"
+                                  label="Owner"
+                                  :help="ownerHelpText"
+                                  rules="required"/>
+                </div>
             </div>
             <div class="col-md-3">
-                <PersonPicker v-model="ownerPersonAlias"
-                              v-if="!isShared"
-                              label="Owner"
-                              :help="ownerHelpText"
-                              rules="required"/>
-            </div>
-            <div class="col-md-3 col-md-offset-2">
                 <CategoryPicker label="Category"
                                 v-model="category"
                                 :multiple="false"
@@ -126,6 +128,7 @@
     const isShared = ref(props.modelValue.ownerPersonAlias == null);
     const isLava = ref(props.modelValue.content?.includes("{") ?? false);
     const isAuthorizedToEdit = ref(props.options.isAuthorizedToEdit);
+    const isPersonalAllowed = ref(props.options.isPersonalAllowed);
     const ownerPersonAlias = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
     const category = propertyRef(props.modelValue.category ?? null, "Category");
     const entityTypeGuid = EntityType.Snippet;

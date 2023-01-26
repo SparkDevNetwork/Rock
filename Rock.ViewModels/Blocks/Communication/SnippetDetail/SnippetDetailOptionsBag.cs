@@ -29,5 +29,13 @@ namespace Rock.ViewModels.Blocks.Communication.SnippetDetail
         ///   <c>true</c> if this instance is authorized to edit; otherwise, <c>false</c>.
         /// </value>
         public bool IsAuthorizedToEdit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is personal allowed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is personal allowed; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPersonalAllowed { get; set; }
     }
 }

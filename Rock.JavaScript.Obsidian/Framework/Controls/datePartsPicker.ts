@@ -44,7 +44,7 @@ export default defineComponent({
         rules: rulesPropType,
         modelValue: {
             type: Object as PropType<DatePartsPickerValue>,
-            required: true
+            required: false
         },
         requireYear: {
             type: Boolean as PropType<boolean>,
@@ -124,13 +124,15 @@ export default defineComponent({
         computedRequireYear(): boolean {
             return this.showYear && this.requireYear;
         },
-        internalDateKey(): string {
-            if (!this.modelValue.year && !this.computedRequireYear) {
-                const dateKey = DateKey.toNoYearDateKey(this.modelValue.month, this.modelValue.day);
+
+        internalDateKey (): string {
+            if ((!this.modelValue?.year ?? 0) && !this.computedRequireYear) {
+                const dateKey = DateKey.toNoYearDateKey(this.modelValue?.month ?? 0, this.modelValue?.day ?? 0);
+                
                 return dateKey;
             }
 
-            const dateKey = DateKey.toDateKey(this.modelValue.year, this.modelValue.month, this.modelValue.day);
+            const dateKey = DateKey.toDateKey(this.modelValue?.year ?? 0, this.modelValue?.month ?? 0, this.modelValue?.day ?? 0);
             return dateKey;
         },
         computedRules(): ValidationRule[] {
@@ -163,9 +165,9 @@ export default defineComponent({
         modelValue: {
             immediate: true,
             handler(): void {
-                this.internalDay = this.modelValue.day.toString();
-                this.internalMonth = this.modelValue.month.toString();
-                this.internalYear = this.modelValue.year.toString();
+                this.internalDay = this.modelValue?.day.toString() ?? "0";
+                this.internalMonth = this.modelValue?.month.toString() ?? "0";
+                this.internalYear = this.modelValue?.year.toString() ?? "0";
                 this.updateDays();
             }
         },

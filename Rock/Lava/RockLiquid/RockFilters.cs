@@ -5438,7 +5438,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            var template = Template.Parse( input.ToString() );
+            var template = LavaHelper.CreateDotLiquidTemplate( input.ToString() );
 
             //
             // Copy over any Registers, which often contain "internal" context information.

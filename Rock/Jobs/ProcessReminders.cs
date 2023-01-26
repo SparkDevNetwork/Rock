@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using DotLiquid;
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
@@ -148,14 +149,23 @@ namespace Rock.Jobs
             {
                 var sbResultOutput = new System.Text.StringBuilder( "Process Reminders job completed with errors." );
                 sbResultOutput.AppendLine();
-                sbResultOutput.AppendLine();
 
+                int errorCount = 0;
                 foreach( var jobError in _jobErrors )
                 {
+                    if ( errorCount == 5 )
+                    {
+                        sbResultOutput.AppendLine( $"Additional errors were truncated, to see the full "
+                            + $"list of {_jobErrors.Count} errors please enable debug logging for the "
+                            + $"\"Jobs\" logging domain." );
+                        break;
+                    }
+
+                    errorCount++;
                     sbResultOutput.AppendLine( jobError );
                 }
 
-                this.Result = sbResultOutput.ToString();
+                this.Result = StandardFilters.NewlineToBr( sbResultOutput.ToString() );
             }
             else
             {
@@ -299,6 +309,8 @@ namespace Rock.Jobs
         {
             WriteLog( $"ProcessReminders job:  Creating SystemCommunication for recipient {recipient.Id}." );
 
+            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
             var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
             var personReminderList = reminders
                 .Where( r => r.ReminderType.EntityTypeId == personEntityTypeId )
@@ -344,7 +356,8 @@ namespace Rock.Jobs
             foreach ( var reminder in personReminderList )
             {
                 var person = personService.Get( reminder.EntityId );
-                var reminderData = new ReminderDTO( reminder, person, person.PhotoUrl );
+                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
+                var reminderData = new ReminderDTO( reminder, person, photoUrl );
                 reminderDataObjects.Add( reminderData );
             }
 
@@ -394,6 +407,31 @@ namespace Rock.Jobs
                         autoCompleteReminder.CompleteReminder();
                         rockContext.SaveChanges();
                     }
+                }
+                else
+                {
+                    var messageErrors = new System.Text.StringBuilder( string.Empty );
+
+                    if ( result.Errors.Any() )
+                    {
+                        result.Errors.ForEach( e => messageErrors.AppendLine( e ) );
+                    }
+                    else if ( result.Warnings.Any() )
+                    {
+                        result.Warnings.ForEach( w => messageErrors.AppendLine( w ) );
+                    }
+                    else
+                    {
+                        result.Exceptions.ForEach( e => messageErrors.AppendLine( e.Message ) );
+                    }
+
+                    var errorOutput = messageErrors.ToString();
+                    if ( errorOutput.IsNullOrWhiteSpace() )
+                    {
+                        errorOutput = "Unknown error.";
+                    }
+
+                    WriteError( $"Failed to send SystemCommunication for for Reminders for recipient {recipient.Id}: { errorOutput }" );
                 }
             }
             catch ( Exception ex )

@@ -37,6 +37,9 @@
     <Content Include="src\Communication\snippetDetail.obs" />
     <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
+    <Content Include="src\Communication\snippetTypeDetail.obs" />
+    <Content Include="src\Communication\SnippetTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Communication\SnippetTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.obs" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.obs" />
@@ -55,6 +58,7 @@
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\SnippetDetail\" />
+    <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
@@ -109,6 +113,7 @@
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />

@@ -70,6 +70,8 @@
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetBag.cs" />
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeBag.cs" />
+    <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
@@ -116,6 +118,14 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />
+    <Compile Include="Rest\Controls\PhoneNumberCountryCodeRulesConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\RacePickerGetRacesResultsBag.cs" />
+    <Compile Include="Rest\Controls\EthnicityPickerGetEthnicitiesResultsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaTreeResultsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaTreeOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaElementsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaElementPickerGetMediaFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />

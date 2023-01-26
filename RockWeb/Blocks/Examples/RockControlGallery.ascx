@@ -529,7 +529,7 @@
 
                     <a id="MediaElementPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" />
+                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" MediaElementId="3" />
                     </div>
 
                     <h2>Groups and Group Types</h2>

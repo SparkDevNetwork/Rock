@@ -72,8 +72,8 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	SELECT * FROM 
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
+	SELECT [PersonId], [AttributeId], [FirstAttendedDate], [IsSystem], [Guid], [CreateDate], [FirstAttendedDate], 1  FROM 
 		(SELECT 
 			i.[PersonId]
 			, @FirstAttendedAttributeId AS [AttributeId]
@@ -130,8 +130,8 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	SELECT * FROM 
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
+	SELECT [PersonId], [AttributeId], [LastAttendedDate], [IsSystem], [Guid], [CreateDate], [LastAttendedDate], 1  FROM  
 		(SELECT 
 			i.[PersonId]
 			, @LastAttendedAttributeId AS [AttributeId]
@@ -188,8 +188,8 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
-	SELECT [PersonId], [AttributeId], [CheckinCount], [IsSystem], [Guid], [CreateDate], [CheckinCount]
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric], [IsPersistedValueDirty])
+	SELECT [PersonId], [AttributeId], [CheckinCount], [IsSystem], [Guid], [CreateDate], [CheckinCount], 1
     FROM 
 		(SELECT 
 			i.[PersonId]

@@ -1351,6 +1351,31 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Ethnicity Picker
+
+        /// <summary>
+        /// Gets the ethnicities that can be displayed in the ethnicity picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the ethnicities and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EthnicityPickerGetEthnicities" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a04bddf8-4169-47f8-8b03-ee8e2f110b35" )]
+        public IHttpActionResult EthnicityPickerGetEthnicities()
+        {
+            var ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY ).DefinedValues
+                .Select(e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() })
+                .ToList();
+
+            return Ok( new EthnicityPickerGetEthnicitiesResultsBag
+            {
+                Ethnicities = ethnicities,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+            } );
+        }
+
+        #endregion
+
         #region Event Calendar Picker
 
         /// <summary>
@@ -2509,6 +2534,270 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Media Element Picker
+
+        /// <summary>
+        /// Gets the media accounts that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "849e3ac3-f1e1-4efa-b0c8-1a79c4a666c7" )]
+        public IHttpActionResult MediaElementPickerGetMediaAccounts( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Ok( GetMediaAccounts(rockContext) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the media folders that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which media folders to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent media folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a68493aa-8f41-404f-90dd-fbb2df0309a0" )]
+        public IHttpActionResult MediaElementPickerGetMediaFolders( [FromBody] MediaElementPickerGetMediaFoldersOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaAccount = GetMediaAccountByGuid( options.MediaAccountGuid, rockContext );
+
+                if ( mediaAccount == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( GetMediaFoldersForAccount(mediaAccount, rockContext ));
+            }
+        }
+
+        /// <summary>
+        /// Gets the media elements that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which media elements to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent media elements.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaElements" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9b922b7e-95b4-4ecf-a6ec-f61b45f5e210" )]
+        public IHttpActionResult MediaElementPickerGetMediaElements( [FromBody] MediaElementPickerGetMediaElementsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaFolder = GetMediaFolderByGuid( options.MediaFolderGuid, rockContext );
+
+                if ( mediaFolder == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( GetMediaElementsForFolder( mediaFolder, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Get all of the list items and the account/folder/element, depending on what the deepest given item is.
+        /// </summary>
+        /// <param name="options">The options that describe which media element picker data to load.</param>
+        /// <returns>All of the picker lists (as List&lt;ListItemBag&gt;), and individual picker selections that could be derived from the given options</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaTree" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2cc15018-201e-4f22-b116-06846c70ad0b" )]
+        public IHttpActionResult MediaElementPickerGetMediaTree( [FromBody] MediaElementPickerGetMediaTreeOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var accounts = new List<ListItemBag>();
+                var folders = new List<ListItemBag>();
+                var elements = new List<ListItemBag>();
+
+                MediaAccount mediaAccount = null;
+                MediaFolder mediaFolder = null;
+                MediaElement mediaElement = null;
+
+                ListItemBag mediaAccountItem = null;
+                ListItemBag mediaFolderItem = null;
+                ListItemBag mediaElementItem = null;
+
+                // If a media element is specified, get everything based on that
+                if (options.MediaElementGuid.HasValue)
+                {
+                    mediaElement = GetMediaElementByGuid( ( Guid ) options.MediaElementGuid, rockContext );
+                    mediaFolder = mediaElement.MediaFolder;
+                    mediaAccount = mediaFolder.MediaAccount;
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                    mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                }
+                // Otherwise, if a media folder is specified, get everything based on that, not getting a media element
+                else if (options.MediaFolderGuid.HasValue)
+                {
+                    mediaFolder = GetMediaFolderByGuid( ( Guid ) options.MediaFolderGuid, rockContext );
+                    mediaAccount = mediaFolder.MediaAccount;
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                }
+                // Otherwise, if a media account is specified, get the account and the lists of accounts and folders
+                else if (options.MediaAccountGuid.HasValue)
+                {
+                    mediaAccount = GetMediaAccountByGuid( ( Guid ) options.MediaAccountGuid, rockContext );
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                }
+
+                // Some things might be null, but we pass back everything we have
+                return Ok( new MediaElementPickerGetMediaTreeResultsBag
+                {
+                    MediaAccount = mediaAccountItem,
+                    MediaFolder = mediaFolderItem,
+                    MediaElement = mediaElementItem,
+
+                    MediaAccounts = accounts,
+                    MediaFolders = folders,
+                    MediaElements = elements
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a MediaAccount object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Account's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaAccount with that Guid</returns>
+        private MediaAccount GetMediaAccountByGuid (Guid guid, RockContext rockContext)
+        {
+                // Get the media folder from the given GUID so we can filter elements by folder
+                var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
+                var mediaAccount = mediaAccountService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaAccount;
+        }
+
+        /// <summary>
+        /// Retrieve a MediaFolder object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Folder's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaFolder with that Guid</returns>
+        private MediaFolder GetMediaFolderByGuid( Guid guid, RockContext rockContext )
+        {
+            // Get the media folder from the given GUID so we can filter elements by folder
+            var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
+                var mediaFolder = mediaFolderService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaFolder;
+        }
+
+        /// <summary>
+        /// Retrieve a MediaElement object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Element's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaElement with that Guid</returns>
+        private MediaElement GetMediaElementByGuid( Guid guid, RockContext rockContext )
+        {
+            // Get the media folder from the given GUID so we can filter elements by folder
+            var mediaElementService = new Rock.Model.MediaElementService( rockContext );
+                var mediaElement = mediaElementService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaElement;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Accounts
+        /// </summary>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Accounts</returns>
+        private List<ListItemBag> GetMediaAccounts( RockContext rockContext )
+        {
+            var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
+
+            // Get all media accounts that are active.
+            var mediaAccounts = mediaAccountService.Queryable()
+                .Where( ma => ma.IsActive )
+                .OrderBy( ma => ma.Name )
+                .Select( ma => new ListItemBag { Text = ma.Name, Value = ma.Guid.ToString() } )
+                .ToList();
+
+            return mediaAccounts;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Folders for the given Media Account
+        /// </summary>
+        /// <param name="mediaAccount">MediaAccount object we want to get the child Media Folders of</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Folders for the given Media Account</returns>
+        private List<ListItemBag> GetMediaFoldersForAccount( MediaAccount mediaAccount, RockContext rockContext )
+        {
+            // Get all media folders
+            var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
+            var mediaFolders = mediaFolderService.Queryable()
+                .Where( mf => mf.MediaAccountId == mediaAccount.Id )
+                .OrderBy( mf => mf.Name )
+                .Select( mf => new ListItemBag
+                {
+                    Text = mf.Name,
+                    Value = mf.Guid.ToString()
+                } )
+                .ToList();
+
+            return mediaFolders;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Elements for the given Media Account
+        /// </summary>
+        /// <param name="mediaFolder">The media folder.</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Elements for the given Media Folder</returns>
+        private List<ListItemBag> GetMediaElementsForFolder( MediaFolder mediaFolder, RockContext rockContext )
+        {
+            var mediaElementService = new Rock.Model.MediaElementService( rockContext );
+            var mediaElements = mediaElementService.Queryable()
+                .Where( me => me.MediaFolderId == mediaFolder.Id )
+                .OrderBy( me => me.Name )
+                .Select( me => new ListItemBag
+                {
+                    Text = me.Name,
+                    Value = me.Guid.ToString()
+                } )
+                .ToList();
+
+            return mediaElements;
+        }
+
+        #endregion
+
         #region Merge Template Picker
 
         /// <summary>
@@ -2526,7 +2815,7 @@ namespace Rock.Rest.v2
             List<Guid> include = null;
             List<Guid> exclude = null;
 
-            if (options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Global)
+            if ( options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Global )
             {
                 exclude = new List<Guid>();
                 exclude.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
@@ -2892,6 +3181,84 @@ namespace Rock.Rest.v2
 
             // Chain to the v1 controller.
             return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+        }
+
+        #endregion
+
+        #region Phone Number Box
+
+        /// <summary>
+        /// Get the phone number configuration related to country codes and number formats
+        /// </summary>
+        /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
+        [Authenticate]
+        [Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
+        [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
+        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        {
+            var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            string defaultCountryCode = null;
+
+            if ( definedType != null )
+            {
+                var definedValues = definedType.DefinedValues;
+
+                foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
+                {
+                    var rules = new List<PhoneNumberCountryCodeRulesConfigurationBag>();
+
+                    if (defaultCountryCode == null)
+                    {
+                        defaultCountryCode = countryCode;
+                    }
+
+                    foreach ( var definedValue in definedValues.Where( v => v.Value == countryCode ).OrderBy( v => v.Order ) )
+                    {
+                        string match = definedValue.GetAttributeValue( "MatchRegEx" );
+                        string replace = definedValue.GetAttributeValue( "FormatRegEx" );
+                        if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
+                        {
+                            rules.Add( new PhoneNumberCountryCodeRulesConfigurationBag { Match = match, Format = replace } );
+                        }
+                    }
+
+                    countryCodeRules.Add( countryCode, rules );
+                }
+            }
+
+            return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+            {
+                Rules = countryCodeRules,
+                DefaultCountryCode = defaultCountryCode
+            } );
+        }
+
+        #endregion
+
+        #region Race Picker
+
+        /// <summary>
+        /// Gets the races that can be displayed in the race picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the races and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RacePickerGetRaces" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "126eec10-7a19-49af-9646-909bd92ea516" )]
+        public IHttpActionResult RacePickerGetRaces()
+        {
+            var races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE ).DefinedValues
+                .Select( e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() } )
+                .ToList();
+
+            return Ok( new RacePickerGetRacesResultsBag
+            {
+                Races = races,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+            } );
         }
 
         #endregion

@@ -107,6 +107,7 @@ namespace Rock.Blocks.Communication
 
             var snippetType = GetSnippetType( rockContext );
             options.IsAuthorizedToEdit = snippetType?.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
+            options.IsPersonalAllowed = snippetType?.IsPersonalAllowed ?? false;
 
             return options;
         }

@@ -15,20 +15,17 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.Model;
+using Rock.Utility;
+using Rock.Web.Cache;
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Model
 {
     /// <summary>
     /// DTO for Reminders.
     /// </summary>
-    public class ReminderDTO
+    public class ReminderDTO : RockDynamic
     {
         /// <summary>
         /// The identifier.
@@ -91,6 +88,11 @@ namespace Rock.Model
         public int EntityId { get; set; }
 
         /// <summary>
+        /// The entity type identifier.
+        /// </summary>
+        public int EntityTypeId { get; set; }
+
+        /// <summary>
         /// The Entity URL.
         /// </summary>
         public string EntityUrl { get; set; }
@@ -116,9 +118,11 @@ namespace Rock.Model
             this.HighlightColor = reminder.ReminderType.HighlightColor;
             this.ReminderDate = reminder.ReminderDate.ToShortDateString();
             this.Note = reminder.Note;
-            this.IsPersonReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
-            this.IsGroupReminder = ( reminder.ReminderType.EntityType.FriendlyName == "Person" );
+            this.IsPersonReminder = ( reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+            this.IsGroupReminder = (reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid());
             this.EntityId = reminder.EntityId;
+            this.EntityTypeName = reminder.ReminderType.EntityType.FriendlyName;
+            this.EntityTypeId = reminder.ReminderType.EntityTypeId;
             this.EntityUrl = string.Empty;
             this.PersonProfilePictureUrl = personProfilePictureUrl;
 
@@ -128,6 +132,11 @@ namespace Rock.Model
                 var entityUrlMergeFields = new Dictionary<string, object>();
                 entityUrlMergeFields.Add( "Entity", entity );
                 this.EntityUrl = reminder.ReminderType.EntityType.LinkUrlLavaTemplate.ResolveMergeFields( entityUrlMergeFields );
+                if ( this.EntityUrl.StartsWith( "~/" ) )
+                {
+                    var baseUrl = GlobalAttributesCache.Value("PublicApplicationRoot");
+                    this.EntityUrl = this.EntityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
+                }
             }
         }
     }

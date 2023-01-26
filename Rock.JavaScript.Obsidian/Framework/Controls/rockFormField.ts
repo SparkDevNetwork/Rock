@@ -82,7 +82,7 @@ export default defineComponent({
         });
 
         // Watch for changes to the modelValue and update our internalValue.
-        watch(() => props.modelValue, () => {
+        watch(() => [props.modelValue, props.rules], () => {
             internalValue.value = props.modelValue;
 
             const errors = validateValue(internalValue.value, props.rules);

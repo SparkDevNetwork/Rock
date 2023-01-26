@@ -507,7 +507,6 @@
                         sPosition = 'relative'
                     }
                     if (self.iScroll) {
-                        console.log(self.iScroll);
                         self.iScroll.refresh();
                     }
                 }

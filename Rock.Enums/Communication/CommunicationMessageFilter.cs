@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
     /// The filter applied to the GetCommunicationConversation query
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
     public enum CommunicationMessageFilter
     {
         /// <summary>

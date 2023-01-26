@@ -283,7 +283,7 @@ namespace Rock.Data
             // SaveChanges() method and return
             if ( args.DisablePrePostProcessing )
             {
-                saveChangesResult.RecordsUpdated = base.SaveChanges();
+                saveChangesResult.RecordsUpdated = SaveChangesInternal();
                 return saveChangesResult;
             }
 
@@ -303,24 +303,7 @@ namespace Rock.Data
                 try
                 {
                     // Save the context changes
-                    saveChangesResult.RecordsUpdated = base.SaveChanges();
-                }
-                catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
-                {
-                    var validationErrors = new List<string>();
-                    foreach ( var error in ex.EntityValidationErrors )
-                    {
-                        foreach ( var prop in error.ValidationErrors )
-                        {
-                            validationErrors.Add( string.Format( "{0} ({1}): {2}", error.Entry.Entity.GetType().Name, prop.PropertyName, prop.ErrorMessage ) );
-                        }
-                    }
-
-                    // Let all the hooks that were called know that the save
-                    // was aborted.
-                    CallSaveFailedHooks( updatedItems );
-
-                    throw new SystemException( "Entity Validation Error: " + validationErrors.AsDelimited( ";" ), ex );
+                    saveChangesResult.RecordsUpdated = SaveChangesInternal();
                 }
                 catch
                 {
@@ -350,6 +333,49 @@ namespace Rock.Data
             }
 
             return saveChangesResult;
+        }
+
+        /// <summary>
+        /// Save changes to the context, and capture additional details for any Entity Framework validation errors.
+        /// </summary>
+        /// <returns></returns>
+        private int SaveChangesInternal()
+        {
+            try
+            {
+                // Save the context changes
+                return base.SaveChanges();
+            }
+            catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
+            {
+                // This exception stores specific validation messages in a custom property.
+                // These messages are often useful for debugging purposes, so we will repackage the exception
+                // to include the additional information in the standard error message.
+                var validationErrors = new List<string>();
+                foreach ( var error in ex.EntityValidationErrors )
+                {
+                    var entry = error.Entry;
+                    var entityType = entry.Entity.GetType();
+                    if ( entityType.IsDynamicProxyType() )
+                    {
+                        entityType = entityType.BaseType;
+                    }
+
+                    var entityDescription = $"{entityType.Name}/{entry.State}";
+
+                    if ( error.Entry.Entity is IEntity entity )
+                    {
+                        entityDescription += $"/Id={entity.Id}";
+                    }
+
+                    foreach ( var prop in error.ValidationErrors )
+                    {
+                        validationErrors.Add( $"[{entityDescription}/Property={prop.PropertyName}] {prop.ErrorMessage}" );
+                    }
+                }
+
+                throw new SystemException( $"Entity Validation Error: { validationErrors.AsDelimited( "; " ) }" );
+            }
         }
 
         /// <summary>

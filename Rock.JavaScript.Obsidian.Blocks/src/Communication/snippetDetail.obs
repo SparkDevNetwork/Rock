@@ -133,7 +133,7 @@
     });
 
     const options = computed((): SnippetDetailOptionsBag => {
-        return config.options ?? { isAuthorizedToEdit: false };
+        return config.options ?? { isAuthorizedToEdit: false, isPersonalAllowed: false };
     });
 
     // #endregion

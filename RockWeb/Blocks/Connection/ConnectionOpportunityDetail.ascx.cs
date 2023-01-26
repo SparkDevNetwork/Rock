@@ -2119,6 +2119,9 @@ namespace RockWeb.Blocks.Connection
                     break;
 
                 case "WORKFLOWDETAILS":
+                    ddlTriggerType.SetValue( 0 );
+                    wpWorkflowType.SetValue( null );
+                    rblConnectionStatuses.SelectedValue = null;
                     dlgWorkflowDetails.Hide();
                     break;
                 case "CONNECTIONREQUESTATTRIBUTES":

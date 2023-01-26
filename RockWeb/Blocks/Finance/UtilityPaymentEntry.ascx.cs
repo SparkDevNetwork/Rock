@@ -151,10 +151,11 @@ namespace RockWeb.Blocks.Finance
     [AccountsField( "Accounts",
         Key = AttributeKey.AccountsToDisplay,
         Description = "The accounts to display. If Account Campus mapping logic is enabled and the account has a child account for the selected campus, the child account for that campus will be used.",
+        IsRequired = false,
         Order = 13 )]
 
     [BooleanField(
-        "Use Account Campus mapping logic.",
+        "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
         <ul>
           <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Scheduled Transactions",
         Key = AttributeKey.AllowScheduled,
-        Description = "If the selected gateway(s) allow scheduled transactions, should that option be provided to user.",
+        Description = "If the selected gateway(s) allow scheduled transactions, should that option be provided to user. This feature is not compatible when Text-to-Give mode is enabled.",
         TrueText = "Allow",
         FalseText = "Don't Allow",
         DefaultBooleanValue = true,
@@ -473,7 +474,7 @@ namespace RockWeb.Blocks.Finance
         Category = CategoryKey.Advanced,
         Order = 11 )]
 
-    [BooleanField( "Enable Text-To-Give Setup",
+    [BooleanField( "Enable Text-To-Give Mode",
         Key = AttributeKey.EnableTextToGiveSetup,
         Description = "This setting enables specific behavior for setting up Text-To-Give accounts.",
         DefaultBooleanValue = false,
@@ -1850,16 +1851,16 @@ mission. We are so grateful for your commitment.</p>
 
             // Set heading visibility
             var showPanelHeadings = GetAttributeValue( AttributeKey.ShowPanelHeadings ).AsBoolean();
-            pnlHeading1.Visible = showPanelHeadings;
-            pnlHeading2.Visible = showPanelHeadings;
-            pnlHeading3.Visible = showPanelHeadings;
-            pnlHeading4.Visible = showPanelHeadings;
-            pnlHeading5.Visible = showPanelHeadings;
-            pnlHeading6.Visible = showPanelHeadings;
+            pnlHeadingSelection.Visible = showPanelHeadings;
+            pnlHeadingConfirmation.Visible = showPanelHeadings;
+            pnlHeadingContributionInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingPersonalInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingPaymentInfoTitle.Visible = showPanelHeadings;
+            pnlHeadingConfirmationTitle.Visible = showPanelHeadings;
 
             // Set page/panel titles
-            lPanelTitle1.Text = GetAttributeValue( AttributeKey.PanelTitle );
-            lPanelTitle2.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lPanelTitleSelection.Text = GetAttributeValue( AttributeKey.PanelTitle );
+            lPanelTitleConfirmation.Text = GetAttributeValue( AttributeKey.PanelTitle );
             lContributionInfoTitle.Text = GetAttributeValue( AttributeKey.ContributionInfoTitle );
             lPersonalInfoTitle.Text = GetAttributeValue( AttributeKey.PersonalInfoTitle );
             lPaymentInfoTitle.Text = GetAttributeValue( AttributeKey.PaymentInfoTitle );

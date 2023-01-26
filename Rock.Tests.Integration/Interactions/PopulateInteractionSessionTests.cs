@@ -17,13 +17,15 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Quartz;
+using Rock.Data;
 using Rock.IpAddress;
 using Rock.Jobs;
-using Rock.Tests.Integration.Jobs;
+using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Interactions
 {
@@ -111,6 +113,7 @@ namespace Rock.Tests.Integration.Interactions
                 Assert.Fail( ex.Message );
             }
         }
+
         /// <summary>
         /// If there is an issue with the IP Registry Provider, batch processing should terminate early.
         /// </summary>
@@ -132,9 +135,136 @@ namespace Rock.Tests.Integration.Interactions
             Assert.IsTrue( results.Count > 0 );
         }
 
+        [TestMethod]
+        public void IpRegistryComponent_ValidateSampleAddresses_IsValid()
+        {
+            var registryComponent = new IpRegistryMock();
+
+            // Attempt to resolve a loopback address that has no location.
+            var ipAddresses = "180.76.102.66,20.125.101.231,107.77.198.194,105.235.134.225,3.252.129.228"
+                .Split( ',' )
+                .ToList();
+
+            try
+            {
+                var results = registryComponent.BulkLookup( ipAddresses, out var message );
+            }
+            catch ( Exception ex )
+            {
+                // Deserialization of Latitude/Longitude fails.
+                Assert.Fail( ex.Message );
+            }
+        }
+
         #endregion
 
         #region Populate Interaction Sessions Job.
+
+        private void AddInteractionSessionTestData( DateTime firstInteractionSessionDate )
+        {
+            var rockContext = new RockContext();
+            var rnd = new Random();
+
+            var agentList = TestData.TestDataHelper.Web.GetHttpUserAgentList();
+
+            var personTedDecker = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
+
+            // Add interactions for a specific browser session.
+            var internalSite = TestDataHelper.Crm.GetInternalSite( rockContext );
+            var internalPages = TestDataHelper.Crm.GetInternalSitePages( rockContext );
+            var interactionService = new InteractionService( rockContext );
+
+            var interactionDateTime = firstInteractionSessionDate;
+
+            var ipAddresses = "180.76.102.66,20.125.101.231,107.77.198.194,105.235.134.225,3.252.129.228"
+                .Split( ',' )
+                .ToList();
+
+            foreach ( var ipAddress in ipAddresses )
+            {
+                var browserSessionGuid = Guid.NewGuid();
+                var interactionCount = rnd.Next( 1, 10 );
+                var interactionPages = internalPages.GetRandomizedList( interactionCount );
+
+                foreach ( var testPage in interactionPages )
+                {
+                    var interaction = CreatePageViewInteraction( interactionDateTime,
+                        internalSite.Id,
+                        testPage.Id,
+                        agentList.GetRandomElement(),
+                        ipAddress,
+                        browserSessionGuid,
+                        $"http://localhost:12345/page/{testPage.Id}",
+                        personTedDecker.PrimaryAliasId,
+                        rockContext );
+
+                    interaction.ForeignKey = "IntegrationTestData";
+
+                    interactionService.Add( interaction );
+
+                    rockContext.SaveChanges();
+
+                    // Get the date/time for the next interaction.
+                    interactionDateTime = interactionDateTime.AddMinutes( rnd.Next( 1, 10 ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create an interaction for a Page View.
+        /// </summary>
+        /// <param name="viewDateTime"></param>
+        /// <param name="siteId"></param>
+        /// <param name="pageId"></param>
+        /// <param name="userAgentString"></param>
+        /// <param name="browserIpAddress"></param>
+        /// <param name="requestedUrl"></param>
+        /// <param name="userPersonAliasId"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private Interaction CreatePageViewInteraction( DateTime viewDateTime, int siteId, int pageId, string userAgentString, string browserIpAddress, Guid? browserSessionGuid, string requestUrl, int? userPersonAliasId, RockContext rockContext )
+        {
+            string deviceApplication;
+            string deviceOs;
+            string deviceClientType;
+
+            TestDataHelper.Web.ParseUserAgentString( userAgentString,
+                out deviceOs,
+                out deviceApplication,
+                out deviceClientType );
+
+            var interactionService = new InteractionService( rockContext );
+
+            // Get the Interaction Channel: Internal Site
+            var dvWebsiteChannelType = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+            var interactionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( dvWebsiteChannelType.Id,
+                siteId,
+                channelName: null,
+                componentEntityTypeId: null,
+                interactionEntityTypeId: null );
+
+            // Get the Interaction Component: Page
+            var interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId,
+                pageId,
+                componentName: null );
+
+            var interaction = interactionService.CreateInteraction( interactionComponentId,
+                pageId,
+                operation: "View",
+                $"Browser Session {browserSessionGuid}",
+                requestUrl,
+                userPersonAliasId,
+                viewDateTime,
+                deviceApplication,
+                deviceOs,
+                deviceClientType,
+                deviceTypeData: "",
+                browserIpAddress,
+                browserSessionGuid );
+
+            return interaction;
+        }
+
 
         /// <summary>
         /// If the IP Registry Provider is correctly configured, batch processing should complete successfully.
@@ -158,6 +288,33 @@ namespace Rock.Tests.Integration.Interactions
 
             // Check for success badge.
             Assert.That.Contains( jobOutput, "<i class='fa fa-circle text-success'></i>" );
+        }
+
+        /// <summary>
+        /// An interaction session recorded since the last successful run date shouild be processed.
+        /// </summary>
+        [TestMethod]
+        public void InteractionSessionPopulateLocation_HavingSessionsWithUnknownDurationPriorToStartDate_ProcessesThoseSessions()
+        {
+            var interactionSessionDate = RockDateTime.New( 2023, 3, 1, 10, 0, 0, 0 );
+            AddInteractionSessionTestData( interactionSessionDate.Value );
+
+            var registryComponent = new IpRegistryMock()
+            {
+                ApiKey = IpRegistryApiKeyHasPositiveCredit
+            };
+            var job = new PopulateInteractionSessionDataMock()
+            {
+                LookupComponent = registryComponent
+            };
+
+            var settings = new PopulateInteractionSessionData.PopulateInteractionSessionDataJobSettings();
+            settings.MaxRecordsToProcessPerRun = 10;
+            settings.LastSuccessfulJobRunDateTime = interactionSessionDate.Value.AddHours( -1 );
+
+            var jobResult = job.Execute( settings );
+
+            Assert.That.IsNull( jobResult.Exception );
         }
 
         /// <summary>

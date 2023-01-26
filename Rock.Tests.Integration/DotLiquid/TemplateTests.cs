@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.DotLiquidTests
@@ -31,7 +32,7 @@ namespace Rock.Tests.Integration.DotLiquidTests
             // fix: https://github.com/dotliquid/dotliquid/pull/220
 
             // Arrange
-            var template = Template.Parse( "{% assign value = Value %}{{ value }}" );
+            var template = LavaHelper.CreateDotLiquidTemplate( "{% assign value = Value %}{{ value }}" );
 
             if ( isThreadSafe )
             {

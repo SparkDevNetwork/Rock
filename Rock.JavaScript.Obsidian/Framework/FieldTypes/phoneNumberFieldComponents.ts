@@ -16,7 +16,7 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 
 export const EditComponent = defineComponent({
     name: "PhoneNumberField.Edit",

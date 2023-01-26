@@ -64,13 +64,17 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202301102307054_rollup_20230110.cs" />
-    <Compile Include="Migrations\202301102307054_rollup_20230110.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202301121749126_CodeGenerated_20230112.cs" />
-    <Compile Include="Migrations\202301121749126_CodeGenerated_20230112.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301121749126_CodeGenerated_20230112.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301121749126_CodeGenerated_20230112.designer.cs">
       <DependentUpon>202301121749126_CodeGenerated_20230112.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301241941011_Rollup_20230124.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301241941011_Rollup_20230124.designer.cs">
+      <DependentUpon>202301241941011_Rollup_20230124.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.designer.cs">
@@ -1482,11 +1486,14 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202301102307054_rollup_20230110.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202301121749126_CodeGenerated_20230112.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301121749126_CodeGenerated_20230112.resx">
       <DependentUpon>202301121749126_CodeGenerated_20230112.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301241941011_Rollup_20230124.resx">
+      <DependentUpon>202301241941011_Rollup_20230124.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202209221552523_AddAbbreviatedNameToSchedule.resx">
       <DependentUpon>202209221552523_AddAbbreviatedNameToSchedule.cs</DependentUpon>

@@ -23,7 +23,7 @@ import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
 import LocationPicker from "@Obsidian/Controls/locationItemPicker";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
