@@ -1475,6 +1475,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
             }
         }
 
+        /// <summary>
+        /// Gets the existing activity options.
+        /// </summary>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult GetExistingActivityOptions( Guid connectionRequestGuid, Guid activityGuid )
         {

@@ -23,6 +23,10 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class SnippetTypeBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type SnippetTypeBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

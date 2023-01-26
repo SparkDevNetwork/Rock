@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class SnippetTypeDetailOptionsBag. */
 export type SnippetTypeDetailOptionsBag = {
 };

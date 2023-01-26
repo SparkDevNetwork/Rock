@@ -194,15 +194,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum CommunicationMessageFilter
-    {
-        ShowUnreadReplies = 0x0,
-        ShowAllReplies = 0x1,
-        ShowAllMessages = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum CommunicationRecipientStatus
     {
         Pending = 0x0,
@@ -1098,6 +1089,19 @@ namespace Rock.Client.Enums
     {
         ChangeFromTo = 0x0,
         ValueEqual = 0x1,
+    }
+
+}
+
+namespace Rock.Client.Enums.Communication
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationMessageFilter
+    {
+        ShowUnreadReplies = 0x0,
+        ShowAllReplies = 0x1,
+        ShowAllMessages = 0x2,
     }
 
 }
