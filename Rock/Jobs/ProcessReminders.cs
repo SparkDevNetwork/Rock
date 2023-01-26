@@ -382,6 +382,7 @@ namespace Rock.Jobs
                 var mergeFields = LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "Reminders", reminderDataObjects );
                 mergeFields.Add( "Person", recipient );
+                mergeFields.Add( "MaxRemindersPerEntityType", remindersPerEntityType );
 
                 var mediumType = ( int ) CommunicationType.Email;
                 var result = CommunicationHelper.SendMessage( recipient, mediumType, notificationSystemCommunication, mergeFields );
