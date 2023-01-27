@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
+using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using Rock.Data;
 using Rock.Model;
@@ -53,8 +54,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.HeaderTemplate,
         Order = 0 )]
 
-    [BlockTemplateField( "Activity Template",
-        Description = "The template used to render the activity history for the connection request.",
+    [BlockTemplateField( "Activity Template (Legacy)",
+        Description = "This is unused in shell V4. Previous to that version, this was the template used to render the activity history for the connection request.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL,
         DefaultValue = "D19A6D1A-BB4F-45FB-92DE-17EB97479F40",
         IsRequired = true,
@@ -321,9 +322,23 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // Generate the content that will be displayed above the connection request.
             var headerContent = HeaderTemplate.ResolveMergeFields( mergeFields );
 
-            // Generate the content that will be used to display the activities.
-            mergeFields.Add( "Activities", GetConnectionRequestActivities( request, rockContext ) );
-            var activityContent = ActivityTemplate.ResolveMergeFields( mergeFields );
+            // Get our list of available connection request activities.
+            var activities = GetConnectionRequestActivities( request, rockContext );
+
+            var deviceData = RequestContext.GetHeader( "X-Rock-DeviceData" )
+                .FirstOrDefault()
+                ?.FromJsonOrNull<DeviceData>();
+
+            // We udpdated this in shell V4 to use a hard-coded view instead of the ActivityTemplate,
+            // so we only want to parse the Lava if the Shell Version > 1.4.24, when we updated
+            // that.
+            string activityContent = "";
+            if ( new Version( deviceData?.ShellVersion ?? "0") <= new Version( 1, 4, 0, 24 ) )
+            {
+                // Generate the content that will be used to display the activities.
+                mergeFields.Add( "Activities", activities );
+                activityContent = ActivityTemplate.ResolveMergeFields( mergeFields );
+            }
 
             // Get all the workflows that can be manually triggered by the person.
             var connectionWorkflows = GetConnectionOpportunityManualWorkflowTypes( request.ConnectionOpportunity, RequestContext.CurrentPerson )
@@ -337,8 +352,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            var activities = GetConnectionRequestActivities( request, rockContext )
-            .ToList()
+            var activitesViewModel = activities.ToList()
             .Select( a => new ActivityViewModel
             {
                 ActivityTypeGuid = a.ConnectionActivityType.Guid,
@@ -384,7 +398,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusGuid = request.ConnectionStatus.Guid,
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
-                Activities = activities
+                Activities = activitesViewModel
             };
 
             if ( isEditable )
