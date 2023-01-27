@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -154,6 +155,22 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 13 )]
 
+    [BooleanField( "Additional Accounts",
+        Key = AttributeKey.AdditionalAccounts,
+        Description = "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available.",
+        TrueText = "Display option for selecting additional accounts",
+        FalseText = "Don't display option",
+        DefaultBooleanValue = true,
+        Order = 14 )]
+
+    [BooleanField( "Enable Account Hierarchy for Additional Accounts",
+        Key = AttributeKey.EnableAccountHierarchy,
+        Description = "When enabled this will group accounts under their parents. This allows a person to keep the current behavior if desired. Note: This setting is not compatible with the \"Use Account Campus Mapping Logic\" setting.",
+        TrueText = "Enable",
+        FalseText = "Disable",
+        DefaultBooleanValue = false,
+        Order = 15 )]
+
     [BooleanField(
         "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
@@ -164,7 +181,7 @@ namespace RockWeb.Blocks.Finance
         <ul>",
         Key = AttributeKey.UseAccountCampusMappingLogic,
         DefaultBooleanValue = false,
-        Order = 14 )]
+        Order = 16 )]
 
     [BooleanField( "Scheduled Transactions",
         Key = AttributeKey.AllowScheduled,
@@ -172,19 +189,19 @@ namespace RockWeb.Blocks.Finance
         TrueText = "Allow",
         FalseText = "Don't Allow",
         DefaultBooleanValue = true,
-        Order = 15 )]
+        Order = 17 )]
 
     [BooleanField( "Prompt for Phone",
         Key = AttributeKey.DisplayPhone,
         Description = "Should the user be prompted for their phone number?",
         DefaultBooleanValue = false,
-        Order = 16 )]
+        Order = 18 )]
 
     [BooleanField( "Prompt for Email",
         Key = AttributeKey.DisplayEmail,
         Description = "Should the user be prompted for their email address?",
         DefaultBooleanValue = true,
-        Order = 17 )]
+        Order = 19 )]
 
     [GroupLocationTypeField( "Address Type",
         Key = AttributeKey.AddressType,
@@ -192,7 +209,7 @@ namespace RockWeb.Blocks.Finance
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        Order = 18 )]
+        Order = 20 )]
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
@@ -201,7 +218,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
-        Order = 19 )]
+        Order = 21 )]
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
@@ -210,32 +227,32 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
-        Order = 20 )]
+        Order = 22 )]
 
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
         Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
-        Order = 21 )]
+        Order = 23 )]
 
     [TextField( "Comment Entry Label",
         Key = AttributeKey.CommentEntryLabel,
         Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
         IsRequired = false,
         DefaultValue = "Comment",
-        Order = 22 )]
+        Order = 24 )]
 
     [BooleanField( "Enable Business Giving",
         Key = AttributeKey.EnableBusinessGiving,
         Description = "Should the option to give as a business be displayed?",
         DefaultBooleanValue = true,
-        Order = 23 )]
+        Order = 25 )]
 
     [BooleanField( "Enable Anonymous Giving",
         Key = AttributeKey.EnableAnonymousGiving,
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
-        Order = 24 )]
+        Order = 26 )]
 
     #endregion Default Category
 
@@ -357,6 +374,14 @@ namespace RockWeb.Blocks.Finance
         Category = CategoryKey.TextOptions,
         Order = 13 )]
 
+    [TextField( "Add Account Text",
+        Key = AttributeKey.AddAccountText,
+        Description = "The button text to display for adding an additional account",
+        IsRequired = false,
+        DefaultValue = "Add Another Account",
+        Category = CategoryKey.TextOptions,
+        Order = 14 )]
+
     [CodeEditorField( "Payment Comment Template",
         Key = AttributeKey.PaymentCommentTemplate,
         Description = AttributeString.PaymentCommentDescription,
@@ -365,7 +390,7 @@ namespace RockWeb.Blocks.Finance
         EditorHeight = 100,
         IsRequired = false,
         Category = CategoryKey.TextOptions,
-        Order = 14 )]
+        Order = 15 )]
 
     [TextField( "Anonymous Giving Tooltip",
         Key = AttributeKey.AnonymousGivingTooltip,
@@ -373,7 +398,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         DefaultValue = "",
         Category = CategoryKey.TextOptions,
-        Order = 15 )]
+        Order = 16 )]
 
     #endregion Text Options
 
@@ -518,6 +543,8 @@ namespace RockWeb.Blocks.Finance
             public const string CommentEntryLabel = "CommentEntryLabel";
             public const string EnableBusinessGiving = "EnableBusinessGiving";
             public const string EnableAnonymousGiving = "EnableAnonymousGiving";
+            public const string AdditionalAccounts = "AdditionalAccounts";
+            public const string EnableAccountHierarchy = "EnableAccountHierarchy";
 
             // Email Templates Category
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
@@ -536,6 +563,7 @@ namespace RockWeb.Blocks.Finance
             public const string SuccessFooter = "SuccessFooter";
             public const string PaymentCommentTemplate = "PaymentCommentTemplate";
             public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
+            public const string AddAccountText = "AddAccountText";
 
             // Advanced Category
             public const string AllowAccountOptionsInURL = "AllowAccountOptionsInURL";
@@ -664,6 +692,8 @@ mission. We are so grateful for your commitment.</p>
             public const string DisplayPhone = "DisplayPhone";
             public const string PersonId = "PersonId";
             public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
+            public const string AvailableAccountsJSON = "AvailableAccountsJSON";
+            public const string SelectedAccountsJSON = "SelectedAccountsJSON";
         }
 
         #endregion Block Keys
@@ -736,6 +766,12 @@ mission. We are so grateful for your commitment.</p>
                 return ScriptManager.GetCurrent( this.Page ).EnablePartialRendering;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the accounts that are available for user to add to the list.
+        /// </summary>
+        protected List<AccountItem> AvailableAccounts { get; set; }
+
         #endregion
 
         #region enums
@@ -973,6 +1009,19 @@ mission. We are so grateful for your commitment.</p>
 
                 ConfigureCampusAccountAmountPicker();
             }
+            else
+            {
+                string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+
+                if ( eventArgs.Length == 2 && eventArgs[0] == "btnAddAccountLiteral" && int.TryParse( eventArgs[1], out int accountId ) )
+                {
+                    UpdateAvailableAccounts( accountId );
+                }
+                else
+                {
+                    UpdateAvailableAccounts( null );
+                }
+            }
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -991,6 +1040,28 @@ mission. We are so grateful for your commitment.</p>
         }
 
         /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns <see langword="null" />.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState[ViewStateKey.AvailableAccountsJSON] = AvailableAccounts.ToJson();
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            AvailableAccounts = ( ViewState[ViewStateKey.AvailableAccountsJSON] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+        }
+
+        /// <summary>
         /// Configures the campus account amount picker.
         /// </summary>
         private void ConfigureCampusAccountAmountPicker()
@@ -999,6 +1070,8 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
+
+            AvailableAccounts = new List<AccountItem>();
 
             bool enableMultiAccount = this.GetAttributeValue( AttributeKey.EnableMultiAccount ).AsBoolean();
             if ( enableMultiAccount )
@@ -1068,10 +1141,139 @@ mission. We are so grateful for your commitment.</p>
 
             caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
 
+            ConfigureAvailableAccounts( rockContext );
+
             if ( accountAmounts != null )
             {
                 caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
             }
+        }
+
+        /// <summary>
+        /// Configures the available accounts.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void ConfigureAvailableAccounts( RockContext rockContext )
+        {
+            // If there no SelectableAccountIds on the CampusAccountAmountPicker, then all the available accounts will be displayed
+            // so there is no need to configure the add account button
+            if ( caapPromptForAccountAmounts.SelectableAccountIds.Length == 0 )
+            {
+                return;
+            }
+
+            var financialAccountService = new FinancialAccountService( rockContext );
+            var enableAccountHierarchy = GetAttributeValue( AttributeKey.EnableAccountHierarchy ).AsBoolean();
+
+            var availableAccounts = financialAccountService.Queryable()
+            .Where( f =>
+                f.IsActive
+                    && f.IsPublic.HasValue
+                    && f.IsPublic.Value
+                    && !caapPromptForAccountAmounts.SelectableAccountIds.Contains( f.Id )
+                    && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
+                    && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) );
+
+            if ( enableAccountHierarchy )
+            {
+                availableAccounts = availableAccounts.OrderBy( f => f.PublicName );
+            }
+            else
+            {
+                availableAccounts = availableAccounts.OrderBy( f => f.Order );
+            }
+
+            var accountIds = availableAccounts.Select( f => f.Id ).ToList();
+
+            var childList = financialAccountService.Queryable()
+                .Where( f =>
+                f.ParentAccountId.HasValue
+                    && accountIds.Contains( f.ParentAccountId.Value )
+                    &&!caapPromptForAccountAmounts.SelectableAccountIds.Contains( f.Id ) )
+                .ToList();
+
+            // Enumerate through all active accounts that are public
+            foreach ( var account in availableAccounts )
+            {
+                var accountItem = new AccountItem() { Id = account.Id, PublicName = account.PublicName, ParentAccountId = account.ParentAccountId };
+
+                if ( enableAccountHierarchy )
+                {
+                    accountItem.HasChildren = childList.Any( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) );
+                    accountItem.Children = childList.Where( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) )
+                        .Select( f => new AccountItem() { Id = f.Id, PublicName = f.PublicName, ParentAccountId = f.ParentAccountId } )
+                        .ToList();
+                    // An account is considered a root item in the hierarchical mode if it is a top level account with children or is a parent account to any other child account.
+                    accountItem.IsRootItem = ( !account.ParentAccountId.HasValue && accountItem.HasChildren ) || availableAccounts.Any( f => f.ParentAccountId == account.Id );
+                }
+
+                AvailableAccounts.Add( accountItem );
+            }
+
+            DatabindAddAccountsButton( enableAccountHierarchy );
+        }
+
+        /// <summary>
+        /// Databinds the add accounts button.
+        /// </summary>
+        /// <param name="enableAccountHierachy">if set to <c>true</c> [enable account hierachy].</param>
+        private void DatabindAddAccountsButton( bool enableAccountHierachy )
+        {
+            // Further filter available accounts to return higher level accounts with any child accounts without children of their own.
+            // If the child account has children of their own it will act as the root of a hierarchy, and should not be included in the parent's list of child accounts
+            // and if the parent account has no direct child accounts without children of their own then it is not displayed. 
+            var hierarchicalAccounts = AvailableAccounts.Where( a => a.IsRootItem && a.Children.Any( c => !c.HasChildren ) );
+
+            phbtnAddAccount.Visible = enableAccountHierachy ? hierarchicalAccounts.Any() : AvailableAccounts.Any();
+            phbtnAddAccount.Controls.Clear();
+
+            var additionalAccounts = enableAccountHierachy ? hierarchicalAccounts : AvailableAccounts;
+
+            var literal = new LiteralControl() { ID = "btnAddAccountLiteral" };
+            var openingHtml = $@"
+<div class=""btn-group js-button-dropdownlist"">
+    <button type=""button"" class=""btn btn-default dropdown-toggle js-buttondropdown-btn-select"" data-toggle=""dropdown"" aria-expanded=""false"">{GetAttributeValue( AttributeKey.AddAccountText )} <span class=""fa fa-caret-down""></span></button>
+    <ul class=""dropdown-menu"">
+";
+
+            const string closingHtml = @"
+    </ul>
+</div>
+";
+            var htmlBuilder = new StringBuilder( openingHtml );
+            foreach ( var accountItem in additionalAccounts )
+            {
+                if ( accountItem.HasChildren )
+                {
+                    htmlBuilder.Append( "<li class=\"dropdown-submenu\"><a class=\"dropdown-submenu-toggle\">" );
+                }
+                else
+                {
+                    htmlBuilder.Append( $"<li><a href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={accountItem.Id}')\" data-id='{accountItem.Id}'>" );
+                }
+
+                if ( accountItem.HasChildren )
+                {
+                    htmlBuilder.Append( $"{accountItem.PublicName}<span class=\"caret\"></span></a><ul class=\"dropdown-menu\">" );
+                    foreach ( var listItemChild in accountItem.Children )
+                    {
+                        htmlBuilder.Append( $"<li><a " );
+                        htmlBuilder.Append( $"href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={listItemChild.Id}')\" data-id='{listItemChild.Id}'>" );
+                        htmlBuilder.Append( $"{listItemChild.PublicName}</a></li>" );
+                    }
+                    htmlBuilder.Append( "</ul></li>" );
+                }
+                else
+                {
+                    htmlBuilder.Append( $"{accountItem.PublicName}</a></li>" );
+                }
+            }
+
+            htmlBuilder.Append( closingHtml );
+
+            literal.Text = htmlBuilder.ToString();
+
+            phbtnAddAccount.Controls.Add( literal );
         }
 
         /// <summary>
@@ -1145,6 +1347,32 @@ mission. We are so grateful for your commitment.</p>
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Updates the available accounts.
+        /// </summary>
+        /// <param name="accountId">The account identifier.</param>
+        private void UpdateAvailableAccounts( int? accountId )
+        {
+            var selected = AvailableAccounts.Where( a => a.Id == ( accountId ?? 0 ) ).ToList();
+            AvailableAccounts = AvailableAccounts.Except( selected ).ToList();
+
+            // If the selected account was a child account remove it from the parent's children list so it does not show up in the UI.
+            foreach ( var accountItem in selected.Where( a => a.ParentAccountId.HasValue ) )
+            {
+                var parentAccount = AvailableAccounts.FirstOrDefault( a => a.Id == accountItem.ParentAccountId.Value );
+                parentAccount?.RemoveFromChildItems( accountItem );
+            }
+
+            DatabindAddAccountsButton( phbtnAddAccount.Visible );
+
+            if ( accountId.HasValue )
+            {
+                var selectableAccountIds = caapPromptForAccountAmounts.SelectableAccountIds.ToList();
+                selectableAccountIds.Add( accountId.Value );
+                caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
+            }
         }
 
         #endregion
@@ -2653,6 +2881,7 @@ mission. We are so grateful for your commitment.</p>
                 .Select( a =>
                     new AccountItem
                     {
+                        Id = a.AccountId,
                         PublicName = FinancialAccountCache.Get( a.AccountId )?.PublicName,
                         AmountFormatted = a.Amount.FormatAsCurrency()
                     } )
@@ -3555,9 +3784,25 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         protected class AccountItem
         {
+            public int Id { get; set; }
+
             public string PublicName { get; set; }
 
             public string AmountFormatted { get; set; }
+
+            public int? ParentAccountId { get; set; }
+
+            public bool HasChildren { get; set; }
+
+            public bool IsRootItem { get; set; }
+
+            public List<AccountItem> Children { get; set; }
+
+            internal void RemoveFromChildItems( AccountItem accountItem )
+            {
+                Children = Children.Where( c => c.Id != accountItem.Id ).ToList();
+                HasChildren = Children.Any();
+            }
         }
 
         /// <summary>
