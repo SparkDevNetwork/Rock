@@ -498,6 +498,7 @@ FROM (
 
                                 // If a single metricValueDateTime was specified, delete any existing metric values for this DateTime and add the current results.
                                 var dbTransaction = rockContextForMetricValues.Database.BeginTransaction();
+                                var measureMetricValueType = MetricValueType.Measure.ToIntSafe();
                                 if ( getMetricValueDateTimeFromResultSet )
                                 {
                                     var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
@@ -517,10 +518,12 @@ FROM (
                                                         FROM MetricValue
                                                         WHERE MetricId = @metricId
                                                         AND MetricValueDateTime = @metricValueDateTime
+                                                        AND MetricValueType = @measureMetricValueType
                                                     )
                                                 ",
                                                 new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ),
+                                                new SqlParameter( "@measureMetricValueType", measureMetricValueType ) );
 
                                             rockContextForMetricValues.Database.ExecuteSqlCommand(
                                                 @"
@@ -528,9 +531,11 @@ FROM (
                                                     FROM MetricValue
                                                     WHERE MetricId = @metricId
                                                     AND MetricValueDateTime = @metricValueDateTime
+                                                    AND MetricValueType = @measureMetricValueType
                                                 ",
                                                 new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ),
+                                                new SqlParameter( "@measureMetricValueType", measureMetricValueType ) );
                                         }
                                     }
                                 }
