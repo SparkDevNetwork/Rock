@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.WorkFlow
                 This functionality needs to remain until a new button is created to perform a "Save Form" function. With this in mind the changes
                 in commit 70a484a9 have been undone.
 
-                05/18/2022 MDP (this comment is no longer valid as of 5/18/2023)
+                05/18/2022 MDP (this comment is no longer valid as of 01/20/2023)
 
                 Update on the 04/27/2022 note. After discussing with Product team,
                 the intended behavior is that *none* of the form values should save
