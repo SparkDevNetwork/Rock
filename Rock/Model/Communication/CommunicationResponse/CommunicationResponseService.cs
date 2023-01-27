@@ -91,9 +91,9 @@ namespace Rock.Model
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
                 .Where( r =>
                 r.MediumEntityTypeId == smsMediumEntityTypeId
-                && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
-                && r.CreatedDateTime >= startDateTime
-                && r.Status == CommunicationRecipientStatus.Delivered );
+                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
+                    && r.CreatedDateTime >= startDateTime
+                    && r.Status == CommunicationRecipientStatus.Delivered );
 
             if ( !showReadMessages )
             {
@@ -122,9 +122,9 @@ namespace Rock.Model
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
                 .Where( r =>
                 r.MediumEntityTypeId == smsMediumEntityTypeId
-                && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
-                && r.CreatedDateTime >= startDateTime
-                && r.Status == CommunicationRecipientStatus.Delivered );
+                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
+                    && r.CreatedDateTime >= startDateTime
+                    && r.Status == CommunicationRecipientStatus.Delivered );
 
             if ( filter == CommunicationMessageFilter.ShowUnreadReplies )
             {
