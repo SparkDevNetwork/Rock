@@ -6097,26 +6097,27 @@ namespace RockWeb.Blocks.Event
             if ( CurrentPerson != null )
             {
                 // Get the saved accounts for the currently logged in user
-                var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() )
-                    .GetByPersonId( CurrentPerson.Id );
+                var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() ).GetByPersonId( CurrentPerson.Id );
 
                 // Verify component is valid and that it supports using saved accounts for one-time, credit card transactions
                 var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
-                if ( component != null &&
-                    component.SupportsSavedAccount( false ) &&
-                    component.SupportsSavedAccount( ccCurrencyType ) )
+                if ( component != null && component.SupportsSavedAccount( false ) && component.SupportsSavedAccount( ccCurrencyType ) )
                 {
+                    var minCardExpirationDate = RockDateTime.Today.AddDays( -1 );
+
                     rblSavedCC.DataSource = savedAccounts
-                        .Where( a =>
-                            a.FinancialGatewayId == RegistrationTemplate.FinancialGateway.Id &&
-                            a.FinancialPaymentDetail != null &&
-                            a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
+                        .Where( a => a.FinancialGatewayId == RegistrationTemplate.FinancialGateway.Id
+                            && a.FinancialPaymentDetail != null
+                            && a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id
+                            && a.FinancialPaymentDetail.CardExpirationDate > minCardExpirationDate )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
-                            Id = a.Id,
+                            a.Id,
                             Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
-                        } ).ToList();
+                        } )
+                        .ToList();
+
                     rblSavedCC.DataBind();
                     if ( rblSavedCC.Items.Count > 0 )
                     {
