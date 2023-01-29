@@ -52,23 +52,25 @@
                 }
             },
             clientValidate: function (validator, args) {
-                var $captcha = $(validator).closest('.form-group').find('.js-captcha');
-                var required = $captcha.data('required') == true;
+                if (typeof (turnstile) !== 'undefined') {
+                    var $captcha = $(validator).closest('.form-group').find('.js-captcha');
+                    var required = $captcha.data('required') == true;
 
-                const widget = document.getElementById(this.options.id);
-                const widgetId = turnstile.render(widget);
-                const widgetResponse = turnstile.getResponse(widgetId);
+                    const widget = document.getElementById(this.options.id);
+                    const widgetId = turnstile.render(widget);
+                    const widgetResponse = turnstile.getResponse(widgetId);
 
-                var isValid = !required || widgetResponse !== null;
+                    var isValid = !required || widgetResponse !== null;
 
-                if (isValid) {
-                    $captcha.closest('.form-group').removeClass('has-error');
-                    args.IsValid = true;
-                }
-                else {
-                    $captcha.closest('.form-group').addClass('has-error');
-                    args.IsValid = false;
-                    validator.errormessage = $captcha.data('required-error-message');
+                    if (isValid) {
+                        $captcha.closest('.form-group').removeClass('has-error');
+                        args.IsValid = true;
+                    }
+                    else {
+                        $captcha.closest('.form-group').addClass('has-error');
+                        args.IsValid = false;
+                        validator.errormessage = $captcha.data('required-error-message');
+                    }
                 }
             },
             options: {

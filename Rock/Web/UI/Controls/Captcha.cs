@@ -355,7 +355,7 @@ namespace Rock.Web.UI.Controls
 
             var rockPage = Page as RockPage;
 
-            if ( rockPage != null )
+            if ( rockPage != null && SiteKey.IsNotNullOrWhiteSpace() )
             {
                 // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
                 rockPage.AddScriptSrcToHead( "captchaScriptId", "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" );
@@ -398,6 +398,11 @@ namespace Rock.Web.UI.Controls
             var userResponse = HttpContext.Current.Request.Form["cf-turnstile-response"];
             string remoteIp = HttpContext.Current.Request.UserHostAddress;
 
+            if ( string.IsNullOrWhiteSpace( SiteKey ) || string.IsNullOrWhiteSpace( SecretKey ) )
+            {
+                return true;
+            }
+
             if ( ValidatedResult.HasValue )
             {
                 return ValidatedResult.Value;
@@ -406,11 +411,6 @@ namespace Rock.Web.UI.Controls
             if ( string.IsNullOrWhiteSpace( userResponse ) )
             {
                 return false;
-            }
-
-            if ( string.IsNullOrWhiteSpace( SiteKey ) || string.IsNullOrWhiteSpace( SecretKey ) )
-            {
-                return true;
             }
 
             if ( !string.IsNullOrWhiteSpace( HttpContext.Current.Request.Headers["HTTP_X_FORWARDED_FOR"] ) )
