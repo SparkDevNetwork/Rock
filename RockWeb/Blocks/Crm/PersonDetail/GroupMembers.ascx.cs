@@ -708,7 +708,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if( litGroupAttributes.Text.IsNullOrWhiteSpace() && litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
             {
-                
                 lblShowGroupAttributeTitle.Visible = true;
                 lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes";
             }
