@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -62,11 +63,41 @@ namespace Rock.Blocks.Types.Mobile.Core
         Order = 2,
         FieldTypeClass = "Rock.Field.Types.ImageFieldType" )]
 
+    [BooleanField( "Use Template",
+        Description = "If enabled, notes will be displayed using the 'Notes Template', allowing you full customization of the layout.",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.NoteDisplayMode,
+        Order = 3 )]
+
+    // BEFORE MERGE: Update the Guid's for migration
+    [BlockTemplateField( "Notes Template",
+        Description = "The template to use when rendering the notes. Provided with a 'Notes' merge field, among some others (see documentation).",
+        TemplateBlockValueGuid = "27B8A7A5-C54F-4A67-AB91-C48A35525CCC",
+        DefaultValue = "20A01742-F215-4CB4-B590-D6CB555D7E45",
+        IsRequired = true,
+        Key = AttributeKey.NotesTemplate,
+        Order = 4 )]
+
+    [LinkedPage(
+        "Note List Page",
+        Description = "Page to link to when user taps on the 'See All' button (in template mode). Should link to a page containing a fullscreen note block.",
+        IsRequired = false,
+        Key = AttributeKey.ListPage,
+        Order = 5 )]
+
+    [IntegerField( "Page Load Size",
+        Description = "Determines the amount of notes to show in the initial page load. In template mode, this is the amount of notes your 'Notes' merge field will be limited to.",
+        IsRequired = true,
+        DefaultIntegerValue = 6,
+        Key = AttributeKey.PageLoadSize,
+        Order = 6 )]
+
     #endregion
 
     [ContextAware]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_NOTES_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "5B337D89-A298-4620-A0BE-078A41BC054B")]
+    [Rock.SystemGuid.BlockTypeGuid( "5B337D89-A298-4620-A0BE-078A41BC054B" )]
     public class Notes : RockMobileBlockType
     {
         /// <summary>
@@ -88,6 +119,26 @@ namespace Rock.Blocks.Types.Mobile.Core
             /// This image is displayed next to the note if the author has no profile image.
             /// </summary>
             public const string DefaultNoteImage = "DefaultNoteImage";
+
+            /// <summary>
+            /// The mode in which we should display these notes.
+            /// </summary>
+            public const string NoteDisplayMode = "NoteDisplayMode";
+
+            /// <summary>
+            /// The mode in which we should display these notes.
+            /// </summary>
+            public const string NotesTemplate = "NoteTemplate";
+
+            /// <summary>
+            /// The mode in which we should display these notes.
+            /// </summary>
+            public const string PageLoadSize = "PageLoadSize";
+
+            /// <summary>
+            /// The mode in which we should display these notes.
+            /// </summary>
+            public const string ListPage = "DetailPage";
         }
 
         /// <summary>
@@ -113,6 +164,29 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// The default note image to display next to the note if the author has no profile image.
         /// </value>
         protected Guid? DefaultNoteImage => GetAttributeValue( AttributeKey.DefaultNoteImage ).AsGuidOrNull();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected bool UseTemplate => GetAttributeValue( AttributeKey.NoteDisplayMode ).AsBoolean();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected string NotesTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected int PageLoadSize => GetAttributeValue( AttributeKey.PageLoadSize ).AsInteger();
+
+        /// <summary>
+        /// Gets the detail page unique identifier.
+        /// </summary>
+        /// <value>
+        /// The detail page unique identifier.
+        /// </value>
+        protected Guid? ListPageGuid => GetAttributeValue( AttributeKey.ListPage ).AsGuidOrNull();
 
         #region IRockMobileBlockType Implementation
 
@@ -171,7 +245,9 @@ namespace Rock.Blocks.Types.Mobile.Core
 
             return new
             {
-                DefaultNoteImageUrl = defaultNoteImageUrl
+                DefaultNoteImageUrl = defaultNoteImageUrl,
+                UseTemplate = UseTemplate,
+                PageLoadSize = 12
             };
         }
 
@@ -244,7 +320,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 note.Guid,
                 NoteTypeGuid = note.NoteType.Guid,
                 note.Text,
-                PhotoUrl = note.CreatedByPersonAlias?.Person?.PhotoId != null ? $"{baseUrl}{note.CreatedByPersonAlias.Person.PhotoUrl}" : null,
+                PhotoUrl = $"{baseUrl ?? ""}{note.CreatedByPersonAlias?.Person?.PhotoUrl ?? ""}",
                 Name = note.CreatedByPersonName,
                 Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null,
                 ReplyCount = note.ChildNotes.Count( b => b.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ),
@@ -252,10 +328,49 @@ namespace Rock.Blocks.Types.Mobile.Core
                 IsPrivate = note.IsPrivateNote,
                 CanEdit = canEdit,
                 CanDelete = canEdit,
-                CanReply = canReply
+                CanReply = canReply,
             };
         }
 
+        private List<Note> GetViewableNotes( RockContext rockContext, Guid? parentNoteGuid, int startIndex, int count )
+        {
+            var noteService = new NoteService( rockContext );
+            var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
+
+            var entityType = EntityTypeCache.Get( ContextEntityType );
+            var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
+            if ( entity == null )
+            {
+                // Indicate to caller "not found" error.
+                return null;
+            }
+
+            var notesQuery = noteService.Queryable()
+                .AsNoTracking()
+                .Include( a => a.CreatedByPersonAlias.Person )
+                .Include( a => a.ParentNote )
+                .Include( a => a.ChildNotes )
+                .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
+                .Where( a => a.EntityId == entity.Id );
+
+            if ( parentNoteGuid.HasValue )
+            {
+                notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
+            }
+            else
+            {
+                notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
+            }
+
+            return notesQuery
+                .OrderByDescending( a => a.IsAlert == true )
+                .ThenByDescending( a => a.CreatedDateTime )
+                .ToList()
+                .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Skip( startIndex )
+                .Take( count )
+                .ToList();
+        }
         /// <summary>
         /// Gets the notes for the entity.
         /// </summary>
@@ -267,44 +382,8 @@ namespace Rock.Blocks.Types.Mobile.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var noteService = new NoteService( rockContext );
-                var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
-
-                var entityType = EntityTypeCache.Get( ContextEntityType );
-                var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
-                if ( entity == null )
-                {
-                    // Indicate to caller "not found" error.
-                    return null;
-                }
-
-                var notesQuery = noteService.Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.CreatedByPersonAlias.Person )
-                    .Include( a => a.ParentNote )
-                    .Include( a => a.ChildNotes )
-                    .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
-                    .Where( a => a.EntityId == entity.Id );
-
-                if ( parentNoteGuid.HasValue )
-                {
-                    notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
-                }
-                else
-                {
-                    notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
-                }
-
-                var viewableNotes = notesQuery
-                    .OrderByDescending( a => a.IsAlert == true )
-                    .ThenByDescending( a => a.CreatedDateTime )
-                    .ToList()
-                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    .Skip( startIndex )
-                    .Take( count )
-                    .ToList();
-
-                var noteData = viewableNotes
+                var noteData = GetViewableNotes( rockContext, parentNoteGuid, startIndex, count )
+                    .OrderByDescending( n => n.CreatedDateTime )
                     .Select( a => GetNoteObject( a ) )
                     .ToList();
 
@@ -362,6 +441,36 @@ namespace Rock.Blocks.Types.Mobile.Core
             }
 
             return ActionOk( notes );
+        }
+
+        [BlockAction]
+        public BlockActionResult GetNote( Guid noteGuid )
+        {
+            using( var rockContext = new RockContext() )
+            {
+                
+                if ( noteGuid == null )
+                {
+                    return ActionBadRequest();
+                }
+
+                var note = new NoteService( rockContext ).Get( noteGuid );
+
+                if( note == null )
+                {
+                    return ActionNotFound();
+                }
+
+                return ActionOk( new Rock.Common.Mobile.Blocks.Core.Notes.Note
+                {
+                    Guid = note.Guid,
+                    Text = note.Text,
+                    NoteTypeName = note.NoteType.Name,
+                    NoteTypeGuid = note.NoteType.Guid,
+                    IsAlert = note.IsAlert ?? false,
+                    IsPrivate = note.IsPrivateNote
+                } );
+            }
         }
 
         /// <summary>
@@ -517,6 +626,39 @@ namespace Rock.Blocks.Types.Mobile.Core
                 {
                     return ActionForbidden( errorMessage );
                 }
+            }
+        }
+
+        [BlockAction]
+        public BlockActionResult GetNotesTemplate( Guid? parentNoteGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var notes = GetEntityNotes( parentNoteGuid, 0, PageLoadSize );
+
+                if ( notes == null )
+                {
+                    return ActionNotFound();
+                }
+
+                var mergeFields = RequestContext.GetCommonMergeFields();
+                mergeFields.AddOrReplace( "Notes", notes );
+                mergeFields.AddOrReplace( "ListPage", ListPageGuid );
+                var content = NotesTemplate.ResolveMergeFields( mergeFields );
+
+                var editableNoteTypes = GetEditableNoteTypes()
+                    .Select( a => new
+                    {
+                        a.Guid,
+                        a.Name,
+                        a.UserSelectable
+                    } );
+
+                return ActionOk( new
+                {
+                    Content = content,
+                    EditableNoteTypes = editableNoteTypes,
+                } );
             }
         }
 

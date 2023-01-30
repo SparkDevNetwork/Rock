@@ -26,6 +26,11 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for the mobile notes block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_NOTES = "375A88E6-F05C-4797-A67F-B4895C569768";
+
+        /// <summary>
         /// The block template for the mobile group schedule preference landing page.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE = "7F89AE4D-BD8B-49ED-B8EC-F883D43505F2";
