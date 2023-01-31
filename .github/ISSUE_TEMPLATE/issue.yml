@@ -1,0 +1,80 @@
+name: Issue Report
+description: File a bug report
+title: "[Issue]: "
+labels: [bug, triage, unverified]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Please be sure to read our full guidelines for submitting issues on this repo's homepage before you continue.
+  - type: markdown
+    attributes:
+      value: |
+        # Basic Information
+  - type: checkboxes
+    id: todo
+    attributes:
+      label: Please go through all the tasks below
+      description: |
+        - Perform a search at https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock to see if your bug or enhancement is already reported.
+        - Try to reproduce the problem on a fresh install or the demo site.
+      options:
+        - label: Check this box only after you have successfully completed both the above tasks
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Please provide a brief description of the problem. Please do not forget to attach the relevant screenshots from your side.
+      description: Please write a clear and concise description and include full window non-partial screenshots. FYI You can just copy and paste an image directly into here and it will magically upload. Please feel free to provide more than one screenshots if needed.
+      placeholder: Tell us what you see!
+      value: "Tell us what you see!"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Please provide a brief description of the expected behavior of the system.
+      placeholder: Expected Behavior
+      value: "Expected Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: Please provide a brief description of the actual behavior or the bug that you see along with the screenshots.
+      placeholder: Actual Behavior
+      value: "Actual Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: step-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide the detailed steps to reproduce the issue. Do include all relevant screenshots wherever needed.
+      placeholder: |
+        - Go to '...'
+        - Click on '....'
+        - Scroll down to '....'
+        - See error
+      value: "Steps to Reproduce"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Rock Version
+      description: Enter Rock version here
+      placeholder: 
+    validations:
+      required: true
+  - type: input
+    id: client-culture-settings
+    attributes:
+      label: Client Culture Setting
+      description: Enter Client Culture here
+      placeholder: 
+    validations:
+      required: true
