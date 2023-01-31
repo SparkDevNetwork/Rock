@@ -648,7 +648,7 @@ namespace Rock.Jobs
         {
             var attributeIds = new List<int>( 1000 );
 
-            foreach ( var attribute in AttributeCache.All().Where( a => a.Id == 7434 ) )
+            foreach ( var attribute in AttributeCache.All() )
             {
                 try
                 {
