@@ -1159,6 +1159,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="rockContext">The rock context.</param>
         /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
         /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <param name="readOnly">if set to <c>true</c> [read only].</param>
         /// <returns>System.ValueTuple&lt;ConnectionRequestActivity, List&lt;ConnectorItemViewModel&gt;, List&lt;Common.Mobile.ViewModel.ListItemViewModel&gt;, BlockActionResult&gt;.</returns>
         private (ConnectionRequestActivity Activity, List<ConnectorItemViewModel> Connectors, List<Common.Mobile.ViewModel.ListItemViewModel> ActivityTypes, BlockActionResult Error) GetConnectionRequestActivityBag( RockContext rockContext, Guid connectionRequestGuid, Guid? activityGuid, bool readOnly )
         {
@@ -1535,6 +1536,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
         /// <param name="activityGuid">The activity unique identifier.</param>
+        /// <param name="readOnly">if set to <c>true</c> [read only].</param>
         /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult GetExistingActivityOptions( Guid connectionRequestGuid, Guid activityGuid, bool readOnly )
@@ -2523,6 +2525,10 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </value>
             public Guid ActivityTypeGuid { get; set; }
 
+            /// <summary>
+            /// Gets or sets the type of the activity.
+            /// </summary>
+            /// <value>The type of the activity.</value>
             public string ActivityType { get; set; }
 
             /// <summary>
