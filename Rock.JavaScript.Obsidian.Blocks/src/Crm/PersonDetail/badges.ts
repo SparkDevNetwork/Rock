@@ -20,7 +20,7 @@ import Alert from "@Obsidian/Controls/alert.vue";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
-import { useConfigurationValues } from "@Obsidian/Utility/block";
+import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { popover } from "@Obsidian/Utility/popover";
@@ -102,6 +102,8 @@ export default defineComponent({
             tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
             popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
         });
+
+        onConfigurationValuesChanged(useReloadBlock());
 
         return {
             bottomLeftBadges,
