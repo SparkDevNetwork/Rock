@@ -494,7 +494,10 @@ namespace RockWeb.Blocks.Security
         {
             var authenticationLevel = GetAttributeValue( AttributeKey.AuthenticationLevel ).AsInteger();
             var person = new PersonService( new RockContext() ).Get( personId );
-            var user = person.Users.FirstOrDefault();
+            var user = person.Users
+                .Where( u => u.IsConfirmed ?? true )
+                .Where( u => !( u.IsLockedOut ?? false ) )
+                .FirstOrDefault();
             var qryParams = string.Empty;
 
             switch ( authenticationLevel )
