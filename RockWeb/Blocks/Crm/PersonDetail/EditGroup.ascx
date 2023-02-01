@@ -206,7 +206,7 @@
 
                     <div id="divExistingPerson" runat="server" class="tab-pane">
                         <fieldset>
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" EnableSelfSelection="true"/>
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
                             <Rock:RockCheckBox ID="cbRemoveOtherGroups" runat="server" Checked="true" Text="Remove person from other groups" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
