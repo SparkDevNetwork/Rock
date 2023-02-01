@@ -6,7 +6,7 @@
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="{ 'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend }">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <div class="picker picker-select rollover-container" :class="pickerClass">
+                    <div class="picker picker-select rollover-container" :class="pickerClass + (internalShowPopup ? ' open' : '')">
                         <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend }">
                             <i :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
@@ -17,7 +17,7 @@
                             <i class="fa fa-times"></i>
                         </a>
 
-                        <Fullscreen v-if="internalShowPopup" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
+                        <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
                             <!-- Optional "super header" area for things such as a means to switch between picker types -->
                             <div class="picker-mode-options" v-if="$slots.pickerContentSuperHeader">
                                 <slot name="pickerContentSuperHeader"></slot>
@@ -277,6 +277,14 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+
+        /**
+         * Force the dropdown content to completely reload each time it's opened, rather than just hiding it
+         */
+        forceContentReloadOnOpen: {
+            type: Boolean,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -319,14 +327,12 @@
     });
 
     const pickerMenuStyles = computed<string>(() => {
-        let styles = "display: block;";
-
         // Width is already specified in the stylesheet for .picker-menu, so only set it if we have an override
         if (props.pickerContentBoxWidth) {
-            styles += `width: ${props.pickerContentBoxWidth};`;
+            return `width: ${props.pickerContentBoxWidth};`;
         }
 
-        return styles;
+        return "";
     });
 
     // #endregion

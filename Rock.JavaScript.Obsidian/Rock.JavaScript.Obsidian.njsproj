@@ -56,8 +56,10 @@
     <Content Include="Framework\Controls\locationList.obs" />
     <Content Include="Framework\Controls\locationPicker.obs" />
     <Content Include="Framework\Controls\mediaElementPicker.obs" />
+    <Content Include="Framework\Controls\mergeFieldPicker.obs" />
     <Content Include="Framework\Controls\monthDayPicker.obs" />
     <Content Include="Framework\Controls\monthYearPicker.obs" />
+    <Content Include="Framework\Controls\pagePicker.obs" />
     <Content Include="Framework\Controls\phoneNumberBox.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
@@ -216,7 +218,6 @@
     <TypeScriptCompile Include="Framework\Controls\mergeTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\metricCategoryPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\metricItemPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\pagePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\registrationTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\reportPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\schedulePicker.ts" />
@@ -293,10 +294,17 @@
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionTypeViewMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionWorkflowTriggerType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\groupRequirementsFilter.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\alertType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\btnSize.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\btnType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\controlLazyMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\requirementLevel.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\rockCacheabilityType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\addressInvalidReason.ts" />
@@ -502,6 +510,7 @@
     <TypeScriptCompile Include="Framework\Utility\fullscreen.ts" />
     <TypeScriptCompile Include="Framework\Utility\geo.ts" />
     <TypeScriptCompile Include="Framework\Utility\internetCalendar.ts" />
+    <TypeScriptCompile Include="Framework\Utility\mergeField.ts" />
     <TypeScriptCompile Include="Framework\Utility\objectUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\phone.ts" />
     <TypeScriptCompile Include="Framework\Utility\popover.ts" />
@@ -525,7 +534,6 @@
     <TypeScriptCompile Include="Framework\Utility\component.ts" />
     <TypeScriptCompile Include="Framework\Utility\dialogs.ts" />
     <TypeScriptCompile Include="Framework\Utility\form.ts" />
-    <TypeScriptCompile Include="Framework\Utility\index.ts" />
     <TypeScriptCompile Include="Framework\Utility\util.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\filterExpressionType.d.ts" />
@@ -909,6 +917,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaFoldersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeFieldPickerFormatSelectedValueOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeFieldPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricCategoryPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\metricItemPickerGetChildrenOptionsBag.d.ts" />
