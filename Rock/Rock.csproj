@@ -1005,6 +1005,8 @@
     </Compile>
     <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
     <Compile Include="RealTime\AspNet\SignalRRequestWrapper.cs" />
+    <Compile Include="RealTime\ConcurrentTopicChannels.cs" />
+    <Compile Include="RealTime\ConcurrentUsageCounter.cs" />
     <Compile Include="RealTime\EngineConnectionState.cs" />
     <Compile Include="RealTime\IContextExtensions.cs" />
     <Compile Include="RealTime\IContextInternal.cs" />

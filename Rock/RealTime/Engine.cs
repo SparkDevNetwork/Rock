@@ -164,9 +164,9 @@ namespace Rock.RealTime
 
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-            var isNewConnect = state.ConnectedTopics.TryAdd( topicIdentifier, true );
+            var connectedCount = state.ConnectedTopics.IncrementTopic( topicIdentifier );
 
-            if ( isNewConnect )
+            if ( connectedCount == 1 )
             {
                 try
                 {
@@ -174,7 +174,16 @@ namespace Rock.RealTime
                 }
                 catch ( Exception ex )
                 {
-                    state.ConnectedTopics.TryRemove( topicIdentifier, out _ );
+                    state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels );
+
+                    try
+                    {
+                        await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                    }
+                    catch
+                    {
+                        // Intentionally ignored, this is only best effort.
+                    }
 
                     throw ex;
                 }
@@ -182,6 +191,56 @@ namespace Rock.RealTime
 
             return true;
         }
+
+        /// <summary>
+        /// Handles a request for a client connection to disconnect from a specific
+        /// topic. This will track the disconnection and then call the topic's
+        /// <see cref="Topic{T}.OnDisconnectedAsync"/> method.
+        /// </summary>
+        /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
+        /// <param name="topicIdentifier">The topic identifier that should be connected to.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection that should be connected to the topic.</param>
+        /// <returns><c>true</c> if the topic was found and disconnected, <c>false</c> otherwise.</returns>
+        public async Task<bool> DisconnectFromTopicAsync( object realTimeHub, string topicIdentifier, string connectionIdentifier )
+        {
+            var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
+
+            if ( topicInstance == null )
+            {
+                return false;
+            }
+
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            if ( state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels ) > 0 )
+            {
+                return true;
+            }
+
+            try
+            {
+                await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+            }
+            catch
+            {
+                // Intentionally ignored, this is only best effort.
+            }
+
+            await topicInstance.OnDisconnectedAsync();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the connection from the specified topic channels. Called when
+        /// a connection requests to be disconnected from a topic.
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection to be removed.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelNames">The channel names to be removed from.</param>
+        /// <returns>A <see cref="Task"/> that indicates when the operation has completed.</returns>
+        protected abstract Task RemoveFromTopicChannelsAsync( object realTimeHub, string connectionIdentifier, string topicIdentifier, IEnumerable<string> channelNames );
 
         /// <summary>
         /// Notifies the engine that a client connection has connected. Handles
@@ -212,7 +271,7 @@ namespace Rock.RealTime
 
             // This is multi-thread safe enough since a client shouldn't be able
             // to send any messages once the Disconnected event has been triggered.
-            var topicIdentifiers = state.ConnectedTopics.Keys.ToList();
+            var topicIdentifiers = state.ConnectedTopics.GetAllConnectedTopics();
             state.ConnectedTopics.Clear();
 
             foreach ( var topicIdentifier in topicIdentifiers )
@@ -239,6 +298,36 @@ namespace Rock.RealTime
             {
                 throw new AggregateException( "One or more topics threw exceptions while disconnecting.", exceptions );
             }
+        }
+
+        /// <summary>
+        /// Called whenever a client has been added to a channel. This is used to
+        /// track which channels a client is listening on so they can be removed
+        /// if the client disconnects from the topic.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        public void ClientAddedToChannel( string connectionIdentifier, string topicIdentifier, string channelName )
+        {
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            state.ConnectedTopics.AddTopicChannel( topicIdentifier, channelName );
+        }
+
+        /// <summary>
+        /// Called whenever a client has been removed from a channel. This is used to
+        /// track which channels a client is listening on so they can be removed
+        /// if the client disconnects from the topic.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        public void ClientRemovedFromChannel( string connectionIdentifier, string topicIdentifier, string channelName )
+        {
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            state.ConnectedTopics.RemoveTopicChannel( topicIdentifier, channelName );
         }
 
         /// <summary>
@@ -292,7 +381,7 @@ namespace Rock.RealTime
             // Ensure the connection has joined the topic.
             var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( connectionId );
 
-            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
+            if ( !state.ConnectedTopics.IsConnected( topicIdentifier ) )
             {
                 throw new RealTimeException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
             }

@@ -194,7 +194,7 @@
         else {
             return false;
         }
-    };{% if UseAttributeValues == true %}
+    }{% if UseAttributeValues == true %}
 
     /**
      * Event handler for when a value has changed that has an associated

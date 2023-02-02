@@ -91,6 +91,7 @@ namespace Rock.RealTime.AspNet
 
                         if ( personId.HasValue )
                         {
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, $"rock:person:{personId}" );
                             await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:person:{personId}" );
                         }
                     }
@@ -105,11 +106,21 @@ namespace Rock.RealTime.AspNet
 
                         if ( visitorId.HasValue )
                         {
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, $"rock:person:{visitorId}" );
                             await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:visitor:{visitorId}" );
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Requests that the client be disconnected from the specified topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic to be disconnected from.</param>
+        public async Task DisconnectFromTopic( string topicIdentifier )
+        {
+            await RealTimeHelper.Engine.DisconnectFromTopicAsync( this, topicIdentifier, Context.ConnectionId );
         }
 
         /// <summary>

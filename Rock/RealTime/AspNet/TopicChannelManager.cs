@@ -62,12 +62,16 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public Task AddToChannelAsync( string connectionId, string channelName, CancellationToken cancellationToken = default )
         {
+            RealTimeHelper.Engine.ClientAddedToChannel( connectionId, _topicIdentifier, channelName );
+
             return _groupManager.Add( connectionId, $"{_topicIdentifier}-{channelName}" );
         }
 
         /// <inheritdoc/>
         public Task RemoveFromChannelAsync( string connectionId, string channelName, CancellationToken cancellationToken = default )
         {
+            RealTimeHelper.Engine.ClientRemovedFromChannel( connectionId, _topicIdentifier, channelName );
+
             return _groupManager.Remove( connectionId, $"{_topicIdentifier}-{channelName}" );
         }
 
