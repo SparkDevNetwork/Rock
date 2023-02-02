@@ -361,13 +361,16 @@ namespace Rock.Web.UI.Controls
                 rockPage.AddScriptSrcToHead( "captchaScriptId", "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" );
             }
 
-            string script = string.Format( @"
+            if ( SiteKey.IsNotNullOrWhiteSpace() )
+            {
+                string script = string.Format( @"
 ;(function () {{
     Rock.controls.captcha.initialize({{id: '{0}', key: '{1}'}});
 }})();
 ", ClientID, SiteKey );
 
-            ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
+                ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
+            }
         }
 
         /// <summary>
