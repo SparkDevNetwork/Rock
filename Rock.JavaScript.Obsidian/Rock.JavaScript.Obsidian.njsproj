@@ -42,7 +42,6 @@
     <Content Include="Framework\Controls\datePickerBase.obs" />
     <Content Include="Framework\Controls\datePicker.obs" />
     <Content Include="Framework\Controls\dayOfWeekPicker.obs" />
-    <Content Include="Framework\Controls\definedValueEditor.obs" />
     <Content Include="Framework\Controls\definedValuePicker.obs" />
     <Content Include="Framework\Controls\ethnicityPicker.obs" />
     <Content Include="Framework\Controls\eventCalendarPicker.obs" />

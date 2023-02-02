@@ -21,7 +21,6 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
- * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
