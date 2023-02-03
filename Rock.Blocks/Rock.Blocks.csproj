@@ -84,6 +84,7 @@
     <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Bus\QueueDetail.cs" />
+    <Compile Include="Security\ForgotUserName.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />

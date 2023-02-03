@@ -50,6 +50,7 @@
     <Content Include="src\Crm\BadgeDetail\viewPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\editPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\viewPanel.partial.vue" />
+    <Content Include="src\Security\forgotUserName.obs" />
     <Content Include="src\Security\restkeyDetail.vue" />
     <Content Include="src\Security\RestKeyDetail\editPanel.partial.vue" />
     <Content Include="src\Security\RestKeyDetail\viewPanel.partial.vue" />

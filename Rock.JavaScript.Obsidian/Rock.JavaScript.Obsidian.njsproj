@@ -96,6 +96,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Security\" />
+    <Folder Include="Framework\Enums\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Communication\" />
     <Folder Include="Framework\Enums\Connection\" />
@@ -168,6 +170,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
+    <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\" />
@@ -286,6 +289,7 @@
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Security\ForgotUserName\sendInstructionsResultType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\blockLocation.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelDateType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelItemStatus.ts" />
@@ -622,6 +626,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\changePasswordNotSupportedResultBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameCaptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameSendInstructionsRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameSendInstructionsResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmMetricBag.d.ts" />
