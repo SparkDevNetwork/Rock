@@ -245,9 +245,9 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private List<ReminderDTO> GetReminders( IEntity contextEntity )
+        private List<ReminderViewModel> GetReminders( IEntity contextEntity )
         {
-            var reminderDTOs = new List<ReminderDTO>();
+            var reminderViewModels = new List<ReminderViewModel>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -263,12 +263,12 @@ namespace RockWeb.Blocks.Reminders
                     if ( reminder.IsActive )
                     {
                         var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
                     }
                 }
             }
 
-            return reminderDTOs;
+            return reminderViewModels;
         }
 
         /// <summary>

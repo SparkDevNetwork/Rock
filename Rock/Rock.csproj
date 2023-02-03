@@ -983,7 +983,7 @@
     <Compile Include="Model\Core\InteractionChannel\InteractionChannelService.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.SaveHook.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.cs" />
-    <Compile Include="Model\Core\Reminder\ReminderDTO.cs" />
+    <Compile Include="Model\Core\Reminder\ReminderViewModel.cs" />
     <Compile Include="Model\Core\Reminder\ReminderService.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.SaveHook.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.Logic.cs" />

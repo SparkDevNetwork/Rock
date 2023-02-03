@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// DTO for Reminders.
     /// </summary>
-    public class ReminderDTO : RockDynamic
+    public class ReminderViewModel : RockDynamic
     {
         /// <summary>
         /// The identifier.
@@ -103,12 +103,12 @@ namespace Rock.Model
         public string PersonProfilePictureUrl { get; set; }
 
         /// <summary>
-        /// Initializes the <see cref="ReminderDTO"/> instance.
+        /// Initializes the <see cref="ReminderViewModel"/> instance.
         /// </summary>
         /// <param name="reminder">The <see cref="Reminder"/>.</param>
         /// <param name="entity">The <see cref="IEntity"/> that the reminder is associated with.</param>
         /// <param name="personProfilePictureUrl">The </param>
-        public ReminderDTO( Reminder reminder, IEntity entity, string personProfilePictureUrl = "" )
+        public ReminderViewModel( Reminder reminder, IEntity entity, string personProfilePictureUrl = "" )
         {
             this.Id = reminder.Id;
             this.IsComplete = reminder.IsComplete;

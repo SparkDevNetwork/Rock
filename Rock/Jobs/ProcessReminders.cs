@@ -350,14 +350,14 @@ namespace Rock.Jobs
             WriteLog( $"ProcessReminders job:  Creating SystemCommunication for {personReminderList.Count} Person Reminders, " +
                 $"{groupReminderList.Count} Group Reminders, and {otherReminderList.Count} other reminders for {otherReminderEntityList.Count} entity types." );
 
-            var reminderDataObjects = new List<ReminderDTO>();
+            var reminderDataObjects = new List<ReminderViewModel>();
 
             var personService = new PersonService( rockContext );
             foreach ( var reminder in personReminderList )
             {
                 var person = personService.Get( reminder.EntityId );
                 var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
-                var reminderData = new ReminderDTO( reminder, person, photoUrl );
+                var reminderData = new ReminderViewModel( reminder, person, photoUrl );
                 reminderDataObjects.Add( reminderData );
             }
 
@@ -365,7 +365,7 @@ namespace Rock.Jobs
             foreach ( var reminder in groupReminderList )
             {
                 var group = groupService.Get( reminder.EntityId );
-                var reminderData = new ReminderDTO( reminder, group );
+                var reminderData = new ReminderViewModel( reminder, group );
                 reminderDataObjects.Add( reminderData );
             }
 
@@ -373,7 +373,7 @@ namespace Rock.Jobs
             foreach ( var reminder in otherReminderList )
             {
                 var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                var reminderData = new ReminderDTO( reminder, entity );
+                var reminderData = new ReminderViewModel( reminder, entity );
                 reminderDataObjects.Add( reminderData );
             }
 

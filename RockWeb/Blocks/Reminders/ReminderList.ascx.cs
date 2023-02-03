@@ -277,9 +277,9 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private List<ReminderDTO> GetReminders( int? entityTypeId, int? entityId, int? reminderTypeId )
+        private List<ReminderViewModel> GetReminders( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
-            var reminderDTOs = new List<ReminderDTO>();
+            var reminderViewModels = new List<ReminderViewModel>();
 
             var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
             var dueFilter = GetBlockUserPreference( UserPreferenceKey.DueFilter );
@@ -362,11 +362,11 @@ namespace RockWeb.Blocks.Reminders
                     string personProfilePhoto = string.Empty;
                     if ( entity.TypeName == "Rock.Model.Person" )
                     {
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity, Person.GetPersonPhotoUrl( entity.Id ) ) );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity, Person.GetPersonPhotoUrl( entity.Id ) ) );
                     }
                     else
                     {
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
                     }
                 }
 
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Reminders
                 }
             }
 
-            return reminderDTOs;
+            return reminderViewModels;
         }
 
         /// <summary>
@@ -739,7 +739,7 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptReminders_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var reminder = e.Item.DataItem as ReminderDTO;
+            var reminder = e.Item.DataItem as ReminderViewModel;
 
             if ( reminder.EntityUrl.IsNotNullOrWhiteSpace() )
             {
