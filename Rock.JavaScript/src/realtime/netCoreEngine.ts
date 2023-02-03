@@ -5,7 +5,8 @@ import { Engine } from "./engine";
  * The engine that can connect to an NET.Core server.
  */
 export class NetCoreEngine extends Engine {
-    private connection: HubConnection| null = null;
+    private connection: HubConnection | null = null;
+    private isManuallyDisconnecting: boolean = false;
 
     /**
      * Creates a new engine that can connect to an ASP.Net WebForms server.
@@ -27,11 +28,21 @@ export class NetCoreEngine extends Engine {
             .build();
 
         connection.on("message", this.onMessage.bind(this));
-        connection.onreconnecting(() => this.onTransportReconnecting());
-        connection.onreconnected(() => this.onTransportReconnect());
+        connection.onreconnecting(() => {
+            if (!this.isManuallyDisconnecting) {
+                this.transportReconnecting();
+            }
+        });
+        connection.onreconnected(() => {
+            if (!this.isManuallyDisconnecting) {
+                this.transportReconnected();
+            }
+        });
         connection.onclose(() => {
             this.connection = null;
-            this.onTransportDisconnect();
+            if (!this.isManuallyDisconnecting) {
+                this.transportDisconnected();
+            }
         });
 
         await connection.start();
@@ -42,6 +53,7 @@ export class NetCoreEngine extends Engine {
     /** @inheritdoc */
     protected async closeConnection(): Promise<void> {
         if (this.connection) {
+            this.isManuallyDisconnecting = true;
             await this.connection.stop();
             this.connection = null;
         }

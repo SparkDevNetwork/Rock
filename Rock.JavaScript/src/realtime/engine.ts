@@ -28,28 +28,25 @@ class PromiseCompletionSource<T = void> {
     }
 }
 
-function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
-    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
-}
-
-const maxReconnectAttempts = 10;
-const reconnectDelay: number[] = [500, 2_500, 5_000, 10_000, 30_000];
+const StateEvent = {
+    Reconnecting: "reconnecting",
+    Reconnected: "reconnected",
+    Disconnected: "disconnected"
+};
 
 /**
  * General functionality for any RealTime engine.
  */
 export abstract class Engine {
     private readonly emitter: Emitter<Record<EventType, unknown[]>>;
-    private startPromise: PromiseCompletionSource | null = null;
+    private readonly stateEmitter: Emitter<Record<EventType, unknown[]>>;
+    private startPromise: Promise<void> | null = null;
     private reconnectPromise: PromiseCompletionSource | null = null;
-    private reconnectAttemptCount: number = 0;
-    private reconnectTimer: NodeJS.Timeout | null = null;
-    private reconnectCallbacks: ((() => void) | (() => PromiseLike<void>))[] = [];
-    private disconnectCallbacks: (() => void)[] = [];
     private isDisconnectedInternal: boolean = false;
 
     protected constructor() {
         this.emitter = mitt();
+        this.stateEmitter = mitt();
     }
 
     /**
@@ -102,26 +99,23 @@ export abstract class Engine {
             throw new Error("RealTime engine is disconnected.");
         }
 
-        if (this.startPromise) {
-            await this.startPromise.promise;
-
-            if (this.reconnectPromise) {
-                await this.reconnectPromise.promise;
-            }
-
-            return;
+        if (!this.startPromise) {
+            this.startPromise = new Promise<void>(async (resolve, reject) => {
+                try {
+                    await this.startConnection();
+                    resolve();
+                }
+                catch (error) {
+                    this.disconnected();
+                    reject(error);
+                }
+            });
         }
 
-        this.startPromise = new PromiseCompletionSource();
-        try {
-            await this.startConnection();
-            this.startPromise.resolve();
-        }
-        catch (error: unknown) {
-            this.disconnected();
-            this.startPromise.reject(error);
+        await this.startPromise;
 
-            throw error;
+        if (this.reconnectPromise) {
+            await this.reconnectPromise.promise;
         }
     }
 
@@ -144,9 +138,11 @@ export abstract class Engine {
      * Notification that the engine is attempting to perform transport level
      * reconnection.
      */
-    protected onTransportReconnecting(): void {
+    protected transportReconnecting(): void {
         if (!this.reconnectPromise) {
             this.reconnectPromise = new PromiseCompletionSource();
+
+            this.stateEmitter.emit(StateEvent.Reconnecting, []);
         }
     }
 
@@ -155,7 +151,7 @@ export abstract class Engine {
      * A reconnect can be successful even if the transport has connected to an
      * entirely different server - which is an invalid state for us.
      */
-    protected async onTransportReconnect(): Promise<void> {
+    protected async transportReconnected(): Promise<void> {
         if (!this.reconnectPromise) {
             return;
         }
@@ -164,97 +160,21 @@ export abstract class Engine {
         if (await this.invokeCore("isConnectionValid") === true) {
             this.reconnectPromise.resolve();
             this.reconnectPromise = null;
+
+            this.stateEmitter.emit(StateEvent.Reconnected, []);
+
             return;
         }
 
-        this.scheduleReconnectAttempt();
+        this.disconnected();
     }
 
     /**
      * Notification that the engine has had a transport level disconnection.
      * No automatic reconnect attempts are being performed by the transport.
      */
-    protected onTransportDisconnect(): void {
-        this.scheduleReconnectAttempt();
-    }
-
-    /**
-     * Schedule a reconnect attempt. This is not a transport level reconnect
-     * so all connection state has been lost.
-     */
-    private scheduleReconnectAttempt(): void {
-        if (this.isDisconnected || this.reconnectTimer) {
-            return;
-        }
-
-        if (!this.reconnectPromise) {
-            this.reconnectPromise = new PromiseCompletionSource();
-        }
-
-        this.reconnectAttemptCount += 1;
-        this.reconnectTimer = setTimeout(() => this.attemptReconnect(), this.getReconnectDelay());
-    }
-
-    /**
-     * Attempt a full reconnect. First we ensure we are fully disconnected at
-     * the transport level and then start a new connection.
-     */
-    private async attemptReconnect(): Promise<void> {
-        try {
-            // Close the connection and then start it again. After we have
-            // connected call our reconnected function to emit callbacks.
-            await this.closeConnection();
-            await this.startConnection();
-            await this.reconnected();
-        }
-        catch (error) {
-            this.reconnectAttemptCount += 1;
-
-            if (this.reconnectAttemptCount <= maxReconnectAttempts) {
-                this.reconnectTimer = setTimeout(() => this.attemptReconnect(), this.getReconnectDelay());
-            }
-            else {
-                this.disconnected();
-
-                throw error;
-            }
-        }
-    }
-
-    /**
-     * Gets the time to wait before attempting to reconnect.
-     *
-     * @returns The number of milliseconds to wait.
-     */
-    private getReconnectDelay(): number {
-        return this.reconnectAttemptCount < reconnectDelay.length
-            ? reconnectDelay[this.reconnectAttemptCount]
-            : reconnectDelay[reconnectDelay.length - 1];
-    }
-
-    /**
-     * Called once we have performed a full reconnection and need to fire all
-     * reconnect callbacks.
-     */
-    private async reconnected(): Promise<void> {
-        for (const callback of this.reconnectCallbacks) {
-            try {
-                const result = callback();
-
-                if (isPromise(result)) {
-                    await result;
-                }
-            }
-            catch (error) {
-                console.error(error);
-            }
-        }
-
-        // Clean up the existing reconnection attempt data.
-        this.reconnectAttemptCount = 0;
-        this.reconnectPromise?.resolve();
-        this.reconnectPromise = null;
-        this.reconnectTimer = null;
+    protected transportDisconnected(): void {
+        this.disconnected();
     }
 
     /**
@@ -265,37 +185,38 @@ export abstract class Engine {
         this.isDisconnectedInternal = true;
         this.reconnectPromise?.reject("RealTime engine is disconnected.");
         this.reconnectPromise = null;
-        this.reconnectTimer = null;
 
-        for (const callback of this.disconnectCallbacks) {
-            try {
-                callback();
-            }
-            catch (error) {
-                console.error(error);
-            }
-        }
+        this.stateEmitter.emit(StateEvent.Disconnected, []);
     }
 
     /**
      * Registers a callback to be called when the connection has been lost
-     * and then reconnected. This means a new connection identifier is now
-     * in use and any state information has been lost.
+     * and is attempting to reconnect automatically. Messages can not be
+     * sent at this time.
      * 
      * @param callback The callback to be called.
      */
-    public onReconnect(callback: (() => void) | (() => PromiseLike<void>)): void {
-        this.reconnectCallbacks.push(callback);
+    public onReconnecting(callback: (() => void)): void {
+        this.stateEmitter.on(StateEvent.Reconnecting, callback);
     }
 
     /**
-     * Registers a callback to be called when the connection has been lost
-     * and will no longer try to reconnect.
+     * Registers a callback to be called when the connection has been
+     * reconnected and is ready to send messages again.
      * 
      * @param callback The callback to be called.
      */
-    public onDisconnect(callback: () => void): void {
-        this.disconnectCallbacks.push(callback);
+    public onReconnected(callback: (() => void)): void {
+        this.stateEmitter.on(StateEvent.Reconnected, callback);
+    }
+
+    /**
+     * Registers a callback to be called when the connection has been lost.
+     * 
+     * @param callback The callback to be called.
+     */
+    public onDisconnected(callback: () => void): void {
+        this.stateEmitter.on(StateEvent.Disconnected, callback);
     }
 
     /**

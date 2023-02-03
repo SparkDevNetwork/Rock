@@ -10,6 +10,7 @@ interface IExtendedConnection extends Connection {
  */
 export class AspNetEngine extends Engine {
     private hub: Proxy | null = null;
+    private isManuallyDisconnecting: boolean = false;
 
     /**
      * Creates a new engine that can connect to an ASP.Net WebForms server.
@@ -30,11 +31,21 @@ export class AspNetEngine extends Engine {
             const hub = connection.createHubProxy("realTime");
 
             hub.on("message", this.onMessage.bind(this));
-            connection.reconnecting(() => this.onTransportReconnecting());
-            connection.reconnected(() => this.onTransportReconnect());
+            connection.reconnecting(() => {
+                if (!this.isManuallyDisconnecting) {
+                    this.transportReconnecting();
+                }
+            });
+            connection.reconnected(() => {
+                if (!this.isManuallyDisconnecting) {
+                    this.transportReconnected();
+                }
+            });
             connection.disconnected(() => {
                 this.hub = null;
-                this.onTransportDisconnect();
+                if (!this.isManuallyDisconnecting) {
+                    this.transportDisconnected();
+                }
             });
 
             connection.start()
@@ -51,8 +62,8 @@ export class AspNetEngine extends Engine {
     /** @inheritdoc */
     protected closeConnection(): Promise<void> {
         return new Promise((resolve) => {
-
             if (this.hub) {
+                this.isManuallyDisconnecting = true;
                 this.hub.connection.stop();
                 this.hub = null;
             }

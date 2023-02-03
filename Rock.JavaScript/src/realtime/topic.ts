@@ -1,10 +1,6 @@
 import { GenericServerFunctions, ServerFunctions } from "./types";
 import { Engine } from "./engine";
 
-function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
-    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
-}
-
 function createServerProxy<TServer extends ServerFunctions<TServer> = GenericServerFunctions>(engine: Engine, identifier: string, skipReconnectingCheck: boolean): TServer {
     return new Proxy<TServer>({} as TServer, {
         get(_, propertyName) {
@@ -36,7 +32,6 @@ function createServerProxy<TServer extends ServerFunctions<TServer> = GenericSer
 export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunctions> {
     private engine: Engine;
     private identifier: string;
-    private reconnectCallbacks: (((server: TServer) => void) | ((server: TServer) => PromiseLike<void>))[] = [];
 
     /**
      * Allows messages to be sent to the server. Any property access is treated
@@ -54,8 +49,6 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
     public constructor(identifier: string, engine: Engine) {
         this.identifier = identifier;
         this.engine = engine;
-
-        engine.onReconnect(async () => this.reconnected());
 
         this.server = createServerProxy<TServer>(engine, identifier, false);
     }
@@ -103,17 +96,24 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
     }
 
     /**
-     * Registers a callback to be called when the connection has been lost
-     * and then reconnected. This means a new connection identifier is now
-     * in use and any state information has been lost.The callback will be
-     * called with a special server proxy that can be used while in a
-     * reconnecting state. The normal server proxy will pause messages until
-     * the reconnect is completed and all callbacks have finished.
+     * Registers a callback to be called when the connection has been
+     * temporarily lost. An automatic reconnection is in progress. The topic
+     * is now in a state where it can not send any messages.
      * 
      * @param callback The callback to be called.
      */
-    public onReconnect(callback: ((server: TServer) => void) | ((server: TServer) => PromiseLike<void>)): void {
-        this.reconnectCallbacks.push(callback);
+    public onReconnecting(callback: (() => void)): void {
+        this.engine.onReconnecting(callback);
+    }
+
+    /**
+     * Registers a callback to be called when the connection has been
+     * reconnected. The topic can now send messages again.
+     * 
+     * @param callback The callback to be called.
+     */
+    public onReconnected(callback: (() => void)): void {
+        this.engine.onReconnected(callback);
     }
 
     /**
@@ -122,31 +122,7 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
      * 
      * @param callback The callback to be called.
      */
-    public onDisconnect(callback: (() => void) | (() => PromiseLike<void>)): void {
-        this.engine.onDisconnect(callback);
-    }
-
-    /**
-     * Called once we have performed a full reconnection. Reconnect to the topic
-     * on the server and then fire off any reconnect callbacks registered on
-     * this topic.
-     */
-    private async reconnected(): Promise<void> {
-        await this.connect();
-
-        const serverProxy = createServerProxy<TServer>(this.engine, this.identifier, true);
-
-        for (const callback of this.reconnectCallbacks) {
-            try {
-                const result = callback(serverProxy);
-
-                if (isPromise(result)) {
-                    await result;
-                }
-            }
-            catch (error) {
-                console.error(error);
-            }
-        }
+    public onDisconnected(callback: (() => void)): void {
+        this.engine.onDisconnected(callback);
     }
 }
