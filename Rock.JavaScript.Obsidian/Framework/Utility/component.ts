@@ -142,6 +142,11 @@ type StandardRockFormFieldProps = {
     validationTitle: {
         type: PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: PropType<boolean>,
+        default: false
     }
 };
 
@@ -170,6 +175,11 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     validationTitle: {
         type: String as PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: Boolean as PropType<boolean>,
+        default: false
     }
 };
 
@@ -203,7 +213,8 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
         help: props.help,
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,
-        validationTitle: props.validationTitle
+        validationTitle: props.validationTitle,
+        isRequiredIndicatorHidden: props.isRequiredIndicatorHidden
     });
 
     watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {

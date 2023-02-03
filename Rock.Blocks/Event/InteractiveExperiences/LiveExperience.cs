@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.LiveExperience;
 using Rock.ViewModels.Event.InteractiveExperiences;
 using Rock.Web.Cache;
@@ -137,7 +138,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                         CampusId = occurrence.GetIndivualCampusId( RequestContext.CurrentPerson, latitude, longitude )
                     };
 
-                    box.ExperienceToken = Security.Encryption.EncryptString( experienceToken.ToJson() );
+                    box.ExperienceToken = Encryption.EncryptString( experienceToken.ToJson() );
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
                 }

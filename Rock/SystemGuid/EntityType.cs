@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
 
         /// <summary>
+        /// The passwordless authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PASSWORDLESS = "2D037783-09BD-48BA-8C1D-626B0BC82495";
+
+        /// <summary>
         /// The guid for the Rock.Model.Badge entity
         /// </summary>
         public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";

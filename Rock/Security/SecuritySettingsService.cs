@@ -85,7 +85,8 @@ namespace Rock.Security
         {
             return new SecuritySettings
             {
-                AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile> {
+                AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile>
+                {
                     AccountProtectionProfile.Extreme,
                     AccountProtectionProfile.High,
                     AccountProtectionProfile.Medium
@@ -95,9 +96,17 @@ namespace Rock.Security
                     { AccountProtectionProfile.Extreme, RoleCache.Get( SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ) },
                     { AccountProtectionProfile.High, RoleCache.Get( SystemGuid.Group.GROUP_DATA_INTEGRITY_WORKER.AsGuid() ) }
                 },
-                DisableTokensForAccountProtectionProfiles = new List<AccountProtectionProfile> {
+                DisablePasswordlessSignInForAccountProtectionProfiles = new List<AccountProtectionProfile>
+                {
                     AccountProtectionProfile.Extreme
                 },
+                DisableTokensForAccountProtectionProfiles = new List<AccountProtectionProfile>
+                {
+                    AccountProtectionProfile.Extreme
+                },
+                PasswordlessSignInDailyIpThrottle = SecuritySettings.PasswordlessSignInDailyIpThrottleDefaultValue,
+                PasswordlessConfirmationCommunicationTemplateGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_LOGIN_PASSWORDLESS.AsGuid(),
+                PasswordlessSignInSessionDuration = SecuritySettings.PasswordlessSignInSessionDurationDefaultValue,
             };
         }
 

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceVisualizer;
 using Rock.ViewModels.Event.InteractiveExperiences;
@@ -177,7 +178,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             return new VisualizerOccurrenceBag
             {
-                ExperienceToken = Security.Encryption.EncryptString( experienceToken.ToJson() ),
+                ExperienceToken = Encryption.EncryptString( experienceToken.ToJson() ),
                 Style = experienceCache.GetExperienceStyleBag(),
                 OccurrenceEndDateTime = result.OccurrenceDateTime.AddMinutes( result.Schedule.DurationInMinutes ).ToRockDateTimeOffset()
             };
@@ -240,7 +241,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult GetExperienceAnswers( string token )
         {
-            var experienceToken = Security.Encryption.DecryptString( token ).FromJsonOrNull<ExperienceToken>();
+            var experienceToken = Encryption.DecryptString( token ).FromJsonOrNull<ExperienceToken>();
             var occurrenceIdKey = experienceToken?.OccurrenceId;
 
             if ( occurrenceIdKey.IsNullOrWhiteSpace() )

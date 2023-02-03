@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,8 +108,14 @@ namespace Rock.Model
         /// <value>
         /// The device unique identifier.
         /// </value>
+        /// <remarks>
+        /// Unique identifiers for passwordless authentication can be either email addresses or phone numbers.
+        /// Since email addresses are larger between the two,
+        /// and email fields in Rock are 75 characters,
+        /// we need the new column size to be email length (75).
+        /// </remarks>
         [DataMember]
-        [MaxLength( 45 )]
+        [MaxLength( 75 )]
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>

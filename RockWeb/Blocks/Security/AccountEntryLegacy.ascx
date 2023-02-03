@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AccountEntry.ascx.cs" Inherits="RockWeb.Blocks.Security.AccountEntry" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AccountEntryLegacy.ascx.cs" Inherits="RockWeb.Blocks.Security.AccountEntryLegacy" %>
 
 <asp:UpdatePanel ID="upnlNewAccount" runat="server">
 <ContentTemplate>

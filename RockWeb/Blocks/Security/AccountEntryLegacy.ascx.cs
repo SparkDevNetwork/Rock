@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Block for user to create a new login account.
     /// </summary>
-    [DisplayName( "Account Entry" )]
+    [DisplayName( "Account Entry (Legacy)" )]
     [Category( "Security" )]
     [Description( "Block allows users to create a new login account." )]
 
@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Security
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "99362B60-71A5-44C6-BCFE-DDA9B00CC7F3" )]
-    public partial class AccountEntry : Rock.Web.UI.RockBlock
+    public partial class AccountEntryLegacy : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey
         {

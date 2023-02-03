@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Prompts user for login credentials.
     /// </summary>
-    [DisplayName( "Log In" )]
+    [DisplayName( "Log In (Legacy)" )]
     [Category( "Security" )]
     [Description( "Prompts user for login credentials." )]
 
@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Security
     #endregion "Block Attributes"
 
     [Rock.SystemGuid.BlockTypeGuid( "7B83D513-1178-429E-93FF-E76430E038E4" )]
-    public partial class Login : Rock.Web.UI.RockBlock
+    public partial class LoginLegacy : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey
         {

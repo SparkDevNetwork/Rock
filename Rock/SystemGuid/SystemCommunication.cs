@@ -85,6 +85,16 @@ namespace Rock.SystemGuid
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
+        /// Gets the template guid for Passwordless Login Confirmation communication
+        /// </summary>
+        public const string SECURITY_CONFIRM_LOGIN_PASSWORDLESS = "A7AD9FD5-A343-4ADA-868D-A3528D650143";
+
+        /// <summary>
+        /// Gets the template guid for Confirm Account (Passwordless) communication
+        /// </summary>
+        public const string SECURITY_CONFIRM_ACCOUNT_PASSWORDLESS = "543B7C09-80C0-4DAB-8487-10569474D9C7";
+
+        /// <summary>
         /// The scheduling response communication
         /// </summary>
         public const string SCHEDULING_RESPONSE = "D095F78D-A5CF-4EF6-A038-C7B07E250611";
