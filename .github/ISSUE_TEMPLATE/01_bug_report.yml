@@ -1,6 +1,6 @@
-name: Issue Report
+name: Bug Report
 description: File a bug report
-title: "[Issue]: "
+title: ""
 labels: [bug, triage, unverified]
 body:
   - type: markdown
@@ -16,8 +16,8 @@ body:
     attributes:
       label: Please go through all the tasks below
       description: |
-        - Perform a search at https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock to see if your bug or enhancement is already reported.
-        - Try to reproduce the problem on a fresh install or the demo site.
+        - Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
+        - Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
       options:
         - label: Check this box only after you have successfully completed both the above tasks
     validations:
@@ -26,7 +26,7 @@ body:
     id: summary
     attributes:
       label: Please provide a brief description of the problem. Please do not forget to attach the relevant screenshots from your side.
-      description: Please write a clear and concise description and include full window non-partial screenshots. FYI You can just copy and paste an image directly into here and it will magically upload. Please feel free to provide more than one screenshots if needed.
+      description: Please write a clear and concise description and include full window non-partial screenshots. Please feel free to provide more than one screenshots if needed.
       placeholder: Tell us what you see!
       value: "Tell us what you see!"
     validations:
@@ -54,12 +54,11 @@ body:
     attributes:
       label: Steps to Reproduce
       description: Please provide the detailed steps to reproduce the issue. Do include all relevant screenshots wherever needed.
-      placeholder: |
+      value: |
         - Go to '...'
         - Click on '....'
         - Scroll down to '....'
         - See error
-      value: "Steps to Reproduce"
     validations:
       required: true
   - type: input
