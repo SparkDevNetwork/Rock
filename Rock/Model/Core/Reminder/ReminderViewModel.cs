@@ -137,7 +137,7 @@ namespace Rock.Model
                 if ( this.EntityUrl.StartsWith( "~/" ) )
                 {
                     var baseUrl = GlobalAttributesCache.Value("PublicApplicationRoot");
-                    this.EntityUrl = this.EntityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
+                    this.EntityUrl = this.EntityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 }
             }
         }

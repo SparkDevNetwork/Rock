@@ -170,6 +170,8 @@ namespace Rock.Jobs
 
                 var reminderService = new ReminderService( rockContext );
                 var activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
+                var reminderEntities = reminderService.GetReminderEntities( activeReminders );
+
                 ProcessWorkflowNotifications( activeReminders, rockContext );
                 ProcessCommunicationNotifications( notificationSystemCommunication, activeReminders, rockContext );
 
@@ -273,9 +275,13 @@ namespace Rock.Jobs
         private void ProcessWorkflowNotifications( IQueryable<Reminder> activeReminders, RockContext rockContext )
         {
             WriteLog( $"ProcessReminders job:  Initiated workflow notification processing." );
-            var workflowReminderList = activeReminders
-                .Where( r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow )
-                .ToList();
+
+            var workflowReminderQuery = activeReminders
+                .Where(r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow);
+
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( workflowReminderQuery );
+
+            var workflowReminderList = workflowReminderQuery.ToList();
 
             WriteLog( $"ProcessReminders job:  Processing {workflowReminderList.Count} reminders for notification by workflow." );
 
@@ -288,7 +294,8 @@ namespace Rock.Jobs
                     continue;
                 }
 
-                InitiateNotificationWorkflow( workflowReminder, rockContext );
+                var entity = reminderEntities[workflowReminder.Id];
+                InitiateNotificationWorkflow( workflowReminder, rockContext, entity );
             }
         }
 
@@ -335,16 +342,13 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="reminder"></param>
         /// <param name="rockContext"></param>
-        /// <returns></returns>
-        private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext )
+        /// <param name="entity">The entity.</param>
+        private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext, IEntity entity )
         {
             WriteLog( $"ProcessReminders job:  Creating notification workflow for reminder {reminder.Id}." );
 
             try
             {
-                var entityTypeService = new EntityTypeService( rockContext );
-                var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-
                 var workflowParameters = new Dictionary<string, string>
                 {
                     { "Reminder", reminder.Guid.ToString() },
@@ -424,28 +428,26 @@ namespace Rock.Jobs
                 $"{groupReminderList.Count} Group Reminders, and {otherReminderList.Count} other reminders for {otherReminderEntityList.Count} entity types." );
 
             var reminderDataObjects = new List<ReminderViewModel>();
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( reminders );
 
-            var personService = new PersonService( rockContext );
             foreach ( var reminder in personReminderList )
             {
-                var person = personService.Get( reminder.EntityId );
-                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
+                var person = reminderEntities[reminder.Id] as Person;
+                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 var reminderData = new ReminderViewModel( reminder, person, photoUrl );
                 reminderDataObjects.Add( reminderData );
             }
 
-            var groupService = new GroupService( rockContext );
             foreach ( var reminder in groupReminderList )
             {
-                var group = groupService.Get( reminder.EntityId );
+                var group = reminderEntities[reminder.Id] as Group;
                 var reminderData = new ReminderViewModel( reminder, group );
                 reminderDataObjects.Add( reminderData );
             }
 
-            var entityTypeService = new EntityTypeService( rockContext );
             foreach ( var reminder in otherReminderList )
             {
-                var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
+                var entity = reminderEntities[reminder.Id];
                 var reminderData = new ReminderViewModel( reminder, entity );
                 reminderDataObjects.Add( reminderData );
             }
