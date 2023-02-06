@@ -66,6 +66,20 @@ namespace Rock.Jobs
         Category = "General",
         Order = 3 )]
 
+    [ReminderTypesField(
+        "Reminder Types Include",
+        Key = AttributeKey.ReminderTypesInclude,
+        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        IsRequired = false,
+        Order = 4 )]
+
+    [ReminderTypesField(
+        "Reminder Types Exclude",
+        Key = AttributeKey.ReminderTypesExclude,
+        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        IsRequired = false,
+        Order = 5 )]
+
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
@@ -90,6 +104,16 @@ namespace Rock.Jobs
             /// The max reminders per entity type.
             /// </summary>
             public const string MaxRemindersPerEntityType = "MaxRemindersPerEntityType";
+
+            /// <summary>
+            /// The reminder types to include.
+            /// </summary>
+            public const string ReminderTypesInclude = "ReminderTypesInclude";
+
+            /// <summary>
+            /// The reminder types to exclude.
+            /// </summary>
+            public const string ReminderTypesExclude = "ReminderTypesExclude";
         }
 
         /// <summary> 
@@ -115,6 +139,16 @@ namespace Rock.Jobs
         /// </summary>
         private int _totalProcessedReminders;
 
+        /// <summary>
+        /// The included reminder type ids.
+        /// </summary>
+        private List<int> _includedReminderTypeIds = new List<int>();
+
+        /// <summary>
+        /// The excluded reminder type ids.
+        /// </summary>
+        private List<int> _excludedReminderTypeIds = new List<int>();
+
         #endregion Private Fields
 
         /// <inheritdoc cref="RockJob.Execute()"/>
@@ -130,16 +164,18 @@ namespace Rock.Jobs
                 var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
                 rockContext.Database.CommandTimeout = commandTimeout;
 
+                SetIncludeExcludeReminderTypeIds( rockContext );
+
                 var notificationSystemCommunication = GetNotificationSytemCommunicaton( rockContext );
 
                 var reminderService = new ReminderService( rockContext );
-                var activeReminders = reminderService.GetActiveReminders( currentDate );
+                var activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
                 ProcessWorkflowNotifications( activeReminders, rockContext );
                 ProcessCommunicationNotifications( notificationSystemCommunication, activeReminders, rockContext );
 
                 // Some reminders may have been auto-completed by notification processing and are therefore no longer active,
                 // so we need to refresh our query before we update reminder counts.
-                activeReminders = reminderService.GetActiveReminders( currentDate );
+                activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
                 UpdateReminderCounts( activeReminders, rockContext );
             }
 
@@ -151,7 +187,7 @@ namespace Rock.Jobs
                 sbResultOutput.AppendLine();
 
                 int errorCount = 0;
-                foreach( var jobError in _jobErrors )
+                foreach ( var jobError in _jobErrors )
                 {
                     if ( errorCount == 5 )
                     {
@@ -175,6 +211,43 @@ namespace Rock.Jobs
         }
 
         #region Job Logic Methods
+
+        /// <summary>
+        /// Sets the included/excluded reminder type ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void SetIncludeExcludeReminderTypeIds( RockContext rockContext )
+        {
+            var reminderTypeService = new ReminderTypeService( rockContext );
+
+            _includedReminderTypeIds.Clear();
+            List<Guid> reminderTypeIncludeGuids = GetAttributeValue( AttributeKey.ReminderTypesInclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeIncludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeIncludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _includedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
+
+            _excludedReminderTypeIds.Clear();
+            List<Guid> reminderTypeExcludeGuids = GetAttributeValue( AttributeKey.ReminderTypesExclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeExcludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeExcludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _excludedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the SystemCommunication for notifications.
@@ -333,7 +406,7 @@ namespace Rock.Jobs
             var otherReminderEntityList = otherReminders
                 .Select( r => r.ReminderType.EntityType )
                 .Distinct()
-                .OrderBy( t => t.FriendlyName) // Sort other reminders by friendly name.
+                .OrderBy( t => t.FriendlyName ) // Sort other reminders by friendly name.
                 .ToList();
 
             foreach ( var entityType in otherReminderEntityList )

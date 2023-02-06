@@ -39,36 +39,36 @@
                 <asp:HiddenField ID="hfReminderTypeId" runat="server" Value="0" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="rtbName" runat="server" Label="Name" Required="true" ValidationGroup="EditReminderType" />
+                        <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EditReminderType" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="rcbActive" runat="server" Label="Active" />
-                    </div>
-                </div>
-
-                <Rock:RockTextBox ID="rtbDescription" runat="server" Label="Description" TextMode="MultiLine" />
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockDropDownList ID="rddlNotificationType" runat="server" Label="Notification Type" Required="true" ValidationGroup="EditReminderType" AutoPostBack="true" OnSelectedIndexChanged="rddlNotificationType_SelectedIndexChanged" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:WorkflowTypePicker ID="rwtpWorkflowType" runat="server" Label="Notification Workflow" ValidationGroup="EditReminderType" />
+                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" />
                     </div>
                 </div>
 
+                <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" />
+
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="rcbShouldShowNote" runat="server" Label="Should Show Note" />
+                        <Rock:RockDropDownList ID="ddlNotificationType" runat="server" Label="Notification Type" Required="true" ValidationGroup="EditReminderType" AutoPostBack="true" OnSelectedIndexChanged="ddlNotificationType_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:EntityTypePicker ID="retpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
+                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Notification Workflow" ValidationGroup="EditReminderType" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="rcbShouldAutoComplete" runat="server" Label="Should Auto-Complete When Notified" />
+                        <Rock:RockCheckBox ID="cbShouldShowNote" runat="server" Label="Should Show Note" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Entity Type" Required="true" ValidationGroup="EditReminderType" EnhanceForLongLists="true" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbShouldAutoComplete" runat="server" Label="Should Auto-Complete When Notified" />
                     </div>
                     <div class="col-md-6">
                         <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highlight Color" />

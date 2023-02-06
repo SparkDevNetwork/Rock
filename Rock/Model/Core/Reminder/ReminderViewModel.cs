@@ -23,109 +23,111 @@ using System.Collections.Generic;
 namespace Rock.Model
 {
     /// <summary>
-    /// DTO for Reminders.
+    /// ViewModel for Reminders.
     /// </summary>
     public class ReminderViewModel : RockDynamic
     {
         /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <value>The entity.</value>
+        public IEntity Entity { get; private set; }
+
+        /// <summary>
+        /// Gets the reminder.
+        /// </summary>
+        /// <value>The reminder.</value>
+        public Reminder Reminder { get; private set; }
+
+        /// <summary>
         /// The identifier.
         /// </summary>
-        public int Id { get; set; }
+        public int Id { get { return this.Reminder.Id; } }
 
         /// <summary>
         /// Is Complete.
         /// </summary>
-        public bool IsComplete { get; set; }
+        public bool IsComplete { get { return this.Reminder.IsComplete; } }
 
         /// <summary>
         /// Is Renewing.
         /// </summary>
-        public bool IsRenewing { get; set; }
+        public bool IsRenewing { get { return this.Reminder.IsRenewing; } }
 
         /// <summary>
         /// The entity description.
         /// </summary>
-        public string EntityDescription { get; set; }
+        public string EntityDescription { get { return Entity.ToString(); } }
 
         /// <summary>
         /// The entity type (friendly) name.
         /// </summary>
-        public string EntityTypeName { get; set; }
+        public string EntityTypeName { get { return this.Reminder.ReminderType.EntityType.FriendlyName; } }
 
         /// <summary>
         /// The reminder type.
         /// </summary>
-        public string ReminderTypeName { get; set; }
+        public string ReminderTypeName { get { return this.Reminder.ReminderType.EntityType.FriendlyName; } }
 
         /// <summary>
         /// The highlight color.
         /// </summary>
-        public string HighlightColor { get; set; }
+        public string HighlightColor { get { return this.Reminder.ReminderType.HighlightColor; } }
 
         /// <summary>
         /// The reminder date.
         /// </summary>
-        public string ReminderDate { get; set; }
+        public string ReminderDate { get { return this.Reminder.ReminderDate.ToShortDateString(); } }
 
         /// <summary>
         /// The note.
         /// </summary>
-        public string Note { get; set; }
+        public string Note { get { return this.Reminder.Note; } }
 
         /// <summary>
         /// A value indicating whether or not this reminder is attached to a Person entity.
         /// </summary>
-        public bool IsPersonReminder { get; set; }
+        public bool IsPersonReminder { get { return ( this.Reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() ); } }
 
         /// <summary>
         /// A value indicating whether or not this reminder is attached to a Group entity.
         /// </summary>
-        public bool IsGroupReminder { get; set; }
+        public bool IsGroupReminder { get { return ( this.Reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid()); } }
 
         /// <summary>
         /// The entity identifier.
         /// </summary>
-        public int EntityId { get; set; }
+        public int EntityId { get { return this.Reminder.EntityId; } }
 
         /// <summary>
         /// The entity type identifier.
         /// </summary>
-        public int EntityTypeId { get; set; }
+        public int EntityTypeId { get { return this.Reminder.ReminderType.EntityTypeId; } }
 
         /// <summary>
         /// The Entity URL.
         /// </summary>
-        public string EntityUrl { get; set; }
+        public string EntityUrl { get; private set; }
 
         /// <summary>
         /// The Person Profile Picture URL (must be set in the constructor, and should only be included if the entity is a Person).
         /// </summary>
-        public string PersonProfilePictureUrl { get; set; }
+        public string PersonProfilePictureUrl { get; private set; }
 
         /// <summary>
         /// Initializes the <see cref="ReminderViewModel"/> instance.
         /// </summary>
-        /// <param name="reminder">The <see cref="Reminder"/>.</param>
+        /// <param name="reminder">The <see cref="Rock.Model.Reminder"/>.</param>
         /// <param name="entity">The <see cref="IEntity"/> that the reminder is associated with.</param>
-        /// <param name="personProfilePictureUrl">The </param>
+        /// <param name="personProfilePictureUrl">The person profile picture URL.  This optional parameter should be supplied
+        /// if the entity attached to the reminder is a <see cref="Rock.Model.Person"/>).</param>
         public ReminderViewModel( Reminder reminder, IEntity entity, string personProfilePictureUrl = "" )
         {
-            this.Id = reminder.Id;
-            this.IsComplete = reminder.IsComplete;
-            this.IsRenewing = reminder.IsRenewing;
-            this.EntityDescription = entity.ToString();
-            this.ReminderTypeName = reminder.ReminderType.Name;
-            this.HighlightColor = reminder.ReminderType.HighlightColor;
-            this.ReminderDate = reminder.ReminderDate.ToShortDateString();
-            this.Note = reminder.Note;
-            this.IsPersonReminder = ( reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() );
-            this.IsGroupReminder = (reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid());
-            this.EntityId = reminder.EntityId;
-            this.EntityTypeName = reminder.ReminderType.EntityType.FriendlyName;
-            this.EntityTypeId = reminder.ReminderType.EntityTypeId;
-            this.EntityUrl = string.Empty;
+            this.Reminder = reminder;
+            this.Entity = entity;
             this.PersonProfilePictureUrl = personProfilePictureUrl;
 
+            this.EntityUrl = string.Empty;
             var entityUrlPattern = reminder.ReminderType.EntityType.LinkUrlLavaTemplate;
             if ( !string.IsNullOrWhiteSpace( entityUrlPattern ) )
             {
