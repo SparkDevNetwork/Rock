@@ -1774,5 +1774,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.SnippetType"/> 
         /// </summary>
         public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SystemPhoneNumber"/> 
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "66D62A9F-13CD-4160-8653-211B2A4ABF16";
     }
 }

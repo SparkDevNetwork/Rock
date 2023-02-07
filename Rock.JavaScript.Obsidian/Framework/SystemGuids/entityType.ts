@@ -685,6 +685,8 @@ export const EntityType = {
     SystemCommunication: "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
     /** The EntityType Guid for Rock.Model.SystemEmail  */
     SystemEmail: "B21FD119-893E-46C0-B42D-E4CDD5C8C49D",
+    /** The EntityType Guid for Rock.Model.SystemPhoneNumber  */
+    SystemPhoneNumber: "66D62A9F-13CD-4160-8653-211B2A4ABF16",
     /** The EntityType Guid for Tag. */
     Tag: "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for Rock.Model.TaggedItem  */

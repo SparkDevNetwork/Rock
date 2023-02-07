@@ -99,6 +99,8 @@
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeBag.cs" />
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberBag.cs" />
+    <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
@@ -133,8 +135,13 @@
     <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
+    <Compile Include="Blocks\Mobile\Communication\SmsConversationList\PhoneNumberBag.cs" />
+    <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
+    <Compile Include="Communication\ConversationAttachmentBag.cs" />
+    <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Entities\SnippetBag.cs" />
     <Compile Include="Entities\SnippetTypeBag.cs" />
+    <Compile Include="Entities\SystemPhoneNumberBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionRenderConfigurationBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceActionStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceAnswerBag.cs" />

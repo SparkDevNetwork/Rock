@@ -125,10 +125,9 @@ namespace RockWeb.Blocks.Security
         Order = 9,
         Key = AttributeKey.IpThrottleLimit )]
 
-    [DefinedValueField(
+    [SystemPhoneNumberField(
         "SMS Number",
         Key = AttributeKey.SmsNumber,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "The phone number SMS messages should be sent from",
         Order = 10 )]
 
@@ -227,7 +226,7 @@ namespace RockWeb.Blocks.Security
 
                     var smsMessage = new RockSMSMessage
                     {
-                        FromNumber = DefinedValueCache.Get( fromNumber ),
+                        FromSystemPhoneNumber = SystemPhoneNumberCache.Get( fromNumber ),
                         Message = messageTemplate,
                     };
                     var mergeObjects = LavaHelper.GetCommonMergeFields( this.RockPage );

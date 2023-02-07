@@ -1214,7 +1214,7 @@ namespace Rock.Blocks.Security
                     box.IsPasswordlessLoginSupported = false;
                 }
 
-                if ( passwordlessSignInSystemCommunication.SMSFromDefinedValue == null )
+                if ( !passwordlessSignInSystemCommunication.SmsFromSystemPhoneNumberId.HasValue )
                 {
                     configurationErrors.Add( $@"The { passwordlessSignInSystemCommunication.Title } system communication needs an SMS From value to use passwordless authentication." );
 

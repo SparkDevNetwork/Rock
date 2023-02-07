@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Communication
                     BCCEmails = communication.BCCEmails,
                     Message = "{% raw %}" + communication.Message + "{% endraw %}",
                     MessageMetaData = communication.MessageMetaData,
-                    SMSFromDefinedValueId = communication.SMSFromDefinedValueId,
+                    SmsFromSystemPhoneNumberId = communication.SmsFromSystemPhoneNumberId,
                     SMSMessage = communication.SMSMessage,
                     PushTitle = communication.PushTitle,
                     PushMessage = communication.PushMessage,
@@ -2004,9 +2004,9 @@ namespace RockWeb.Blocks.Communication
                     sb.AppendLine( "<div id='smsTabContent' class='tab-pane h-100'><div class='row'>" );
                 }
 
-                if ( communication.SMSFromDefinedValue != null )
+                if ( communication.SmsFromSystemPhoneNumber != null )
                 {
-                    AppendStaticControlMediumData( sb, "From", string.Format( "{0} ({1})", communication.SMSFromDefinedValue.Description, communication.SMSFromDefinedValue.Value ), "col-xs-12" );
+                    AppendStaticControlMediumData( sb, "From", string.Format( "{0} ({1})", communication.SmsFromSystemPhoneNumber.Name, communication.SmsFromSystemPhoneNumber.Number), "col-xs-12" );
                 }
 
                 AppendStaticControlMediumData( sb, "Message", communication.SMSMessage, "col-xs-12" );

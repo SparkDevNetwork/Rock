@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -32,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationResponse" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "DB449144-6045-4B11-AA55-ECF286B117A9")]
+    [Rock.SystemGuid.EntityTypeGuid( "DB449144-6045-4B11-AA55-ECF286B117A9" )]
     public partial class CommunicationResponse : Model<CommunicationResponse>
     {
         #region Entity Properties
@@ -84,7 +85,19 @@ namespace Rock.Model
         /// The related SMS from defined value identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use RelatedSmsFromSystemPhoneNumberId instead." )]
+        [RockObsolete( "1.15" )]
         public int? RelatedSmsFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related SMS system phone number identifier this
+        /// response was received on.
+        /// </summary>
+        /// <value>
+        /// The related SMS system phone number identifier this response was recieved on.
+        /// </value>
+        [DataMember]
+        public int? RelatedSmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the related communication identifier.
@@ -141,6 +154,15 @@ namespace Rock.Model
         /// To person alias.
         /// </value>
         public virtual PersonAlias ToPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related SMS system phone number this response was
+        /// received on.
+        /// </summary>
+        /// <value>
+        /// The related SMS system phone number this response was recieved on.
+        /// </value>
+        public virtual SystemPhoneNumber RelatedSmsFromSystemPhoneNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the related communication.
@@ -205,6 +227,7 @@ namespace Rock.Model
         {
             this.HasOptional( r => r.FromPersonAlias ).WithMany().HasForeignKey( r => r.FromPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.ToPersonAlias ).WithMany().HasForeignKey( r => r.ToPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.RelatedSmsFromSystemPhoneNumber ).WithMany().HasForeignKey( r => r.RelatedSmsFromSystemPhoneNumberId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.RelatedCommunication ).WithMany().HasForeignKey( c => c.RelatedCommunicationId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedMedium ).WithMany().HasForeignKey( c => c.RelatedMediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedTransport ).WithMany().HasForeignKey( c => c.RelatedTransportEntityTypeId ).WillCascadeOnDelete( false );

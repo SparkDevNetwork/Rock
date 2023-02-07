@@ -272,6 +272,13 @@ namespace Rock.Mobile
         public int? InteractiveExperiencePageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the page that will display a SMS
+        /// conversation between Rock and an individual.
+        /// </summary>
+        /// <value>The SMS conversation page identifier.</value>
+        public int? SmsConversationPageId { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to enable notifications automatically.
         /// </summary>
         /// <value>

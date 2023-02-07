@@ -277,6 +277,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
 
+            RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -2326,6 +2328,43 @@ SELECT @@ROWCOUNT
             }
 
             return olderVersions.Count();
+        }
+
+        /// <summary>
+        /// Ensures that the legacy SMS phone numbers in the Defined Value
+        /// table are in sync with the new System Phone Number table.
+        /// </summary>
+        /// <remarks>
+        /// The detail block automatically updates the legacy phone numbers,
+        /// but we need to account for other ways they can be edited. This
+        /// code can be removed when legacy phone numbers are no longer
+        /// supported. System Phone Numbers were added in Rock 1.15.0.
+        /// </remarks>
+        /// <returns>The number of legacy phone numbers.</returns>
+        private int SynchronizeLegacySmsPhoneNumbers()
+        {
+            List<int> systemPhoneNumberIds;
+
+            using ( var rockContext = new RockContext() )
+            {
+                systemPhoneNumberIds = new SystemPhoneNumberService( rockContext )
+                    .Queryable()
+                    .Select( spn => spn.Id )
+                    .ToList();
+            }
+
+            // Create or update any legacy phone numbers that are somehow
+            // out of sync.
+            foreach ( var systemPhoneNumberId in systemPhoneNumberIds )
+            {
+                SystemPhoneNumberService.UpdateLegacyPhoneNumber( systemPhoneNumberId );
+            }
+
+            // Delete any legacy phone numbers that no longer have an associated
+            // system phone number.
+            SystemPhoneNumberService.DeleteExtraLegacyPhoneNumbers();
+
+            return systemPhoneNumberIds.Count;
         }
 
         /// <summary>

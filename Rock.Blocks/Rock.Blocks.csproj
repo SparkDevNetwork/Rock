@@ -68,6 +68,7 @@
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Communication\SnippetDetail.cs" />
     <Compile Include="Communication\SnippetTypeDetail.cs" />
+    <Compile Include="Communication\SystemPhoneNumberDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="Security\Login.cs" />
+    <Compile Include="Utility\SmsTestTransport.cs" />
     <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
@@ -132,6 +134,7 @@
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Utility\" />
+    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />

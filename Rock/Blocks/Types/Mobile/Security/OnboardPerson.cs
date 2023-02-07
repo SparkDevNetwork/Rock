@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1059,7 +1059,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 return new Rock.Common.Mobile.Blocks.Security.OnboardPerson.Configuration
                 {
                     CanAuthenticateByEmail = MediumContainer.HasActiveEmailTransport() && systemCommunication != null,
-                    CanAuthenticateBySms = MediumContainer.HasActiveSmsTransport() && systemCommunication?.SMSFromDefinedValueId != null,
+                    CanAuthenticateBySms = MediumContainer.HasActiveSmsTransport() && systemCommunication?.SmsFromSystemPhoneNumberId != null,
                     AllowSkipOfOnboarding = AllowSkipOfOnboarding,
                     CompletedPageGuid = CompletedPageGuid ?? Guid.Empty,
                     LoginPageGuid = LoginPageGuid,

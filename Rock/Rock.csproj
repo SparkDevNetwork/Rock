@@ -576,6 +576,7 @@
     <Compile Include="Attribute\PersistedDatasetFieldAttribute.cs" />
     <Compile Include="Attribute\StructureContentEditorFieldAttribute.cs" />
     <Compile Include="Attribute\SystemCommunicationFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemPhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
@@ -676,6 +677,8 @@
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\SmsConversationList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionOpportunityList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestList.cs" />
@@ -800,6 +803,7 @@
     <Compile Include="Bus\Queue\GivingEventQueue.cs" />
     <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
     <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
+    <Compile Include="Communication\Transport\SmsTest.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -896,9 +900,11 @@
     <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
+    <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
@@ -941,9 +947,13 @@
     <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SnippetService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SnippetTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SystemPhoneNumberService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
     <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
+    <Compile Include="Model\Communication\Snippet\SnippetService.cs" />
+    <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.cs" />
+    <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
@@ -1018,8 +1028,12 @@
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
     <Compile Include="RealTime\RealTimeException.cs" />
+    <Compile Include="RealTime\Topics\ConversationParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\IConversationParticipant.cs" />
     <Compile Include="RealTime\Topics\IInteractiveExperienceParticipant.cs" />
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
+    <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -1627,6 +1641,7 @@
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
+    <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
@@ -1884,6 +1899,7 @@
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\SystemPhoneNumberCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
@@ -1929,6 +1945,8 @@
     <Compile Include="Web\UI\Controls\GroupMemberRequirementsContainer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RacePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SecondaryAuthsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />

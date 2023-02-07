@@ -143,6 +143,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
@@ -167,7 +168,12 @@
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\AccountEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\Login\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversationList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\" />
     <Folder Include="Framework\ViewModels\Cms\" />
+    <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Crm\" />
@@ -573,6 +579,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\snippetTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\snippetTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -631,11 +639,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\passwordlessLoginVerifyResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\remoteLoginStartRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\remoteLoginStartResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversationList\phoneNumberBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\conversationDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionSourceAdditionalSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\obsidianBlockConfigBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Communication\conversationAttachmentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Communication\conversationMessageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Connection\connectionRequestCountsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />
@@ -868,6 +880,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\streakTypeExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\systemCommunicationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\systemEmailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\systemPhoneNumberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\tagBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\taggedItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\userLoginBag.d.ts" />

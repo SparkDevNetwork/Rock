@@ -30,7 +30,9 @@ namespace Rock.Migrations
         public override void Up()
         {
             AddColumn("dbo.DefinedType", "EnableSecurityOnValues", c => c.Boolean(nullable: false));
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $"UPDATE [DefinedType] SET [EnableSecurityOnValues] = 1 WHERE [Guid] = '{Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM}'" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
         
         /// <summary>

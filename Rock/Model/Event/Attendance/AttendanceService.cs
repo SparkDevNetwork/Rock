@@ -1103,7 +1103,7 @@ namespace Rock.Model
                 mergeFields.Add( "Attendances", attendances );
 
                 var forceCommunicationType = CommunicationType.RecipientPreference;
-                var validSmsTemplateExists = communicationMessage.SMSMessage.IsNotNullOrWhiteSpace() && communicationMessage.SMSFromDefinedValueId != null;
+                var validSmsTemplateExists = communicationMessage.SMSMessage.IsNotNullOrWhiteSpace() && communicationMessage.SmsFromSystemPhoneNumberId != null;
                 var individualHasValidSmsNumber = recipient.PhoneNumbers.Any( ph => ph.IsMessagingEnabled );
                 if ( !validSmsTemplateExists || !individualHasValidSmsNumber )
                 {

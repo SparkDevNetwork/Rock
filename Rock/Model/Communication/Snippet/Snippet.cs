@@ -106,6 +106,21 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="string" /> that represents this snippet.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this snippet.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
+
         #region Navigation Properties
 
         /// <summary>

@@ -22,6 +22,7 @@ namespace Rock.RealTime
     /// <summary>
     /// Thread-safe increment and decrement counter for keyed values.
     /// </summary>
+    /// <typeparam name="TKey">The type to be used as the key when accessing usage counts.</typeparam>
     /// <remarks>
     /// <para>
     /// Performance testing was done between this method, a lock per key and
@@ -38,7 +39,7 @@ namespace Rock.RealTime
     /// In other words, on the test hardware each increment took 0.0019 milliseconds.
     /// </para>
     /// </remarks>
-    internal class ConcurrentUsageCounter<T>
+    internal class ConcurrentUsageCounter<TKey>
     {
         #region Fields
 
@@ -50,7 +51,7 @@ namespace Rock.RealTime
         /// <summary>
         /// The counter values held by this class.
         /// </summary>
-        private readonly Dictionary<T, int> _counters = new Dictionary<T, int>();
+        private readonly Dictionary<TKey, int> _counters = new Dictionary<TKey, int>();
 
         #endregion
 
@@ -61,7 +62,7 @@ namespace Rock.RealTime
         /// </summary>
         /// <param name="key">The key whose value will be incremented.</param>
         /// <returns>The new value after the operation has completed.</returns>
-        public int Increment( T key )
+        public int Increment( TKey key )
         {
             lock ( _lock )
             {
@@ -86,7 +87,7 @@ namespace Rock.RealTime
         /// </summary>
         /// <param name="key">The key whose value will be decremented.</param>
         /// <returns>The new value after the operation has completed.</returns>
-        public int Decrement( T key )
+        public int Decrement( TKey key )
         {
             lock ( _lock )
             {

@@ -79,6 +79,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, RequestFilter.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.MobileApplicationSiteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

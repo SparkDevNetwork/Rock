@@ -677,14 +677,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PersonAliasType
-    {
-        FromPersonAlias = 0x0,
-        ToPersonAlias = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersonalizationType
     {
         Segment = 0x0,

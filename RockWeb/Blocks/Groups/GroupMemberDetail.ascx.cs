@@ -102,9 +102,8 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 9 )]
 
-    [DefinedValueField( "Allowed SMS Numbers",
+    [SystemPhoneNumberField( "Allowed SMS Numbers",
         Key = AttributeKey.AllowedSMSNumbers,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
         IsRequired = false,
         AllowMultiple = true,
@@ -373,22 +372,25 @@ namespace RockWeb.Blocks.Groups
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) );
+            var smsNumbers = SystemPhoneNumberCache.All()
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )
             {
-                smsNumbers = smsNumbers.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
             }
 
             if ( smsNumbers.Any() )
             {
-                var smsDetails = smsNumbers.Select( v => new
+                var smsDetails = smsNumbers.Select( spn => new
                 {
-                    v.Id,
-                    Description = string.IsNullOrWhiteSpace( v.Description )
-                    ? PhoneNumber.FormattedNumber( string.Empty, v.Value.Replace( "+", string.Empty ) )
-                    : v.Description.LeftWithEllipsis( 25 ),
+                    spn.Id,
+                    Description = spn.Name
                 } );
 
                 ddlSmsNumbers.DataSource = smsDetails;
@@ -2163,11 +2165,11 @@ namespace RockWeb.Blocks.Groups
         /// <param name="fromValue"></param>
         /// <param name="message"></param>
         /// <param name="createCommunicationRecord"></param>
-        private void SendSMS( RockSMSMessageRecipient recipient, DefinedValueCache fromValue, string message, bool createCommunicationRecord )
+        private void SendSMS( RockSMSMessageRecipient recipient, SystemPhoneNumberCache fromValue, string message, bool createCommunicationRecord )
         {
             var smsMessage = new RockSMSMessage();
             smsMessage.AddRecipient( recipient );
-            smsMessage.FromNumber = fromValue;
+            smsMessage.FromSystemPhoneNumber = fromValue;
             smsMessage.Message = message;
             smsMessage.CreateCommunicationRecord = createCommunicationRecord;
             smsMessage.CommunicationName = "Group Member Quick Communication";
@@ -2203,18 +2205,20 @@ namespace RockWeb.Blocks.Groups
             }
             else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
             {
-                var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && v.Id == hfFromSMSNumber.Value.AsInteger() ).ToList();
+                var smsPhoneNumbers = SystemPhoneNumberCache.All()
+                    .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
+                        && v.Id == hfFromSMSNumber.Value.AsInteger() )
+                    .ToList();
 
-                if ( !smsDefinedValues.Any() )
+                if ( !smsPhoneNumbers.Any() )
                 {
                     // If there aren't any available SMS numbers to send from, set warning and return false.
                     nbSendGroupMemberCommunication.Text = string.Format( "Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send." );
                     return false;
                 }
 
-                var selectedSMSFrom = smsDefinedValues.First();
+                var selectedSMSFrom = smsPhoneNumbers.First();
                 RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfToSMSNumber.Value, new Dictionary<string, object>() );
                 SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
                 return true;

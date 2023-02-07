@@ -81,6 +81,8 @@ namespace Rock.SystemGuid
         /// <br />
         /// The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
         /// </summary>
+        [Obsolete( "Use the new SystemPhoneNumber model." )]
+        [RockObsolete( "1.15" )]
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 
         /// <summary>
