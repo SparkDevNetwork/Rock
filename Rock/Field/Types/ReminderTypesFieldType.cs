@@ -56,7 +56,7 @@ namespace Rock.Field.Types
             var orderedReminderTypes = reminderTypesQuery
                 .OrderBy( t => t.EntityType.FriendlyName )
                 .ThenBy( t => t.Name )
-                .ToDictionary( t => t.Guid.ToString(), t => t.EntityType.FriendlyName + " " + t.Name );
+                .ToDictionary( t => t.Guid.ToString(), t => t.EntityType.FriendlyName + " - " + t.Name );
 
             return orderedReminderTypes;
         }

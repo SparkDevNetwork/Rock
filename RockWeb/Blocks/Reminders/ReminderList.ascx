@@ -70,7 +70,7 @@
                                 </asp:Panel>
                             </div>
 
-                            <div class="col">
+                            <asp:Panel ID="pnlFilterOptions" runat="server" CssClass="col">
                                 <%-- Group/Person - Filter Options (Header) --%>
 
                                 <div class="panel-toolbar panel-toolbar-right pr-0">
@@ -154,7 +154,7 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
                     </div>
 

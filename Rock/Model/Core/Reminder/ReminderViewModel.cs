@@ -136,7 +136,7 @@ namespace Rock.Model
                 this.EntityUrl = reminder.ReminderType.EntityType.LinkUrlLavaTemplate.ResolveMergeFields( entityUrlMergeFields );
                 if ( this.EntityUrl.StartsWith( "~/" ) )
                 {
-                    var baseUrl = GlobalAttributesCache.Value("PublicApplicationRoot");
+                    var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
                     this.EntityUrl = this.EntityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 }
             }

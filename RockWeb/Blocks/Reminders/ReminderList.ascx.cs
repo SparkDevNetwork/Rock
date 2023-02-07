@@ -57,6 +57,13 @@ namespace RockWeb.Blocks.Reminders
         Order = 3,
         Key = AttributeKey.ReminderTypesExclude )]
 
+    [BooleanField(
+        "Show Filters",
+        Description = "Select this option if you want the block to show filters for reminders.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.ShowFilters )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.REMINDER_LIST )]
@@ -72,6 +79,7 @@ namespace RockWeb.Blocks.Reminders
             public const string EditReminderPage = "EditReminderPage";
             public const string ReminderTypesInclude = "ReminderTypesInclude";
             public const string ReminderTypesExclude = "ReminderTypesExclude";
+            public const string ShowFilters = "ShowFilters";
         }
 
         /// <summary>
@@ -251,8 +259,16 @@ namespace RockWeb.Blocks.Reminders
         private void InitializeBlock()
         {
             var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
-            var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
-            var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
+            int? selectedEntityId = null;
+            int? selectedReminderTypeId = null;
+
+            var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
+            pnlFilterOptions.Visible = showFilters;
+            if ( !showFilters )
+            {
+                selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+                selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
+            }
 
             SetAllowedReminderTypes();
             var includedReminderTypeIds = GetIncludedReminderTypeIds();
@@ -302,28 +318,31 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
-            // Show Person Picker if EntityType matches.
-            var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
-            if ( selectedEntityTypeId == entityTypeId_Person )
+            if ( showFilters )
             {
-                lSelectedEntityType.Text = "People";
-                ppSelectedPerson.Visible = true;
-                if ( selectedEntityId.HasValue )
+                // Show Person Picker if EntityType matches.
+                var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+                if ( selectedEntityTypeId == entityTypeId_Person )
                 {
-                    var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
-                    ppSelectedPerson.SetValue( person );
+                    lSelectedEntityType.Text = "People";
+                    ppSelectedPerson.Visible = true;
+                    if ( selectedEntityId.HasValue )
+                    {
+                        var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
+                        ppSelectedPerson.SetValue( person );
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // Show Group Picker if EntityType matches.
-            var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
-            if ( selectedEntityTypeId == entityTypeId_Group )
-            {
-                lSelectedEntityType.Text = "Groups";
-                gpSelectedGroup.Visible = true;
-                gpSelectedGroup.SetValue( selectedEntityId );
-                return;
+                // Show Group Picker if EntityType matches.
+                var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+                if ( selectedEntityTypeId == entityTypeId_Group )
+                {
+                    lSelectedEntityType.Text = "Groups";
+                    gpSelectedGroup.Visible = true;
+                    gpSelectedGroup.SetValue( selectedEntityId );
+                    return;
+                }
             }
 
             var selectedEntityType = EntityTypeCache.Get( selectedEntityTypeId.Value );
@@ -373,6 +392,14 @@ namespace RockWeb.Blocks.Reminders
             var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
             var dueFilter = GetBlockUserPreference( UserPreferenceKey.DueFilter );
 
+            var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
+            if ( !showFilters )
+            {
+                // If filters are not available to the user, enforce default settings.
+                completionFilter = "Active";
+                dueFilter = "Due";
+            }
+
             if ( completionFilter.IsNullOrWhiteSpace() )
             {
                 completionFilter = "Active";
@@ -382,6 +409,8 @@ namespace RockWeb.Blocks.Reminders
             {
                 dueFilter = "Due";
             }
+
+            var personEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
 
             var includedReminderTypeIds = GetIncludedReminderTypeIds();
             var excludedReminderTypeIds = GetExcludedReminderTypeIds();
@@ -462,7 +491,7 @@ namespace RockWeb.Blocks.Reminders
                     }
 
                     string personProfilePhoto = string.Empty;
-                    if ( entity.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() )
+                    if ( entity.TypeId == personEntityTypeId )
                     {
                         var person = entity as Person;
                         reminderViewModels.Add( new ReminderViewModel( reminder, person, Person.GetPersonPhotoUrl( person ) ) );
@@ -598,19 +627,19 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupId );
+                var groupType = GroupTypeCache.Get( groupId );
 
-                if ( group == null )
+                if ( groupType == null )
                 {
                     return defaultGroupIconCss;
                 }
 
-                if ( group.GroupType.IconCssClass.IsNullOrWhiteSpace() )
+                if ( groupType.IconCssClass.IsNullOrWhiteSpace() )
                 {
                     return defaultGroupIconCss;
                 }
 
-                return group.GroupType.IconCssClass;
+                return groupType.IconCssClass;
             }
         }
 
@@ -648,10 +677,10 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptReminderType_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var btnEntityType = e.Item.FindControl( "btnEntityType" ) as LinkButton;
+            var btnReminderTypeFilter_EntityType = e.Item.FindControl( "btnReminderTypeFilter_EntityType" ) as LinkButton;
             var reminderType = ( ReminderType ) e.Item.DataItem;
-            btnEntityType.Text = reminderType.Name;
-            btnEntityType.CommandArgument = reminderType.Id.ToString();
+            btnReminderTypeFilter_EntityType.Text = reminderType.Name;
+            btnReminderTypeFilter_EntityType.CommandArgument = reminderType.Id.ToString();
         }
 
         /// <summary>
@@ -858,15 +887,14 @@ namespace RockWeb.Blocks.Reminders
 
             if ( reminder.IsPersonReminder )
             {
-                var photoUrl = Person.GetPersonPhotoUrl( reminder.EntityId );
                 var lProfilePhoto = e.Item.FindControl( "lProfilePhoto" ) as Literal;
                 lProfilePhoto.Visible = true;
-                lProfilePhoto.Text = string.Format( lProfilePhoto.Text, photoUrl );
+                lProfilePhoto.Text = string.Format( lProfilePhoto.Text, reminder.PersonProfilePictureUrl );
             }
-
-            if ( reminder.IsGroupReminder )
+            else if ( reminder.IsGroupReminder )
             {
-                var iconCss = GetGroupTypeIconCss( reminder.EntityId );
+                var group = reminder.Entity as Group;
+                var iconCss = GetGroupTypeIconCss( group.GroupTypeId );
                 var lGroupIcon = e.Item.FindControl( "lGroupIcon" ) as Literal;
                 lGroupIcon.Visible = true;
                 lGroupIcon.Text = string.Format( lGroupIcon.Text, iconCss );
