@@ -73,6 +73,9 @@
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Engagement\SignUp\SignUpAttendanceDetail.cs" />
+    <Compile Include="Engagement\SignUp\SignUpFinder.cs" />
+    <Compile Include="Engagement\SignUp\SignUpRegister.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualizer.cs" />
@@ -83,6 +86,7 @@
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
+    <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
     <Compile Include="IHasCustomActions.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />

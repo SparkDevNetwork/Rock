@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="blockErrorMessage" alertType="warning">
+        {{ blockErrorMessage }}
+    </Alert>
+
+    <Alert v-if="errorMessage" alertType="danger">
+        {{ errorMessage }}
+    </Alert>
+
+    <Alert v-if="successMessage" alertType="success" :dismissible="true" @dismiss="successMessage = ''">
+        {{ successMessage }}
+    </Alert>
+
+    <div v-if="!blockErrorMessage">
+        <div ref="headerElement"></div>
+        <hr />
+        <RockForm @submit="onSaveAttendance">
+            <CheckboxList v-model="selectedAttendees" label="Attendees" :items="attendees" @update:modelValue="onAttendeesUpdated" />
+            <RockButton type="submit" :disabled="isSaving">Save</RockButton>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import CheckboxList from "@Obsidian/Controls/checkBoxList";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { SignUpAttendanceBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpAttendanceDetail/signUpAttendanceBag";
+    import { SignUpAttendanceDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpAttendanceDetail/signUpAttendanceDetailInitializationBox";
+    import { SignUpAttendeeBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpAttendanceDetail/signUpAttendeeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<SignUpAttendanceDetailInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const successMessage = ref("");
+    const headerElement = ref<HTMLElement | null>(null);
+    const selectedAttendees = ref<string[]>([]);
+    const isSaving = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    const attendees = computed((): ListItemBag[] => {
+        var listItemBag: ListItemBag[] = config.attendees?.map(a => ({
+            text: a.name,
+            value: a.personAliasId.toString()
+        })) ?? [];
+
+        return listItemBag;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `update:modelValue` event of the Attendees `CheckBoxList`.
+     */
+    function onAttendeesUpdated(): void {
+        if (!config.attendees?.length) {
+            return;
+        }
+
+        config.attendees.forEach((a: SignUpAttendeeBag) => a.didAttend = selectedAttendees.value.includes(a.personAliasId.toString()));
+    }
+
+    /**
+     * Saves attendance records.
+     */
+    async function onSaveAttendance(): Promise<void> {
+        isSaving.value = true;
+        errorMessage.value = "";
+        successMessage.value = "";
+
+        const bag: SignUpAttendanceBag = {
+            attendees: config.attendees
+        };
+
+        const result: HttpResult<void> = await invokeBlockAction("SaveAttendance", { bag });
+        isSaving.value = false;
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error when trying to enter attendance.";
+            return;
+        }
+
+        successMessage.value = "Successfully entered attendance.";
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    if (config.attendees?.length) {
+        config.attendees
+            .filter((a: SignUpAttendeeBag) => a.didAttend)
+            .forEach((a: SignUpAttendeeBag) => selectedAttendees.value.push(a.personAliasId.toString()));
+    }
+
+    onMounted(() => {
+        if (headerElement.value && config.headerHtml) {
+            headerElement.value.innerHTML = config.headerHtml;
+        }
+    });
+</script>

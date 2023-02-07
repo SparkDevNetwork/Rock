@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="blockErrorMessage" alertType="warning">
+        {{ blockErrorMessage }}
+    </Alert>
+
+    <div v-if="!blockErrorMessage">
+        Hello!
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SignUpRegisterInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterInitializationBox";
+
+    const config = useConfigurationValues<SignUpRegisterInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+
+
+    // #endregion
+
+    // #region Event Handlers
+
+
+
+    // #endregion
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

@@ -85,7 +85,7 @@ export default defineComponent({
                 }
             }
             else {
-                classes.push("rockcheckboxlist-vertical");
+                classes.push("rockcheckboxlist-vertical input-group");
             }
 
             return classes.join(" ");

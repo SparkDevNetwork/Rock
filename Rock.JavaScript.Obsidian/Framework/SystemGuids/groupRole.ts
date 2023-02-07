@@ -77,4 +77,8 @@ export const GroupRole = {
     GrouprolePeerNetworkRelated: "FEA75948-97CB-4DE9-8A0D-43FA2646F55B",
     /** Gets the security group member role. */
     GrouproleSecurityGroupMember: "00F3AC1C-71B9-4EE5-A30E-4C48C8A0BF1F",
+    /** The Leader group member role for Sign-Up Group */
+    GrouproleSignupGroupLeader: "9F063DA9-CB3D-49EB-B4EC-BC909A00FDD4",
+    /** The Member group member role for Sign-Up Group */
+    GrouproleSignupGroupMember: "3849B594-C079-4AB3-869A-E1DEC6790A34",
 };

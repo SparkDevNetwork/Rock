@@ -466,6 +466,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ETHNICITY = "79C8AA9A-507C-454B-AFC8-7A9464298A6E";
 
         /// <summary>
+        /// Guid for the types of Projects (such as In-Person, Project Due, etc.)
+        /// </summary>
+        public const string PROJECT_TYPE = "B7842AF3-6F04-495E-9A6C-F403D06C02F3";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

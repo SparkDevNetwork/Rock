@@ -72,6 +72,10 @@
     <Compile Include="Migrations\202302072059567_AddSystemPhoneNumberModel.designer.cs">
       <DependentUpon>202302072059567_AddSystemPhoneNumberModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202302072257354_AddShortTermServingProjects.cs" />
+    <Compile Include="Migrations\202302072257354_AddShortTermServingProjects.designer.cs">
+      <DependentUpon>202302072257354_AddShortTermServingProjects.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1499,6 +1503,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202302072059567_AddSystemPhoneNumberModel.resx">
       <DependentUpon>202302072059567_AddSystemPhoneNumberModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302072257354_AddShortTermServingProjects.resx">
+      <DependentUpon>202302072257354_AddShortTermServingProjects.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="input-group-btn" :class="{ open: expanded }">
-        <button class="btn btn-default dropdown-toggle" type="button" @click.prevent="expanded = !expanded">{{ internalValue }}&nbsp;<span class="caret"></span></button>
+        <button class="btn btn-default dropdown-toggle" type="button" @click.prevent="expanded = !expanded">{{ selectedText }}&nbsp;<span class="caret"></span></button>
         <TransitionVerticalCollapse>
             <ul class="dropdown-menu" v-show="expanded">
                 <li v-for="(item, index) in items" :key="item?.value ?? index"><a href="#" @click.prevent="select(item.value ?? '')">{{ item.text }}</a></li>
@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse";
@@ -36,6 +36,10 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const expanded = ref(false);
+
+    const selectedText = computed((): string => {
+        return props.items?.find((i: ListItemBag) => i.value === internalValue.value)?.text || "";
+    });
 
     function select(value: string): void {
         internalValue.value = value;

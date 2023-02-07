@@ -1394,5 +1394,19 @@ namespace Rock.SystemGuid
         public const string PERSON_ETHNICITY_NOT_HISPANIC_OR_LATINO = "2D1EF4CF-19E5-46BC-B4B1-591CFF57E0D8";
 
         #endregion
+
+        #region Project Type
+
+        /// <summary>
+        /// Project Type - In-Person
+        /// </summary>
+        public const string PROJECT_TYPE_IN_PERSON = "FF3F0C5C-9775-4A09-9CCF-94902DB99BF6";
+
+        /// <summary>
+        /// Project Type = Project Due
+        /// </summary>
+        public const string PROJECT_TYPE_PROJECT_DUE = "C999D489-5B8F-4892-BCC3-90DFFBC524F5";
+
+        #endregion
     }
 }

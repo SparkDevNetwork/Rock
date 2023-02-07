@@ -1,0 +1,494 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen" title="Sign-Up Finder Settings" :saveText="saveButtonText" @save="onSave">
+
+        <Alert v-if="errorMessage" alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Layout / Initial Page Load</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="hideOvercapacityProjects"
+                                  label="Hide Overcapacity Projects"
+                                  help="Determines if projects that are full should be shown." />
+                        <CheckBox v-model="loadResultsOnInitialPageLoad"
+                                  label="Load Results on Initial Page Load"
+                                  help="When enabled the group finder will load with all configured groups (no filters enabled)." />
+                    </div>
+                    <div class="col-md-6">
+                        <RadioButtonList v-model="displayProjectFiltersAs"
+                                         label="Display Project Filters As"
+                                         help="Determines if the project filters should be show as checkboxes or multi-select dropdowns."
+                                         :items="displayProjectFiltersAsItems"
+                                         :horizontal="true"
+                                         rules="required" />
+                        <DropDownList v-model="filterColumns"
+                                      label="Filter Columns"
+                                      help="The number of columns the filters should be displayed as."
+                                      :items="filterColumnsItems"
+                                      :showBlankItem="false"
+                                      rules="required" />
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Project Filters</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <GroupTypePicker v-model="projectTypes"
+                                         label="Project Types"
+                                         help="Select the sign-up project group types that should be considered for the search."
+                                         :groupTypes="[...availableProjectTypeGuids]"
+                                         :multiple="true"
+                                         rules="required"
+                                         @update:modelValue="onProjectTypesUpdated" />
+                        <TextBox v-model="projectTypeFilterLabel"
+                                 label="Project Type Filter Label"
+                                 help="The label to use for the project type filter."
+                                 rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBoxList v-model="displayAttributeFilters"
+                                      label="Display Attribute Filters"
+                                      help="The group attributes that should be available for an individual to filter the results by."
+                                      :items="availableDisplayAttributeFilters" />
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget v-if="displayCampusFilterSettings" :isDefaultOpen="false">
+                <template #header>Campus Filters</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="displayCampusFilter"
+                                  label="Display Campus Filter"
+                                  help="Determines if the campus filter should be shown." />
+                        <CheckBox v-model="enableCampusContext"
+                                  label="Enable Campus Context"
+                                  help="If the page has a campus context, its value will be used as a filter." />
+                    </div>
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="campusTypes"
+                                            label="Campus Types"
+                                            help="The types of campuses to include in the campus list."
+                                            :definedTypeGuid="DefinedType.CampusType"
+                                            :multiple="true" />
+                        <DefinedValuePicker v-model="campusStatuses"
+                                            label="Campus Statuses"
+                                            help="The statuses of the campuses to include in the campus list."
+                                            :definedTypeGuid="DefinedType.CampusStatus"
+                                            :multiple="true" />
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Schedule Filters</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="displayNamedScheduleFilter"
+                                  label="Display Named Schedule Filter"
+                                  help="When enabled a list of named schedules will be show as a filter." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="namedScheduleFilterLabel"
+                                 label="Named Schedule Filter Label"
+                                 help="The label to use for the named schedule filter."
+                                 rules="required" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        &nbsp;
+                    </div>
+                    <div class="col-md-6">
+                        <CategoryPicker v-model="rootScheduleCategory"
+                                        label="Root Schedule Category"
+                                        help="When displaying the named schedule filter this will serve to filter which named schedules to show. Only direct descendants of this root schedule category will be displayed."
+                                        :entityTypeGuid="EntityType.Schedule"
+                                        :securityGrantToken="securityGrantToken" />
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Location Filters</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="displayLocationSort"
+                                  label="Display Location Sort"
+                                  help="Determines if the location sort field should be shown." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="locationSortLabel"
+                                 label="Location Sort Label"
+                                 help="The label to use for the location sort filter."
+                                 rules="required" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="displayLocationRangeFilter"
+                                  label="Display Location Range Filter"
+                                  help="When enabled a filter will be shown to limit results to a specified number of miles from the location selected or their mailing address if logged in. If the Location Sort entry is not enabled to be shown and the individual is not logged in then this filter will not be shown, even if enabled, as we will not be able to honor the filter." />
+                    </div>
+                    <div class="col-md-6">
+                        &nbsp;
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="false">
+                <template #header>Additional Filters</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="displayDateRange"
+                                  label="Display Date Range"
+                                  help="When enabled, individuals would be able to filter the results by projects occurring inside the provided date range." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="displaySlotsAvailableFilter"
+                                  label="Display Slots Available Filter"
+                                  help='When enabled allows the individual to find projects with "at least" or "no more than" the provided spots available.' />
+                    </div>
+                </div>
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Lava</template>
+                <CodeEditor v-model="resultsLavaTemplate"
+                            label="Results Lava Template"
+                            help="The Lava template to show with the results of the search."
+                            mode="lava"
+                            rules="required" />
+                <CodeEditor v-model="resultsHeaderLavaTemplate"
+                            label="Results Header Lava Template"
+                            help="The Lava Template to use to show the results header."
+                            mode="lava" />
+            </PanelWidget>
+
+            <PanelWidget :isDefaultOpen="true">
+                <template #header>Linked Pages</template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="projectDetailPage"
+                                    label="Project Detail Page"
+                                    help="The page reference to pass to the Lava template for the details of the project."
+                                    rules="required"
+                                    :promptForPageRoute="true"
+                                    :securityGrantToken="securityGrantToken" />
+                    </div>
+                    <div class="col-md-6">
+                        <PagePicker v-model="registrationPage"
+                                    label="Registration Page"
+                                    help="The page reference to pass to the Lava template for the registration page."
+                                    rules="required"
+                                    :promptForPageRoute="true"
+                                    :securityGrantToken="securityGrantToken" />
+                    </div>
+                </div>
+            </PanelWidget>
+
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
+    import Modal from "@Obsidian/Controls/modal";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import PanelWidget from "@Obsidian/Controls/panelWidget";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { SignUpFinderCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderCustomSettingsBag";
+    import { SignUpFinderCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderCustomSettingsOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    // The items that can be picked from the "Display Project Filters As" list.
+    const displayProjectFiltersAsItems: ListItemBag[] = [
+        {
+            value: "Checkboxes",
+            text: "Checkboxes",
+        },
+        {
+            value: "MultiSelectDropDown",
+            text: "Multi-Select Dropdown"
+        }
+    ];
+
+    // The items that can be picked from the "Filter Columns" list.
+    const filterColumnsItems: ListItemBag[] = [
+        {
+            value: "1",
+            text: "1"
+        },
+        {
+            value: "2",
+            text: "2"
+        },
+        {
+            value: "3",
+            text: "3"
+        },
+        {
+            value: "4",
+            text: "4"
+        }
+    ];
+
+    // #region Values
+
+    const errorMessage = ref("");
+
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    // Selected values - Layout / Initial Page Load.
+    const hideOvercapacityProjects = ref(false);
+    const loadResultsOnInitialPageLoad = ref(false);
+    const displayProjectFiltersAs = ref("");
+    const filterColumns = ref("");
+
+    // Selected values - Project Filters.
+    const projectTypes = ref<ListItemBag[]>([]);
+    const projectTypeFilterLabel = ref("");
+    const displayAttributeFilters = ref<string[]>([]);
+
+    // Selected values - Campus Filters.
+    const displayCampusFilterSettings = ref(false);
+    const displayCampusFilter = ref(false);
+    const enableCampusContext = ref(false);
+    const campusTypes = ref<ListItemBag[]>([]);
+    const campusStatuses = ref<ListItemBag[]>([]);
+
+    // Selected values - Schedule Filters.
+    const displayNamedScheduleFilter = ref(false);
+    const namedScheduleFilterLabel = ref("");
+    const rootScheduleCategory = ref<ListItemBag | null>(null);
+
+    // Selected values - Location Filters.
+    const displayLocationSort = ref(false);
+    const locationSortLabel = ref("");
+    const displayLocationRangeFilter = ref(false);
+
+    // Selected values - Additional Filters.
+    const displayDateRange = ref(false);
+    const displaySlotsAvailableFilter = ref(false);
+
+    // Selected values - Lava.
+    const resultsLavaTemplate = ref("");
+    const resultsHeaderLavaTemplate = ref("");
+
+    // Selected values - Linked Pages.
+    const projectDetailPage = ref<PageRouteValueBag | null>(null);
+    const registrationPage = ref<PageRouteValueBag | null>(null);
+
+    // Available options for controls.
+    const availableProjectTypeGuids = ref<Guid[]>([]);
+    const availableDisplayAttributeFilters = ref<ListItemBag[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const securityGrantToken = computed((): string | null => {
+        return securityGrant.token.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        const result = await invokeBlockAction<CustomSettingsBox<SignUpFinderCustomSettingsBag, SignUpFinderCustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            // Load values - Layout / Initial Page Load.
+            hideOvercapacityProjects.value = result.data.settings.hideOvercapacityProjects;
+            loadResultsOnInitialPageLoad.value = result.data.settings.loadResultsOnInitialPageLoad;
+            displayProjectFiltersAs.value = result.data.settings.displayProjectFiltersAs ?? "";
+            filterColumns.value = result.data.settings.filterColumns.toString();
+
+            // Load values - Project Filters.
+            projectTypes.value = result.data.settings.projectTypes ?? [];
+            projectTypeFilterLabel.value = result.data.settings.projectTypeFilterLabel ?? "";
+            displayAttributeFilters.value = result.data.settings.displayAttributeFilters ?? [];
+
+            // Load values - Campus Filters.
+            displayCampusFilterSettings.value = result.data.settings.displayCampusFilterSettings;
+            displayCampusFilter.value = result.data.settings.displayCampusFilter;
+            enableCampusContext.value = result.data.settings.enableCampusContext;
+            campusTypes.value = result.data.settings.campusTypes ?? [];
+            campusStatuses.value = result.data.settings.campusStatuses ?? [];
+
+            // Load values - Schedule Filters.
+            displayNamedScheduleFilter.value = result.data.settings.displayNamedScheduleFilter;
+            namedScheduleFilterLabel.value = result.data.settings.namedScheduleFilterLabel ?? "";
+            rootScheduleCategory.value = result.data.settings.rootScheduleCategory ?? null;
+
+            // Load values - Location Filters.
+            displayLocationSort.value = result.data.settings.displayLocationSort;
+            locationSortLabel.value = result.data.settings.locationSortLabel ?? "";
+            displayLocationRangeFilter.value = result.data.settings.displayLocationRangeFilter;
+
+            // Load values - Additional Filters.
+            displayDateRange.value = result.data.settings.displayDateRange;
+            displaySlotsAvailableFilter.value = result.data.settings.displaySlotsAvailableFilter;
+
+            // Load values - Lava.
+            resultsLavaTemplate.value = result.data.settings.resultsLavaTemplate ?? "";
+            resultsHeaderLavaTemplate.value = result.data.settings.resultsHeaderLavaTemplate ?? "";
+
+            // Load values - Linked Pages.
+            projectDetailPage.value = result.data.settings.projectDetailPage ?? null;
+            registrationPage.value = result.data.settings.registrationPage ?? null;
+
+            // Load any additional information required by the UI to paint the custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+            availableProjectTypeGuids.value = result.data.options.availableProjectTypeGuids ?? [];
+            availableDisplayAttributeFilters.value = result.data.options.availableDisplayAttributeFilters ?? [];
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Gets the updated, available display attribute filters, based on the currently-selected project type(s).
+     */
+    async function onProjectTypesUpdated(): Promise<void> {
+        // Get the currently-selected project type guids and pass them to the server.
+        const selectedProjectTypeGuidStrings = projectTypes.value.map(pt => pt.value) ?? [];
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetUpdatedDisplayAttributeFilters", { selectedProjectTypeGuidStrings });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unknown error when trying to load updated display attribute filters.";
+            return;
+        }
+
+        // Update the available filters and remove any currently-selected filters that are no longer available.
+        availableDisplayAttributeFilters.value = result.data ?? [];
+        displayAttributeFilters.value = [
+            ...displayAttributeFilters.value.filter(
+                (selected: string) => availableDisplayAttributeFilters.value.some(
+                    (available: ListItemBag) => available.value === selected
+                )
+            )
+        ];
+    }
+
+    /**
+     * Saves the block settings.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<SignUpFinderCustomSettingsBag, SignUpFinderCustomSettingsOptionsBag> = {};
+
+        // Save values - Layout / Initial Page Load.
+        setCustomSettingsBoxValue(box, "hideOvercapacityProjects", hideOvercapacityProjects.value);
+        setCustomSettingsBoxValue(box, "loadResultsOnInitialPageLoad", loadResultsOnInitialPageLoad.value);
+        setCustomSettingsBoxValue(box, "displayProjectFiltersAs", displayProjectFiltersAs.value);
+        setCustomSettingsBoxValue(box, "filterColumns", +filterColumns.value);
+
+        // Save values - Project Filters.
+        setCustomSettingsBoxValue(box, "projectTypes", projectTypes.value);
+        setCustomSettingsBoxValue(box, "projectTypeFilterLabel", projectTypeFilterLabel.value);
+        setCustomSettingsBoxValue(box, "displayAttributeFilters", displayAttributeFilters.value);
+
+        // Save values - Campus Filters.
+        setCustomSettingsBoxValue(box, "displayCampusFilter", displayCampusFilter.value);
+        setCustomSettingsBoxValue(box, "enableCampusContext", enableCampusContext.value);
+        setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
+        setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
+
+        // Save values - Schedule Filters.
+        setCustomSettingsBoxValue(box, "displayNamedScheduleFilter", displayNamedScheduleFilter.value);
+        setCustomSettingsBoxValue(box, "namedScheduleFilterLabel", namedScheduleFilterLabel.value);
+        setCustomSettingsBoxValue(box, "rootScheduleCategory", rootScheduleCategory.value);
+
+        // Save values - Location Filters.
+        setCustomSettingsBoxValue(box, "displayLocationSort", displayLocationSort.value);
+        setCustomSettingsBoxValue(box, "locationSortLabel", locationSortLabel.value);
+        setCustomSettingsBoxValue(box, "displayLocationRangeFilter", displayLocationRangeFilter.value);
+
+        // Save values - Additional Filters.
+        setCustomSettingsBoxValue(box, "displayDateRange", displayDateRange.value);
+        setCustomSettingsBoxValue(box, "displaySlotsAvailableFilter", displaySlotsAvailableFilter.value);
+
+        // Save values - Lava.
+        setCustomSettingsBoxValue(box, "resultsLavaTemplate", resultsLavaTemplate.value);
+        setCustomSettingsBoxValue(box, "resultsHeaderLavaTemplate", resultsHeaderLavaTemplate.value);
+
+        // Save values - Linked Pages.
+        setCustomSettingsBoxValue(box, "projectDetailPage", projectDetailPage.value);
+        setCustomSettingsBoxValue(box, "registrationPage", registrationPage.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    startLoading();
+</script>

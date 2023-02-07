@@ -1027,5 +1027,14 @@ namespace Rock.SystemGuid
         /// The category treeview search results
         /// </summary>
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
+
+        #region Sign-Up Group (GroupType) Attributes
+
+        /// <summary>
+        /// The Sign-up Group - Group Type's project type attribute
+        /// </summary>
+        public const string GROUPTYPE_SIGNUP_GROUP_PROJECT_TYPE = "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09";
+
+        #endregion
     }
 }

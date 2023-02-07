@@ -236,5 +236,14 @@ namespace Rock.SystemGuid
         /// Gets the template guid for Reminder Notifications.
         /// </summary>
         public const string REMINDER_NOTIFICATION = "7899958C-BC2F-499E-A5CC-11DE1EF8DF20";
+
+        #region Sign-Up Group
+
+        /// <summary>
+        /// Gets the template guid for Sign-Up Group Reminders.
+        /// </summary>
+        public const string SIGNUP_GROUP_REMINDER = "530ADF1E-C2D9-4A67-BADF-5EF65222CA7E";
+
+        #endregion
     }
 }

@@ -51,6 +51,8 @@ export const GroupType = {
     GrouptypeServices: "235BAE2B-5760-4763-AADF-3938F34BA100",
     /** Serving Team group type guid */
     GrouptypeServingTeam: "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4",
+    /** Sign-up Group group type guid */
+    GrouptypeSignupGroup: "499B1367-06B3-4538-9D56-56D53F55DCB1",
     /** Small Group group type guid */
     GrouptypeSmallGroup: "50FCFB30-F51A-49DF-86F4-2B176EA1820B",
     /** Small Group Section group type guid */

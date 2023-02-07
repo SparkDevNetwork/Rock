@@ -104,6 +104,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Engagement\" />
+    <Folder Include="Framework\Enums\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\Enums\Blocks\Security\" />
     <Folder Include="Framework\Enums\Blocks\Security\AccountEntry\" />
     <Folder Include="Framework\Enums\Blocks\Security\Login\" />
@@ -151,6 +153,10 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
@@ -286,6 +292,7 @@
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\AccountEntry\accountEntryStep.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\loginMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\passwordlessLoginStep.ts" />
@@ -588,6 +595,16 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderSelectedFiltersBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegistrantBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramEdgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
