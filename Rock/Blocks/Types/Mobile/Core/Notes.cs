@@ -70,7 +70,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Key = AttributeKey.NoteDisplayMode,
         Order = 3 )]
 
-    // BEFORE MERGE: Update the Guid's for migration
+    // bc todo BEFORE MERGE: Update the Guid's for migration
     [BlockTemplateField( "Notes Template",
         Description = "The template to use when rendering the notes. Provided with a 'Notes' merge field, among some others (see documentation).",
         TemplateBlockValueGuid = "27B8A7A5-C54F-4A67-AB91-C48A35525CCC",
@@ -166,17 +166,25 @@ namespace Rock.Blocks.Types.Mobile.Core
         protected Guid? DefaultNoteImage => GetAttributeValue( AttributeKey.DefaultNoteImage ).AsGuidOrNull();
 
         /// <summary>
-        /// 
+        /// Gets whether or not to use the template for the notes block.
         /// </summary>
+        /// <value>
+        /// The value that indicates whether or not we should use the template.
+        /// </value>
         protected bool UseTemplate => GetAttributeValue( AttributeKey.NoteDisplayMode ).AsBoolean();
 
         /// <summary>
-        /// 
+        /// The template to use if <see cref="UseTemplate" /> is enabled.
         /// </summary>
+        /// <value>
+        /// The XAML template to parse on the shell.
+        /// </value>
         protected string NotesTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
 
         /// <summary>
-        /// 
+        /// When in template mode, this is the amount of notes retrieved, when in List mode, this
+        /// is used to indicate the amount of notes you start with. When in list mode, this value has
+        /// a minimum of 12 (no matter what is set) on the shell.
         /// </summary>
         protected int PageLoadSize => GetAttributeValue( AttributeKey.PageLoadSize ).AsInteger();
 
@@ -332,6 +340,14 @@ namespace Rock.Blocks.Types.Mobile.Core
             };
         }
 
+        /// <summary>
+        /// Gets the viewable notes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="parentNoteGuid">The parent note unique identifier.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="count">The count.</param>
+        /// <returns>List&lt;Note&gt;.</returns>
         private List<Note> GetViewableNotes( RockContext rockContext, Guid? parentNoteGuid, int startIndex, int count )
         {
             var noteService = new NoteService( rockContext );
@@ -371,6 +387,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 .Take( count )
                 .ToList();
         }
+
         /// <summary>
         /// Gets the notes for the entity.
         /// </summary>
@@ -443,6 +460,11 @@ namespace Rock.Blocks.Types.Mobile.Core
             return ActionOk( notes );
         }
 
+        /// <summary>
+        /// Gets a singular note.
+        /// </summary>
+        /// <param name="noteGuid">The note unique identifier.</param>
+        /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult GetNote( Guid noteGuid )
         {
@@ -629,6 +651,11 @@ namespace Rock.Blocks.Types.Mobile.Core
             }
         }
 
+        /// <summary>
+        /// Gets the notes template.
+        /// </summary>
+        /// <param name="parentNoteGuid">The parent note unique identifier.</param>
+        /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult GetNotesTemplate( Guid? parentNoteGuid )
         {
