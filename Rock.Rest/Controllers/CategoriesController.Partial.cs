@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -526,6 +526,10 @@ namespace Rock.Rest.Controllers
                         else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsGuidOrNull(), typeof( Guid? ) );
+                        }
+                        else if ( itemFilterPropertyNameExpression.Type == typeof( bool? ) || itemFilterPropertyNameExpression.Type == typeof( bool ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsBooleanOrNull(), typeof( bool? ) );
                         }
                         else
                         {

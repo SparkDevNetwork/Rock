@@ -419,8 +419,11 @@ namespace Rock.Field.Types
                 if ( cblSelectableValues != null )
                 {
                     var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
 
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
                     cblSelectableValues.Visible = definedValues?.Any() ?? false;
@@ -495,7 +498,11 @@ namespace Rock.Field.Types
 
                 if ( cblSelectableValues != null )
                 {
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var includeInactive = cbIncludeInactive?.Checked ?? false;
+
+                    var definedValues = includeInactive ?
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } ) :
+                        DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Where( v => v.IsActive ).Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
 
@@ -578,13 +585,17 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
+                bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+                    : false;
+
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
                     var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
-                        names.Add( definedValue.Value );
+                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
                     }
                 }
 
@@ -1050,6 +1061,36 @@ namespace Rock.Field.Types
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
             var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
+        }
+
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 2 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
+                    Value = values[1]
+                };
+            }
+            else if ( values?.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.Contains,
+                    Value = values[0]
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
         }
 
         /// <summary>

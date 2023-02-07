@@ -29,12 +29,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * that could be added to the collection.
  */
 export type AvailableContentSourceBag = {
+    /** Gets or sets the attributes that can be selected on the potential source. */
+    attributes?: ListItemBag[] | null;
+
     /** Gets or sets the unique identifier of the potential source. */
     guid?: Guid | null;
 
     /** Gets or sets the friendly name of the potential source. */
     name?: string | null;
-
-    /** Gets or sets the attributes that can be selected on the potential source. */
-    attributes?: ListItemBag[] | null;
 };

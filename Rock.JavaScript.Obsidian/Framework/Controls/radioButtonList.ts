@@ -96,6 +96,10 @@ export default defineComponent({
             return items;
         });
 
+        function isItemDisabled(item: ListItemBag): boolean {
+            return item.category === "disabled";
+        }
+
         const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
             const key = (item.value ?? "").replace(" ", "-");
 
@@ -134,7 +138,8 @@ export default defineComponent({
             actualItems,
             containerClasses,
             getItemUniqueId,
-            internalValue
+            internalValue,
+            isItemDisabled
         };
     },
 
@@ -145,14 +150,14 @@ export default defineComponent({
             <span>
                 <template v-if="horizontal">
                     <label v-for="item in actualItems" class="radio-inline" :for="getItemUniqueId(uniqueId, item)" :key="item.value">
-                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" :disabled="isItemDisabled(item)" />
                         <span class="label-text">{{item.text}}</span>
                     </label>
                 </template>
                 <template v-else>
                     <div v-for="item in actualItems" class="radio" :key="item.value">
                         <label :for="getItemUniqueId(uniqueId, item)">
-                            <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                            <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" :disabled="isItemDisabled(item)" />
                             <span class="label-text">{{item.text}}</span>
                         </label>
                     </div>

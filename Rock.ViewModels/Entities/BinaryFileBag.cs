@@ -34,6 +34,14 @@ namespace Rock.ViewModels.Entities
     public partial class BinaryFileBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets additional information for the file.
+        /// </summary>
+        /// <value>
+        /// The additional information.
+        /// </value>
+        public string AdditionalInformation { get; set; }
+
+        /// <summary>
         /// Gets or sets the id of the Rock.Model.BinaryFileType that this file belongs to.
         /// </summary>
         /// <value>
@@ -104,6 +112,22 @@ namespace Rock.ViewModels.Entities
         /// A System.String representing the Mime Type for the file.
         /// </value>
         public string MimeType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent Entity ID to determine security access.
+        /// </summary>
+        /// <value>
+        /// The parent entity identifier.
+        /// </value>
+        public int? ParentEntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent EntityType ID to determine security access.
+        /// </summary>
+        /// <value>
+        /// The parent entity type identifier.
+        /// </value>
+        public int? ParentEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a path to the file that is understandable by the storage provider.

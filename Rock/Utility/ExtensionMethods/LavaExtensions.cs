@@ -18,6 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -210,7 +211,12 @@ namespace Rock
                         {
                             object propValue = null;
 
-                            var propType = entityType.GetProperty( key )?.PropertyType;
+                            // There may be multiple inherited properties with the same name but different return types, so select the first match.
+                            var propType = entityType.GetProperties()
+                                .Where( x => x.Name == key )
+                                .Select( x => x.PropertyType )
+                                .FirstOrDefault();
+
                             if ( propType?.Name == "ICollection`1" )
                             {
                                 // if the property type is an ICollection, get the underlying query and just fetch one for an example (just in case there are 1000s of records)
@@ -614,8 +620,13 @@ namespace Rock
 
                     if ( engine != null )
                     {
-                        var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
-                        var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
+                        var isCached = false;
+                        string cacheKey = null;
+                        if ( engine.TemplateCacheService != null )
+                        {
+                            cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
+                            isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
+                        }
 
                         if ( !isCached )
                         {
@@ -643,10 +654,12 @@ namespace Rock
                                 // Log the exception and continue, because the final render will be performed by RockLiquid.
                                 ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ), System.Web.HttpContext.Current );
 
-                                // Add a placeholder to prevent this invalid template from being recompiled.
-                                var emptyTemplate = engine.ParseTemplate( string.Empty ).Template;
-
-                                engine.TemplateCacheService.AddTemplate( emptyTemplate, cacheKey );
+                                if ( engine.TemplateCacheService != null )
+                                {
+                                    // Add a placeholder to prevent this invalid template from being recompiled.
+                                    var emptyTemplate = engine.ParseTemplate( string.Empty ).Template;
+                                    engine.TemplateCacheService.AddTemplate( emptyTemplate, cacheKey );
+                                }
                             }
                         }
                     }
@@ -704,36 +717,52 @@ namespace Rock
         [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-            Template template = GetTemplate( content );
-
-            template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
-            template.InstanceAssigns.AddOrReplace( "CurrentPerson", currentPersonOverride );
+            var template = GetTemplate( content );
 
             string result;
+            List<Exception> errors;
 
-            if ( encodeStrings )
+            var renderParameters = new RenderParameters();
+            renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
+            renderParameters.Registers = new Hash();
+
+            if ( string.IsNullOrWhiteSpace( enabledLavaCommands ) )
             {
-                // if encodeStrings = true, we want any string values to be XML Encoded ( 
-                RenderParameters renderParameters = new RenderParameters();
-                renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
-                renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
-                renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
-                result = template.Render( renderParameters );
+                if ( template.Registers.ContainsKey( "EnabledCommands" ) )
+                {
+                    renderParameters.Registers.AddOrReplace( "EnabledCommands", template.Registers["EnabledCommands"].ToStringSafe() );
+                }
             }
             else
             {
-                result = template.Render( Hash.FromDictionary( mergeObjects ) );
+                renderParameters.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
+            }
+            if ( currentPersonOverride != null )
+            {
+                renderParameters.Registers.AddOrReplace( "CurrentPerson", currentPersonOverride );
             }
 
-            if ( throwExceptionOnErrors && template.Errors.Any() )
+            if ( encodeStrings )
             {
-                if ( template.Errors.Count == 1 )
+                renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
+                renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
+            }
+
+            using ( TextWriter writer = new StringWriter() )
+            {
+                template.Render( writer, renderParameters, out errors );
+                result = writer.ToString();
+            }
+
+            if ( throwExceptionOnErrors && errors.Any() )
+            {
+                if ( errors.Count == 1 )
                 {
-                    throw template.Errors[0];
+                    throw errors[0];
                 }
                 else
                 {
-                    throw new AggregateException( template.Errors );
+                    throw new AggregateException( errors );
                 }
             }
 
@@ -885,6 +914,19 @@ namespace Rock
         public static bool IsLavaTemplate( this string content )
         {
             return LavaHelper.IsLavaTemplate( content );
+        }
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// This is a much stricter check as it specifically looks for {{...}}, {%...%}
+        /// and {[...]}. This should reduce the risk of false positives at the expense
+        /// of a slightly longer check time.
+        /// </summary>
+        /// <param name="content">The content to be checked.</param>
+        /// <returns><c>true</c> if the content contains lava tags; otherwise <c>false</c>.</returns>
+        internal static bool IsStrictLavaTemplate( this string content )
+        {
+            return LavaHelper.IsStrictLavaTemplate( content );
         }
 
         #endregion Lava Extensions

@@ -378,6 +378,7 @@ namespace Rock.Mobile
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
+                InteractiveExperiencePageGuid = additionalSettings.InteractiveExperiencePageId.HasValue ? PageCache.Get( additionalSettings.InteractiveExperiencePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
@@ -391,10 +392,12 @@ namespace Rock.Mobile
             // Setup the appearance settings.
             //
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
+            package.AppearanceSettings.IOSEnableNavbarTransparency = additionalSettings.IOSEnableBarTransparency;
+            package.AppearanceSettings.IOSNavbarBlurStyle = additionalSettings.IOSBarBlurStyle;
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
-            package.AppearanceSettings.ToastXaml = additionalSettings.ToastXaml;
+
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;

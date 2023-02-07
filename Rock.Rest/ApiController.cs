@@ -570,12 +570,7 @@ namespace Rock.Rest
 
             ValidateDataView( dataView );
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
+            var qryGroupsInDataView = dataView.GetQuery() as IQueryable<T>;
             qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
 
             return qryGroupsInDataView.Any();

@@ -25,7 +25,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+
 using ImageSafeInterop;
+
 using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Wpf.Controls;
 
@@ -844,7 +846,20 @@ namespace Rock.Apps.CheckScannerUtility
                         remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
                     }
 
-                    char[] separatorSymbols = new char[] { ( char ) RangerE13BMicrSymbols.E13B_TransitSymbol, ( char ) RangerE13BMicrSymbols.E13B_OnUsSymbol, ( char ) RangerE13BMicrSymbols.E13B_AmountSymbol };
+                    /* 10-27-2022 MDP
+                      
+                    The following code parsing code has been working successfully for many years,   except in rare cases where a bank
+                    uses a space ' ' as a separator between Account Number and Check Number. So on 10-27-2022 we added ' ' as a
+                    separator in our parsing logic. It is possible (but unlikely), that a bank could put a space within the account
+                    number( and that a space should be ignored), but we think that be a strange choice for a bank and unlikely.
+                     
+                    */
+
+                    char[] separatorSymbols = new char[] {
+                        ( char ) RangerE13BMicrSymbols.E13B_TransitSymbol,
+                        ( char ) RangerE13BMicrSymbols.E13B_OnUsSymbol,
+                        ( char ) RangerE13BMicrSymbols.E13B_AmountSymbol,
+                        ' ' };
 
                     // the last 'On-Us' symbol ('c') signifies the end of the account number
                     int lastOnUsPosition = remainingMicr.LastIndexOf( ( char ) RangerE13BMicrSymbols.E13B_OnUsSymbol );

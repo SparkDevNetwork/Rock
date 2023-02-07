@@ -71,6 +71,15 @@ namespace Rock.Model
                     }
                 }
 
+                // Check if we are newly added or updated and the Value property modified.
+                var valueWasModified = Entry.State == EntityContextState.Added
+                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
+
+                if ( valueWasModified )
+                {
+                    Entity.UpdateValueAsProperties( rockContext );
+                }
+
                 base.PreSave();
             }
 

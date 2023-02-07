@@ -25,14 +25,29 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** InteractionSessionLocation View Model */
 export type InteractionSessionLocationBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the country code. */
     countryCode?: string | null;
 
     /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the country. */
     countryValueId?: number | null;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the GeoPoint (GeoLocation) for the session */
     geoPoint?: unknown;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the IP address of the request. */
     ipAddress?: string | null;
@@ -46,6 +61,12 @@ export type InteractionSessionLocationBag = {
     /** Gets or sets the lookup datetime. */
     lookupDateTime?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the postal code. */
     postalCode?: string | null;
 
@@ -54,25 +75,4 @@ export type InteractionSessionLocationBag = {
 
     /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the region. */
     regionValueId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

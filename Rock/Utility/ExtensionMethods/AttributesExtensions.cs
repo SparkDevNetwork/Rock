@@ -184,12 +184,13 @@ namespace Rock
         /// <param name="viewModel">The view model to be populated.</param>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         [RockInternal]
-        public static void LoadAttributesAndValuesForPublicView( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static void LoadAttributesAndValuesForPublicView( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
-            viewModel.Attributes = GetPublicAttributesForView( entity, currentPerson, enforceSecurity );
-            viewModel.AttributeValues = GetPublicAttributeValuesForView( entity, currentPerson, enforceSecurity );
+            viewModel.Attributes = GetPublicAttributesForView( entity, currentPerson, enforceSecurity, attributeFilter );
+            viewModel.AttributeValues = GetPublicAttributeValuesForView( entity, currentPerson, enforceSecurity, attributeFilter );
         }
 
         /// <summary>
@@ -207,12 +208,13 @@ namespace Rock
         /// <param name="viewModel">The view model to be populated.</param>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         [RockInternal]
-        public static void LoadAttributesAndValuesForPublicEdit( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static void LoadAttributesAndValuesForPublicEdit( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
-            viewModel.Attributes = GetPublicAttributesForEdit( entity, currentPerson, enforceSecurity );
-            viewModel.AttributeValues = GetPublicAttributeValuesForEdit( entity, currentPerson, enforceSecurity );
+            viewModel.Attributes = GetPublicAttributesForEdit( entity, currentPerson, enforceSecurity, attributeFilter );
+            viewModel.AttributeValues = GetPublicAttributeValuesForEdit( entity, currentPerson, enforceSecurity, attributeFilter );
         }
 
         /// <summary>
@@ -229,10 +231,11 @@ namespace Rock
         /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         /// <returns>A dictionary that represents the attribute values.</returns>
         [RockInternal]
-        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null )
             {
@@ -246,6 +249,7 @@ namespace Rock
                     Attribute = a.Value
                 } )
                 .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, kvp => PublicAttributeHelper.GetPublicAttributeForView( kvp.Attribute, kvp.Value ) );
         }
 
@@ -263,10 +267,11 @@ namespace Rock
         /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         /// <returns>A dictionary that represents the attribute values.</returns>
         [RockInternal]
-        public static Dictionary<string, string> GetPublicAttributeValuesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, string> GetPublicAttributeValuesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null )
             {
@@ -280,6 +285,7 @@ namespace Rock
                     Attribute = a.Value
                 } )
                 .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, kvp => PublicAttributeHelper.GetPublicValueForView( kvp.Attribute, kvp.Value ) );
         }
 
@@ -297,10 +303,11 @@ namespace Rock
         /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         /// <returns>A dictionary that represents the attributes.</returns>
         [RockInternal]
-        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null )
             {
@@ -310,6 +317,7 @@ namespace Rock
             return entity.Attributes
                 .Select( a => a.Value )
                 .Where( a => !enforceSecurity || a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( a => attributeFilter == null || attributeFilter( a ) )
                 .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
         }
 
@@ -327,10 +335,11 @@ namespace Rock
         /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         /// <returns>A dictionary that represents the attribute values.</returns>
         [RockInternal]
-        public static Dictionary<string, string> GetPublicAttributeValuesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, string> GetPublicAttributeValuesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null )
             {
@@ -344,6 +353,7 @@ namespace Rock
                     Attribute = a.Value
                 } )
                 .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicEditValue( av.Attribute, av.Value ) );
         }
 
@@ -353,7 +363,7 @@ namespace Rock
         /// <remarks>
         ///     <para>
         ///         This should be used to handle values the client sent back after
-        ///         calling the <see cref="GetPublicAttributeValuesForEdit(IHasAttributes, Person, bool)"/>
+        ///         calling the <see cref="GetPublicAttributeValuesForEdit(IHasAttributes, Person, bool, Func{AttributeCache, bool})"/>
         ///         method. It handles conversion from custom data formats into the
         ///         proper values to be stored in the database.
         ///     </para>
@@ -367,9 +377,10 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="attributeValues">The attribute values.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
+        /// <param name="attributeFilter">If not <c>null</c> then this specifies a function to call to filter which attributes to include. This filtering will take place after the security check.</param>
         [RockInternal]
-        public static void SetPublicAttributeValues( this IHasAttributes entity, Dictionary<string, string> attributeValues, Person currentPerson, bool enforceSecurity = true )
+        public static void SetPublicAttributeValues( this IHasAttributes entity, Dictionary<string, string> attributeValues, Person currentPerson, bool enforceSecurity = true, Func<AttributeCache, bool> attributeFilter = null )
         {
             if ( entity == null || entity.Attributes == null || entity.AttributeValues == null )
             {
@@ -390,6 +401,11 @@ namespace Rock
                     continue;
                 }
 
+                if ( attributeFilter != null && !attributeFilter( attribute ) )
+                {
+                    continue;
+                }
+
                 var value = PublicAttributeHelper.GetPrivateValue( attribute, kvp.Value );
 
                 entity.SetAttributeValue( kvp.Key, value );
@@ -402,7 +418,7 @@ namespace Rock
         /// <remarks>
         ///     <para>
         ///         This should be used to handle values the client sent back after
-        ///         calling the <see cref="GetPublicAttributeValuesForEdit(IHasAttributes, Person, bool)"/>
+        ///         calling the <see cref="GetPublicAttributeValuesForEdit(IHasAttributes, Person, bool, Func{AttributeCache, bool})"/>
         ///         method. It handles conversion from custom data formats into the
         ///         proper values to be stored in the database.
         ///     </para>
@@ -417,7 +433,7 @@ namespace Rock
         /// <param name="key">The attribute key to set.</param>
         /// <param name="value">The value provided by the remote client.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <param name="enforceSecurity">If set to <c>true</c> then security will be enforced.</param>
         [RockInternal]
         public static void SetPublicAttributeValue( this IHasAttributes entity, string key, string value, Person currentPerson, bool enforceSecurity = true )
         {

@@ -133,6 +133,10 @@ namespace RockWeb.Blocks.Crm
                 // Register download buttons as PostBackControls since they are returning a File download
                 // Do this here because the postback control registration is lost after a partial postback and needs to be redone after a edit save/cancel.
                 RegisterDownloadButtonsAsPostBackControls();
+                if ( ddlAddEditDocumentType.SelectedIndex == 0 )
+                {
+                    ShowNotificationAndHideUploader();
+                }
             }
 
             base.OnLoad( e );
@@ -154,7 +158,6 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion Control Events
-
 
         #region Private Methods
 
@@ -234,6 +237,8 @@ namespace RockWeb.Blocks.Crm
             pnlList.Visible = true;
             hfDocumentId.Value = string.Empty;
             fuUploader.BinaryFileId = null;
+            fuUploader.ParentEntityTypeId = null;
+            fuUploader.ParentEntityId = null;
         }
 
         /// <summary>
@@ -461,6 +466,8 @@ namespace RockWeb.Blocks.Crm
                 tbDocumentName.Text = document.Name;
                 tbDescription.Text = document.Description;
                 fuUploader.BinaryFileId = document.BinaryFile.Id;
+                fuUploader.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT.AsGuid() );
+                fuUploader.ParentEntityId = document.Id;
             }
 
             pnlAddEdit.Visible = true;
@@ -515,7 +522,6 @@ namespace RockWeb.Blocks.Crm
 
         #endregion Grid Events
 
-
         #region Add/Edit Methods
 
         protected void btnSave_Click( object sender, EventArgs e )
@@ -546,6 +552,13 @@ namespace RockWeb.Blocks.Crm
                 document.SetBinaryFile( fuUploader.BinaryFileId.Value, rockContext );
 
                 rockContext.SaveChanges();
+
+                // Make sure the associated BinaryFile is using the Document Entity for security.
+                var binaryFile = new BinaryFileService( rockContext ).Get( fuUploader.BinaryFileId.Value );
+                binaryFile.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT );
+                binaryFile.ParentEntityId = document.Id;
+
+                rockContext.SaveChanges();
             }
 
             pnlAddEdit.Visible = false;
@@ -563,21 +576,26 @@ namespace RockWeb.Blocks.Crm
 
         protected void ddlAddEditDocumentType_SelectedIndexChanged( object sender, EventArgs e )
         {
-
-            if ( tbDocumentName.Text.IsNotNullOrWhiteSpace() || ddlAddEditDocumentType.SelectedIndex == 0 )
+            if ( tbDocumentName.Text.IsNotNullOrWhiteSpace() )
             {
                 // If there is already a name or nothing is selected then do do anything.
-                fuUploader.Visible = false;
-                nbSelectDocumentType.Visible = true;
+                if ( ddlAddEditDocumentType.SelectedIndex == 0 )
+                {
+                    ShowNotificationAndHideUploader();
+                }
+                else
+                {
+                    ShowUploaderAndHideNotification();
+                }
+
                 return;
             }
 
-            // Get the selected DocumentType from cache and update the BinaryFileTypeGuid in the FileUploader
+            // If there is already a name or nothing is selected check if is document type is selected before returning.
             var documentTypeCache = DocumentTypeCache.Get( ddlAddEditDocumentType.SelectedValueAsInt() ?? 0 );
             fuUploader.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).GetGuid( documentTypeCache.BinaryFileTypeId ).Value;
 
-            fuUploader.Visible = true;
-            nbSelectDocumentType.Visible = false;
+            ShowUploaderAndHideNotification();
 
             string template = documentTypeCache.DefaultDocumentNameTemplate;
             if ( template.IsNotNullOrWhiteSpace() )
@@ -587,9 +605,24 @@ namespace RockWeb.Blocks.Crm
                 tbDocumentName.Text = template.ResolveMergeFields( mergeFields );
             }
         }
+        /// <summary>
+        /// Shows the select document type notification and hides the image uploader control
+        /// </summary>
+        private void ShowNotificationAndHideUploader()
+        {
+            fuUploader.Visible = false;
+            nbSelectDocumentType.Visible = true;
+        }
+
+        /// <summary>
+        /// Shows the image uploader control and hides the select document type notification
+        /// </summary>
+        private void ShowUploaderAndHideNotification()
+        {
+            fuUploader.Visible = true;
+            nbSelectDocumentType.Visible = false;
+        }
 
         #endregion Add/Edit Methods
-
-
     }
 }

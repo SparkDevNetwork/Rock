@@ -26,24 +26,24 @@
  * the PersonPicker control.
  */
 export type PersonPickerSearchOptionsBag = {
-    /** Gets or sets the name. */
-    name?: string | null;
-
     /** Gets or sets the address. */
     address?: string | null;
 
-    /** Gets or sets the phone. */
-    phone?: string | null;
-
     /** Gets or sets the email. */
     email?: string | null;
-
-    /** Gets or sets a value indicating whether [include details]. */
-    includeDetails: boolean;
 
     /** Gets or sets a value indicating whether to include businesses in the results. */
     includeBusinesses: boolean;
 
     /** Gets or sets a value indicating whether to include deceased people in the results. */
     includeDeceased: boolean;
+
+    /** Gets or sets a value indicating whether [include details]. */
+    includeDetails: boolean;
+
+    /** Gets or sets the name. */
+    name?: string | null;
+
+    /** Gets or sets the phone. */
+    phone?: string | null;
 };

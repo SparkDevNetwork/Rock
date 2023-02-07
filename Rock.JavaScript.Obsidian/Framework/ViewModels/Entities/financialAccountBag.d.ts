@@ -28,11 +28,23 @@ export type FinancialAccountBag = {
     /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the FinancialAccountType for this FinancialAccount. */
     accountTypeValueId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the CampusId of the Rock.Model.Campus that this FinancialAccount is associated with. If this FinancialAccount is not
      * associated with a Rock.Model.Campus this property will be null.
      */
     campusId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the user defined description of the FinancialAccount. */
     description?: string | null;
@@ -46,6 +58,9 @@ export type FinancialAccountBag = {
     /** Gets or sets the General Ledger account code for this FinancialAccount. */
     glCode?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Image Id that can be used when displaying this Financial Account */
     imageBinaryFileId?: number | null;
 
@@ -57,6 +72,12 @@ export type FinancialAccountBag = {
 
     /** Gets or sets a flag indicating if transactions posted to this FinancialAccount are tax-deductible. */
     isTaxDeductible: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the (internal) Name of the FinancialAccount. This property is required. */
     name?: string | null;
@@ -84,25 +105,4 @@ export type FinancialAccountBag = {
 
     /** Gets or sets the URL which could be used to generate a link to a 'More Info' page */
     url?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

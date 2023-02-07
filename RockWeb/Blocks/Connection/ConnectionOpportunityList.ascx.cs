@@ -252,6 +252,7 @@ namespace RockWeb.Blocks.Connection
                     {
                     }
                 }
+
                 e.Value = string.Empty;
             }
             else
@@ -355,11 +356,16 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="GridReorderEventArgs" /> instance containing the event data.</param>
         protected void gConnectionOpportunities_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var rockContext = new RockContext();
-            var service = new ConnectionOpportunityService( rockContext );
-            var connectionOpportunities = service.Queryable().OrderBy( b => b.Order );
+            if ( _connectionType == null )
+            {
+                return;
+            }
 
-            service.Reorder( connectionOpportunities.ToList(), e.OldIndex, e.NewIndex );
+            var rockContext = new RockContext();
+
+            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+            var connectionOpportunities = connectionOpportunityService.Queryable().Where( o => o.ConnectionTypeId == _connectionType.Id ).OrderBy( o => o.Order ).ThenBy( o => o.Name );
+            connectionOpportunityService.Reorder( connectionOpportunities.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             BindConnectionOpportunitiesGrid();
@@ -454,7 +460,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -549,13 +555,9 @@ namespace RockWeb.Blocks.Connection
                 // Sort GridView by Order and then Name.
                 qry = qry.OrderBy( q => q.Order ).ThenBy( q => q.Name );
 
-                List<ConnectionOpportunity> connectionOpportunities = null;
-
-                connectionOpportunities = qry.OrderBy( q => q.Order ).ThenBy( q => q.Name ).ToList();
-                
                 // Only include opportunities that current person is allowed to view
                 var authorizedOpportunities = new List<ConnectionOpportunity>();
-                foreach ( var opportunity in connectionOpportunities )
+                foreach ( var opportunity in qry.ToList() )
                 {
                     if ( opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

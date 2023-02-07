@@ -12,7 +12,12 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlblPageGuid" runat="server" LabelType="Default"  />
+                    <button id="btnCopyToClipboard" runat="server"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
+                        class="btn btn-info btn-xs btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
                 </div>
             </div>
 
@@ -38,6 +43,9 @@
                     <fieldset class="mb-4">
                         <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                     </fieldset>
+
+                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+
                     <div class="actions">
                         <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:Button ID="btnSaveAndEdit" runat="server" Text="Save Continue Editing" CssClass="btn btn-link" OnClick="btnSaveAndEdit_Click" />

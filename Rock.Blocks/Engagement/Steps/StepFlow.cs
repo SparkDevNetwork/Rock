@@ -59,18 +59,32 @@ namespace Rock.Blocks.Engagement.Steps
         Order = 2 )]
 
     [IntegerField(
-        "Node Horizontal Spacing",
-        Key = AttributeKey.NodeHorizontalSpacing,
-        Description = "How many pixels wide should the flow paths be between the nodes?",
-        DefaultValue = "200",
+        "Chart Width",
+        Key = AttributeKey.ChartWidth,
+        Description = "How many pixels wide should the chart be?",
+        DefaultValue = "1200",
         Order = 3 )]
 
     [IntegerField(
         "Chart Height",
         Key = AttributeKey.ChartHeight,
-        Description = "How tall should the chart be (in pixels)?",
+        Description = "How many pixels tall should the chart be?",
         DefaultValue = "900",
         Order = 4 )]
+
+    [LavaField(
+        "Chart Footer Lava Template",
+        Key = AttributeKey.FooterLavaTemplate,
+        Description = "Format the labels for each legend item at the foot of the chart using Lava.",
+        DefaultValue = "<div class=\"flow-legend\">\n" +
+            "{% for stepItem in Steps %}\n" +
+            "    <div class=\"flow-key\">\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
+            "        <span>{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
+            "    </div>\n" +
+            "{% endfor %}\n" +
+            "</div>",
+        Order = 5 )]
 
     #endregion Block Attributes
 
@@ -82,8 +96,9 @@ namespace Rock.Blocks.Engagement.Steps
         {
             public const string NodeWidth = "NodeWidth";
             public const string NodeVerticalSpacing = "NodeVerticalSpacing";
-            public const string NodeHorizontalSpacing = "NodeHorizontalSpacing";
+            public const string ChartWidth = "ChartWidth";
             public const string ChartHeight = "ChartHeight";
+            public const string FooterLavaTemplate = "FooterLavaTemplate";
         }
 
         #endregion Attribute Keys
@@ -119,15 +134,35 @@ namespace Rock.Blocks.Engagement.Steps
             var ProgramName = Program?.Name ?? "";
             var StepTypeCount = Program?.StepTypes?.Count;
 
+            List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() ).StepTypes;
+            var lavaNodes = new List<Object>();
+            int order = 0;
+
+            foreach ( StepTypeCache step in stepTypes )
+            {
+                lavaNodes.Add( new
+                {
+                    Key = ++order,
+                    StepName = step.Name,
+                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
+                } );
+            }
+
+            string lavaTemplate = GetAttributeValue( AttributeKey.FooterLavaTemplate );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Steps", lavaNodes );
+            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
+
             return new StepFlowInitializationBox
             {
                 Campuses = Campuses,
                 NodeWidth = GetAttributeValue( AttributeKey.NodeWidth ).AsInteger(),
                 NodeVerticalSpacing = GetAttributeValue( AttributeKey.NodeVerticalSpacing ).AsInteger(),
-                NodeHorizontalSpacing = GetAttributeValue( AttributeKey.NodeHorizontalSpacing ).AsInteger(),
+                ChartWidth = GetAttributeValue( AttributeKey.ChartWidth ).AsInteger(),
                 ChartHeight = GetAttributeValue( AttributeKey.ChartHeight ).AsInteger(),
                 ProgramName = ProgramName,
-                StepTypeCount = StepTypeCount
+                StepTypeCount = StepTypeCount,
+                LegendHtml = legendHtml
             };
         }
 

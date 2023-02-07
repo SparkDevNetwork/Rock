@@ -11,11 +11,6 @@ FROM Attribute
 WHERE DefaultValue LIKE '%GlobalAttribute.%'
 
 SELECT *
-FROM CommunicationTemplate
-WHERE MediumDataJson LIKE '%GlobalAttribute.%'
-    OR [Subject] LIKE '%GlobalAttribute.%'
-
-SELECT *
 FROM SystemEmail
 WHERE Title LIKE '%GlobalAttribute.%'
     OR [From] LIKE '%GlobalAttribute.%'

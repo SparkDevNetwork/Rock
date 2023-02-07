@@ -25,30 +25,30 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** StreakTypeExclusion View Model */
 export type StreakTypeExclusionBag = {
-    /** Gets or sets the Rock.Model.Location  identifier by which the streak type's exclusions will be associated. */
-    locationId?: number | null;
-
-    /** Gets or sets the Id of the Rock.Model.StreakType to which this exclusion map belongs. This property is required. */
-    streakTypeId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the Rock.Model.Location  identifier by which the streak type's exclusions will be associated. */
+    locationId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
+    /** Gets or sets the Id of the Rock.Model.StreakType to which this exclusion map belongs. This property is required. */
+    streakTypeId: number;
 };

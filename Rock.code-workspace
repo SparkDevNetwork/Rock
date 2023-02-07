@@ -1,0 +1,121 @@
+{
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"vue.volar",
+			"orta.vscode-jest"
+		]
+	},
+	"folders": [
+		{
+			"path": "Rock.JavaScript.Obsidian"
+		},
+		{
+			"path": "Rock.JavaScript.Obsidian.Blocks"
+		}
+	],
+	"settings": {
+		"volar.format.initialIndent": {
+			"typescript": true,
+			"html": true
+		},
+		"volar.completion.preferredAttrNameCase": "camel",
+		"files.trimTrailingWhitespace": true,
+		"html.format.wrapAttributes": "preserve-aligned",
+		"html.format.wrapLineLength": 0,
+		"eslint.validate": [
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact",
+			"vue"
+		],
+		"css.format.spaceAroundSelectorSeparator": true
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Build Obsidian Components",
+				"type": "shell",
+				"command": "npm run build-fast",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"options": {
+					"cwd": "../Rock.JavaScript.Obsidian"
+				}
+			},
+			{
+				"label": "Build Obsidian Blocks",
+				"type": "shell",
+				"command": "npm run build-fast",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"options": {
+					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
+				}
+			},
+			{
+				"label": "Build All Obsidian",
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				},
+				"dependsOn": [
+					"Build Obsidian Components",
+					"Build Obsidian Blocks"
+				]
+			},
+			{
+				"label": "Watch Obsidian Components",
+				"type": "shell",
+				"command": "npm run watch -s",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true,
+					"group": "watch"
+				},
+				"options": {
+					"cwd": "../Rock.JavaScript.Obsidian"
+				},
+				"isBackground": true
+			},
+			{
+				"label": "Watch Obsidian Blocks",
+				"type": "shell",
+				"command": "npm run watch -s",
+				"presentation": {
+					"showReuseMessage": false,
+					"clear": true,
+					"group": "watch"
+				},
+				"options": {
+					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
+				},
+				"isBackground": true
+			},
+			{
+				"label": "Watch All Obsidian",
+				"dependsOn": [
+					"Watch Obsidian Components",
+					"Watch Obsidian Blocks"
+				],
+				"isBackground": true,
+				"detail": "Build both Obsidian projects, watch file system for changes and rebuild.",
+				"problemMatcher": []
+			}
+		]
+	}
+}

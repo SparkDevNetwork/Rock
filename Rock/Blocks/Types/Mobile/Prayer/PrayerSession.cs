@@ -107,6 +107,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.PrayerOrder,
         Order = 8 )]
 
+    [IntegerField(
+        "Prayed For in Last x Minutes Filter",
+        Description = "An integer (minutes) that you can use to filter out recently prayed for items. Uses interaction data, so 'Create Interactions for Prayers' must be enabled. 0 to disable.",
+        IsRequired = true,
+        DefaultIntegerValue = 0,
+        Key = AttributeKeys.MinutesToFilter,
+        Order = 9 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_PRAYER_SESSION_BLOCK_TYPE )]
@@ -164,6 +172,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The prayer order key.
             /// </summary>
             public const string PrayerOrder = "PrayerOrder";
+
+            /// <summary>
+            /// The minutes to filter key.
+            /// </summary>
+            public const string MinutesToFilter = "MinutesToFilter";
         }
 
         /// <summary>
@@ -412,7 +425,9 @@ namespace Rock.Blocks.Types.Mobile.Events
                 return null;
             }
 
-            var query = prayerRequestService.GetByCategoryIds( new List<int> { category.Id } );
+            // This only works because GetByCategoryIds returns an IQueryable cast to be an IEnumerable, when the desired
+            // data type is actually IQueryable.
+            var query = ( IQueryable<PrayerRequest> ) prayerRequestService.GetByCategoryIds( new List<int> { category.Id } );
 
             if ( PublicOnly )
             {
@@ -440,6 +455,14 @@ namespace Rock.Blocks.Types.Mobile.Events
             if ( !GroupGuid.HasValue && !IncludeGroupRequests )
             {
                 query = query.Where( a => !a.GroupId.HasValue );
+            }
+
+            var minsToFilter = GetAttributeValue( AttributeKeys.MinutesToFilter ).AsInteger();
+
+            // Filter by whether or not the current person has prayed for this request in the last x minutes.
+            if ( minsToFilter != 0 && RequestContext.CurrentPerson != null )
+            {
+                query = query.FilterByRecentlyPrayedFor( rockContext, RequestContext.CurrentPerson.Id, minsToFilter );
             }
 
             query = query.OrderByDescending( a => a.IsUrgent )

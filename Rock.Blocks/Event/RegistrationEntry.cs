@@ -128,6 +128,7 @@ namespace Rock.Blocks.Event
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys
@@ -193,18 +194,46 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Checks the discount code.
+        /// Checks the discount code provided. If a null/blank string is used then checks for AutoApplied discounts.
         /// </summary>
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                RegistrationTemplateDiscountWithUsage discount = null;
+
+                // If the code isn't provided then check for an auto apply discount.
+                if ( code.IsNullOrWhiteSpace() )
+                {
+                    var registrationTemplateDiscountCodes = registrationTemplateDiscountService
+                        .GetDiscountsForRegistrationInstance( registrationInstanceId )
+                        .Where( d => d.AutoApplyDiscount )
+                        .OrderBy( d => d.Order )
+                        .Select( d => d.Code )
+                        .ToList();
+
+                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    {
+                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
+
+                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        {
+                            continue;
+                        }
+
+                        // use the first discount that is valid
+                        break;
+                    }
+                }
+                else
+                {
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
 
                 if ( discount == null )
                 {
@@ -2096,7 +2125,7 @@ namespace Rock.Blocks.Event
             registrant.LoadAttributes();
             if ( UpdateRegistrantAttributes( registrant, registrantInfo, registrantChanges, context.RegistrationSettings ) )
             {
-                rockContext.SaveChanges();
+                registrant.SaveAttributeValues( rockContext );
             }
 
             // Save the signed document if we have one. We only process a document
@@ -2354,6 +2383,7 @@ namespace Rock.Blocks.Event
 
             // Get forms with fields
             var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
+            var allAttributeFields = formModels.SelectMany( fm => fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true ) ).ToList();
 
             foreach ( var formModel in formModels )
             {
@@ -2379,13 +2409,51 @@ namespace Rock.Blocks.Event
 
                     field.VisibilityRules = fieldModel.FieldVisibilityRules
                         .RuleList
-                        .Where( vr => vr.ComparedToFormFieldGuid.HasValue )
-                        .Select( vr => new RegistrationEntryBlockVisibilityViewModel
+                        .Select( vr =>
                         {
-                            ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
-                            ComparedToValue = vr.ComparedToValue,
-                            ComparisonType = ( int ) vr.ComparisonType
-                        } );
+                            if ( !vr.ComparedToFormFieldGuid.HasValue )
+                            {
+                                return null;
+                            }
+
+                            var comparedToField = allAttributeFields.SingleOrDefault( f => f.Guid == vr.ComparedToFormFieldGuid );
+                            if ( comparedToField == null )
+                            {
+                                return null;
+                            }
+
+                            var filterValues = new List<string>();
+                            var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                            var fieldType = fieldAttribute?.FieldType?.Field;
+
+                            if ( fieldType == null )
+                            {
+                                return null;
+                            }
+
+                            var comparisonTypeValue = vr.ComparisonType.ConvertToString( false );
+                            if ( comparisonTypeValue != null )
+                            {
+                                // only add the comparisonTypeValue if it is specified, just like
+                                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                                filterValues.Add( comparisonTypeValue );
+                            }
+
+                            filterValues.Add( vr.ComparedToValue );
+
+                            var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
+
+                            return new RegistrationEntryBlockVisibilityViewModel
+                            {
+                                ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
+                                ComparisonValue = new PublicComparisonValueBag
+                                {
+                                    ComparisonType = ( int? ) comparisonValue.ComparisonType,
+                                    Value = comparisonValue.Value
+                                }
+                            };
+                        } )
+                        .Where( vr => vr != null );
 
                     fields.Add( field );
                 }
@@ -3444,7 +3512,7 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
+            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
         }
 
         /// <summary>

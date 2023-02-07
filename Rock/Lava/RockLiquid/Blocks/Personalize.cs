@@ -193,8 +193,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                 var content = showContent ? _matchContent.ToString() : _otherwiseContent.ToString();
                 if ( !string.IsNullOrEmpty( content ) )
                 {
-                    var render = LavaService.RenderTemplate( content );
-                    result.Write( render.Text );
+                    var renderResult = LavaService.RenderTemplate( content, new LavaRenderParameters { Context = lavaContext } );
+                    result.Write( renderResult.Text );
                 }
             }
             catch ( Exception ex )
@@ -301,19 +301,9 @@ namespace Rock.Lava.RockLiquid.Blocks
                     }
                 }
 
-                List<int> personSegmentIdList;
-                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-                if ( person != null )
-                {
-                    personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForRequest( person,
-                        rockContext,
-                        System.Web.HttpContext.Current?.Request );
-                }
-                else
-                {
-                    personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPerson( person,
-                        rockContext );
-                }
+                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForContext( context,
+                    System.Web.HttpContext.Current,
+                    person );
 
                 var requiredSegmentIdList = PersonalizationSegmentCache.GetByKeys( segmentParameterString )
                     .Select( ps => ps.Id )

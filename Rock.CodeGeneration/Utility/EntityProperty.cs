@@ -237,6 +237,14 @@ namespace Rock.CodeGeneration.Utility
             {
                 return true;
             }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            {
+                return true;
+            }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Model" ) && type.GetCustomAttributes().FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" ) != null )
+            {
+                return true;
+            }
 
             return false;
         }

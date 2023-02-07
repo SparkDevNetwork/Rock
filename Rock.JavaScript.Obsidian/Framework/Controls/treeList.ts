@@ -61,7 +61,7 @@ const treeItem = defineComponent({
         const hasChildren = computed((): boolean => children.value.length > 0);
 
         /** Determines if this item is a folder that can contain children. */
-        const isFolder = computed((): boolean => props.item.isFolder && props.item.hasChildren);
+        const isFolder = computed((): boolean => props.item.isFolder || props.item.hasChildren);
 
         /** The display name of the current item. */
         const itemName = computed((): string => props.item.text ?? "");

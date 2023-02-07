@@ -72,7 +72,7 @@ namespace Rock.Model
 
                     // Attempt to get the context that describes the registration
                     // and the number of available slots.
-                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, out var errorMessage );
+                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, registrationSession.RegistrationId, out var errorMessage );
 
                     if ( errorMessage.IsNotNullOrWhiteSpace() )
                     {
@@ -183,7 +183,7 @@ namespace Rock.Model
 
                     // Get the context information about the registration, specifically
                     // the timeout and spots available.
-                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, out internalErrorMessage );
+                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, registrationSession.RegistrationId, out internalErrorMessage );
 
                     if ( internalErrorMessage.IsNotNullOrWhiteSpace() )
                     {

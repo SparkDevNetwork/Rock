@@ -28,6 +28,18 @@ export type RegistrationTemplateFeeBag = {
     /** Gets or sets a value indicating if registrant can select multiple values for this fee. */
     allowMultiple: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Discount codes apply to this fee */
     discountApplies: boolean;
 
@@ -37,11 +49,20 @@ export type RegistrationTemplateFeeBag = {
     /** Gets or sets a value indicating whether [hide when none remaining]. */
     hideWhenNoneRemaining: boolean;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
     /** Gets or sets a value indicating whether this instance is required. */
     isRequired: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -51,25 +72,4 @@ export type RegistrationTemplateFeeBag = {
 
     /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
     registrationTemplateId: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

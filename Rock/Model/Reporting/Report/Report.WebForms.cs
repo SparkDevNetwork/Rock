@@ -226,14 +226,31 @@ namespace Rock.Model
                 whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
             }
 
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
-            if ( getMethod == null )
+            IQueryable<IEntity> qry;
+            var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+            if ( this.DataView != null && this.EntityTypeId.HasValue && this.EntityTypeId.Value == personEntityTypeId && serviceInstance is PersonService personService )
             {
-                throw new RockReportException( this, $"Unable to determine IService.Get method for {serviceInstance}" );
+                /* 01/20/2023 SK
+
+                   We have a option in DataViews that are based on Person on whether Deceased individuals should be included. That requires the
+                   PersonService.Querable( bool includeDeceased ) method, so we'll use that. We are doing pretty much same in Dataview.WebForms.cs as well.
+
+                 */
+                qry = personService.Queryable( DataView.IncludeDeceased ).Where( paramExpression, whereExpression );
+            }
+            else
+            {
+                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+                if ( getMethod == null )
+                {
+                    throw new RockReportException( this, $"Unable to determine IService.Get method for {serviceInstance}" );
+                }
+
+                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
+                qry = getResult as IQueryable<IEntity>;
             }
 
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
-            var qry = getResult as IQueryable<IEntity>;
+                
             var qryExpression = qry.Expression;
             var sortProperty = reportGetQueryableArgs.SortProperty;
 

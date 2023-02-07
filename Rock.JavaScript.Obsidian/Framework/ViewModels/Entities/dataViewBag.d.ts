@@ -25,8 +25,20 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DataView View Model */
 export type DataViewBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the CategoryId of the Rock.Model.Category that this DataView belongs to. If there is no Category, this value will be null. */
     categoryId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the DataViewFilterId of the root/base Rock.Model.DataViewFilter that is used to generate this DataView.  */
     dataViewFilterId?: number | null;
@@ -34,8 +46,14 @@ export type DataViewBag = {
     /** Gets or sets the user defined description of the DataView */
     description?: string | null;
 
+    /** Gets or sets whether using a read-only Rock Context is disabled. */
+    disableUseOfReadOnlyContext: boolean;
+
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on. */
     entityTypeId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether deceased should be included. */
     includeDeceased: boolean;
@@ -45,6 +63,12 @@ export type DataViewBag = {
 
     /** Gets or sets the last run date time. */
     lastRunDateTime?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the Name of the DataView. */
     name?: string | null;
@@ -72,25 +96,4 @@ export type DataViewBag = {
 
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (MEF Component) that is used for an optional transformation on this DataView. */
     transformEntityTypeId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

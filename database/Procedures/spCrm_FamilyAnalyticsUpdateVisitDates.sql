@@ -44,8 +44,8 @@ DELETE FROM [AttributeValue] WHERE ([Value] = '' OR [Value] IS NULL) AND Attribu
 IF @FirstVisitAttributeId IS NOT NULL
 BEGIN
 	INSERT INTO [AttributeValue]
-	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @FirstVisitAttributeId, p.Id, CONVERT(varchar(50), a.FirstVisit, 126), newid(), getdate()
+	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
+	SELECT 1, @FirstVisitAttributeId, p.Id, CONVERT(varchar(50), a.FirstVisit, 126), newid(), getdate(), a.FirstVisit, 1
 	FROM [Person] p
 	CROSS APPLY ( 
 		SELECT 
@@ -65,8 +65,8 @@ BEGIN
 	
 	-- next process adults (they look at the first visit of anyone in the family)
 	INSERT INTO [AttributeValue]
-	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @FirstVisitAttributeId, p.Id, MIN(CONVERT(varchar(50), a.FirstVisit, 126)), newid(), getdate()
+	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
+	SELECT 1, @FirstVisitAttributeId, p.Id, MIN(CONVERT(varchar(50), a.FirstVisit, 126)), newid(), getdate(), MIN(a.FirstVisit), 1
 	FROM [Person] p
 	INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id] AND gm.[GroupRoleId] = @AdultRoleId
 	CROSS APPLY ( 
@@ -93,8 +93,8 @@ END
 IF @SecondVisitAttributeId IS NOT NULL
 BEGIN
 	INSERT INTO [AttributeValue]
-	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @SecondVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()
+	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty] )
+	SELECT 1, @SecondVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate(), [SecondVisit], 1
 	FROM [Person] p
 	CROSS APPLY ( 
 		SELECT 
@@ -117,8 +117,8 @@ BEGIN
 	
 	-- next process adults (they look at the first visit of anyone in the family)
 	INSERT INTO [AttributeValue]
-	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @SecondVisitAttributeId, p.[Id], MIN(CONVERT(varchar(50), a.[SecondVisit], 126)), newid(), getdate()
+	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
+	SELECT 1, @SecondVisitAttributeId, p.[Id], MIN(CONVERT(varchar(50), a.[SecondVisit], 126)), newid(), getdate(), MIN([SecondVisit]), 1
 	FROM [Person] p
 	INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id] AND gm.[GroupRoleId] = @AdultRoleId
 	CROSS APPLY ( 

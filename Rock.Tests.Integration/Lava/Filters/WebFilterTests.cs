@@ -581,13 +581,23 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         }
 
         [TestMethod]
-        public void SetUrlParameter_AddRockSiteUrlQueryParameter_RendersUrlWithNewParameter()
+        public void SetUrlParameter_AddRockSiteRouteUrlQueryParameter_RendersUrlWithNewParameter()
         {
             SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports/2",
                 "ResultLimit",
                 "50",
                 "relative",
                 "/reporting/reports/2?ResultLimit=50" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_AddRockSitePageUrlQueryParameter_RendersUrlWithNewParameter()
+        {
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/page/9999",
+                "ReportId",
+                "1",
+                "relative",
+                "/page/9999?ReportId=1" );
         }
 
         [TestMethod]
@@ -670,12 +680,12 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         [TestMethod]
         public void SetUrlParameter_WithCurrentInputString_RendersCurrentUrl()
         {
-            var inputUrl = "http://www.mysite.com/?Param1=1";
+            var inputUrl = "http://www.mysite.com";
             var simulator = new Http.TestLibrary.HttpSimulator();
             using ( simulator.SimulateRequest( new Uri( inputUrl ) ) )
             {
-                TestHelper.AssertTemplateOutput( "http://www.mysite.com/?Param1=2",
-                    "{{ 'current' | SetUrlParameter:'Param1','2','full' }}" );
+                TestHelper.AssertTemplateOutput( "http://www.mysite.com/",
+                    "{{ 'current' | SetUrlParameter }}" );
             }
         }
 

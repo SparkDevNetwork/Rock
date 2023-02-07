@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -139,15 +140,24 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
+            var mergeFields = GetMergeFields( action );
+
+            // Get configuration settings.
             var giverGuid = GetAttributeValue( action, AttributeKey.Giver ).AsGuidOrNull();
-            var startDateTime = GetAttributeValue( action, AttributeKey.StartDateTime, true ).AsDateTime();
-            var endDateTime = GetAttributeValue( action, AttributeKey.EndDateTime, true ).AsDateTime();
             var documentTypeId = GetAttributeValue( action, AttributeKey.DocumentType, true ).AsIntegerOrNull();
             var statementTemplateGuid = GetAttributeValue( action, AttributeKey.StatementTemplate, true ).AsGuidOrNull();
             var saveStatementFor = ( FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor ) ( GetAttributeValue( action, AttributeKey.SaveStatementFor, true ).AsIntegerOrNull() ?? 0 );
-            var documentPurposeKey = GetAttributeValue( action, AttributeKey.DocumentPurposeKey, true );
             var overwriteDocumentsWithSamePurposeKey = GetAttributeValue( action, AttributeKey.OverwriteDocumentsWithSamePurposeKey, true ).AsBoolean();
             var documentGuid = GetAttributeValue( action, AttributeKey.DocumentAttribute ).AsGuidOrNull();
+
+            var startDateTime = GetAttributeValue( action, AttributeKey.StartDateTime, true )
+                .ResolveMergeFields( mergeFields )
+                .AsDateTime();
+            var endDateTime = GetAttributeValue( action, AttributeKey.EndDateTime, true )
+                .ResolveMergeFields( mergeFields )
+                .AsDateTime();
+            var documentPurposeKey = GetAttributeValue( action, AttributeKey.DocumentPurposeKey, true )
+                .ResolveMergeFields( mergeFields );
 
             // Get the target person.
             Person targetPerson = null;
@@ -258,6 +268,11 @@ namespace Rock.Workflow.Action
 
                     // Render the PDF from the HTML result.
                     var pdfGenerator = new Pdf.PdfGenerator();
+                    if ( result.FooterHtmlFragment.IsNotNullOrWhiteSpace() )
+                    {
+                        pdfGenerator.FooterHtml = result.FooterHtmlFragment;
+                    }
+
                     pdfStream = pdfGenerator.GetPDFDocumentFromHtml( result.Html );
 
                     // Upload the PDF.

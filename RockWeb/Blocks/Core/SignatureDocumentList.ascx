@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-signature"></i> Documents</h1>
+                <h1 class="panel-title"><i class="fa fa-file-signature"></i> Electronic Signature Documents</h1>
             </div>
             <div class="panel-body">
 

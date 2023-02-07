@@ -655,6 +655,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ParticipationType
+    {
+        Individual = 0x1,
+        Family = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,
@@ -792,6 +800,14 @@ namespace Rock.Client.Enums
         ConnectionStatus = 0xc,
         MiddleName = 0xd,
         AnniversaryDate = 0xe,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ReminderNotificationType
+    {
+        Communication = 0x0,
+        Workflow = 0x1,
     }
 
     /// <summary>
@@ -1115,11 +1131,32 @@ namespace Rock.Client.Enums.Event
 
     /// <summary>
     /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum InteractiveExperiencePushNotificationType
     {
         Never = 0x0,
         EveryAction = 0x1,
         SpecificActions = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Group
+{
+    /// <summary>
+    /// </summary>
+    public enum ScheduleConfirmationLogic
+    {
+        Ask = 0x0,
+        AutoAccept = 0x1,
     }
 
 }

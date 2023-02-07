@@ -118,3 +118,6 @@ registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
 
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
+
+import { ValueListFieldType } from "./valueListField.partial";
+registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());

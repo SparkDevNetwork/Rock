@@ -1,0 +1,164 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="experience-action experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e" :class="additionalActionClasses">
+        <div class="question">
+            {{ questionText }}
+        </div>
+
+        <div class="answers">
+            <RadioButtonList v-model="answerText" :items="answerItems" disabled />
+        </div>
+
+        <Alert v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </Alert>
+
+        <div class="submit">
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="isButtonDisabled"
+                        @click="onSubmitClick">
+                Submit
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .question::before,
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 3em;
+    font-weight: 700;
+    line-height: 1.2;
+    content: 'Q:';
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers::before {
+    content: 'A:';
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers {
+    margin-top: 18px;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio {
+    padding-left: 0;
+    margin-bottom: 12px;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::before,
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .radio .label-text::after {
+    display: none;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers label {
+    display: block;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input {
+    display: none;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers .label-text {
+    display: block;
+    padding: 6px 12px;
+    border: 2px solid var(--experience-action-secondary-btn-bg);
+    border-radius: var(--border-radius-base, 4px);
+    transition: background-color .25s ease-in-out, color .25s ease-in-out;
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .answers input:checked + .label-text {
+    color: var(--experience-action-secondary-btn-color);
+    background-color: var(--experience-action-secondary-btn-bg);
+}
+
+.experience-action-type-9256a5b7-480d-4ffa-86d1-03b8aefc254e .submit {
+    margin-top: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
+    import RockButton, { BtnType } from "@Obsidian/Controls/rockButton";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import { computed, ref, watch } from "vue";
+    import { actionProps } from "./util.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(actionProps);
+
+    // #region Values
+
+    const answerText = ref("");
+    const isAnswerSubmitted = ref(false);
+    const errorMessage = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const answerItems = computed((): ListItemBag[] => {
+        const answers: string[] = JSON.parse(props.renderConfiguration.configurationValues?.answers ?? "[]") ?? [];
+
+        return answers.map(a => ({
+            value: a,
+            text: a,
+            category: isAnswerSubmitted.value && !props.renderConfiguration.isMultipleSubmissionAllowed ? "disabled" : undefined
+        }));
+    });
+
+    const additionalActionClasses = computed((): string => {
+        return `experience-action-${props.renderConfiguration.actionId}`;
+    });
+
+    const questionText = computed((): string => {
+        return props.renderConfiguration.configurationValues?.["question"] ?? "";
+    });
+
+    const isButtonDisabled = computed((): boolean => {
+        return !answerText.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSubmitClick(): Promise<void> {
+        let result: number;
+
+        try {
+            result = await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        }
+        catch (error) {
+            result = 400;
+            console.error(error);
+        }
+
+        if (result === 200) {
+            answerText.value = "";
+            errorMessage.value = "";
+            isAnswerSubmitted.value = true;
+        }
+        else if (result === 409) {
+            answerText.value = "";
+            errorMessage.value = "Multiple answers are not allowed and you have previously submitted an answer.";
+            isAnswerSubmitted.value = true;
+        }
+        else {
+            errorMessage.value = "Unable to submit your answer.";
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.actionId, () => {
+        isAnswerSubmitted.value = false;
+        errorMessage.value = "";
+    });
+</script>

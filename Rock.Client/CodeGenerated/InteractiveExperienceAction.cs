@@ -64,6 +64,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? ResponseVisualEntityTypeId { get; set; }
 
         /// <summary>
@@ -108,6 +111,7 @@ namespace Rock.Client
             this.IsMultipleSubmissionAllowed = source.IsMultipleSubmissionAllowed;
             this.IsResponseAnonymous = source.IsResponseAnonymous;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Order = source.Order;
             this.ResponseVisualEntityTypeId = source.ResponseVisualEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Specialized;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -56,14 +58,25 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
-            var queryString = httpRequest?.QueryString;
+            return IsMatch( httpRequest?.QueryString );
+        }
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            return IsMatch( request?.QueryString );
+        }
+
+        /// <summary>
+        /// Determines whether the specified query string meets the criteria of this filter.
+        /// </summary>
+        /// <param name="queryString">The query string parameters.</param>
+        /// <returns><c>true</c> if the specified query string is a match; otherwise, <c>false</c>.</returns>
+        private bool IsMatch( NameValueCollection queryString )
+        {
             if ( queryString == null )
             {
                 return false;

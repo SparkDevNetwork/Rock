@@ -111,8 +111,11 @@ namespace Rock.ViewModels.Entities
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets the Value as a decimal (Computed on Save).
+        /// Gets the Value as a decimal. This value is only updated on save.
         /// </summary>
+        /// <value>
+        /// The Rock.Model.AttributeValue.Value as a decimal.
+        /// </value>
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>

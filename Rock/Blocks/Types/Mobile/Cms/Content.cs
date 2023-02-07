@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,13 +65,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKeys.CallbackLogic,
         Category = "advanced",
-        Order = 0 )]
+        Order = 4 )]
 
     #endregion
 
     [ContextAware]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONTENT_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "7258A210-E936-4260-B573-9FA1193AD9E2")]
+    [Rock.SystemGuid.BlockTypeGuid( "7258A210-E936-4260-B573-9FA1193AD9E2" )]
     public class Content : RockMobileBlockType
     {
         /// <summary>
@@ -132,17 +132,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
         public override object GetMobileConfigurationValues()
         {
             var additionalSettings = GetAdditionalSettings();
-            var content = GetAttributeValue( AttributeKeys.Content );
 
-            //
-            // Check if we need to render lava on the server.
-            //
-            if ( additionalSettings.ProcessLavaOnServer )
+            string content = null;
+            var isDynamicContent = GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean();
+            if ( !isDynamicContent )
             {
-                var mergeFields = RequestContext.GetCommonMergeFields();
-                mergeFields.Add("CurrentPage", this.PageCache);
+                content = GetAttributeValue( AttributeKeys.Content );
+                //
+                // Check if we need to render lava on the server.
+                //
+                if ( additionalSettings.ProcessLavaOnServer )
+                {
+                    var mergeFields = RequestContext.GetCommonMergeFields();
+                    mergeFields.Add( "CurrentPage", this.PageCache );
 
-                content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
+                    content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
+                }
             }
 
             return new Rock.Common.Mobile.Blocks.Content.Configuration
@@ -150,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 Content = content,
                 ProcessLava = additionalSettings.ProcessLavaOnClient,
                 CacheDuration = additionalSettings.CacheDuration,
-                DynamicContent = GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean()
+                DynamicContent = isDynamicContent
             };
         }
 
@@ -174,7 +179,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( additionalSettings.ProcessLavaOnServer )
             {
                 var mergeFields = RequestContext.GetCommonMergeFields();
-                mergeFields.Add("CurrentPage", this.PageCache);
+                mergeFields.Add( "CurrentPage", this.PageCache );
 
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
@@ -199,7 +204,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var mergeFields = RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Command", command );
             mergeFields.Add( "Parameters", parameters );
-            mergeFields.Add("CurrentPage", this.PageCache);
+            mergeFields.Add( "CurrentPage", this.PageCache );
 
             var xaml = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
 

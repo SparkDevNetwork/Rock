@@ -5,6 +5,8 @@ ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
 	                    , @CurrencyTypeIds varchar(max) = NULL
 	                    , @SourceTypeIds varchar(max) = NULL
 	                    , @TransactionTypeIds varchar(max) = NULL
+						, @AllowOnlyActive bit = 0
+						, @AllowOnlyTaxDeductible bit = 0
 	                    WITH RECOMPILE
                     AS
 
@@ -55,6 +57,8 @@ ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
 		                    AND ( @CurrencyTypeIds IS NULL OR [tt2].[Id] IS NOT NULL )
 		                    AND ( @SourceTypeIds IS NULL OR [tt3].[Id] IS NOT NULL )
 		                    AND ( @TransactionTypeIds IS NULL OR [tt4].[Id] IS NOT NULL )
+							AND ( @AllowOnlyTaxDeductible IS NULL OR @AllowOnlyTaxDeductible = 0 OR [fa].[IsTaxDeductible] = 1)
+							AND ( @AllowOnlyActive IS NULL OR @AllowOnlyActive = 0 OR [fa].[IsActive] = 1)
 	                    ) AS [details]
 	                    WHERE [GivingId] IS NOT NULL
 	                    AND [AccountId] IS NOT NULL

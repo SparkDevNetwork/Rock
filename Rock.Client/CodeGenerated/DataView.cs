@@ -44,6 +44,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool DisableUseOfReadOnlyContext { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
@@ -126,6 +129,7 @@ namespace Rock.Client
             this.CategoryId = source.CategoryId;
             this.DataViewFilterId = source.DataViewFilterId;
             this.Description = source.Description;
+            this.DisableUseOfReadOnlyContext = source.DisableUseOfReadOnlyContext;
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

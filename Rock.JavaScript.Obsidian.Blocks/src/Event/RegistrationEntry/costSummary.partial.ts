@@ -144,7 +144,7 @@ export default defineComponent({
             }
 
             let total = 0;
-            this.lineItems.forEach(li => total += li.minPayment);
+            this.lineItems.forEach(li => total += (Math.min(li.minPayment,li.discountedCost)));
             return total;
         },
 
@@ -175,7 +175,6 @@ export default defineComponent({
             if (balance > 0) {
                 return balance;
             }
-
             return 0;
         },
 
@@ -201,7 +200,7 @@ export default defineComponent({
             const rules: ValidationRule[] = [];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
-
+            
             if (min > max) {
                 min = max;
             }

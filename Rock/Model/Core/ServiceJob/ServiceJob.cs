@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -240,7 +240,8 @@ namespace Rock.Model
         /// The last status message as HTML.
         /// </value>
         [LavaVisible]
-        public string LastStatusMessageAsHtml
+        [NotMapped]
+        public virtual string LastStatusMessageAsHtml
         {
             get
             {
@@ -255,7 +256,8 @@ namespace Rock.Model
         /// The cron description.
         /// </value>
         [LavaVisible]
-        public string CronDescription
+        [NotMapped]
+        public virtual string CronDescription
         {
             get
             {

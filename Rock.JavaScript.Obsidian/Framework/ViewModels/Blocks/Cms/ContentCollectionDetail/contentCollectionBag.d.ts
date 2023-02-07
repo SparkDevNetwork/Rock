@@ -30,6 +30,15 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * Implements the Rock.ViewModels.Utility.EntityBagBase
  */
 export type ContentCollectionBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the collection key. */
+    collectionKey?: string | null;
+
     /** Gets or sets the description. */
     description?: string | null;
 
@@ -42,29 +51,17 @@ export type ContentCollectionBag = {
     /** Gets or sets the filter settings. */
     filterSettings?: FilterSettingsBag | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the last index date time. */
     lastIndexDateTime?: string | null;
 
     /** Gets or sets the last index item count. */
     lastIndexItemCount?: number | null;
 
-    /** Gets or sets the collection key. */
-    collectionKey?: string | null;
-
     /** Gets or sets the name of the ContentCollection. This property is required. */
     name?: string | null;
-
-    /** Gets or sets a value indicating whether trending is enabled. */
-    trendingEnabled: boolean;
-
-    /** Gets or sets the trending max items. This property is required. */
-    trendingMaxItems: number;
-
-    /** Gets or sets the trending window day. This property is required. */
-    trendingWindowDay: number;
-
-    /** Gets or sets the trending gravity to apply more weight to items that are newer. */
-    trendingGravity: number;
 
     /**
      * Gets or sets the sources that are currently configured for this
@@ -72,12 +69,15 @@ export type ContentCollectionBag = {
      */
     sources?: ContentSourceBag[] | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
+    /** Gets or sets a value indicating whether trending is enabled. */
+    trendingEnabled: boolean;
 
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
+    /** Gets or sets the trending gravity to apply more weight to items that are newer. */
+    trendingGravity: number;
 
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the trending max items. This property is required. */
+    trendingMaxItems: number;
+
+    /** Gets or sets the trending window day. This property is required. */
+    trendingWindowDay: number;
 };

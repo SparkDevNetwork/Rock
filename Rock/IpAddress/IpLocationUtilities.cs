@@ -36,8 +36,10 @@ namespace Rock.IpAddress
         /// <param name="ipSessions">The ip sessions.</param>
         public static void UpdateInteractionSessionLocations( List<IpLocation> ipLocations, Dictionary<string, List<int>> ipSessions )
         {
-            // Process each valid address
-            foreach( var location in ipLocations.Where( l => l.IsValid) )
+            // Process each valid address and invalid address.  Invalid (or 'bad') addresses will be 
+            // handled in the UpdateInteractionSessionLocation method so they do not reprocess each time
+            // the PopulateInteractionSessionData job runs.
+            foreach ( var location in ipLocations )
             {
                 // Process location if sessions exist for it
                 if ( ipSessions.ContainsKey( location.IpAddress ) )

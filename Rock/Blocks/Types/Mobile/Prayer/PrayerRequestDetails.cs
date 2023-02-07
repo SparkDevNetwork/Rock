@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -677,7 +677,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
             if ( ShowPublicDisplayFlag )
             {
-                field = MobileHelper.GetCheckBoxFieldXaml( "allowPublication", "Allow Publication", request?.IsPublic ?? DefaultToPublic );
+                var isPublic = DefaultToPublic ? true : request?.IsPublic ?? false;
+                field = MobileHelper.GetCheckBoxFieldXaml( "allowPublication", "Allow Publication", isPublic );
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "allowPublication", "IsChecked" );
             }
@@ -804,6 +805,10 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 if ( ShowPublicDisplayFlag )
                 {
                     prayerRequest.IsPublic = ( bool ) parameters["allowPublication"];
+                }
+                else
+                {
+                    prayerRequest.IsPublic = DefaultToPublic;
                 }
 
                 if ( ShowUrgentFlag )

@@ -2783,6 +2783,12 @@ namespace RockWeb.Blocks.Event
                     CurrentPerson.NickName = CurrentPerson.FirstName;
                 }
 
+                // For a person with no email address, this resolves null reference issues downstream.
+                if ( CurrentPerson != null && CurrentPerson.Email == null )
+                {
+                    CurrentPerson.Email = string.Empty;
+                }
+
                 // If the 'your name' value equals the currently logged in person, use their person alias id
                 if ( CurrentPerson != null &&
                 ( CurrentPerson.NickName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
@@ -5534,19 +5540,28 @@ namespace RockWeb.Blocks.Event
                 var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
                 if ( familyOptions.Any() )
                 {
-                    // previous family selections are always null after postback, so default to anyone in the same family
+                    // Previous family selections are always null after postback, so default to anyone in the same family.
                     var selectedGuid = CurrentPerson != null ? CurrentPerson.GetFamily().Guid : rblRegistrarFamilyOptions.SelectedValueAsGuid();
+
+                    // Set selected to nothing before we repopulate rblRegistrarFamilyOptions,
+                    // then we'll set it back.
+                    rblRegistrarFamilyOptions.SetValue( ( Guid? ) null );
 
                     familyOptions.Add(
                         familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
                         Guid.NewGuid() :
                         RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
                         "None" );
-                    rblRegistrarFamilyOptions.DataSource = familyOptions;
-                    rblRegistrarFamilyOptions.DataBind();
+
+                    rblRegistrarFamilyOptions.Items.Clear();
+                    foreach ( var option in familyOptions )
+                    {
+                        rblRegistrarFamilyOptions.Items.Add( new ListItem( option.Value, option.Key.ToString() ) );
+                    }
 
                     if ( selectedGuid.HasValue )
                     {
+                        // Note that SetValue internally checks to see if the specified value is a valid to set.
                         rblRegistrarFamilyOptions.SetValue( selectedGuid );
                     }
 

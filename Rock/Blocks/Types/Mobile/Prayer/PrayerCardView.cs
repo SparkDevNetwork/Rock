@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -149,6 +149,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Key = AttributeKey.IncludeGroupRequests,
         Order = 12 )]
 
+    [IntegerField(
+        "Prayed For in Last x Minutes Filter",
+        Description = "An integer (minutes) that you can use to filter out recently prayed for items. Uses interaction data. 0 to disable.",
+        IsRequired = true,
+        DefaultIntegerValue = 0,
+        Key = AttributeKey.MinutesToFilter,
+        Order = 13 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PRAYER_PRAYER_CARD_VIEW_BLOCK_TYPE )]
@@ -217,6 +225,11 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// The include group requests key.
             /// </summary>
             public const string IncludeGroupRequests = "IncludeGroupRequests";
+
+            /// <summary>
+            /// The minutes to filter.
+            /// </summary>
+            public const string MinutesToFilter = "MinutesToFilter";
         }
 
         /// <summary>
@@ -439,7 +452,9 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 IncludeNonPublic = !PublicOnly,
                 IncludeEmptyCampus = true,
                 IncludeGroupRequests = IncludeGroupRequests,
-                Categories = new List<Guid> { CategoryGuid ?? Guid.Empty }
+                Categories = new List<Guid> { CategoryGuid ?? Guid.Empty },
+                MinutesToFilter = GetAttributeValue( AttributeKey.MinutesToFilter ).AsInteger(),
+                CurrentPersonId = RequestContext.CurrentPerson?.Id
             };
 
             // If we have been requested to show only prayer requests attached

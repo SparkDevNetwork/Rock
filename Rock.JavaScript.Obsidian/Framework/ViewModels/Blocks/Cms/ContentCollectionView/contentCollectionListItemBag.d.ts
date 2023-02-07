@@ -30,15 +30,15 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * the filters that are available to be used with this content collection.
  */
 export type ContentCollectionListItemBag = {
+    /** Gets or sets the category for this item. */
+    category?: string | null;
+
     /** Gets or sets the filters that are available to this content collection. */
     filters?: ListItemBag[] | null;
-
-    /** Gets or sets the value. */
-    value?: string | null;
 
     /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** Gets or sets the value. */
+    value?: string | null;
 };

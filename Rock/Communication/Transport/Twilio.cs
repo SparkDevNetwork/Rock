@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ using Rock.Web.Cache;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using TwilioTypes = Twilio.Types;
+using TwilioExceptions = Twilio.Exceptions;
 
 namespace Rock.Communication.Transport
 {
@@ -64,7 +65,7 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 10,
         Order = 4,
         Key = TwilioAttributeKey.MaxParallelization )]
-    [Rock.SystemGuid.EntityTypeGuid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4")]
+    [Rock.SystemGuid.EntityTypeGuid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4" )]
     public class Twilio : TransportComponent, IAsyncTransport, ISmsPipelineWebhook
     {
         /// <summary>
@@ -356,7 +357,7 @@ namespace Rock.Communication.Transport
 
         private async static Task<MessageResource> SendTwilioMessageAsync( string fromPhone, string callbackUrl, List<Uri> attachmentMediaUrls, string twilioNumber, string messageText )
         {
-            MessageResource response;
+            MessageResource response = null;
             CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
             {
                 From = new TwilioTypes.PhoneNumber( fromPhone ),
@@ -529,6 +530,23 @@ namespace Rock.Communication.Transport
                         recipient.StatusNote = "No Phone Number with Messaging Enabled";
                     }
                 }
+                catch ( TwilioExceptions.ApiException ex )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Failed;
+                    recipient.StatusNote = "Twilio Exception: " + ex.Message;
+
+                    if( DisableSmsErrorCodes.Contains( ex.Code ) )
+                    {
+                        // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
+                        var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                        phoneNumber.IsMessagingEnabled = false;
+
+                        // Add this to the Person Activity history
+                        var historyChanges = new History.HistoryChangeList();
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is <em>\"{ex.Message}\"</em> <a href='{ex.MoreInfo}' target='_blank'>More info here</a>" );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
+                    }
+                }
                 catch ( Exception ex )
                 {
                     recipient.Status = CommunicationRecipientStatus.Failed;
@@ -625,6 +643,22 @@ namespace Rock.Communication.Transport
         #endregion
 
         #region 
+
+        /// <summary>
+        /// If the Twilio API returns any of these exceptions then SMS should be disabled (PhoneNumberIsMessagingEnabled) for the phone number along with any other actions taken.
+        /// https://www.twilio.com/docs/api/errors/
+        /// </summary>
+        private static readonly List<int> DisableSmsErrorCodes = new List<int>
+        {
+            21211,
+            21214,
+            21612,
+            21614,
+            21610,
+            30006,
+            60205,
+            63033
+        };
 
         /// <summary>
         /// Determines whether the phone number is a regular 10 digit (or longer) phone number

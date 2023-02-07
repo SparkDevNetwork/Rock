@@ -19,6 +19,8 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 using Rock.Model;
+using Rock.Personalization;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -29,46 +31,97 @@ namespace Rock.Lava
     /// </summary>
     internal static class LavaPersonalizationHelper
     {
+        private const string PersonalizationSegmentPrefix = "PersonalizationSegmentIdList_";
 
         /// <summary>
-        /// Get a list of personalization segment identifiers that apply to the current visitor.
+        /// Get a list of personalization segment identifiers that apply to a specified person and Lava render context.
         /// </summary>
-        /// <param name="currentPerson"></param>
-        /// <param name="rockContext"></param>
-        /// <param name="httpRequest"></param>
+        /// <param name="context"></param>
+        /// <param name="httpContext"></param>
+        /// <param name="person"></param>
         /// <returns></returns>
-        public static List<int> GetPersonalizationSegmentIdListForRequest( Person currentPerson, RockContext rockContext, HttpRequest httpRequest )
+        public static List<int> GetPersonalizationSegmentIdListForContext( ILavaRenderContext context, HttpContext httpContext = null, Person person = null )
         {
-            List<int> personSegmentIdList = null;
-            RockPage rockPage = null;
-
-            if ( httpRequest != null )
+            // Check if the personalization segments exist in the current lava context.
+            person = person ?? LavaHelper.GetCurrentPerson( context );
+            if ( person == null )
             {
-                rockPage = System.Web.HttpContext.Current?.CurrentHandler as RockPage;
+                return new List<int>();
             }
 
-            // Get Personalization Segments.
-            if ( rockPage != null )
-            {
-                // If this block is executing in the context of a RockPage,
-                // try to get the personalization segments that have been previously determined.
-                personSegmentIdList = rockPage.PersonalizationSegmentIds?.ToList();
-            }
+            var key = $"{PersonalizationSegmentPrefix}{ person.Guid }";
+            var personSegmentIdList = context.GetInternalField( key, null ) as List<int>;
 
             if ( personSegmentIdList == null )
             {
-                // Get the segments for the person in the current context.
-                if ( currentPerson == null )
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+                if ( httpContext != null )
                 {
-                    personSegmentIdList = new List<int>();
+                    // Try to get the segment list from the HttpContext cookie.
+                    var segmentCookie = GetPersonalizationSegmentCookieData( person, httpContext );
+
+                    if ( segmentCookie != null )
+                    {
+                        personSegmentIdList = segmentCookie.GetSegmentIds().ToList();
+                    }
                 }
-                else
+
+                // Retrieve the personalization segments from the database.
+                if ( personSegmentIdList == null )
                 {
-                    personSegmentIdList = GetPersonalizationSegmentIdListForPerson( currentPerson, rockContext );
+                    personSegmentIdList = GetPersonalizationSegmentIdListForPerson( person, rockContext );
                 }
+
+                // Cache the segment list in the render context.
+                // It will be available for the remainder of the current template render operation.
+                context.SetInternalField( key, personSegmentIdList );
             }
 
             return personSegmentIdList;
+        }
+
+        /// <summary>
+        /// Sets the personalization segments for the current context.
+        /// </summary>
+        /// <param name="segmentIdList">The list of personaliation segment identifiers to be set on the context.</param>
+        /// <param name="lavaContext">The current lava context that is handling rendering.</param>
+        /// <param name="httpContext"></param>
+        /// <param name="person"></param>
+        /// <returns></returns>
+        public static void SetPersonalizationSegmentsForContext( List<int> segmentIdList, ILavaRenderContext lavaContext, HttpContext httpContext, Person person )
+        {
+            // If no target person is specified, get the current person from the Lava context.
+            person = person ?? LavaHelper.GetCurrentPerson( lavaContext );
+
+            var personalizationPersonAliasId = person?.PrimaryAliasId;
+            if ( !personalizationPersonAliasId.HasValue )
+            {
+                return;
+            }
+
+            var key = $"{PersonalizationSegmentPrefix}{ person.Guid }";
+
+            lavaContext.SetInternalField( key, segmentIdList );
+
+            if ( httpContext != null )
+            {
+                var segmentFilterCookieData = new SegmentFilterCookieData();
+                segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
+
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( lavaContext );
+                var personalizationService = new PersonalizationSegmentService( rockContext );
+
+                var segmentIdKeys = segmentIdList
+                    .Select( a => IdHasher.Instance.GetHash( a ) )
+                    .ToArray();
+                segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
+
+                var newCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() );
+
+                SetCookie( httpContext, newCookie );
+            }
         }
 
         /// <summary>
@@ -138,6 +191,101 @@ namespace Rock.Lava
             }
 
             return requestFilterIdList;
+        }
+
+        private static SegmentFilterCookieData GetPersonalizationSegmentCookieData( Person currentPerson, HttpContext httpContext )
+        {
+            var rockSegmentFiltersCookie = GetCookie( httpContext, RequestCookieKey.ROCK_SEGMENT_FILTERS );
+            var personalizationPersonAliasId = currentPerson.PrimaryAliasId;
+            if ( !personalizationPersonAliasId.HasValue )
+            {
+                // no visitor or person logged in
+                return new SegmentFilterCookieData();
+            }
+
+            var cookieValueJson = rockSegmentFiltersCookie?.Value;
+            SegmentFilterCookieData segmentFilterCookieData = null;
+            if ( cookieValueJson != null )
+            {
+                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<SegmentFilterCookieData>();
+                bool isCookieDataValid = false;
+                if ( segmentFilterCookieData != null )
+                {
+                    if ( segmentFilterCookieData.IsSamePersonAlias( personalizationPersonAliasId.Value ) && segmentFilterCookieData.SegmentIdKeys != null )
+                    {
+                        isCookieDataValid = true;
+                    }
+
+                    if ( segmentFilterCookieData.IsStale( RockDateTime.Now ) )
+                    {
+                        isCookieDataValid = false;
+                    }
+                }
+
+                if ( !isCookieDataValid )
+                {
+                    segmentFilterCookieData = null;
+                }
+            }
+
+            if ( segmentFilterCookieData == null )
+            {
+                segmentFilterCookieData = new SegmentFilterCookieData();
+                segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
+                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
+            }
+
+            return segmentFilterCookieData;
+        }
+
+        /// <summary>
+        /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
+        /// </summary>
+        /// <param name="httpContext">The context.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        private static HttpCookie GetCookie( HttpContext httpContext, string name )
+        {
+            // Make sure the Cookies AllKeys contains a cookie with that name first,
+            // otherwise it will automatically create the cookie.
+            var request = httpContext.Request;
+            if ( request != null && request.Cookies.AllKeys.Contains( name ) )
+            {
+                return request.Cookies[name];
+            }
+
+            var response = httpContext.Response;
+            if ( response != null && response.Cookies.AllKeys.Contains( name ) )
+            {
+                return response.Cookies[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the specified cookie in the active HttpContext.
+        /// </summary>
+        /// <param name="httpContext">The context.</param>
+        /// <param name="cookie">The cookie.</param>
+        /// <returns></returns>
+        private static void SetCookie( HttpContext httpContext, HttpCookie cookie )
+        {
+            // Make sure the Cookies AllKeys contains a cookie with that name first,
+            // otherwise it will automatically create the cookie.
+            var request = httpContext.Request;
+            if ( request != null )
+            {
+                request.Cookies.Set( cookie );
+            }
+
+            var response = httpContext.Response;
+            if ( response != null )
+            {
+                response.Cookies.Set( cookie );
+            }
         }
     }
 }

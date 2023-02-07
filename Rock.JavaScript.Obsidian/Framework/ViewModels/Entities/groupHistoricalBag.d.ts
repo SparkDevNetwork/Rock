@@ -31,8 +31,20 @@ export type GroupHistoricalBag = {
     /** Gets or sets the archived date time value of this group at this point in history */
     archivedDateTime?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Rock.Model.Campus identifier for this group at this point in history */
     campusId?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets a value indicating whether [current row indicator].
@@ -69,6 +81,9 @@ export type GroupHistoricalBag = {
     /** Gets or sets the name of the Rock.Model.GroupType at this point in history */
     groupTypeName?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the InactiveDateTime value of the group at this point in history */
     inactiveDateTime?: string | null;
 
@@ -77,6 +92,12 @@ export type GroupHistoricalBag = {
 
     /** Gets or sets a value indicating whether this group was archived at this point in history */
     isArchived: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the parent Rock.Model.Group identifier at this point in history */
     parentGroupId?: number | null;
@@ -98,25 +119,4 @@ export type GroupHistoricalBag = {
 
     /** Gets or sets the Group Status Id.  DefinedType depends on this group's Rock.Model.GroupType.GroupStatusDefinedType */
     statusValueId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -17,6 +17,7 @@
 import { computed, defineComponent, inject, InjectionKey, PropType, provide } from "vue";
 import JavaScriptAnchor from "./javaScriptAnchor";
 import ComponentFromUrl from "./componentFromUrl";
+import { FormError } from "@Obsidian/Utility/form";
 
 /**
  * The strings that can be emitted by gateway components.
@@ -149,7 +150,7 @@ export default defineComponent({
          * 
          * @param validationErrors The fields and error messages.
          */
-        const onValidation = (validationErrors: Record<string, string>): void => {
+        const onValidation = (validationErrors: FormError[]): void => {
             emit(GatewayEmitStrings.Validation, validationErrors);
         };
 

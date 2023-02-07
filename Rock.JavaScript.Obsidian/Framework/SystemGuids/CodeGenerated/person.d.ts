@@ -22,8 +22,8 @@
 //
 
 export const enum Person {
-    /** The Guid of the 'Giver Anonymous' person that ships with core */
-    GiverAnonymous = "802235DC-3CA5-94B0-4326-AACE71180F48",
     /** The Guid of the 'Anonymous Visitor' person that ships with core. This is used by Visitor Tracking. */
     AnonymousVisitor = "7EBC167B-512D-4683-9D80-98B6BB02E1B9",
+    /** The Guid of the 'Giver Anonymous' person that ships with core */
+    GiverAnonymous = "802235DC-3CA5-94B0-4326-AACE71180F48",
 }

@@ -77,9 +77,11 @@
     <Compile Include="CodeGenerated\AttributeMatrixItem.cs" />
     <Compile Include="CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="CodeGenerated\AttributeQualifier.cs" />
+    <Compile Include="CodeGenerated\AttributeReferencedEntity.cs" />
     <Compile Include="CodeGenerated\AttributesExport.cs" />
     <Compile Include="CodeGenerated\AttributeValue.cs" />
     <Compile Include="CodeGenerated\AttributeValueHistorical.cs" />
+    <Compile Include="CodeGenerated\AttributeValueReferencedEntity.cs" />
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
@@ -128,6 +130,8 @@
     <Compile Include="CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
+    <Compile Include="CodeGenerated\ContentCollection.cs" />
+    <Compile Include="CodeGenerated\ContentCollectionSource.cs" />
     <Compile Include="CodeGenerated\ControlTotalResult.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
@@ -228,6 +232,7 @@
     <Compile Include="CodeGenerated\InteractiveExperience.cs" />
     <Compile Include="CodeGenerated\InteractiveExperienceAction.cs" />
     <Compile Include="CodeGenerated\InteractiveExperienceAnswer.cs" />
+    <Compile Include="CodeGenerated\InteractiveExperienceOccurrence.cs" />
     <Compile Include="CodeGenerated\InteractiveExperienceSchedule.cs" />
     <Compile Include="CodeGenerated\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
@@ -264,6 +269,9 @@
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
+    <Compile Include="CodeGenerated\PersonAliasPersonalization.cs" />
+    <Compile Include="CodeGenerated\PersonalizationSegment.cs" />
+    <Compile Include="CodeGenerated\PersonalizedEntity.cs" />
     <Compile Include="CodeGenerated\PersonalLink.cs" />
     <Compile Include="CodeGenerated\PersonalLinkSection.cs" />
     <Compile Include="CodeGenerated\PersonalLinkSectionOrder.cs" />
@@ -293,9 +301,12 @@
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplatePlacement.cs" />
     <Compile Include="CodeGenerated\RelatedEntity.cs" />
+    <Compile Include="CodeGenerated\Reminder.cs" />
+    <Compile Include="CodeGenerated\ReminderType.cs" />
     <Compile Include="CodeGenerated\RemoteAuthenticationSession.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />
+    <Compile Include="CodeGenerated\RequestFilter.cs" />
     <Compile Include="CodeGenerated\RestAction.cs" />
     <Compile Include="CodeGenerated\RestController.cs" />
     <Compile Include="CodeGenerated\Schedule.cs" />

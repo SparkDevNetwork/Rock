@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Search.Person
 {
@@ -93,13 +94,31 @@ namespace Rock.Search.Person
 
             IQueryable<string> resultQry;
 
+            var disableCampusLabel = CampusCache.All( false ).Count() == 1;
+
+            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
             if ( reversed )
             {
-                resultQry = qry.Select( p => p.LastName + ", " + p.NickName).Distinct();
+                if ( disableCampusLabel )
+                {
+                    resultQry = qry.Select( p => p.LastName + ", " + p.NickName ).Distinct();
+                }
+                else
+                {
+                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.LastName + ", " + p.NickName : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
+                }
+                
             }
             else
             {
-                resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+                if ( disableCampusLabel )
+                {
+                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+                }
+                else
+                {
+                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
+                }  
             }
 
             return resultQry;

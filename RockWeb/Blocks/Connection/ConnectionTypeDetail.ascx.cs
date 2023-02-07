@@ -1277,6 +1277,10 @@ namespace RockWeb.Blocks.Connection
         {
             gStatuses.DataSource = StatusesState.ToList();
             gStatuses.DataBind();
+
+            rblConnectionStatuses.Items.Clear();
+            rblConnectionStatuses.Items.Add( new ListItem { Value = Rock.Constants.None.IdValue, Text = "All" } );
+            StatusesState.ForEach( status => rblConnectionStatuses.Items.Add( new ListItem { Text = status.Name, Value = status.Id.ToString() } ) );
         }
 
         /// <summary>
@@ -1485,6 +1489,7 @@ namespace RockWeb.Blocks.Connection
             connectionWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             connectionWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionWorkflow.ConnectionTypeId = 0;
+            connectionWorkflow.ManualTriggerFilterConnectionStatusId = rblConnectionStatuses.SelectedValueAsInt();
             if ( !connectionWorkflow.IsValid )
             {
                 return;
@@ -1669,6 +1674,8 @@ namespace RockWeb.Blocks.Connection
                     then the SecondaryQualifier is the third value since it is on the right side of the second |
                 */
 
+                rblConnectionStatuses.Visible = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
+
                 if ( connectionWorkflow != null )
                 {
                     if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
@@ -1684,6 +1691,8 @@ namespace RockWeb.Blocks.Connection
                             ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                         }
                     }
+
+                    rblConnectionStatuses.SelectedValue = connectionWorkflow.ManualTriggerFilterConnectionStatusId?.ToString() ?? Rock.Constants.None.IdValue;
                 }
             }
 
@@ -2001,6 +2010,9 @@ namespace RockWeb.Blocks.Connection
                     dlgConnectionStatuses.Hide();
                     break;
                 case "CONNECTIONWORKFLOWS":
+                    ddlTriggerType.SetValue( 0 );
+                    wpWorkflowType.SetValue( null );
+                    rblConnectionStatuses.SelectedValue = null;
                     dlgConnectionWorkflow.Hide();
                     break;
                 case "CONNECTIONREQUESTATTRIBUTES":
@@ -2121,7 +2133,13 @@ namespace RockWeb.Blocks.Connection
                 this.IsCritical = connectionStatus.IsCritical;
                 this.HighlightColor = connectionStatus.HighlightColor;
                 this.AutoInactivateState = connectionStatus.AutoInactivateState;
+                this.Id = connectionStatus.Id;
             }
+
+            /// <summary>
+            /// Gets or sets the value of the identifier.
+            /// </summary>
+            public int Id { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether this instance is default.

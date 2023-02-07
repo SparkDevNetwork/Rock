@@ -23,19 +23,19 @@
 
 /** Information about a single filter that may be shown in the filter panel. */
 export type FilterOptionsBag = {
+    /** Gets or sets the markup that will be displayed before the filter. */
+    headerMarkup?: string | null;
+
+    /** Gets or sets the display name of the filter. */
+    name?: string | null;
+
+    /** Gets or sets a value indicating whether this filter is shown. */
+    show: boolean;
+
     /**
      * The unique key that identifies the filter source. If backed by
      * an attribute then it will be the value "attr_" followed by the
      * attribute key.
      */
     sourceKey?: string | null;
-
-    /** Gets or sets a value indicating whether this filter is shown. */
-    show: boolean;
-
-    /** Gets or sets the display name of the filter. */
-    name?: string | null;
-
-    /** Gets or sets the markup that will be displayed before the filter. */
-    headerMarkup?: string | null;
 };
