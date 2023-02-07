@@ -156,7 +156,7 @@
                                     <div class="panel-body">
                                         <fieldset>
                                             <%-- Special input with rock-fullname class --%>
-                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                                 <div class="row">

@@ -1533,8 +1533,8 @@ $('#{0}').tooltip();
             var availableSchedules = availableGroupLocationSchedules
                 .GroupBy( s => new { s.GroupId, ScheduleId = s.ScheduleId, s.ScheduledDateTime.Date } )
                 .Select( s => s.First() )
-                .OrderBy( a => a.GroupOrder )
-                .ThenBy( a => a.GroupName )
+                .OrderBy( a => a.GroupName )
+                .ThenBy( a => a.GroupId )
                 .ThenBy( a => a.ScheduledDateTime )
                 .ThenBy( a => a.LocationOrder )
                 .ThenBy( a => a.LocationName )
