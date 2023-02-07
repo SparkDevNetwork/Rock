@@ -93,6 +93,19 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues != null &&
+                privateConfigurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                privateConfigurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return base.GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
         #endregion
 
         #region FilterControl
