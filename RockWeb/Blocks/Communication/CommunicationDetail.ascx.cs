@@ -789,7 +789,7 @@ namespace RockWeb.Blocks.Communication
         #region Interactions Grid Events
 
         /// <summary>
-        /// Handles the GridRebind event of the Interactions grid controls.
+        /// Handles the GridRebind event of the gInteractions grid controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -909,7 +909,7 @@ namespace RockWeb.Blocks.Communication
         private bool _GridIsCommunication = false;
 
         /// <summary>
-        /// Handles the GridRebind event of the Recipient grid controls.
+        /// Handles the GridRebind event of the gRecipients grid controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
