@@ -194,7 +194,18 @@ namespace Rock.Model
                 reminderQuery = reminderQuery.Where( t => !excludedReminderTypeIds.Contains( t.ReminderTypeId ) );
             }
 
-            var entityTypeIds = reminderQuery.Select( r => r.ReminderType.EntityTypeId ).Distinct();
+            /*
+                02/07/2022 - SMC
+
+                This query is executed here to avoid causing a very slow join in the SQL EntityFramework creates on
+                the next query.  While this could technically cause the SQL query to grow beyond the maximum length
+                and/or have performance issues because of having too many elements in the comma-delimited "IN" list,
+                it is highly unlikely that anyone would have enough unique EntityTypes in their database to cause a
+                problem.
+            */
+
+            var entityTypeIds = reminderQuery.Select( r => r.ReminderType.EntityTypeId ).Distinct().ToList();
+
             var entityTypes = new EntityTypeService( this.Context as RockContext ).Queryable()
                 .Where( t => entityTypeIds.Contains( t.Id ) );
 
@@ -266,13 +277,14 @@ namespace Rock.Model
         {
             var rockContext = this.Context as RockContext;
             var reminderEntities = new Dictionary<int, IEntity>();
+            var entityTypeIds = reminders.Select( r => r.ReminderType.EntityTypeId ).Distinct().ToList();
 
-            var entityTypes = reminders.Select( r => r.ReminderType.EntityType ).Distinct().ToList();
-            foreach ( var entityType in entityTypes )
+            var entityTypes = new List<Rock.Web.Cache.EntityTypeCache>();
+            foreach ( var entityTypeId in entityTypeIds )
             {
-                var systemType = Rock.Web.Cache.EntityTypeCache.Get( entityType ).GetEntityType();
+                var systemType = Rock.Web.Cache.EntityTypeCache.Get( entityTypeId ).GetEntityType();
                 var serviceInstance = Reflection.GetServiceForEntityType( systemType, rockContext );
-                var remindersByEntity = reminders.Where( r => r.ReminderType.EntityTypeId == entityType.Id );
+                var remindersByEntity = reminders.Where( r => r.ReminderType.EntityTypeId == entityTypeId);
                 var reminderEntityIds = remindersByEntity.Select( r => r.EntityId );
 
                 MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
