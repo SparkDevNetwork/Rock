@@ -305,8 +305,8 @@ namespace RockWeb.Blocks.Reminders
             }
             else if ( entityTypes.Count == 1 )
             {
-                // This user only has a reminder for a single entity type, so hide that dropdown.
-                lSelectedEntityType.Text = entityTypes[0].FriendlyName.Pluralize();
+                // This user only has a reminder for a single entity type, so set that as the selected entity type.
+                selectedEntityTypeId = entityTypes[0].Id;
             }
 
             BindEntityTypeList( entityTypes );
