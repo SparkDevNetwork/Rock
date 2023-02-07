@@ -280,7 +280,7 @@ namespace RockWeb.Blocks.Reminders
             {
                 var reminderService = new ReminderService( rockContext );
 
-                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value ).ToList();
+                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value, includedReminderTypeIds, excludedReminderTypeIds).ToList();
 
                 reminderTypes = reminderService.GetReminderTypesByPerson( selectedEntityTypeId, CurrentPerson );
                 if ( includedReminderTypeIds.Any() )

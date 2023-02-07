@@ -178,12 +178,26 @@ namespace Rock.Model
         /// Gets entity types associated with reminders by person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        public IQueryable<EntityType> GetReminderEntityTypesByPerson( int personId )
+        /// <param name="includedReminderTypeIds">The included reminder type ids.</param>
+        /// <param name="excludedReminderTypeIds">The excluded reminder type ids.</param>
+        /// <returns>IQueryable&lt;EntityType&gt;.</returns>
+        public IQueryable<EntityType> GetReminderEntityTypesByPerson( int personId, List<int> includedReminderTypeIds, List<int> excludedReminderTypeIds )
         {
-            var entityTypeIds = GetByPerson( personId ).Select( r => r.ReminderType.EntityTypeId ).Distinct();
+            var reminderQuery = GetByPerson( personId );
+
+            if ( includedReminderTypeIds.Any() )
+            {
+                reminderQuery = reminderQuery.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
+            else if ( excludedReminderTypeIds.Any() )
+            {
+                reminderQuery = reminderQuery.Where( t => !excludedReminderTypeIds.Contains( t.ReminderTypeId ) );
+            }
+
+            var entityTypeIds = reminderQuery.Select( r => r.ReminderType.EntityTypeId ).Distinct();
             var entityTypes = new EntityTypeService( this.Context as RockContext ).Queryable()
                 .Where( t => entityTypeIds.Contains( t.Id ) );
+
             return entityTypes;
         }
 
