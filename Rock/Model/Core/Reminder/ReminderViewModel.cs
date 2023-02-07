@@ -115,6 +115,34 @@ namespace Rock.Model
         public string PersonProfilePictureUrl { get; private set; }
 
         /// <summary>
+        /// Performs the Lava merge required to get the entity URL from the <see cref="EntityType.LinkUrlLavaTemplate"/> property.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetEntityUrl()
+        {
+            string entityUrl = string.Empty;
+
+            var entityUrlPattern = this.Reminder.ReminderType.EntityType.LinkUrlLavaTemplate;
+            if ( !string.IsNullOrWhiteSpace( entityUrlPattern ) )
+            {
+                var entityUrlMergeFields = new Dictionary<string, object>
+                {
+                    { "Entity", this.Entity }
+                };
+
+                entityUrl = entityUrlPattern.ResolveMergeFields( entityUrlMergeFields );
+
+                if ( entityUrl.StartsWith( "~/" ) )
+                {
+                    var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+                    entityUrl = entityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
+                }
+            }
+
+            return entityUrl;
+        }
+
+        /// <summary>
         /// Initializes the <see cref="ReminderViewModel"/> instance.
         /// </summary>
         /// <param name="reminder">The <see cref="Rock.Model.Reminder"/>.</param>
@@ -126,20 +154,7 @@ namespace Rock.Model
             this.Reminder = reminder;
             this.Entity = entity;
             this.PersonProfilePictureUrl = personProfilePictureUrl;
-
-            this.EntityUrl = string.Empty;
-            var entityUrlPattern = reminder.ReminderType.EntityType.LinkUrlLavaTemplate;
-            if ( !string.IsNullOrWhiteSpace( entityUrlPattern ) )
-            {
-                var entityUrlMergeFields = new Dictionary<string, object>();
-                entityUrlMergeFields.Add( "Entity", entity );
-                this.EntityUrl = reminder.ReminderType.EntityType.LinkUrlLavaTemplate.ResolveMergeFields( entityUrlMergeFields );
-                if ( this.EntityUrl.StartsWith( "~/" ) )
-                {
-                    var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-                    this.EntityUrl = this.EntityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
-                }
-            }
+            this.EntityUrl = GetEntityUrl();
         }
     }
 }
