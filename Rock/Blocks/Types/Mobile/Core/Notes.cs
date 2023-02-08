@@ -70,11 +70,10 @@ namespace Rock.Blocks.Types.Mobile.Core
         Key = AttributeKey.NoteDisplayMode,
         Order = 3 )]
 
-    // bc todo BEFORE MERGE: Update the Guid's for migration
     [BlockTemplateField( "Notes Template",
         Description = "The template to use when rendering the notes. Provided with a 'Notes' merge field, among some others (see documentation).",
-        TemplateBlockValueGuid = "27B8A7A5-C54F-4A67-AB91-C48A35525CCC",
-        DefaultValue = "20A01742-F215-4CB4-B590-D6CB555D7E45",
+        TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_NOTES,
+        DefaultValue = "C9134085-D433-444D-9803-8E5CE1B053DE",
         IsRequired = true,
         Key = AttributeKey.NotesTemplate,
         Order = 4 )]
