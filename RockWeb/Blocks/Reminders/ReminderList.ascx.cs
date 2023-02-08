@@ -374,6 +374,25 @@ namespace RockWeb.Blocks.Reminders
         private void BindReminderList( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
             var reminders = GetReminders( entityTypeId, entityId, reminderTypeId );
+
+            if ( reminders.Count == 0 )
+            {
+                if ( lCompletionFilter.Text == "Complete")
+                {
+                    nbFilteredReminders.Text = "You have no completed reminders";
+                }
+                else
+                {
+                    nbFilteredReminders.Text = "You have no active reminders";
+                }
+
+                nbFilteredReminders.Visible = true;
+            }
+            else
+            {
+                nbFilteredReminders.Visible = true;
+            }
+
             rptReminders.DataSource = reminders;
             rptReminders.DataBind();
         }

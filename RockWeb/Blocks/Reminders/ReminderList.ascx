@@ -19,7 +19,7 @@
             </asp:Panel>
 
             <asp:Panel ID="pnlNoReminders" runat="server" CssClass="panel-body" Visible="false">
-                <Rock:NotificationBox ID="nbNoReminders" runat="server" NotificationBoxType="Warning" Text=" You do not have any reminders." />
+                <Rock:NotificationBox ID="nbNoReminders" runat="server" NotificationBoxType="Warning" Text="You do not have any reminders." />
             </asp:Panel>
 
             <asp:Panel ID="pnlView" runat="server" CssClass="panel-body">
@@ -157,6 +157,8 @@
                             </asp:Panel>
                         </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbFilteredReminders" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <asp:Repeater ID="rptReminders" runat="server" OnItemDataBound="rptReminders_ItemDataBound">
                         <ItemTemplate>
