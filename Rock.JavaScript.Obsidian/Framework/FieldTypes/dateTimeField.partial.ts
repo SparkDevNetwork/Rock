@@ -59,7 +59,7 @@ export class DateTimeFieldType extends FieldTypeBase {
         }
         else if (value) {
             const dateValue = RockDateTime.parseISO(value);
-            const dateFormatTemplate = configurationValues[ConfigurationValueKey.Format] || "MM/dd/yyy";
+            const dateFormatTemplate = configurationValues[ConfigurationValueKey.Format] || "MM/dd/yyy hh:mm tt";
 
             if (dateValue !== null) {
                 let textValue = dateValue.toASPString(dateFormatTemplate);

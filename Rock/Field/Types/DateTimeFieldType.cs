@@ -55,6 +55,12 @@ namespace Rock.Field.Types
             return GetTextOrCondensedValue( value, configurationValues, true );
         }
 
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetTextOrCondensedValue( value, configurationValues, true ).EncodeHtml();
+        }
+
         /// <summary>
         /// Formats the value for display as a date.
         /// </summary>
