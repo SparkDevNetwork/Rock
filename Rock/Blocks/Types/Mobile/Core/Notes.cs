@@ -253,7 +253,7 @@ namespace Rock.Blocks.Types.Mobile.Core
             {
                 DefaultNoteImageUrl = defaultNoteImageUrl,
                 UseTemplate = UseTemplate,
-                PageLoadSize = 12
+                PageLoadSize = PageLoadSize
             };
         }
 
