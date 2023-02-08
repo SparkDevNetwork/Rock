@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
