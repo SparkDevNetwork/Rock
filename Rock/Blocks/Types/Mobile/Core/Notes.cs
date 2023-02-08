@@ -398,7 +398,14 @@ namespace Rock.Blocks.Types.Mobile.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var noteData = GetViewableNotes( rockContext, parentNoteGuid, startIndex, count )
+                var viewableNotes = GetViewableNotes( rockContext, parentNoteGuid, startIndex, count );
+
+                if( viewableNotes == null )
+                {
+                    return null;
+                }
+
+                var noteData = viewableNotes
                     .OrderByDescending( n => n.CreatedDateTime )
                     .Select( a => GetNoteObject( a ) )
                     .ToList();
