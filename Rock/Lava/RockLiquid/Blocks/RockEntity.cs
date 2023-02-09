@@ -615,6 +615,7 @@ namespace Rock.Lava.RockLiquid.Blocks
             return currentPerson;
         }
 
+        /// <summary>
         /// Gets the data view expression.
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
