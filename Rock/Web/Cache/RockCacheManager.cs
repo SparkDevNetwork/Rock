@@ -411,6 +411,16 @@ namespace Rock.Web.Cache
         /// Initializes a new instance of the <see cref="CacheItemStatistics"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
+        public CacheItemStatistics( string name )
+        {
+            Name = name;
+            FullName = $"Rock.Web.Cache.{name},Rock";
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CacheItemStatistics"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
         /// <param name="fullname">The full name.</param>
         public CacheItemStatistics( string name, string fullname )
         {
