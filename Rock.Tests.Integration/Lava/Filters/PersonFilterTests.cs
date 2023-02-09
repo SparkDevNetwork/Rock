@@ -139,9 +139,6 @@ namespace Rock.Tests.Integration.Lava
         public void PersonNotes_WithCurrentPersonHavingNotes_ReturnsNotes()
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-
-            var person = values["CurrentPerson"] as Person;
-
             var options = new LavaTestRenderOptions { MergeFields = values };
 
             var template = @"
