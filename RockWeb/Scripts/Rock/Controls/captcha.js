@@ -24,6 +24,28 @@
                     const apiSource = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback";
                     $('head').prepend("<script src='" + apiSource + "' async defer></script>");
                 }
+
+                // Partial postbacks sometimes cause the page to reload, and in the instance where the widget has already been rendered, the turnstile api will not re-render the widget
+                // so if the turnstile code has already been injected, then use it to re-render the page
+                if (typeof (turnstile) !== 'undefined') {
+                    const widgetId = turnstile.render(`#${options.id}`, {
+                        sitekey: options.key,
+                        callback: function onloadTurnstileCallback(token) {
+
+                            let retryCount = 3;
+                            const hfToken = document.querySelector('.js-captchaToken');
+                            // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
+                            if (!hfToken) {
+                                if (retryCount > 0) {
+                                    retryCount--;
+                                    setTimeout(() => onloadTurnstileCallback(token), 1000);
+                                }
+                            } else {
+                                hfToken.value = token;
+                            }
+                        },
+                    });
+                }
             },
             onloadInitialize: function () {
                 // Perform final initialization on all captchas.
