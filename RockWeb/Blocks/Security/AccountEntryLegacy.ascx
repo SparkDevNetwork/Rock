@@ -96,7 +96,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnUserInfoNext_Click" />
+            <Rock:BootstrapButton ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnUserInfoNext_Click" />
         </div>
 
     </asp:PlaceHolder>
