@@ -162,7 +162,7 @@ namespace Rock.Web.Cache
             {
                 _objectCacheKeyReferences = value;
             }
-        } 
+        }
         private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
 
         /// <summary>
@@ -184,8 +184,10 @@ namespace Rock.Web.Cache
                 }
                 return _stringCacheKeyReferences;
             }
-            set {
-                _stringCacheKeyReferences = value;            }
+            set
+            {
+                _stringCacheKeyReferences = value;
+            }
         }
         private static List<CacheKeyReference> _stringCacheKeyReferences = new List<CacheKeyReference>();
 
@@ -276,8 +278,8 @@ namespace Rock.Web.Cache
                 Expiration = expiration,
                 AllowCacheBypass = false
             };
-            
-            return GetOrAddExisting(args);
+
+            return GetOrAddExisting( args );
         }
 
         /// <summary>
@@ -426,7 +428,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( !value.Contains(key) )
+                    if ( !value.Contains( key ) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -539,7 +541,7 @@ namespace Rock.Web.Cache
 
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( cacheTypeName ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -642,7 +644,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( Type cacheType )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -669,7 +671,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatForSystemType( string cacheTypeName )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -700,7 +702,7 @@ namespace Rock.Web.Cache
         {
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( cacheTypeName ) );
             }
 
             return GetStatForSystemType( cacheTypeName );
@@ -726,11 +728,11 @@ namespace Rock.Web.Cache
                 {
                     configurationOptions.Password = password;
                 }
-                
+
                 var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
                 return redisConnection.IsConnected;
             }
-            catch(Exception)
+            catch ( Exception )
             {
                 return false;
             }
