@@ -419,7 +419,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the GAttendeesAttendance control.
+        /// Handles the GridRebind event of the gAttendeesAttendance control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gAttendance control.
+        /// Handles the GridRebind event of the gChartAttendance control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

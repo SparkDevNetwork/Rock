@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Fundraising
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the control.
+        /// Handles the GridRebind event of the gDonations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
