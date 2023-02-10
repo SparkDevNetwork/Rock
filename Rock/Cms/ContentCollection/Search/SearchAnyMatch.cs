@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// A special search item that will match any and all documents.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class SearchAnyMatch : ISearchItem
     {
         #region ISearchItem

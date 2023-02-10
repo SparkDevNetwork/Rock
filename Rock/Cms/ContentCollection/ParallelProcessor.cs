@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Cms.ContentCollection
@@ -27,6 +28,7 @@ namespace Rock.Cms.ContentCollection
     /// Helper class for processing a number of items across multiple
     /// background tasks.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class ParallelProcessor
     {
         #region Properties

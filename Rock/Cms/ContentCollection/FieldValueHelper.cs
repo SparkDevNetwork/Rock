@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Cms;
@@ -33,6 +34,7 @@ namespace Rock.Cms.ContentCollection
     /// This class will batch update requests and perform those changes in
     /// a single database hit.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal static class FieldValueHelper
     {
         private static readonly ConcurrentQueue<ValueItem> _collectionQueue = new ConcurrentQueue<ValueItem>();

@@ -13,7 +13,7 @@ namespace Rock.Security.Authentication.OneTimePasscode
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.15" )]
     public class SendOneTimePasscodeResult
     {
         /// <summary>

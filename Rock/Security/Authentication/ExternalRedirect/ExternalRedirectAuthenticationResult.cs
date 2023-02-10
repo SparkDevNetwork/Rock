@@ -13,7 +13,7 @@ namespace Rock.Security.Authentication.ExternalRedirectAuthentication
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.15" )]
     public class ExternalRedirectAuthenticationResult
     {
         /// <summary>

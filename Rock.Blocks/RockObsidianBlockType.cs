@@ -255,7 +255,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public BlockActionResult RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";

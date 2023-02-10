@@ -77,7 +77,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.15", true )]
         public static void DeleteLegacyPhoneNumber( SystemPhoneNumber systemPhoneNumber )
         {
             DeleteLegacyPhoneNumber( systemPhoneNumber.Guid );

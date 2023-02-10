@@ -17,6 +17,7 @@
 
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -27,6 +28,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
     /// The indexed details of a content channel item.
     /// </summary>
     /// <seealso cref="IndexDocumentBase" />
+    [RockInternal( "1.14" )]
     internal class ContentChannelItemDocument : IndexDocumentBase
     {
         #region Methods

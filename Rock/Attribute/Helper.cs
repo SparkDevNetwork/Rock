@@ -2232,7 +2232,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2384,7 +2384,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2446,7 +2446,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;

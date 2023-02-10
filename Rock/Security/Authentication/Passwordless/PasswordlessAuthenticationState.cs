@@ -16,7 +16,7 @@ namespace Rock.Security.Authentication.Passwordless
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.15" )]
     public class PasswordlessAuthenticationState
     {
         /// <summary>
