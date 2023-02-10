@@ -21,6 +21,7 @@ import RockLabel from "./rockLabel";
 import TextBox from "./textBox";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { rulesPropType } from "@Obsidian/Utility/validationRules";
 
 export type AddressControlValue = {
     street1?: string;
@@ -65,7 +66,8 @@ export const AddressControlBase = defineComponent({
         id: {
             type: String as PropType<string>,
             default: ""
-        }
+        },
+        rules: rulesPropType
     },
 
     setup(props) {
@@ -112,13 +114,14 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<AddressControlValue>,
             default: {}
-        }
+        },
+        rules: rulesPropType
     },
 
     template: `
-<RockFormField formGroupClasses="address-control" #default="{uniqueId, field}" name="addresscontrol" v-model.lazy="modelValue">
+<RockFormField formGroupClasses="address-control" #default="{uniqueId, field}" name="addresscontrol" v-model.lazy="modelValue" :rules="rules" >
     <div class="control-wrapper">
-        <AddressControlBase v-model.lazy="modelValue" v-bind="field" :disabled="disabled" />
+        <AddressControlBase v-model.lazy="modelValue" :rules="rules" v-bind="field" :disabled="disabled" />
     </div>
 </RockFormField>
 `
