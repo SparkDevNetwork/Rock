@@ -254,7 +254,7 @@ export default defineComponent({
 
     template: `
 <RockFormField
-    :modelValue="internalValue"
+    :modelValue="fileGuid"
     formGroupClasses="image-uploader"
     name="imageuploader">
     <template #default="{uniqueId, field}">
