@@ -136,6 +136,34 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return "";
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileInfo = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( f => f.Guid == guid.Value )
+                    .Select( f => f.FileName )
+                    .FirstOrDefault();
+
+                if ( binaryFileInfo.IsNullOrWhiteSpace() )
+                {
+                    return "";
+                }
+
+                return binaryFileInfo;
+            }
+        }
+
+        /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             string formattedValue = string.Empty;
