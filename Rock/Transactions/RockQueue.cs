@@ -288,8 +288,6 @@ namespace Rock.Transactions
 
                 var executionTimeInMilliseconds = ( int ) ( endTime - startTime ).TotalMilliseconds;
 
-                System.Diagnostics.Debug.WriteLine( $"FastQueue processing took {executionTimeInMilliseconds} ms" );
-
                 // If we have a processing interval of 1,000ms and processing
                 // took 200ms then we want only want to sleep for 800ms.
                 var waitMilliseconds = processingIntervalInMilliseconds - executionTimeInMilliseconds;
