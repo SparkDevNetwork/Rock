@@ -1300,9 +1300,7 @@ namespace Rock.Migrations.Migrations {
         ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
         ///&lt;style&gt;table[class=&quot;body&quot;] table.columns td.reminder-img-today{width:58px !important;}table[class=&quot;body&quot;] table.columns td.reminder-img{width:50px !important;}&lt;/style&gt;
         ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
-        ///
-        ///&lt;p&gt;
-        ///  [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication {
             get {
@@ -1330,6 +1328,39 @@ namespace Rock.Migrations.Migrations {
         public static string _202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure {
             get {
                 return ResourceManager.GetString("_202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /****** Object:  StoredProcedure [dbo].[spCore_DeleteOrphanedAttributeMatrices] ******/
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure AttributeMatrix records that are no longer associated with an attribute value.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;code&gt;
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///	
+        ///CREATE PROCEDURE [dbo].[spCore_DeleteOrphanedAttributeMatrices]
+        ///AS
+        ///BEGIN
+        ///	DECLARE @MatrixItemEntityTypeId INT = (SELECT Id FROM [EntityType] WHERE [Guid]=&apos;3C9D5021-0484- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices {
+            get {
+                return ResourceManager.GetString("_202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttribute" +
+                        "Matrices", resourceCulture);
             }
         }
     }

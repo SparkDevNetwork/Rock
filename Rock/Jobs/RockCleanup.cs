@@ -1363,6 +1363,12 @@ namespace Rock.Jobs
         {
             int recordsDeleted = 0;
 
+            using ( var resultContext = new RockContext() )
+            {
+                resultContext.Database.CommandTimeout = commandTimeout;
+                resultContext.Database.ExecuteSqlCommand( "spCore_DeleteOrphanedAttributeMatrices" );
+            }
+
             // clean up other orphaned entity attributes
             Type rockContextType = typeof( Rock.Data.RockContext );
             foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
