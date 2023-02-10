@@ -37,6 +37,8 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
 using Rock.Attribute;
+using Rock.Lava.DotLiquid;
+using Rock.Utility.Settings;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -533,6 +535,13 @@ namespace Rock.Lava.RockLiquid.Blocks
         /// </summary>
         public static void RegisterEntityCommands()
         {
+            // If the database is not connected, do not register these commands.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity

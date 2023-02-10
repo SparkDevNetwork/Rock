@@ -143,7 +143,21 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is clustered using RockWebFarm.
+        /// Gets a flag indicating if the database is currently available.
+        /// </summary>
+        public static bool DatabaseIsAvailable { get; private set; } = false;
+
+        /// <summary>
+        /// Sets a flag indicating if a database connection is available.
+        /// </summary>
+        /// <param name="isAvailable"></param>
+        public static void SetDatabaseIsAvailable( bool isAvailable )
+        {
+            DatabaseIsAvailable = isAvailable;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is clustered using RockWebFarm or Redis.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
