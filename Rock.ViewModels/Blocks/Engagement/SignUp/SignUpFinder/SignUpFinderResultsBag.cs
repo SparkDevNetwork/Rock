@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
 {
+    /// <summary>
+    /// Class SignUpFinderResultsBag
+    /// </summary>
     public class SignUpFinderResultsBag
     {
         /// <summary>

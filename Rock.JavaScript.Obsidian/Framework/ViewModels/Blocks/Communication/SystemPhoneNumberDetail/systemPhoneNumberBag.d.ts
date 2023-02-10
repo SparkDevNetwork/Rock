@@ -24,6 +24,7 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Class SystemPhoneNumberBag */
 export type SystemPhoneNumberBag = {
     /**
      * Gets or sets the person alias who should receive responses to the SMS

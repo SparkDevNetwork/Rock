@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Class SignUpFinderResultsBag */
 export type SignUpFinderResultsBag = {
     /** Gets or sets the sign-up project search results header HTML. */
     resultsHeaderHtml?: string | null;

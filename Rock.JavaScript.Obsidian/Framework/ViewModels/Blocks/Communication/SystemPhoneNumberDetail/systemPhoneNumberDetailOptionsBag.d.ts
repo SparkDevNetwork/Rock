@@ -23,6 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Class SystemPhoneNumberDetailOptionsBag */
 export type SystemPhoneNumberDetailOptionsBag = {
     /** Gets or sets the mobile sites available to be selected. */
     mobileSites?: ListItemBag[] | null;

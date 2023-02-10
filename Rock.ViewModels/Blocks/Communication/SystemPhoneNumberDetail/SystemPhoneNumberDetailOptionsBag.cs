@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.SystemPhoneNumberDetail
 {
+    /// <summary>
+    /// Class SystemPhoneNumberDetailOptionsBag
+    /// </summary>
     public class SystemPhoneNumberDetailOptionsBag
     {
         /// <summary>

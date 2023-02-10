@@ -23,6 +23,7 @@
 
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 
+/** Class SignUpFinderSelectedFiltersBag */
 export type SignUpFinderSelectedFiltersBag = {
     /** Gets or sets the group attribute filters that should be used to limit the search results, grouped by project type [guid]. */
     attributeFiltersByProjectType?: Record<string, Record<string, PublicComparisonValueBag>> | null;

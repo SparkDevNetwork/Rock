@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Communication
 {
+    /// <summary>
+    /// Class ConversationMessageBag
+    /// </summary>
     public class ConversationMessageBag
     {
         /// <summary>

@@ -24,6 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 import { ConversationAttachmentBag } from "@Obsidian/ViewModels/Communication/conversationAttachmentBag";
 
+/** Class ConversationMessageBag */
 export type ConversationMessageBag = {
     /** Gets or sets the attachments to this message. */
     attachments?: ConversationAttachmentBag[] | null;

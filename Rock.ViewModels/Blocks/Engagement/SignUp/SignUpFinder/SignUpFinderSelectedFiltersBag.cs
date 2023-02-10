@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
 {
+    /// <summary>
+    /// Class SignUpFinderSelectedFiltersBag
+    /// </summary>
     public class SignUpFinderSelectedFiltersBag
     {
         /// <summary>

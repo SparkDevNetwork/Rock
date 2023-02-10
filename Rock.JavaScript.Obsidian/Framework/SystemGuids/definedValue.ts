@@ -73,6 +73,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupsGroupFinder: "1B6D540A-2E40-44F6-8AE9-2857DE913459",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests: "198F3006-5F0F-48AB-9EA0-2FA56F633753",
+    /** The block template for the mobile notes block. */
+    BlockTemplateMobileNotes: "37F44005-C4D8-4527-BA86-B6F8B72BF243",
     /** The block template for Mobile &gt; Prayer &gt; Prayer Card View block. */
     BlockTemplateMobilePrayerPrayerCardView: "DCFECA8C-CDF5-4863-851E-7EFEE6758EE9",
     /** The block template for the mobile prayer session block. */
