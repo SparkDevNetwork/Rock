@@ -38,6 +38,12 @@ export default defineComponent({
             default: ""
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
@@ -97,7 +103,7 @@ export default defineComponent({
         });
 
         function isItemDisabled(item: ListItemBag): boolean {
-            return item.category === "disabled";
+            return item.category === "disabled" || props.disabled;
         }
 
         const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {

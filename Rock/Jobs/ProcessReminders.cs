@@ -66,6 +66,20 @@ namespace Rock.Jobs
         Category = "General",
         Order = 3 )]
 
+    [ReminderTypesField(
+        "Reminder Types Include",
+        Key = AttributeKey.ReminderTypesInclude,
+        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        IsRequired = false,
+        Order = 4 )]
+
+    [ReminderTypesField(
+        "Reminder Types Exclude",
+        Key = AttributeKey.ReminderTypesExclude,
+        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        IsRequired = false,
+        Order = 5 )]
+
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
@@ -90,6 +104,16 @@ namespace Rock.Jobs
             /// The max reminders per entity type.
             /// </summary>
             public const string MaxRemindersPerEntityType = "MaxRemindersPerEntityType";
+
+            /// <summary>
+            /// The reminder types to include.
+            /// </summary>
+            public const string ReminderTypesInclude = "ReminderTypesInclude";
+
+            /// <summary>
+            /// The reminder types to exclude.
+            /// </summary>
+            public const string ReminderTypesExclude = "ReminderTypesExclude";
         }
 
         /// <summary> 
@@ -115,6 +139,16 @@ namespace Rock.Jobs
         /// </summary>
         private int _totalProcessedReminders;
 
+        /// <summary>
+        /// The included reminder type ids.
+        /// </summary>
+        private List<int> _includedReminderTypeIds = new List<int>();
+
+        /// <summary>
+        /// The excluded reminder type ids.
+        /// </summary>
+        private List<int> _excludedReminderTypeIds = new List<int>();
+
         #endregion Private Fields
 
         /// <inheritdoc cref="RockJob.Execute()"/>
@@ -130,16 +164,20 @@ namespace Rock.Jobs
                 var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
                 rockContext.Database.CommandTimeout = commandTimeout;
 
+                SetIncludeExcludeReminderTypeIds( rockContext );
+
                 var notificationSystemCommunication = GetNotificationSytemCommunicaton( rockContext );
 
                 var reminderService = new ReminderService( rockContext );
-                var activeReminders = reminderService.GetActiveReminders( currentDate );
+                var activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
+                var reminderEntities = reminderService.GetReminderEntities( activeReminders );
+
                 ProcessWorkflowNotifications( activeReminders, rockContext );
                 ProcessCommunicationNotifications( notificationSystemCommunication, activeReminders, rockContext );
 
                 // Some reminders may have been auto-completed by notification processing and are therefore no longer active,
                 // so we need to refresh our query before we update reminder counts.
-                activeReminders = reminderService.GetActiveReminders( currentDate );
+                activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
                 UpdateReminderCounts( activeReminders, rockContext );
             }
 
@@ -151,7 +189,7 @@ namespace Rock.Jobs
                 sbResultOutput.AppendLine();
 
                 int errorCount = 0;
-                foreach( var jobError in _jobErrors )
+                foreach ( var jobError in _jobErrors )
                 {
                     if ( errorCount == 5 )
                     {
@@ -177,6 +215,43 @@ namespace Rock.Jobs
         #region Job Logic Methods
 
         /// <summary>
+        /// Sets the included/excluded reminder type ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void SetIncludeExcludeReminderTypeIds( RockContext rockContext )
+        {
+            var reminderTypeService = new ReminderTypeService( rockContext );
+
+            _includedReminderTypeIds.Clear();
+            List<Guid> reminderTypeIncludeGuids = GetAttributeValue( AttributeKey.ReminderTypesInclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeIncludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeIncludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _includedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
+
+            _excludedReminderTypeIds.Clear();
+            List<Guid> reminderTypeExcludeGuids = GetAttributeValue( AttributeKey.ReminderTypesExclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeExcludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeExcludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _excludedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the SystemCommunication for notifications.
         /// </summary>
         /// <returns></returns>
@@ -200,9 +275,13 @@ namespace Rock.Jobs
         private void ProcessWorkflowNotifications( IQueryable<Reminder> activeReminders, RockContext rockContext )
         {
             WriteLog( $"ProcessReminders job:  Initiated workflow notification processing." );
-            var workflowReminderList = activeReminders
-                .Where( r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow )
-                .ToList();
+
+            var workflowReminderQuery = activeReminders
+                .Where(r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow);
+
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( workflowReminderQuery );
+
+            var workflowReminderList = workflowReminderQuery.ToList();
 
             WriteLog( $"ProcessReminders job:  Processing {workflowReminderList.Count} reminders for notification by workflow." );
 
@@ -215,7 +294,8 @@ namespace Rock.Jobs
                     continue;
                 }
 
-                InitiateNotificationWorkflow( workflowReminder, rockContext );
+                var entity = reminderEntities[workflowReminder.Id];
+                InitiateNotificationWorkflow( workflowReminder, rockContext, entity );
             }
         }
 
@@ -262,16 +342,13 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="reminder"></param>
         /// <param name="rockContext"></param>
-        /// <returns></returns>
-        private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext )
+        /// <param name="entity">The entity.</param>
+        private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext, IEntity entity )
         {
             WriteLog( $"ProcessReminders job:  Creating notification workflow for reminder {reminder.Id}." );
 
             try
             {
-                var entityTypeService = new EntityTypeService( rockContext );
-                var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-
                 var workflowParameters = new Dictionary<string, string>
                 {
                     { "Reminder", reminder.Guid.ToString() },
@@ -333,7 +410,7 @@ namespace Rock.Jobs
             var otherReminderEntityList = otherReminders
                 .Select( r => r.ReminderType.EntityType )
                 .Distinct()
-                .OrderBy( t => t.FriendlyName) // Sort other reminders by friendly name.
+                .OrderBy( t => t.FriendlyName ) // Sort other reminders by friendly name.
                 .ToList();
 
             foreach ( var entityType in otherReminderEntityList )
@@ -350,30 +427,28 @@ namespace Rock.Jobs
             WriteLog( $"ProcessReminders job:  Creating SystemCommunication for {personReminderList.Count} Person Reminders, " +
                 $"{groupReminderList.Count} Group Reminders, and {otherReminderList.Count} other reminders for {otherReminderEntityList.Count} entity types." );
 
-            var reminderDataObjects = new List<ReminderDTO>();
+            var reminderDataObjects = new List<ReminderViewModel>();
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( reminders );
 
-            var personService = new PersonService( rockContext );
             foreach ( var reminder in personReminderList )
             {
-                var person = personService.Get( reminder.EntityId );
-                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );;
-                var reminderData = new ReminderDTO( reminder, person, photoUrl );
+                var person = reminderEntities[reminder.Id] as Person;
+                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
+                var reminderData = new ReminderViewModel( reminder, person, photoUrl );
                 reminderDataObjects.Add( reminderData );
             }
 
-            var groupService = new GroupService( rockContext );
             foreach ( var reminder in groupReminderList )
             {
-                var group = groupService.Get( reminder.EntityId );
-                var reminderData = new ReminderDTO( reminder, group );
+                var group = reminderEntities[reminder.Id] as Group;
+                var reminderData = new ReminderViewModel( reminder, group );
                 reminderDataObjects.Add( reminderData );
             }
 
-            var entityTypeService = new EntityTypeService( rockContext );
             foreach ( var reminder in otherReminderList )
             {
-                var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                var reminderData = new ReminderDTO( reminder, entity );
+                var entity = reminderEntities[reminder.Id];
+                var reminderData = new ReminderViewModel( reminder, entity );
                 reminderDataObjects.Add( reminderData );
             }
 
@@ -382,6 +457,7 @@ namespace Rock.Jobs
                 var mergeFields = LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "Reminders", reminderDataObjects );
                 mergeFields.Add( "Person", recipient );
+                mergeFields.Add( "MaxRemindersPerEntityType", remindersPerEntityType );
 
                 var mediumType = ( int ) CommunicationType.Email;
                 var result = CommunicationHelper.SendMessage( recipient, mediumType, notificationSystemCommunication, mergeFields );

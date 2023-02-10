@@ -667,6 +667,45 @@ namespace Rock.Net
             return null;
         }
 
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "/Themes/{CurrentSiteTheme}/{input}".</para>
+        ///     <para>An input starting with "~/" will return the input without the leading "~".</para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
+        /// <returns>The resolved URL.</returns>
+        [RockInternal( "1.15" )]
+        public string ResolveRockUrl( string input )
+        {
+            if ( input.IsNullOrWhiteSpace() )
+            {
+                return input;
+            }
+
+            if ( input.StartsWith( "~~/" ) )
+            {
+                var themeRoot = $"/Themes/{_pageCache.SiteTheme}/";
+                return themeRoot + ( input.Length > 3 ? input.Substring( 3 ) : string.Empty );
+            }
+
+            if ( input.StartsWith( "~" ) && input.Length > 1 )
+            {
+                return input.Substring( 1 );
+            }
+
+            // The input format is unrecognized so return it.
+            return input;
+        }
+
         #endregion
     }
 }

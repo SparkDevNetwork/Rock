@@ -1292,5 +1292,76 @@ namespace Rock.Migrations.Migrations {
                         "ticsUpdateVisitDates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [SystemCommunication] SET [Body]=N&apos;{% assign peopleReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,true %}
+        ///{% assign otherReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,false %}
+        ///{% assign currentDate = &apos;&apos;Now&apos;&apos; | Date:&apos;&apos;MMMM d, yyyy&apos;&apos; %}
+        ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///&lt;style&gt;table[class=&quot;body&quot;] table.columns td.reminder-img-today{width:58px !important;}table[class=&quot;body&quot;] table.columns td.reminder-img{width:50px !important;}&lt;/style&gt;
+        ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication {
+            get {
+                return ResourceManager.GetString("_202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///  EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure {
+            get {
+                return ResourceManager.GetString("_202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /****** Object:  StoredProcedure [dbo].[spCore_DeleteOrphanedAttributeMatrices] ******/
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure AttributeMatrix records that are no longer associated with an attribute value.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;code&gt;
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///	
+        ///CREATE PROCEDURE [dbo].[spCore_DeleteOrphanedAttributeMatrices]
+        ///AS
+        ///BEGIN
+        ///	DECLARE @MatrixItemEntityTypeId INT = (SELECT Id FROM [EntityType] WHERE [Guid]=&apos;3C9D5021-0484- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices {
+            get {
+                return ResourceManager.GetString("_202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttribute" +
+                        "Matrices", resourceCulture);
+            }
+        }
     }
 }

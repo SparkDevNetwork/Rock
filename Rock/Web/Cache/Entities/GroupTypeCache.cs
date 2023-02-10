@@ -317,6 +317,16 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsCapacityRequired { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [groups require campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [groups require campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupsRequireCampus { get; private set; }
+
         /// <summary>
         /// Gets the group type purpose value.
         /// </summary>
@@ -975,6 +985,7 @@ namespace Rock.Web.Cache
             AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
             ScheduleConfirmationLogic = groupType.ScheduleConfirmationLogic;
             IsCapacityRequired = groupType.IsCapacityRequired;
+            GroupsRequireCampus = groupType.GroupsRequireCampus;
         }
 
         /// <summary>

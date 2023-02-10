@@ -379,6 +379,7 @@ namespace Rock.Mobile
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 InteractiveExperiencePageGuid = additionalSettings.InteractiveExperiencePageId.HasValue ? PageCache.Get( additionalSettings.InteractiveExperiencePageId.Value )?.Guid : null,
+                SmsConversationPageGuid = additionalSettings.SmsConversationPageId.HasValue ? PageCache.Get( additionalSettings.SmsConversationPageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,

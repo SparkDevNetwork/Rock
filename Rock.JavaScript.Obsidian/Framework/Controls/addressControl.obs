@@ -5,28 +5,28 @@
             <Loading :id="id || uniqueId" :isLoading="isLoading">
                 <div class="form-row" v-if="country.isVisible">
                     <div class="form-group col-sm-6">
-                        <DropDownList v-model="internalValue.country" :items="countryOptions" :validationTitle="country.label" :rules="country.rules" />
+                        <DropDownList v-model="internalValue.country" :items="countryOptions" :validationTitle="country.label" :rules="country.rules" :disabled="disabled" />
                     </div>
                 </div>
                 <div class="form-group" v-if="address1.isVisible">
-                    <TextBox v-model="internalValue.street1" :placeholder="address1.label" :validationTitle="address1.label" :rules="address1.rules" />
+                    <TextBox v-model="internalValue.street1" :placeholder="address1.label" :validationTitle="address1.label" :rules="address1.rules" :disabled="disabled" />
                 </div>
                 <div class="form-group" v-if="address2.isVisible">
-                    <TextBox v-model="internalValue.street2" :placeholder="address2.label" :validationTitle="address2.label" :rules="address2.rules" />
+                    <TextBox v-model="internalValue.street2" :placeholder="address2.label" :validationTitle="address2.label" :rules="address2.rules" :disabled="disabled" />
                 </div>
                 <div class="form-row">
                     <div class="form-group" :class="county.isVisible ? 'col-sm-3' : 'col-sm-6'" v-if="city.isVisible">
-                        <TextBox v-model="internalValue.city" :placeholder="city.label" :validationTitle="city.label" :rules="city.rules" />
+                        <TextBox v-model="internalValue.city" :placeholder="city.label" :validationTitle="city.label" :rules="city.rules" :disabled="disabled" />
                     </div>
                     <div class="form-group col-sm-3" v-if="county.isVisible">
-                        <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="county.rules" />
+                        <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="county.rules" :disabled="disabled" />
                     </div>
                     <div class="form-group col-sm-3" v-if="state.isVisible">
-                        <DropDownList v-if="hasStateList" :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="state.rules" />
-                        <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="state.rules" />
+                        <DropDownList v-if="hasStateList" :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="state.rules" :disabled="disabled" />
+                        <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="state.rules" :disabled="disabled" />
                     </div>
                     <div class="form-group col-sm-3" v-if="zip.isVisible">
-                        <TextBox v-model="internalValue.postalCode" :placeholder="zip.label" :validationTitle="zip.label" :rules="zip.rules" inputmode="numeric" />
+                        <TextBox v-model="internalValue.postalCode" :placeholder="zip.label" :validationTitle="zip.label" :rules="zip.rules" inputmode="numeric" :disabled="disabled" />
                     </div>
                 </div>
             </Loading>
@@ -56,6 +56,11 @@
         modelValue: {
             type: Object as PropType<AddressControlBag>,
             default: {}
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         id: {

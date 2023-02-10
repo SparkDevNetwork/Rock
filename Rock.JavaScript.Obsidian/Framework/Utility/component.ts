@@ -40,10 +40,43 @@ type EmitFn<E extends `update:${string}`> = E extends Array<infer EE> ? (event: 
 export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): Ref<T[K]> {
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
 
-    watch(() => props[modelName], val => internalValue.value = val, options);
+    watch(() => props[modelName], val => updateRefValue(internalValue, val), options);
     watch(internalValue, val => emit(`update:${modelName}`, val), options);
 
     return internalValue;
+}
+
+/**
+ * Utility function for when you are using a component that takes a v-model
+ * and uses that model as a v-model in that component's template. It creates
+ * a new ref that keeps itself up-to-date with the given model and fires an
+ * 'update:MODELNAME' event when it gets changed. It also gives a means of watching
+ * the model prop for any changes (verifies that the prop change is different than
+ * the current value first)
+ *
+ * Ensure the related `props` and `emits` are specified to ensure there are
+ * no type issues.
+ */
+export function useVModelPassthroughWithPropUpdateCheck<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): [Ref<T[K]>, (fn: () => unknown) => void] {
+    const internalValue = ref(props[modelName]) as Ref<T[K]>;
+    const listeners: (() => void)[] = [];
+
+    watch(() => props[modelName], val => {
+        if (updateRefValue(internalValue, val)) {
+            onPropUpdate();
+        }
+    }, options);
+    watch(internalValue, val => emit(`update:${modelName}`, val), options);
+
+    function onPropUpdate(): void {
+        listeners.forEach(fn => fn());
+    }
+
+    function addPropUpdateListener(fn: () => unknown): void {
+        listeners.push(fn);
+    }
+
+    return [internalValue, addPropUpdateListener];
 }
 
 /**
@@ -109,6 +142,11 @@ type StandardRockFormFieldProps = {
     validationTitle: {
         type: PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: PropType<boolean>,
+        default: false
     }
 };
 
@@ -137,6 +175,11 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     validationTitle: {
         type: String as PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: Boolean as PropType<boolean>,
+        default: false
     }
 };
 
@@ -170,7 +213,8 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
         help: props.help,
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,
-        validationTitle: props.validationTitle
+        validationTitle: props.validationTitle,
+        isRequiredIndicatorHidden: props.isRequiredIndicatorHidden
     });
 
     watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {

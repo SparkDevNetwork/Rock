@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -121,8 +122,8 @@ namespace RockWeb.Blocks.Reminders
                     return;
                 }
 
-                lbReminders.Visible = true;
-                rppPerson.SetValue( CurrentPerson );
+                btnReminders.Visible = true;
+                ppPerson.SetValue( CurrentPerson );
 
                 int reminderCount = CurrentPerson?.ReminderCount ?? 0;
                 hfReminderCount.Value = reminderCount.ToString();
@@ -201,7 +202,7 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="contextEntity">The context entity.</param>
         private void ShowExistingReminders( IEntity contextEntity )
         {
-            lbViewReminders2.Visible = false;
+            btnViewReminders2.Visible = false;
 
             var reminders = GetReminders( contextEntity );
             if ( reminders.Count == 0 )
@@ -213,18 +214,18 @@ namespace RockWeb.Blocks.Reminders
 
             pnlExistingReminders.Visible = true;
 
-            rptReminders.DataSource = reminders.Take( 2 );
+            rptReminders.DataSource = reminders;
             rptReminders.DataBind();
 
             var entityTypeName = EntityTypeCache.Get( contextEntity.TypeId ).FriendlyName;
-            var reminderText = litExistingReminderTextTemplate.Text
+            var reminderText = lExistingReminderTextTemplate.Text
                 .Replace( "{ENTITY_TYPE}", entityTypeName );
 
             if ( reminders.Count == 1 )
             {
                 reminderText = reminderText.Replace( "{REMINDER_QUANTITY_TEXT_1}", "a reminder" );
                 reminderText = reminderText.Replace( "{REMINDER_QUANTITY_TEXT_2}", "recent is" );
-                litExistingReminderText.Text = reminderText;
+                lExistingReminderText.Text = reminderText;
                 return;
             }
 
@@ -232,8 +233,8 @@ namespace RockWeb.Blocks.Reminders
             {
                 reminderText = reminderText.Replace( "{REMINDER_QUANTITY_TEXT_1}", "reminders" );
                 reminderText = reminderText.Replace( "{REMINDER_QUANTITY_TEXT_2}", "recent 2 are" );
-                litExistingReminderText.Text = reminderText;
-                lbViewReminders2.Visible = ( reminders.Count > 2 );
+                lExistingReminderText.Text = reminderText;
+                btnViewReminders2.Visible = ( reminders.Count > 2 );
                 return;
             }
         }
@@ -245,9 +246,9 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private List<ReminderDTO> GetReminders( IEntity contextEntity )
+        private List<ReminderViewModel> GetReminders( IEntity contextEntity )
         {
-            var reminderDTOs = new List<ReminderDTO>();
+            var reminderViewModels = new List<ReminderViewModel>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -256,19 +257,20 @@ namespace RockWeb.Blocks.Reminders
                 var reminders = reminderService
                     .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
                     .Where( r => r.ReminderDate <= RockDateTime.Now )
-                    .OrderByDescending( r => r.ReminderDate );
+                    .OrderByDescending( r => r.ReminderDate )
+                    .Take( 2 ); // We're only interested in two reminders for this block.
 
                 foreach ( var reminder in reminders.ToList() )
                 {
                     if ( reminder.IsActive )
                     {
                         var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
                     }
                 }
             }
 
-            return reminderDTOs;
+            return reminderViewModels;
         }
 
         /// <summary>
@@ -351,19 +353,19 @@ namespace RockWeb.Blocks.Reminders
                 // Load reminder types for this context entity.
                 var reminderTypeService = new ReminderTypeService( rockContext );
                 var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, CurrentPerson );
-                rddlReminderType.DataSource = reminderTypes;
-                rddlReminderType.DataTextField = "Name";
-                rddlReminderType.DataValueField = "Id";
-                rddlReminderType.DataBind();
+                ddlReminderType.DataSource = reminderTypes;
+                ddlReminderType.DataTextField = "Name";
+                ddlReminderType.DataValueField = "Id";
+                ddlReminderType.DataBind();
             }
 
             // Reset form values.
-            rddlReminderType.SelectedIndex = 0;
-            rdpReminderDate.SelectedDate = null;
-            rtbNote.Text = string.Empty;
-            rppPerson.SetValue( CurrentPerson );
-            rnbRepeatDays.Text = string.Empty;
-            rnbRepeatTimes.Text = string.Empty;
+            ddlReminderType.SelectedIndex = 0;
+            dpReminderDate.SelectedDate = null;
+            tbNote.Text = string.Empty;
+            ppPerson.SetValue( CurrentPerson );
+            numbRepeatDays.Text = string.Empty;
+            numbRepeatTimes.Text = string.Empty;
         }
 
         /// <summary>
@@ -396,11 +398,11 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddReminder control.
+        /// Handles the Click event of the btnAddReminder control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddReminder_Click( object sender, EventArgs e )
+        protected void btnAddReminder_Click( object sender, EventArgs e )
         {
             var contextEntity = GetFirstContextEntity();
             if ( contextEntity == null )
@@ -416,11 +418,11 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the lbViewReminders control.
+        /// Handles the Click event of the btnViewReminders control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbViewReminders_Click( object sender, EventArgs e )
+        protected void btnViewReminders_Click( object sender, EventArgs e )
         {
             var contextEntity = GetFirstContextEntity();
             if ( contextEntity == null )
@@ -444,21 +446,21 @@ namespace RockWeb.Blocks.Reminders
             var reminder = new Reminder
             {
                 EntityId = contextEntity.Id,
-                ReminderTypeId = rddlReminderType.SelectedValue.AsInteger(),
-                ReminderDate = rdpReminderDate.SelectedDate.Value,
-                Note = rtbNote.Text,
+                ReminderTypeId = ddlReminderType.SelectedValue.AsInteger(),
+                ReminderDate = dpReminderDate.SelectedDate.Value,
+                Note = tbNote.Text,
                 IsComplete = false,
-                RenewPeriodDays = rnbRepeatDays.IntegerValue,
-                RenewMaxCount = rnbRepeatTimes.IntegerValue,
+                RenewPeriodDays = numbRepeatDays.IntegerValue,
+                RenewMaxCount = numbRepeatTimes.IntegerValue,
                 RenewCurrentCount = 0
             };
 
             using ( var rockContext = new RockContext() )
             {
                 var person = CurrentPerson;
-                if ( rppPerson.SelectedValue.HasValue )
+                if ( ppPerson.SelectedValue.HasValue )
                 {
-                    person = new PersonService( rockContext ).Get( rppPerson.SelectedValue.Value );
+                    person = new PersonService( rockContext ).Get( ppPerson.SelectedValue.Value );
                 }
                 reminder.PersonAliasId = person.PrimaryAliasId.Value;
 

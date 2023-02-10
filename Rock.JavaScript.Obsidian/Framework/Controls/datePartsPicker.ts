@@ -235,12 +235,12 @@ export default defineComponent({
                     <option value="12">Dec</option>
                 </select>
                 <span v-if="!hideDay" class="separator">/</span>
-                <select v-if="!hideDay" :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="internalDay">
+                <select v-if="!hideDay" :id="uniqueId + '-day'" class="form-control input-width-sm" :disabled="disabled" v-model="internalDay">
                     <option value="0"></option>
                     <option v-for="day in days" :key="day" :value="day">{{day}}</option>
                 </select>
                 <span v-if="showYear" class="separator">/</span>
-                <select v-if="showYear" :id="uniqueId + '-year'" class="form-control input-width-sm" v-model="internalYear">
+                <select v-if="showYear" :id="uniqueId + '-year'" class="form-control input-width-sm" :disabled="disabled" v-model="internalYear">
                     <option value="0"></option>
                     <option v-for="year in years" :value="year">{{year}}</option>
                 </select>

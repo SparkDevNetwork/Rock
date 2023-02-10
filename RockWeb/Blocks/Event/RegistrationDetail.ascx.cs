@@ -969,6 +969,9 @@ namespace RockWeb.Blocks.Event
                     dvpCreditCardType.Visible = false;
                 }
 
+                cbPaymentAmount.Text = null;
+                tbTransactionCode.Text = string.Empty;
+
                 this.SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentManualDetails );
             }
         }

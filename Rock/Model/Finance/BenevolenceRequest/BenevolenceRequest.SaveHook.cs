@@ -38,7 +38,7 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             var transaction = new Rock.Transactions.BenevolenceRequestChangeTransaction( DbContext.Entry( this.Entity ) );
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                            transaction.Enqueue();
                         }
 
                         break;

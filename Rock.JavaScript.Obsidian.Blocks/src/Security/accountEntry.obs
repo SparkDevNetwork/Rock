@@ -1,0 +1,459 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="errorMessage" alertType="validation" v-html="errorMessage"></Alert>
+
+    <RegistrationStep
+        v-if="step.isRegistration"
+        v-model="registrationInfo"
+        v-model:isUsernameAvailable="isUsernameAvailable"
+        :config="config"
+        :disabled="isRegistering || isNavigating"
+        @checkUsernameAvailability="onCheckUsernameAvailability"
+        @error="showError"
+        @register="onRegister">
+    </RegistrationStep>
+
+    <DuplicatePersonSelectionStep
+        v-else-if="step.isDuplicatePersonSelection"
+        v-model="selectedDuplicatePerson"
+        :disabled="isRegistering || isNavigating"
+        :options="duplicatePersonSelectionStepOptions"
+        @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
+        @personSelected="onDuplicatePersonSelected"
+        @noPersonSelected="onNoDuplicatePersonSelected"></DuplicatePersonSelectionStep>
+
+    <PasswordlessConfirmationSentStep
+        v-else-if="step.isPasswordlessConfirmationSent"
+        v-model="passwordlessConfirmationCode"
+        :disabled="isRegistering || isNavigating"
+        :options="passwordlessConfirmationSentStepOptions"
+        @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
+        @submit="onPasswordlessConfirmationSubmitted"></PasswordlessConfirmationSentStep>
+
+    <ExistingAccountStep
+        v-else-if="step.isExistingAccount"
+        :disabled="isSendingForgotUsername || isRegistering || isNavigating"
+        :options="existingAccountStepOptions"
+        @movePrevious="onMovePrevious()"
+        @emailUsername="onEmailUsername"
+        @sendToLogin="onSendToLogin"></ExistingAccountStep>
+
+    <ConfirmationSentStep
+        v-else-if="step.isConfirmationSent"
+        :options="confirmationSentStepOptions">
+    </ConfirmationSentStep>
+
+    <CompletedStep
+        v-else-if="step.isCompleted"
+        :disabled="isRegistering || isNavigating"
+        :options="completedStepOptions"
+        @navigate="onNavigate($event)">
+    </CompletedStep>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import CompletedStep from "./AccountEntry/completedStep.partial.obs";
+    import ConfirmationSentStep from "./AccountEntry/confirmationSentStep.partial.obs";
+    import DuplicatePersonSelectionStep from "./AccountEntry/duplicatePersonSelectionStep.partial.obs";
+    import ExistingAccountStep from "./AccountEntry/existingAccountStep.partial.obs";
+    import PasswordlessConfirmationSentStep from "./AccountEntry/passwordlessConfirmationSentStep.partial.obs";
+    import RegistrationStep from "./AccountEntry/registrationStep.partial.obs";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { AccountEntryStep } from "@Obsidian/Enums/Blocks/Security/AccountEntry/accountEntryStep";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
+    import { AccountEntryCompletedStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryCompletedStepBag";
+    import { AccountEntryConfirmationSentStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryConfirmationSentStepBag";
+    import { AccountEntryDuplicatePersonSelectionStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryDuplicatePersonSelectionStepBag";
+    import { AccountEntryDuplicatePersonItemBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryDuplicatePersonItemBag";
+    import { AccountEntryExistingAccountStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryExistingAccountStepBag";
+    import { AccountEntryForgotUsernameRequestBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryForgotUsernameRequestBag";
+    import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
+    import { AccountEntryPasswordlessConfirmationSentStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPasswordlessConfirmationSentStepBag";
+    import { AccountEntryRegisterRequestBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterRequestBox";
+    import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
+
+    const config = useConfigurationValues<AccountEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    removeCurrentUrlQueryParams("State");
+
+    //#region Values
+
+    const errorMessage = ref<string | null>();
+
+    const stepStack = ref<AccountEntryStep[]>([]);
+    const accountEntryStep = computed<AccountEntryStep | null>(() => stepStack.value.length ? stepStack.value[stepStack.value.length - 1] : null);
+
+    const registrationInfo = ref<AccountEntryRegisterRequestBox>({
+        accountInfo: {
+            password: "",
+            username: ""
+        },
+        personInfo: {
+            birthday: {
+                year: 0,
+                month: 0,
+                day: 0
+            },
+            email: config.email || "",
+            firstName: "",
+            gender: 0,
+            lastName: "",
+            phoneNumbers: [...config.phoneNumbers ?? []]
+        },
+        fullName: null,
+        selectedPersonId: null,
+        state: config.state
+    });
+    const isUsernameAvailable = ref<boolean | null>(null);
+
+    const duplicatePersonSelectionStepOptions = ref<AccountEntryDuplicatePersonSelectionStepBag>({});
+    const internalSelectedDuplicatePerson = ref<AccountEntryDuplicatePersonItemBag | null>(null);
+    const selectedDuplicatePerson = computed<AccountEntryDuplicatePersonItemBag | null>({
+        get() {
+            return internalSelectedDuplicatePerson.value;
+        },
+        set(newValue: AccountEntryDuplicatePersonItemBag | null) {
+            internalSelectedDuplicatePerson.value = newValue;
+            registrationInfo.value.selectedPersonId = newValue?.id;
+        }
+    });
+
+    const passwordlessConfirmationSentStepOptions = ref<AccountEntryPasswordlessConfirmationSentStepBag>({});
+    const passwordlessConfirmationCode = ref<string>("");
+
+    const existingAccountStepOptions = ref<AccountEntryExistingAccountStepBag>({});
+
+    const confirmationSentStepOptions = ref<AccountEntryConfirmationSentStepBag>({});
+
+    const completedStepOptions = ref<AccountEntryCompletedStepBag>({
+        isPlainCaption: false,
+        isRedirectAutomatic: false
+    });
+
+    const isNavigating = ref<boolean>(false);
+    const isRegistering = ref<boolean>(false);
+    const isSendingForgotUsername = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const step = computed(() => ({
+        isCompleted: accountEntryStep.value === AccountEntryStep.Completed,
+        isConfirmationSent: accountEntryStep.value === AccountEntryStep.ConfirmationSent,
+        isDuplicatePersonSelection: accountEntryStep.value === AccountEntryStep.DuplicatePersonSelection,
+        isExistingAccount: accountEntryStep.value === AccountEntryStep.ExistingAccount,
+        isRegistration: accountEntryStep.value === AccountEntryStep.Registration,
+        isPasswordlessConfirmationSent: accountEntryStep.value === AccountEntryStep.PasswordlessConfirmationSent
+    }));
+
+    const sentLoginCaption = computed<string>(() => {
+        return config.sentLoginCaption || "Your username has been emailed to you. If you've forgotten your password, the email includes a link to reset your password.";
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the username being checked.
+     *
+     * @param username The username to check.
+     */
+    async function onCheckUsernameAvailability(username: string): Promise<void> {
+        if (config.isUsernameAvailabilityCheckDisabled) {
+            isUsernameAvailable.value = null;
+        }
+        else {
+            const response = await http.get<boolean>("/api/userlogins/available", { username: username });
+            isUsernameAvailable.value = response.data;
+        }
+    }
+
+    /**
+     * Event handler for the duplicate person being selected.
+     */
+    async function onDuplicatePersonSelected(): Promise<void> {
+        // Individual selected a person. Let them choose what to do on the next step.
+        registrationInfo.value.selectedPersonId = selectedDuplicatePerson.value?.id;
+
+        await register();
+    }
+
+    /**
+     * Event handler for moving to the step prior to the "Duplicate Person Selection Step".
+     */
+    function onDuplicatePersonSelectionStepMovePrevious(): void {
+        selectedDuplicatePerson.value = null;
+        onMovePrevious();
+    }
+
+    /**
+     * Event handler for the "Email username" button being clicked.
+     */
+    async function onEmailUsername(): Promise<void> {
+        try {
+            isSendingForgotUsername.value = true;
+
+            const bag: AccountEntryForgotUsernameRequestBag = {
+                personId: registrationInfo.value.selectedPersonId ?? 0,
+                email: registrationInfo.value.personInfo?.email,
+                lastName: registrationInfo.value.personInfo?.lastName
+            };
+
+            const result = await invokeBlockAction<void>("ForgotUsername", { bag });
+
+            if (!result?.isSuccess) {
+                showError(result?.errorMessage || "An unexpected error occurred.");
+                return;
+            }
+
+            showCompletedStepNext({
+                isPlainCaption: true,
+                caption: sentLoginCaption.value,
+                isRedirectAutomatic: false
+            });
+        }
+        finally {
+            isSendingForgotUsername.value = false;
+        }
+    }
+
+    /**
+     * Event handler for moving to the previous step.
+     */
+    function onMovePrevious(): void {
+        movePrevious();
+    }
+
+    /**
+     * Handles the event when a component triggers navigation.
+     *
+     * @param url The URL to navigate to.
+     * @returns an unresolving promise so the page/form remains unusable until the redirect is complete.
+     */
+    async function onNavigate(url: string): Promise<void> {
+        await navigate(url);
+    }
+
+    /**
+     * Event handler for no duplicate person being selected.
+     */
+    async function onNoDuplicatePersonSelected(): Promise<void> {
+        registrationInfo.value.selectedPersonId = 0;
+        await register();
+    }
+
+    /**
+     * Event handler for moving to the step prior to the "Passwordless Confirmation Sent Step".
+     */
+    function onPasswordlessConfirmationSentStepMovePrevious(): void {
+        passwordlessConfirmationCode.value = "";
+        registrationInfo.value.code = "";
+        movePrevious();
+    }
+
+    /**
+     * Event handler for the passwordless confirmation being submitted.
+     */
+    async function onPasswordlessConfirmationSubmitted(): Promise<void> {
+        registrationInfo.value.code = passwordlessConfirmationCode.value;
+
+        await register();
+    }
+
+    /**
+     * Event handler for registering the account.
+     */
+    async function onRegister(): Promise<void> {
+        await register();
+    }
+
+    /**
+     * Event handler for the "Let me log in" button being clicked.
+     */
+    async function onSendToLogin(): Promise<void> {
+        await navigate(config.loginPageUrl || "/Login");
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Clears the error message.
+     */
+    function clearError(): void {
+        errorMessage.value = null;
+    }
+
+    /**
+     * Moves to the previous step.
+     * Defaults to the registration step if no more steps.
+     */
+    function movePrevious(): void {
+        if (stepStack.value.length) {
+            stepStack.value.splice(stepStack.value.length - 1);
+        }
+        else {
+            showRegistrationStepNext();
+        }
+    }
+
+    /**
+     * Navigates to a URL.
+     *
+     * @param url The URL to navigate to.
+     * @returns an unresolving promise so the page/form remains disabled until the redirect is complete.
+     */
+    async function navigate(url: string): Promise<void> {
+        isNavigating.value = true;
+        window.location.href = url;
+        return new Promise((_resolve, _reject) => {
+            // Return an unresolving promise so the page/form remains disabled until the redirect is complete.
+        });
+    }
+
+    async function register(): Promise<void> {
+        try {
+            isRegistering.value = true;
+            clearError();
+            isUsernameAvailable.value = null;
+
+            const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value });
+
+            if (response?.data?.step || response?.data?.step === AccountEntryStep.Registration) {
+                switch (response.data.step) {
+                    case AccountEntryStep.Completed: {
+                        showCompletedStepNext(response.data.completedStepBag);
+                        break;
+                    }
+
+                    case AccountEntryStep.ConfirmationSent: {
+                        showConfirmationSentStepNext(response.data.confirmationSentStepBag);
+                        break;
+                    }
+
+                    case AccountEntryStep.DuplicatePersonSelection: {
+                        showDuplicatePersonSelectionStepNext(response.data.duplicatePersonSelectionStepBag);
+                        break;
+                    }
+
+                    case AccountEntryStep.PasswordlessConfirmationSent: {
+                        showPasswordlessConfirmationSentStepNext(response.data.passwordlessConfirmationSentStepBag);
+                        break;
+                    }
+
+                    case AccountEntryStep.ExistingAccount: {
+                        showExistingAccountStepNext(response.data.existingAccountStepBag);
+                        break;
+                    }
+
+                    case AccountEntryStep.Registration: {
+                        showRegistrationStepNext();
+                        break;
+                    }
+                }
+            }
+            else {
+                showError(response?.errorMessage || "An unexpected error occurred");
+            }
+        }
+        finally {
+            isRegistering.value = false;
+        }
+    }
+
+    /**
+     * Shows the "Completed" step.
+     *
+     * @param options The step options. Will not set new options if not supplied.
+     */
+    function showCompletedStepNext(options?: AccountEntryCompletedStepBag | null): void {
+        if (options) {
+            completedStepOptions.value = options;
+        }
+        stepStack.value.push(AccountEntryStep.Completed);
+    }
+
+    /**
+     * Shows the "Confirmation Sent" step.
+     *
+     * @param options The step options. Will not set new options if not supplied.
+     */
+    function showConfirmationSentStepNext(options?: AccountEntryConfirmationSentStepBag | null): void {
+        if (options) {
+            confirmationSentStepOptions.value = options;
+        }
+        stepStack.value.push(AccountEntryStep.ConfirmationSent);
+    }
+
+    /**
+     * Shows the "Duplicate Person Selection" step.
+     *
+     * @param options The step options. Will not set new options if not supplied.
+     */
+    function showDuplicatePersonSelectionStepNext(options?: AccountEntryDuplicatePersonSelectionStepBag | null): void {
+        if (options) {
+            duplicatePersonSelectionStepOptions.value = options;
+            selectedDuplicatePerson.value = null;
+        }
+        stepStack.value.push(AccountEntryStep.DuplicatePersonSelection);
+    }
+
+    /**
+     * Shows the "Passwordless Confirmation Sent" step.
+     *
+     * @param options The step options. Will not set new options if not supplied.
+     */
+    function showPasswordlessConfirmationSentStepNext(options?: AccountEntryPasswordlessConfirmationSentStepBag | null): void {
+        if (options) {
+            passwordlessConfirmationSentStepOptions.value = options;
+            passwordlessConfirmationCode.value = "";
+            registrationInfo.value.state = options.state;
+        }
+        stepStack.value.push(AccountEntryStep.PasswordlessConfirmationSent);
+    }
+
+    /**
+     * Shows the "Existing Account" step.
+     *
+     * @param options The step options. Will not set new options if not supplied.
+     */
+    function showExistingAccountStepNext(options?: AccountEntryExistingAccountStepBag | null): void {
+        if (options) {
+            existingAccountStepOptions.value = options;
+        }
+        stepStack.value.push(AccountEntryStep.ExistingAccount);
+    }
+
+    /**
+     * Sets and shows an error message.
+     *
+     * @param error The error message to show.
+     */
+    function showError(error: string): void {
+        errorMessage.value = error;
+    }
+
+    /**
+     * Shows the "Registration" step.
+     */
+    function showRegistrationStepNext(): void {
+        // Clear duplicate person data.
+        selectedDuplicatePerson.value = null;
+        duplicatePersonSelectionStepOptions.value = {};
+
+        stepStack.value.push(AccountEntryStep.Registration);
+    }
+
+    //#endregion
+
+    showRegistrationStepNext();
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

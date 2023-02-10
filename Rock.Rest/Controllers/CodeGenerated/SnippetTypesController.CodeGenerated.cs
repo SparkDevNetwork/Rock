@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// SnippetTypes REST API
     /// </summary>
-    [RestControllerGuid( "6C90FA12-40F0-4998-BBFD-55FDDED8A639" )]
+    [RestControllerGuid( "03BFBC96-26FE-4BAC-9582-DC7FA23163CF" )]
     public partial class SnippetTypesController : Rock.Rest.ApiController<Rock.Model.SnippetType>
     {
         /// <summary>

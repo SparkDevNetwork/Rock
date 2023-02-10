@@ -259,6 +259,8 @@ export const FieldType = {
     SystemCommunication: "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",
     /** System Email field type */
     SystemEmail: "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF",
+    /** System Phone Number field type. */
+    SystemPhoneNumber: "B8C35BA7-85E9-4512-B99C-12DE697DE14E",
     /** Text field type */
     Text: "9C204CD0-1233-41C5-818A-C5DA439445AA",
     /** Time field type */

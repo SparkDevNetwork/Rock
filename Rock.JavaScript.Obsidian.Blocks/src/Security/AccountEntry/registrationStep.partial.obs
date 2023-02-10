@@ -1,0 +1,195 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onFormSubmit">
+        <TextBox
+            v-model="fullName"
+            class="rock-fullname"
+            :disabled="disabled"
+            name="name"
+            placeholder="Please enter name (Required)"></TextBox>
+
+        <div class="row">
+            <AccountInfo
+                v-if="!config.isAccountInfoHidden"
+                v-model="internalAccountInfo"
+                v-model:isUsernameAvailable="internalIsUsernameAvailable"
+                class="col-md-6"
+                :config="config"
+                :disabled="disabled"
+                @checkUsernameAvailability="onCheckUsernameAvailability" />
+
+            <PersonInfo
+                v-model="internalPersonInfo"
+                class="col-md-6"
+                :config="config"
+                :disabled="disabled" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <RockButton
+                    :btnType="BtnType.Primary"
+                    :disabled="disabled"
+                    type="submit">Next</RockButton>
+            </div>
+        </div>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AccountInfo from "./registrationStepAccountInfo.partial.obs";
+    import PersonInfo from "./registrationStepPersonInfo.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { AccountEntryAccountInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryAccountInfoBag";
+    import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
+    import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
+    import { AccountEntryRegisterRequestBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterRequestBox";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<AccountEntryInitializationBox>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        isUsernameAvailable: {
+            type: Object as PropType<boolean | null>,
+            required: false,
+            default: null
+        },
+        modelValue: {
+            type: Object as PropType<AccountEntryRegisterRequestBox>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "checkUsernameAvailability", value: string): void,
+        (e: "error", value: string): void,
+        (e: "register"): void,
+        (e: "update:isUsernameAvailable", value: boolean | null): void,
+        (e: "update:modelValue", value: AccountEntryRegisterRequestBox): void,
+    }>();
+
+    enum ValidationErrorMessages {
+        MinimumAge = "We are sorry, you must be at least {0} years old to create an account."
+    }
+
+    //#region Values
+
+    const fullName = ref("");
+
+    const shouldUsernameUpdateSetPersonInfoEmail = computed<boolean>(() => props.config.isEmailRequiredForUsername);
+
+    const internalIsUsernameAvailable = useVModelPassthrough(props, "isUsernameAvailable", emit);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const internalAccountInfo = computed<AccountEntryAccountInfoBag | null | undefined>({
+        get() {
+            return props.modelValue.accountInfo;
+        },
+        set(newValue: AccountEntryAccountInfoBag | null | undefined) {
+            let modelValue: AccountEntryRegisterRequestBox;
+
+            if (shouldUsernameUpdateSetPersonInfoEmail.value && props.modelValue.personInfo?.email !== newValue?.username) {
+                modelValue = {
+                    ...props.modelValue,
+                    accountInfo: newValue,
+                    personInfo: {
+                        ...props.modelValue.personInfo,
+                        email: newValue?.username
+                    }
+                };
+            }
+            else {
+                modelValue = {
+                    ...props.modelValue,
+                    accountInfo: newValue
+                };
+            }
+
+            emit("update:modelValue", modelValue);
+        }
+    });
+
+    const internalPersonInfo = computed<AccountEntryPersonInfoBag | null | undefined>({
+        get() {
+            return props.modelValue.personInfo;
+        },
+        set(newValue: AccountEntryPersonInfoBag | null | undefined) {
+            emit("update:modelValue", { ...props.modelValue, personInfo: newValue });
+        }
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the username being checked.
+     */
+    function onCheckUsernameAvailability(username: string): void {
+        if (!props.config.isUsernameAvailabilityCheckDisabled) {
+            emit("checkUsernameAvailability", username);
+        }
+    }
+
+    /**
+     * Event handler for the registration form being submitted.
+     */
+    async function onFormSubmit(): Promise<void> {
+        if (isPersonInfoValid()) {
+            emit("register");
+        }
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Determines whether the person is old enough to register.
+     */
+    function isOldEnough(): boolean {
+        if (props.config.minimumAge <= 0) {
+            return true;
+        }
+
+        const birthday = internalPersonInfo.value?.birthday;
+
+        if (!birthday) {
+            emit("error", "Birthday is required");
+            return false;
+        }
+
+        const threshold = RockDateTime.now().addYears(- props.config.minimumAge);
+        const birthdate = RockDateTime.fromParts(birthday.year, birthday.month, birthday.day);
+        if (!birthdate || birthdate.isLaterThan(threshold)) {
+            emit("error", ValidationErrorMessages.MinimumAge.replace("{0}", props.config.minimumAge.toString()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determines whether the person info is valid.
+     */
+    function isPersonInfoValid(): boolean {
+        return isOldEnough();
+    }
+
+    //#endregion
+</script>

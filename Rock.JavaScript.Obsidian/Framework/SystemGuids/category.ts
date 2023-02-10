@@ -99,6 +99,8 @@ export const Category = {
     ScheduleServiceTimes: "4FECC91B-83F9-4269-AE03-A006F401C47E",
     /** The System Communication RSVP Confirmation Category guid */
     SystemCommunicationRsvpConfirmation: "19024818-E456-4642-8858-F50C8B6DB5ED",
+    /** The system communication Sign-Up Group confirmation Category guid */
+    SystemCommunicationSignupGroupConfirmation: "CB279EE1-9A12-4837-9A14-1F36B6F7CDAF",
     /** The System Communication Workflow Category guid */
     SystemCommunicationWorkflow: "D8EC958D-ADD5-48FC-B539-CB919F5C9D32",
     /** The System Email Workflow Category guid */

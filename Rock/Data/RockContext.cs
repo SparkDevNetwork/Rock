@@ -2149,6 +2149,14 @@ namespace Rock.Data
         public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
+        /// Gets or sets the system phone numbers.
+        /// </summary>
+        /// <value>
+        /// The system phone numbers.
+        /// </value>
+        public DbSet<SystemPhoneNumber> SystemPhoneNumbers { get; set; }
+
+        /// <summary>
         /// Gets or sets the Tags.
         /// </summary>
         /// <value>

@@ -12,11 +12,13 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="google" content="notranslate">
-    
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
-    <asp:ContentPlaceHolder ID="css" runat="server" />
-    <asp:ContentPlaceHolder ID="head" runat="server" />
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
 </head>
 <body runat="server" id="body" class="js-camera-supported">
     <form id="form1" runat="server">

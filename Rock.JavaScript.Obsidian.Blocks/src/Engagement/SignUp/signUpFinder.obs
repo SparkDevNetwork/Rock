@@ -1,0 +1,346 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="blockErrorMessage" alertType="warning">
+        {{ blockErrorMessage }}
+    </Alert>
+
+    <Alert v-if="errorMessage" alertType="danger">
+        {{ errorMessage }}
+    </Alert>
+
+    <div v-if="!blockErrorMessage">
+        <RockForm @submit="onSearch">
+            <div class="row mb-3">
+                <div v-if="projectTypes.length" :class="columnClass">
+                    <SignUpFilter v-model="selectedProjectTypes"
+                                  :label="config.projectTypeFilterLabel"
+                                  :items="projectTypes"
+                                  :displayAs="displayAs"
+                                  @update:modelValue="onProjectTypesUpdated" />
+                </div>
+                <div v-if="campuses.length" :class="columnClass">
+                    <SignUpFilter v-model="selectedCampuses"
+                                  label="Campus"
+                                  :items="campuses"
+                                  :displayAs="displayAs" />
+                </div>
+                <div v-if="namedSchedules.length" :class="columnClass">
+                    <SignUpFilter v-model="selectedNamedSchedules"
+                                  :label="config.namedScheduleFilterLabel"
+                                  :items="namedSchedules"
+                                  :displayAs="displayAs" />
+                </div>
+                <div v-for="a in attributeFilters" :key="a.key" :class="columnClass">
+                    <RockLabel>{{ a.attribute.name }}</RockLabel>
+                    <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
+                        :attribute="a.attribute" />
+                </div>
+                <div v-if="config.displayDateRange" :class="columnClass">
+                    <DateRangePicker v-model="selectedDateRange"
+                                     label="Date Range" />
+                </div>
+                <div v-if="config.displayLocationSort" :class="columnClass">
+                    <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
+                </div>
+                <div v-if="config.displayLocationRangeFilter" :class="columnClass">
+                    <div class="d-flex flex-wrap">
+                        <NumberBox v-model="selectedLocationRange" label="Within" class="input-max-w-md" />
+                        <span class="align-self-center mt-1 ml-2 text-semibold">miles</span>
+                    </div>
+                </div>
+                <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
+                    <RockLabel>Spots Available</RockLabel>
+                    <div class="input-group">
+                        <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
+                        <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <RockButton type="submit" :btnType="BtnType.Warning" :btnSize="BtnSize.ExtraSmall" class="mr-3" :disabled="isSearching">Search</RockButton>
+                    <RockButton type="button" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" :disabled="isSearching" @click="onClearBtnClick">Clear</RockButton>
+                </div>
+            </div>
+        </RockForm>
+
+        <div class="mt-5">
+            <Loading :isLoading="isSearching">
+                <div ref="resultsHeaderElement"></div>
+                <div ref="resultsElement"></div>
+            </Loading>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import SignUpFilter from "./SignUpFinder/signUpFilter.obs";
+    import { SignUpFilterType } from "./SignUpFinder/signUpFilterType";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
+    import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
+    import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
+    import Loading from "@Obsidian/Controls/loading";
+    import NumberBox from "@Obsidian/Controls/numberBox";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SignUpFinderInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderInitializationBox";
+    import { SignUpFinderResultsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderResultsBag";
+    import { SignUpFinderSelectedFiltersBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderSelectedFiltersBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
+
+    const config = useConfigurationValues<SignUpFinderInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    type SlotsAvailableComparisonType = "AtLeast" | "NoMoreThan";
+
+    // The items that can be picked from the "Spots Available" comparison type list.
+    const slotsAvailableComparisonTypes: ListItemBag[] = [
+        {
+            value: "AtLeast",
+            text: "At Least"
+        },
+        {
+            value: "NoMoreThan",
+            text: "No More Than"
+        }
+    ];
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isSearching = ref(config.loadResultsOnInitialPageLoad);
+
+    const projectTypes = ref<ListItemBag[]>(config.projectTypes ?? []);
+    const campuses = ref<ListItemBag[]>(config.campuses ?? []);
+    const namedSchedules = ref<ListItemBag[]>(config.namedSchedules ?? []);
+    const attributesByProjectType = ref<Record<string, Record<string, PublicAttributeBag>>>(config.attributesByProjectType ?? {});
+
+    const attributeGuidsByProjectType: Record<string, string[]> = {};
+    const comparisonValuesByAttributeGuid: Record<string, ComparisonValue> = {};
+
+    const selectedProjectTypes = ref<string[]>([]);
+    const selectedCampuses = ref<string[]>(config.pageCampusContext?.value ? [...config.pageCampusContext.value] : []);
+    const selectedNamedSchedules = ref<string[]>([]);
+    const selectedDateRange = ref<DateRangeParts>({});
+    const selectedLocationSort = ref<string>("");
+    const selectedLocationRange = ref<number | null>(null);
+    const selectedSlotsAvailableComparisonType = ref<SlotsAvailableComparisonType>("AtLeast");
+    const selectedSlotsAvailable = ref<number | null>(null);
+
+    const resultsHeaderElement = ref<HTMLElement | null>(null);
+    const resultsElement = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    const columnClass = computed((): string => {
+        let colWidth: number;
+        switch (config.filterColumns) {
+            case 4:
+                colWidth = 3;
+                break;
+            case 3:
+                colWidth = 4;
+                break;
+            case 2:
+                colWidth = 6;
+                break;
+            default:
+                colWidth = 12;
+        }
+
+        return `col-md-${colWidth} mb-3`;
+    });
+
+    const displayAs = computed((): SignUpFilterType => {
+        return config.displayProjectFiltersAs === SignUpFilterType.MultiSelectDropDown
+            ? SignUpFilterType.MultiSelectDropDown
+            : SignUpFilterType.Checkboxes;
+    });
+
+    /**
+     * Build a single, combined array of attribute filters to display to the individual, while also keeping track of which
+     * attribute guids belong to each group type, and maintaining a local cache of selected comparison values.
+     */
+    const attributeFilters = computed((): ({ key: string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[]) => {
+        const filters: { key:string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[] = [];
+
+        Object.keys(attributesByProjectType.value).forEach((projectTypeGuid: string) => {
+            const attributes: Record<string, PublicAttributeBag> = attributesByProjectType.value[projectTypeGuid];
+            if (!attributes) {
+                return; // Continue to the next iteration if for some reason this dictionary is not defined.
+            }
+
+            var projectTypeAttributeGuids: string[] = attributeGuidsByProjectType[projectTypeGuid];
+            if (!projectTypeAttributeGuids) {
+                projectTypeAttributeGuids = [];
+                attributeGuidsByProjectType[projectTypeGuid] = projectTypeAttributeGuids;
+            }
+
+            Object.keys(attributes).forEach((attributeKey: string) => {
+                const attribute: PublicAttributeBag = attributes[attributeKey];
+                const attributeGuid = attribute?.attributeGuid;
+                if (!attributeGuid) {
+                    return; // We need to work against an attribute guid, so continue to the next iteration if we don't have one.
+                }
+
+                if (!projectTypeAttributeGuids.includes(attributeGuid)) {
+                    projectTypeAttributeGuids.push(attributeGuid);
+                }
+
+                let comparisonValue: ComparisonValue = comparisonValuesByAttributeGuid[attributeGuid];
+                if (!comparisonValue) {
+                    comparisonValue = { value: "" };
+                    comparisonValuesByAttributeGuid[attributeGuid] = comparisonValue;
+                }
+
+                filters.push({
+                    key: attributeGuid,
+                    attribute,
+                    comparisonValue
+                });
+            });
+        });
+
+        return filters;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * If specified by block settings, load the (unfiltered) results on initial page load.
+     */
+    async function tryLoadResultsOnInitialPageLoad(): Promise<void> {
+        if (config.loadResultsOnInitialPageLoad) {
+            await onSearch();
+        }
+    }
+
+    /**
+     * Gets the attribute filters, grouped by the currently-selected project types (or all if no project types are selected).
+     */
+    function getActiveAttributeFiltersByProjectType(): Record<string, Record<string, PublicComparisonValueBag>> {
+        var active: Record<string, Record<string, PublicComparisonValueBag>> = {};
+
+        Object.keys(attributeGuidsByProjectType).forEach((projectTypeGuid: string) => {
+            if (selectedProjectTypes.value.length && !selectedProjectTypes.value.includes(projectTypeGuid)) {
+                return;
+            }
+
+            const comparisonValues: Record<string, ComparisonValue> = {};
+            attributeGuidsByProjectType[projectTypeGuid].forEach((attributeGuid: string) => {
+                comparisonValues[attributeGuid] = comparisonValuesByAttributeGuid[attributeGuid];
+            });
+
+            active[projectTypeGuid] = comparisonValues;
+        });
+
+        return active;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Gets the updated, available display attribute filters, based on the currently-selected project type(s).
+     */
+    async function onProjectTypesUpdated(): Promise<void> {
+        errorMessage.value = "";
+
+        const selectedProjectTypeGuidStrings = selectedProjectTypes.value;
+        const result = await invokeBlockAction<Record<string, Record<string, PublicAttributeBag>>>("GetUpdatedAttributes", { selectedProjectTypeGuidStrings });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unknown error when trying to load updated filters.";
+            return;
+        }
+
+        // Update the available attribute filters.
+        attributesByProjectType.value = result.data ?? {};
+    }
+
+    /**
+     * Gets the available projects, according to the currently-selected filters.
+     */
+    async function onSearch(): Promise<void> {
+        isSearching.value = true;
+        errorMessage.value = "";
+
+        const bag: SignUpFinderSelectedFiltersBag = {
+            projectTypes: selectedProjectTypes.value,
+            campuses: selectedCampuses.value,
+            namedSchedules: selectedNamedSchedules.value,
+            attributeFiltersByProjectType: getActiveAttributeFiltersByProjectType(),
+            startDate: selectedDateRange.value.lowerValue,
+            endDate: selectedDateRange.value.upperValue,
+            locationSort: selectedLocationSort.value,
+            locationRange: selectedLocationRange.value,
+            slotsAvailableComparisonType: selectedSlotsAvailableComparisonType.value,
+            slotsAvailable: selectedSlotsAvailable.value
+        };
+
+        const result = await invokeBlockAction<SignUpFinderResultsBag>("GetFilteredProjects", { bag });
+        isSearching.value = false;
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unknown error while trying to load projects.";
+            return;
+        }
+
+        nextTick(() => {
+            if (resultsHeaderElement.value && result.data?.resultsHeaderHtml) {
+                resultsHeaderElement.value.innerHTML = result.data.resultsHeaderHtml;
+            }
+
+            if (resultsElement.value && result.data?.resultsHtml) {
+                resultsElement.value.innerHTML = result.data.resultsHtml;
+            }
+        });
+    }
+
+    /**
+     * Clears the filters.
+     */
+    function onClearBtnClick(): void {
+        selectedProjectTypes.value = [];
+        selectedCampuses.value = [];
+        selectedNamedSchedules.value = [];
+        selectedDateRange.value = {};
+        selectedLocationSort.value = "";
+        selectedLocationRange.value = null;
+        selectedSlotsAvailableComparisonType.value = "AtLeast";
+        selectedSlotsAvailable.value = null;
+
+        Object.keys(comparisonValuesByAttributeGuid).forEach((key: string) => {
+            comparisonValuesByAttributeGuid[key] = { value: "" };
+        });
+
+        onSearch();
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    tryLoadResultsOnInitialPageLoad();
+</script>

@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection
 {
     /// <summary>
     /// The type of field this property will be in the index.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal enum IndexFieldType
     {
         /// <summary>

@@ -115,7 +115,7 @@ namespace Rock.Jobs
             {
                 var transaction = new LaunchEntityWorkflowTransaction( workflowTypeGuid.Value, string.Empty, entityTypeId, entityId );
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
 
 
                 workflowsLaunched++;

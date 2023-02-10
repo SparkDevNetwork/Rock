@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail;
 using Rock.ViewModels.Event.InteractiveExperiences;
@@ -135,8 +136,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -514,7 +515,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${InteractiveExperience.FriendlyTypeName}." );
                 return false;

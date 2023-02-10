@@ -1,0 +1,78 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="dividerClassRef">
+        <div class="rock-divider-line"></div><div v-if="isContentVisible" class="rock-divider-content" v-html="content"></div><div v-if="isContentVisible" class="rock-divider-line"></div>
+    </div>
+</template>
+
+
+<style scoped>
+* {
+    --var-divider-color: #a4a4a4;
+}
+
+.rock-divider {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 2rem 0;
+}
+
+.rock-divider-line {
+    flex: 1;
+    border-top: 1px solid var(--var-divider-color);
+}
+
+.rock-divider-content {
+    padding: 0 1rem;
+    color: var(--var-divider-color);
+}
+
+.rock-divider-vertical {
+    flex-direction: column;
+    margin: 0;
+}
+
+.rock-divider-vertical .rock-divider-line {
+    border: 0;
+    border-left: 1px solid var(--var-divider-color);
+}
+
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        isVertical: {
+            type: Object as PropType<boolean>,
+            required: false,
+            default: () => false
+        },
+
+        content: {
+            type: Object as PropType<string>,
+            required: false,
+            default: () => null
+        }
+    });
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isContentVisible = computed(() => !!props.content);
+    const dividerClassRef = computed(() => `rock-divider${props.isVertical ? " rock-divider-vertical" : ""}`);
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

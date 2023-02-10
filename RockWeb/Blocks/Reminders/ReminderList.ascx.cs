@@ -17,18 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reminders
@@ -46,6 +43,27 @@ namespace RockWeb.Blocks.Reminders
         Order = 1,
         Key = AttributeKey.EditReminderPage )]
 
+    [ReminderTypesField(
+        "Reminder Types Include",
+        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.ReminderTypesInclude )]
+
+    [ReminderTypesField(
+        "Reminder Types Exclude",
+        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.ReminderTypesExclude )]
+
+    [BooleanField(
+        "Show Filters",
+        Description = "Select this option if you want the block to show filters for reminders.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.ShowFilters )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.REMINDER_LIST )]
@@ -59,6 +77,9 @@ namespace RockWeb.Blocks.Reminders
         private static class AttributeKey
         {
             public const string EditReminderPage = "EditReminderPage";
+            public const string ReminderTypesInclude = "ReminderTypesInclude";
+            public const string ReminderTypesExclude = "ReminderTypesExclude";
+            public const string ShowFilters = "ShowFilters";
         }
 
         /// <summary>
@@ -144,6 +165,49 @@ namespace RockWeb.Blocks.Reminders
         #region Methods
 
         /// <summary>
+        /// Sets the allowed reminder types (from Block Attributes).
+        /// </summary>
+        private void SetAllowedReminderTypes()
+        {
+            var reminderTypeService = new ReminderTypeService( new RockContext() );
+
+            hfReminderTypesInclude.Value = string.Empty;
+            List<Guid> reminderTypeIncludeGuids = GetAttributeValue( AttributeKey.ReminderTypesInclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeIncludeGuids.Any() )
+            {
+                var reminderTypeIdIncludeList = new List<int>();
+                foreach ( Guid guid in reminderTypeIncludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        reminderTypeIdIncludeList.Add( reminderType.Id );
+                    }
+                }
+
+                hfReminderTypesInclude.Value = reminderTypeIdIncludeList.AsDelimited( "," );
+            }
+
+            hfReminderTypesExclude.Value = string.Empty;
+            List<Guid> reminderTypeExcludeGuids = GetAttributeValue( AttributeKey.ReminderTypesExclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeExcludeGuids.Any() )
+            {
+                var reminderTypeIdExcludeList = new List<int>();
+                foreach ( Guid guid in reminderTypeExcludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        reminderTypeIdExcludeList.Add( reminderType.Id );
+                    }
+                }
+
+                hfReminderTypesExclude.Value = reminderTypeIdExcludeList.AsDelimited( "," );
+            }
+        }
+
+
+        /// <summary>
         /// Recalculates the reminder count for the current person.  This is done during the page init
         /// to ensure that the reminders badge is updated any time a user visits a page with this block.
         /// </summary>
@@ -170,13 +234,45 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
+        /// Gets the list of included reminder type ids.  This should only be called after setting the hidden field values (i.e., buy calling <see cref="SetAllowedReminderTypes"/>.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetIncludedReminderTypeIds()
+        {
+            var includeReminderTypes = hfReminderTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            return includeReminderTypes;
+        }
+
+        /// <summary>
+        /// Gets the list of excluded reminder type ids.  This should only be called after setting the hidden field values (i.e., buy calling <see cref="SetAllowedReminderTypes"/>.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetExcludedReminderTypeIds()
+        {
+            var excludeReminderTypes = hfReminderTypesExclude.Value.SplitDelimitedValues().AsIntegerList();
+            return excludeReminderTypes;
+        }
+
+        /// <summary>
         /// Initialize the block.
         /// </summary>
         private void InitializeBlock()
         {
             var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
-            var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
-            var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
+            int? selectedEntityId = null;
+            int? selectedReminderTypeId = null;
+
+            var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
+            pnlFilterOptions.Visible = showFilters;
+            if ( !showFilters )
+            {
+                selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+                selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
+            }
+
+            SetAllowedReminderTypes();
+            var includedReminderTypeIds = GetIncludedReminderTypeIds();
+            var excludedReminderTypeIds = GetExcludedReminderTypeIds();
 
             var entityTypes = new List<EntityType>();
             var reminderTypes = new List<ReminderType>();
@@ -184,9 +280,18 @@ namespace RockWeb.Blocks.Reminders
             {
                 var reminderService = new ReminderService( rockContext );
 
-                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value ).ToList();
+                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value, includedReminderTypeIds, excludedReminderTypeIds).ToList();
 
                 reminderTypes = reminderService.GetReminderTypesByPerson( selectedEntityTypeId, CurrentPerson );
+                if ( includedReminderTypeIds.Any() )
+                {
+                    reminderTypes = reminderTypes.Where( t => includedReminderTypeIds.Contains( t.Id ) ).ToList();
+                }
+                else if ( excludedReminderTypeIds.Any() )
+                {
+                    reminderTypes = reminderTypes.Where( t => !excludedReminderTypeIds.Contains( t.Id ) ).ToList();
+                }
+
                 rptReminderType.DataSource = reminderTypes;
                 rptReminderType.DataBind();
             }
@@ -200,8 +305,8 @@ namespace RockWeb.Blocks.Reminders
             }
             else if ( entityTypes.Count == 1 )
             {
-                // This user only has a reminder for a single entity type, so hide that dropdown.
-                lSelectedEntityType.Text = entityTypes[0].FriendlyName.Pluralize();
+                // This user only has a reminder for a single entity type, so set that as the selected entity type.
+                selectedEntityTypeId = entityTypes[0].Id;
             }
 
             BindEntityTypeList( entityTypes );
@@ -213,28 +318,31 @@ namespace RockWeb.Blocks.Reminders
                 return;
             }
 
-            // Show Person Picker if EntityType matches.
-            var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
-            if ( selectedEntityTypeId == entityTypeId_Person )
+            if ( showFilters )
             {
-                lSelectedEntityType.Text = "People";
-                ppSelectedPerson.Visible = true;
-                if ( selectedEntityId.HasValue )
+                // Show Person Picker if EntityType matches.
+                var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+                if ( selectedEntityTypeId == entityTypeId_Person )
                 {
-                    var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
-                    ppSelectedPerson.SetValue( person );
+                    lSelectedEntityType.Text = "People";
+                    ppSelectedPerson.Visible = true;
+                    if ( selectedEntityId.HasValue )
+                    {
+                        var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
+                        ppSelectedPerson.SetValue( person );
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // Show Group Picker if EntityType matches.
-            var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
-            if ( selectedEntityTypeId == entityTypeId_Group )
-            {
-                lSelectedEntityType.Text = "Groups";
-                gpSelectedGroup.Visible = true;
-                gpSelectedGroup.SetValue( selectedEntityId );
-                return;
+                // Show Group Picker if EntityType matches.
+                var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+                if ( selectedEntityTypeId == entityTypeId_Group )
+                {
+                    lSelectedEntityType.Text = "Groups";
+                    gpSelectedGroup.Visible = true;
+                    gpSelectedGroup.SetValue( selectedEntityId );
+                    return;
+                }
             }
 
             var selectedEntityType = EntityTypeCache.Get( selectedEntityTypeId.Value );
@@ -266,6 +374,25 @@ namespace RockWeb.Blocks.Reminders
         private void BindReminderList( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
             var reminders = GetReminders( entityTypeId, entityId, reminderTypeId );
+
+            if ( reminders.Count == 0 )
+            {
+                if ( lCompletionFilter.Text == "Complete")
+                {
+                    nbFilteredReminders.Text = "You have no completed reminders";
+                }
+                else
+                {
+                    nbFilteredReminders.Text = "You have no active reminders";
+                }
+
+                nbFilteredReminders.Visible = true;
+            }
+            else
+            {
+                nbFilteredReminders.Visible = true;
+            }
+
             rptReminders.DataSource = reminders;
             rptReminders.DataBind();
         }
@@ -277,12 +404,20 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private List<ReminderDTO> GetReminders( int? entityTypeId, int? entityId, int? reminderTypeId )
+        private List<ReminderViewModel> GetReminders( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
-            var reminderDTOs = new List<ReminderDTO>();
+            var reminderViewModels = new List<ReminderViewModel>();
 
             var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
             var dueFilter = GetBlockUserPreference( UserPreferenceKey.DueFilter );
+
+            var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
+            if ( !showFilters )
+            {
+                // If filters are not available to the user, enforce default settings.
+                completionFilter = "Active";
+                dueFilter = "Due";
+            }
 
             if ( completionFilter.IsNullOrWhiteSpace() )
             {
@@ -294,11 +429,25 @@ namespace RockWeb.Blocks.Reminders
                 dueFilter = "Due";
             }
 
+            var personEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+
+            var includedReminderTypeIds = GetIncludedReminderTypeIds();
+            var excludedReminderTypeIds = GetExcludedReminderTypeIds();
+
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeService = new EntityTypeService( rockContext );
                 var reminderService = new ReminderService( rockContext );
                 var reminders = reminderService.GetReminders( CurrentPersonId.Value, entityTypeId, entityId, reminderTypeId );
+
+                // Filter by include/exclude block attribute.
+                if ( includedReminderTypeIds.Any() )
+                {
+                    reminders = reminders.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+                }
+                else if ( excludedReminderTypeIds.Any() )
+                {
+                    reminders = reminders.Where( r => !excludedReminderTypeIds.Contains( r.ReminderTypeId ) );
+                }
 
                 // Filter for completion status.
                 lCompletionFilter.Text = completionFilter;
@@ -349,10 +498,11 @@ namespace RockWeb.Blocks.Reminders
                 }
 
                 var invalidReminders = new List<Reminder>();
+                var reminderEntities = reminderService.GetReminderEntities( reminders );
 
                 foreach ( var reminder in reminders.ToList() )
                 {
-                    var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
+                    var entity = reminderEntities[reminder.Id];
                     if ( entity == null )
                     {
                         invalidReminders.Add( reminder );
@@ -360,13 +510,14 @@ namespace RockWeb.Blocks.Reminders
                     }
 
                     string personProfilePhoto = string.Empty;
-                    if ( entity.TypeName == "Rock.Model.Person" )
+                    if ( entity.TypeId == personEntityTypeId )
                     {
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity, Person.GetPersonPhotoUrl( entity.Id ) ) );
+                        var person = entity as Person;
+                        reminderViewModels.Add( new ReminderViewModel( reminder, person, Person.GetPersonPhotoUrl( person ) ) );
                     }
                     else
                     {
-                        reminderDTOs.Add( new ReminderDTO( reminder, entity ) );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
                     }
                 }
 
@@ -378,7 +529,7 @@ namespace RockWeb.Blocks.Reminders
                 }
             }
 
-            return reminderDTOs;
+            return reminderViewModels;
         }
 
         /// <summary>
@@ -495,19 +646,19 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupId );
+                var groupType = GroupTypeCache.Get( groupId );
 
-                if ( group == null )
+                if ( groupType == null )
                 {
                     return defaultGroupIconCss;
                 }
 
-                if ( group.GroupType.IconCssClass.IsNullOrWhiteSpace() )
+                if ( groupType.IconCssClass.IsNullOrWhiteSpace() )
                 {
                     return defaultGroupIconCss;
                 }
 
-                return group.GroupType.IconCssClass;
+                return groupType.IconCssClass;
             }
         }
 
@@ -545,10 +696,10 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptReminderType_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var btnEntityType = e.Item.FindControl( "btnEntityType" ) as LinkButton;
+            var btnReminderTypeFilter_EntityType = e.Item.FindControl( "btnReminderTypeFilter_EntityType" ) as LinkButton;
             var reminderType = ( ReminderType ) e.Item.DataItem;
-            btnEntityType.Text = reminderType.Name;
-            btnEntityType.CommandArgument = reminderType.Id.ToString();
+            btnReminderTypeFilter_EntityType.Text = reminderType.Name;
+            btnReminderTypeFilter_EntityType.CommandArgument = reminderType.Id.ToString();
         }
 
         /// <summary>
@@ -595,19 +746,19 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the lbComplete control.
+        /// Handles the Click event of the btnComplete control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbComplete_Click( object sender, EventArgs e )
+        protected void btnComplete_Click( object sender, EventArgs e )
         {
-            var lbComplete = sender as LinkButton;
-            if ( lbComplete == null )
+            var btnComplete = sender as LinkButton;
+            if (btnComplete == null )
             {
                 return;
             }
 
-            var reminderId = lbComplete.CommandArgument.AsIntegerOrNull();
+            var reminderId = btnComplete.CommandArgument.AsIntegerOrNull();
             if ( reminderId == null )
             {
                 return;
@@ -631,19 +782,19 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the lbEdit control.
+        /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbEdit_Click( object sender, EventArgs e )
+        protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var lbEdit = sender as LinkButton;
-            if ( lbEdit == null )
+            var btnEdit = sender as LinkButton;
+            if ( btnEdit == null )
             {
                 return;
             }
 
-            var reminderId = lbEdit.CommandArgument.AsIntegerOrNull();
+            var reminderId = btnEdit.CommandArgument.AsIntegerOrNull();
             if ( reminderId == null )
             {
                 return;
@@ -653,19 +804,19 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the lbDelete control.
+        /// Handles the Click event of the btnDelete control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDelete_Click( object sender, EventArgs e )
+        protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var lbDelete = sender as LinkButton;
-            if ( lbDelete == null )
+            var btnDelete = sender as LinkButton;
+            if ( btnDelete == null )
             {
                 return;
             }
 
-            var reminderId = lbDelete.CommandArgument.AsIntegerOrNull();
+            var reminderId = btnDelete.CommandArgument.AsIntegerOrNull();
             if ( reminderId == null )
             {
                 return;
@@ -677,43 +828,43 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCompletion controls.
+        /// Handles the Click event of the btnCompletionFilter controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCompletion_Click( object sender, EventArgs e )
+        protected void btnCompletionFilter_Click( object sender, EventArgs e )
         {
-            var btnCompletion = sender as LinkButton;
-            SetBlockUserPreference( UserPreferenceKey.CompletionFilter, btnCompletion.CommandArgument );
+            var btnCompletionFilter = sender as LinkButton;
+            SetBlockUserPreference( UserPreferenceKey.CompletionFilter, btnCompletionFilter.CommandArgument );
             RefreshPage();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnReminderType controls.
+        /// Handles the Click event of the btnReminderTypeFilter controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnReminderType_Click( object sender, EventArgs e )
+        protected void btnReminderTypeFilter_Click( object sender, EventArgs e )
         {
-            var btnReminderType = sender as LinkButton;
+            var btnReminderTypeFilter = sender as LinkButton;
 
             int? reminderTypeId = null;
-            if ( btnReminderType.CommandArgument != "All" )
+            if ( btnReminderTypeFilter.CommandArgument != "All" )
             {
-                reminderTypeId = int.Parse( btnReminderType.CommandArgument );
+                reminderTypeId = int.Parse( btnReminderTypeFilter.CommandArgument );
             }
             RefreshPage( reminderTypeId );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnActive controls.
+        /// Handles the Click event of the btnDueFilter controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDue_Click( object sender, EventArgs e )
+        protected void btnDueFilter_Click( object sender, EventArgs e )
         {
-            var btnDue = sender as LinkButton;
-            SetBlockUserPreference( UserPreferenceKey.DueFilter, btnDue.CommandArgument );
+            var btnDueFilter = sender as LinkButton;
+            SetBlockUserPreference( UserPreferenceKey.DueFilter, btnDueFilter.CommandArgument );
             RefreshPage();
         }
 
@@ -739,7 +890,7 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptReminders_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var reminder = e.Item.DataItem as ReminderDTO;
+            var reminder = e.Item.DataItem as ReminderViewModel;
 
             if ( reminder.EntityUrl.IsNotNullOrWhiteSpace() )
             {
@@ -755,18 +906,17 @@ namespace RockWeb.Blocks.Reminders
 
             if ( reminder.IsPersonReminder )
             {
-                var photoUrl = Person.GetPersonPhotoUrl( reminder.EntityId );
-                var litProfilePhoto = e.Item.FindControl( "litProfilePhoto" ) as Literal;
-                litProfilePhoto.Visible = true;
-                litProfilePhoto.Text = string.Format( litProfilePhoto.Text, photoUrl );
+                var lProfilePhoto = e.Item.FindControl( "lProfilePhoto" ) as Literal;
+                lProfilePhoto.Visible = true;
+                lProfilePhoto.Text = string.Format( lProfilePhoto.Text, reminder.PersonProfilePictureUrl );
             }
-
-            if ( reminder.IsGroupReminder )
+            else if ( reminder.IsGroupReminder )
             {
-                var iconCss = GetGroupTypeIconCss( reminder.EntityId );
-                var litGroupIcon = e.Item.FindControl( "litGroupIcon" ) as Literal;
-                litGroupIcon.Visible = true;
-                litGroupIcon.Text = string.Format( litGroupIcon.Text, iconCss );
+                var group = reminder.Entity as Group;
+                var iconCss = GetGroupTypeIconCss( group.GroupTypeId );
+                var lGroupIcon = e.Item.FindControl( "lGroupIcon" ) as Literal;
+                lGroupIcon.Visible = true;
+                lGroupIcon.Text = string.Format( lGroupIcon.Text, iconCss );
             }
         }
 

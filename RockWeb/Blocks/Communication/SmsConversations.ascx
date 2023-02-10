@@ -57,7 +57,8 @@
                                         <Rock:RockTemplateField>
                                             <ItemTemplate>
                                                 <Rock:HiddenFieldWithClass ID="hfRecipientPersonAliasId" runat="server" CssClass="js-recipientId" />
-                                                <Rock:HiddenFieldWithClass ID="hfMessageKey" runat="server" CssClass="js-messageKey" />
+                                                <Rock:HiddenFieldWithClass ID="hfConversationKey" runat="server" CssClass="js-conversationKey" />
+                                                <Rock:HiddenFieldWithClass ID="hfPhoneNumber" runat="server" CssClass="js-phoneNumber" />
 
                                                 <div class="layout-row">
                                                     <asp:Label ID="lblName" runat="server" Class="sms-name" />
@@ -79,7 +80,8 @@
                     <asp:UpdatePanel ID="upConversation" runat="server" class="conversation-panel">
                         <ContentTemplate>
                             <Rock:HiddenFieldWithClass ID="hfSelectedRecipientPersonAliasId" runat="server" CssClass="js-selected-recipient-personalias-id" />
-                            <Rock:HiddenFieldWithClass ID="hfSelectedMessageKey" runat="server" CssClass="js-selected-message-key" />
+                            <Rock:HiddenFieldWithClass ID="hfSelectedConversationKey" runat="server" CssClass="js-selected-conversation-key" />
+                            <Rock:HiddenFieldWithClass ID="hfSelectedPhoneNumber" runat="server" CssClass="js-selected-phone-number" />
                             <div class="header">
                                 <a href="#" class="conversation-back js-back pull-left mr-3">
                                     <i class="fa fa-chevron-left"></i>
@@ -95,7 +97,7 @@
                                             <ItemTemplate>
                                                 <div class="message outbound" id="divCommunication" runat="server">
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientPersonAliasId" runat="server" />
-                                                    <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
+                                                    <Rock:HiddenFieldWithClass ID="hfCommunicationConversationKey" runat="server" />
                                                     <%-- Keep divCommunicationBody and lSMSMessage on same line for rendering --%>
                                                     <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
                                                     <div id="divCommicationAttachments" runat="server">

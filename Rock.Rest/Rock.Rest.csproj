@@ -81,6 +81,7 @@
     <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Rock.Common.Tv">
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>

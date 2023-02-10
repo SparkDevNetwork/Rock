@@ -237,6 +237,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_RSVP_CONFIRMATION = "19024818-E456-4642-8858-F50C8B6DB5ED";
 
+        /// <summary>
+        /// The system communication Sign-Up Group confirmation Category guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_SIGNUP_GROUP_CONFIRMATION = "CB279EE1-9A12-4837-9A14-1F36B6F7CDAF";
+
         #endregion
 
         #region Merge Template Categories

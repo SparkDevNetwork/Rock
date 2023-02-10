@@ -74,6 +74,9 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Common.Mobile">
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+    </Reference>
     <Reference Include="Slingshot.Core">
       <HintPath>..\libs\Slingshot\Slingshot.Core.dll</HintPath>
     </Reference>

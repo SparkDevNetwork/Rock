@@ -2487,7 +2487,7 @@ namespace RockWeb.Blocks.Crm
                             var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                             var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
                             launchWorkflowsTxn.InitiatorPersonAliasId = _currentPersonAliasId;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                            launchWorkflowsTxn.Enqueue();
                         }
                     }
                 }

@@ -19,22 +19,22 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
+                        <Rock:DatePicker ID="dpReminderDate" runat="server" Label="Reminder Date" Required="true" AllowPastDateSelection="false" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbxComplete" runat="server" Label="Complete" Help="Determines if the reminder should be considered complete." />
+                        <Rock:RockCheckBox ID="cbComplete" runat="server" Label="Complete" Help="Determines if the reminder should be considered complete." />
                     </div>
                 </div>
-                <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
-                <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" Required="true" />
-                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Assign Reminder To" Required="true" EnableSelfSelection="true" />
+                <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" />
+                <Rock:RockDropDownList ID="ddlReminderType" runat="server" Label="Reminder Type" Required="true" />
+                <Rock:PersonPicker ID="ppPerson" runat="server" Label="Assign Reminder To" Required="true" EnableSelfSelection="true" />
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="rnbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
+                        <Rock:NumberBox ID="numbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinitely." AppendText="times" />
+                        <Rock:NumberBox ID="numbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinitely." AppendText="times" />
                     </div>
                 </div>
 

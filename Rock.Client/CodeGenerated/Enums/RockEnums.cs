@@ -25,6 +25,22 @@ using System.Collections.Generic;
 
 #pragma warning disable CS1591
 
+namespace Rock.Client.Enums.Blocks.Security.AccountEntry
+{
+    /// <summary>
+    /// </summary>
+    public enum AccountEntryStep
+    {
+        Registration = 0x0,
+        DuplicatePersonSelection = 0x1,
+        ExistingAccount = 0x2,
+        ConfirmationSent = 0x3,
+        Completed = 0x4,
+        PasswordlessConfirmationSent = 0x5,
+    }
+
+}
+
 namespace Rock.Client.Enums
 {
     /// <summary>
@@ -677,14 +693,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PersonAliasType
-    {
-        FromPersonAlias = 0x0,
-        ToPersonAlias = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersonalizationType
     {
         Segment = 0x0,
@@ -1218,6 +1226,39 @@ namespace Rock.Client.Enums.Event
         Never = 0x0,
         EveryAction = 0x1,
         SpecificActions = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Security.Login
+{
+    /// <summary>
+    /// </summary>
+    public enum LoginMethod
+    {
+        InternalDatabase = 0x0,
+        Passwordless = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PasswordlessLoginStep
+    {
+        Start = 0x0,
+        Verify = 0x1,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Engagement.SignUp
+{
+    /// <summary>
+    /// </summary>
+    public enum RegisterMode
+    {
+        Family = 0x0,
+        Anonymous = 0x1,
+        Group = 0x3,
     }
 
 }

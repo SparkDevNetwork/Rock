@@ -46,6 +46,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
+    <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
     <Compile Include="Cms\ContentChannelDateType.cs" />

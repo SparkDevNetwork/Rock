@@ -2,6 +2,9 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfReminderTypesInclude" runat="server" />
+        <asp:HiddenField ID="hfReminderTypesExclude" runat="server" />
+
         <div class="panel panel-block styled-scroll panel-groupscheduler">
             <%-- Panel Header --%>
             <div class="panel-heading panel-follow">
@@ -16,7 +19,7 @@
             </asp:Panel>
 
             <asp:Panel ID="pnlNoReminders" runat="server" CssClass="panel-body" Visible="false">
-                <Rock:NotificationBox ID="nbNoReminders" runat="server" NotificationBoxType="Warning" Text=" You do not have any reminders." />
+                <Rock:NotificationBox ID="nbNoReminders" runat="server" NotificationBoxType="Warning" Text="You do not have any reminders." />
             </asp:Panel>
 
             <asp:Panel ID="pnlView" runat="server" CssClass="panel-body">
@@ -67,7 +70,7 @@
                                 </asp:Panel>
                             </div>
 
-                            <div class="col">
+                            <asp:Panel ID="pnlFilterOptions" runat="server" CssClass="col">
                                 <%-- Group/Person - Filter Options (Header) --%>
 
                                 <div class="panel-toolbar panel-toolbar-right pr-0">
@@ -85,17 +88,15 @@
                                         </div>
 
                                         <ul class="dropdown-menu" role="menu">
-
-                                                <li>
-                                                    <asp:LinkButton ID="btnCompletion1" runat="server" Text="Active" CommandArgument="Active" OnClick="btnCompletion_Click" />
-                                                </li>
-                                                <li>
-                                                    <asp:LinkButton ID="btnCompletion2" runat="server" Text="Complete" CommandArgument="Complete" OnClick="btnCompletion_Click" />
-                                                </li>
-                                                <li>
-                                                    <asp:LinkButton ID="btnCompletion3" runat="server" Text="All" CommandArgument="All" OnClick="btnCompletion_Click" />
-                                                </li>
-
+                                            <li>
+                                                <asp:LinkButton ID="btnCompletionFilter_Active" runat="server" Text="Active" CommandArgument="Active" OnClick="btnCompletionFilter_Click" />
+                                            </li>
+                                            <li>
+                                                <asp:LinkButton ID="btnCompletionFilter_Complete" runat="server" Text="Complete" CommandArgument="Complete" OnClick="btnCompletionFilter_Click" />
+                                            </li>
+                                            <li>
+                                                <asp:LinkButton ID="btnCompletionFilter_All" runat="server" Text="All" CommandArgument="All" OnClick="btnCompletionFilter_Click" />
+                                            </li>
                                         </ul>
                                     </div>
 
@@ -106,20 +107,18 @@
                                         </div>
 
                                         <ul class="dropdown-menu" role="menu">
-                                        
-                                                <li>
-                                                    <asp:LinkButton ID="btnDue1" runat="server" Text="Due" CommandArgument="Due" OnClick="btnDue_Click" />
-                                                </li>
-                                                <li>
-                                                    <asp:LinkButton ID="btnDue2" runat="server" Text="Due This Week" CommandArgument="Due This Week" OnClick="btnDue_Click" />
-                                                </li>
-                                                <li>
-                                                    <asp:LinkButton ID="btnDue3" runat="server" Text="Due This Month" CommandArgument="Due This Month" OnClick="btnDue_Click" />
-                                                </li>
-                                                <li>
-                                                    <asp:LinkButton ID="btnDue4" runat="server" Text="Custom Date Range" CommandArgument="Custom Date Range" OnClick="btnDue_Click" />
-                                                </li>
-                                        
+                                            <li>
+                                                <asp:LinkButton ID="btnDueFilter_Due" runat="server" Text="Due" CommandArgument="Due" OnClick="btnDueFilter_Click" />
+                                            </li>
+                                            <li>
+                                                <asp:LinkButton ID="btnDueFilter_ThisWeek" runat="server" Text="Due This Week" CommandArgument="Due This Week" OnClick="btnDueFilter_Click" />
+                                            </li>
+                                            <li>
+                                                <asp:LinkButton ID="btnDueFilter_ThisMonth" runat="server" Text="Due This Month" CommandArgument="Due This Month" OnClick="btnDueFilter_Click" />
+                                            </li>
+                                            <li>
+                                                <asp:LinkButton ID="btnDueFilter_Custom" runat="server" Text="Custom Date Range" CommandArgument="Custom Date Range" OnClick="btnDueFilter_Click" />
+                                            </li>
                                         </ul>
                                     </div>
 
@@ -143,11 +142,11 @@
 
                                         <ul class="dropdown-menu" role="menu">
                                             <li>
-                                                <asp:LinkButton ID="btnReminderType1" runat="server" Text="All" CommandArgument="All" OnClick="btnReminderType_Click" />
+                                                <asp:LinkButton ID="btnReminderTypeFilter_All" runat="server" Text="All" CommandArgument="All" OnClick="btnReminderTypeFilter_Click" />
                                                 <asp:Repeater ID="rptReminderType" runat="server" OnItemDataBound="rptReminderType_ItemDataBound">
                                                     <ItemTemplate>
                                                         <li>
-                                                            <asp:LinkButton ID="btnEntityType" runat="server" Text="-" CommandArgument="-" OnClick="btnReminderType_Click" />
+                                                            <asp:LinkButton ID="btnReminderTypeFilter_EntityType" runat="server" Text="-" CommandArgument="-" OnClick="btnReminderTypeFilter_Click" />
                                                         </li>
                                                     </ItemTemplate>
                                                 </asp:Repeater>
@@ -155,17 +154,19 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbFilteredReminders" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <asp:Repeater ID="rptReminders" runat="server" OnItemDataBound="rptReminders_ItemDataBound">
                         <ItemTemplate>
                             <div class="d-flex flex-sm-wrap py-3 px-sm-4 py-sm-4 border-bottom border-panel cursor-pointer" data-reminder-id="<%# Eval("Id") %>">
                                 <div class="flex-grow-0">
-                                    <asp:LinkButton ID="lbComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="lbComplete_Click">
-                                        <asp:Literal ID="litCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
-                                        <asp:Literal ID="litCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-check-circle-o"></i></asp:Literal>
+                                    <asp:LinkButton ID="btnComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="btnComplete_Click">
+                                        <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
+                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-check-circle-o"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
                                 <div class="d-flex flex-wrap flex-eq">
@@ -175,10 +176,10 @@
                                     <div class="col-xs-12 col-sm order-3 order-sm-0 mt-2 mt-sm-0 js-reminder-edit-trigger">
                                         <div class="note reminder-note">
                                             <div class="meta">
-                                                <asp:Literal ID="litProfilePhoto" runat="server" Visible="false"><div class="meta-figure">
+                                                <asp:Literal ID="lProfilePhoto" runat="server" Visible="false"><div class="meta-figure">
                                                     <div class="avatar avatar-lg"><img src="{0}&w=50"></div>
                                                 </div></asp:Literal>
-                                                <asp:Literal ID="litGroupIcon" runat="server" Visible="false"><div class="meta-figure">
+                                                <asp:Literal ID="lGroupIcon" runat="server" Visible="false"><div class="meta-figure">
                                                     <div class="avatar avatar-icon avatar-lg">
                                                         <i class="{0}"></i>
                                                     </div>
@@ -204,8 +205,8 @@
                                     </div>
                                     <div class="col-xs-6 col-sm flex-grow-0 text-nowrap text-right">
                                         <%-- This button is used to initiate a postback for editing, but should not be displayed to the user. --%>
-                                        <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow d-none js-reminder-edit-button" CommandArgument='<%# Eval("Id") %>' OnClick="lbEdit_Click" />
-                                        <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow" CommandArgument='<%# Eval("Id") %>' OnClick="lbDelete_Click">
+                                        <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow d-none js-reminder-edit-button" CommandArgument='<%# Eval("Id") %>' OnClick="btnEdit_Click" />
+                                        <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow" CommandArgument='<%# Eval("Id") %>' OnClick="btnDelete_Click">
                                             <i class="fa fa-close"></i>
                                         </asp:LinkButton>
                                     </div>

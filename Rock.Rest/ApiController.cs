@@ -653,7 +653,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 
@@ -697,7 +697,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 

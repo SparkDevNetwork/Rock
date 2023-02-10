@@ -69,13 +69,21 @@ export interface ITopic<TServer extends ServerFunctions<TServer> = GenericServer
     on(messageName: string, handler: ((...args: any[]) => void)): void;
 
     /**
-     * Registers a callback to be called when the connection has been lost
-     * and then reconnected. This means a new connection identifier is now
-     * in use and any state information has been lost.
+     * Registers a callback to be called when the connection has been
+     * temporarily lost. An automatic reconnection is in progress. The topic
+     * is now in a state where it can not send any messages.
      *
      * @param callback The callback to be called.
      */
-    onReconnect(callback: ((server: TServer) => void) | ((server: TServer) => PromiseLike<void>)): void;
+    onReconnecting(callback: (() => void)): void;
+
+    /**
+     * Registers a callback to be called when the connection has been
+     * reconnected. The topic can now send messages again.
+     *
+     * @param callback The callback to be called.
+     */
+    onReconnected(callback: (() => void)): void;
 
     /**
      * Registers a callback to be called when the connection has been lost
@@ -83,7 +91,7 @@ export interface ITopic<TServer extends ServerFunctions<TServer> = GenericServer
      *
      * @param callback The callback to be called.
      */
-    onDisconnect(callback: (() => void) | (() => PromiseLike<void>)): void;
+    onDisconnected(callback: (() => void)): void;
 }
 
 interface IRockRealTimeStatic {

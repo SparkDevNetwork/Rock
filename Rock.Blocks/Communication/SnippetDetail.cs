@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SnippetDetail;
 
@@ -106,7 +107,7 @@ namespace Rock.Blocks.Communication
             var options = new SnippetDetailOptionsBag();
 
             var snippetType = GetSnippetType( rockContext );
-            options.IsAuthorizedToEdit = snippetType?.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
+            options.IsAuthorizedToEdit = snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
             options.IsPersonalAllowed = snippetType?.IsPersonalAllowed ?? false;
 
             return options;
@@ -149,8 +150,8 @@ namespace Rock.Blocks.Communication
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -401,7 +402,7 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Snippet.FriendlyTypeName}." );
                 return false;

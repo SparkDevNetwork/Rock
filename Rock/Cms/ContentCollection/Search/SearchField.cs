@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// A single field that will be matched in the query.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class SearchField : ISearchItem
     {
         #region Properties

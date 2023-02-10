@@ -44,6 +44,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryAccountInfoBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryCompletedStepBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryConfirmationSentStepBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryDuplicatePersonItemBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryPasswordlessConfirmationSentStepBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryDuplicatePersonSelectionStepBag.cs">
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryExistingAccountStepBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryForgotUsernameRequestBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryPersonInfoBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryPhoneNumberBag.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryRegisterRequestBox.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryRegisterResponseBox.cs" />
+    <Compile Include="Blocks\Security\Login\ExternalAuthenticationButtonBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginAutoVerifyOptionsBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginOptionsBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginVerifyOptionsBag.cs" />
+    <Compile Include="Blocks\Security\Login\RemoteLoginStartRequestBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginVerifyRequestBag.cs">
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginStartRequestBag.cs" />
+    <Compile Include="Blocks\Security\Login\RemoteLoginStartResponseBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginVerifyResponseBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginStartResponseBag.cs" />
     <Compile Include="Blocks\BlockBox.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AttributeFilterBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AvailableContentSourceBag.cs" />
@@ -72,6 +99,8 @@
     <Compile Include="Blocks\Communication\SnippetDetail\SnippetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeBag.cs" />
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberBag.cs" />
+    <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
@@ -80,6 +109,16 @@
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\CustomSettingsBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpAttendanceDetail\SignUpAttendanceDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpAttendanceDetail\SignUpAttendeeBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpAttendanceDetail\SignUpAttendanceBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\SignUpFinderCustomSettingsBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\SignUpFinderCustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\SignUpFinderInitializationBox.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\SignUpFinderResultsBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\SignUpFinderSelectedFiltersBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterInitializationBox.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegistrantBag.cs" />
     <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\ExperienceManagerOccurrencesInitializationBox.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\ExperienceManager\ExperienceManagerInitializationBox.cs" />
@@ -106,8 +145,13 @@
     <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
+    <Compile Include="Blocks\Mobile\Communication\SmsConversationList\PhoneNumberBag.cs" />
+    <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
+    <Compile Include="Communication\ConversationAttachmentBag.cs" />
+    <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Entities\SnippetBag.cs" />
     <Compile Include="Entities\SnippetTypeBag.cs" />
+    <Compile Include="Entities\SystemPhoneNumberBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionRenderConfigurationBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceActionStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceAnswerBag.cs" />
@@ -118,6 +162,8 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\MergeFieldPickerFormatSelectedValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MergeFieldPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberCountryCodeRulesConfigurationBag.cs" />
     <Compile Include="Rest\Controls\RacePickerGetRacesResultsBag.cs" />
@@ -130,6 +176,9 @@
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
     <Compile Include="Utility\IValidPropertiesBox.cs" />
+    <Compile Include="Blocks\Security\Login\CredentialLoginRequestBag.cs" />
+    <Compile Include="Blocks\Security\Login\CredentialLoginResponseBag.cs" />
+    <Compile Include="Blocks\Security\Login\LoginInitializationBox.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />

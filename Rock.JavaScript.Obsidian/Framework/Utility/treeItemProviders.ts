@@ -35,6 +35,7 @@ import { RegistrationTemplatePickerGetChildrenOptionsBag } from "@Obsidian/ViewM
 import { ReportPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reportPickerGetChildrenOptionsBag";
 import { SchedulePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/schedulePickerGetChildrenOptionsBag";
 import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowActionTypePickerGetChildrenOptionsBag";
+import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
 
@@ -902,6 +903,149 @@ export class WorkflowActionTypeTreeItemProvider implements ITreeItemProvider {
      */
     async getRootItems(): Promise<TreeItemBag[]> {
         return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+     * Tree Item Provider for retrieving merge fields from the server and displaying
+     * them inside a tree list.
+     */
+export class MergeFieldTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Currently selected page
+     */
+    public selectedIds?: string[] | string | null;
+
+    /**
+     * Root Level Merge Fields
+     */
+    public additionalFields: string = "";
+
+    /**
+     * Gets the child items of the given parent (or root if no parent given) from the server.
+     *
+     * @param parentId The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentId?: string | null): Promise<TreeItemBag[]> {
+        let result: TreeItemBag[];
+
+        const options: Partial<MergeFieldPickerGetChildrenOptionsBag> = {
+            id: parentId || "0",
+            additionalFields: this.additionalFields
+        };
+        const url = "/api/v2/Controls/MergeFieldPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            result = response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+
+        // If we're getting child nodes or if there is no selected page
+        if (parentId || !this.selectedIds || this.selectedIds.length == 0) {
+            return result;
+        }
+
+        // If we're getting the root elements and we have a selected page, we also want to grab
+        // all the parent pages so we can pre-load the entire hierarchy to the selected page
+        return this.getHierarchyToSelectedMergeField(result);
+    }
+
+    /**
+     * Fill in pages to the depth of the selected page
+     *
+     * @param rootLayer The bottom layer of pages that we'll build depth upon
+     *
+     * @return The augmented `rootLayer` with the child pages
+     */
+    private async getHierarchyToSelectedMergeField(rootLayer: TreeItemBag[]): Promise<TreeItemBag[]> {
+        const parents = this.getParentList();
+
+        if (!parents || parents.length == 0) {
+            // Selected page has no parents, so we're done.
+            return rootLayer;
+        }
+
+        const childLists = await Promise.all(parents.map(id => this.getItems(id)));
+        const allMergeFields = rootLayer.concat(flatten(childLists));
+
+        parents.forEach((parentGuid, i) => {
+            const parentMergeField: TreeItemBag | undefined = allMergeFields.find(page => page.value == parentGuid);
+            if (parentMergeField) {
+                parentMergeField.children = childLists[i];
+            }
+        });
+
+        return rootLayer;
+    }
+
+    /**
+     * Get the hierarchical list of parent merge fields of the selected merge fields
+     *
+     * @returns A list of IDs of the parent merge fields
+     */
+    private getParentList(): string[] | null {
+        if (!this.selectedIds || this.selectedIds.length == 0) {
+            return null;
+        }
+
+        // If it's a single selection, grab the parents by splitting on "|",
+        // e.g. "Grand|Parent|Child" will give ["Grand", "Parent"] as the parents
+        if (typeof this.selectedIds == "string") {
+            return this.splitSelectionIntoParents(this.selectedIds);
+        }
+
+        // Not null/empty nor a single selection, so must be an array of selections
+        return flatten(this.selectedIds.map(sel => this.splitSelectionIntoParents(sel)));
+    }
+
+    /**
+     * Split the given selected ID up and get a list of the parent IDs
+     *
+     * @param selection a string denoted one of the selected values
+     */
+    private splitSelectionIntoParents(selection: string): string[] {
+        const parentIds: string[] = [];
+
+        // grab the parents by splitting on "|",
+        // e.g. "Grand|Parent|Child" will give ["Grand", "Parent"] as the parents
+        const splitList = selection.split("|");
+        splitList.pop();
+
+        // Now we need to make sure each item further in the list contains it's parents' names
+        // e.g. ["Grand", "Parent"] => ["Grand", "Grand|Parent"]
+        while (splitList.length >= 1) {
+            parentIds.unshift(splitList.join("|"));
+            splitList.pop();
+        }
+
+        return parentIds;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
     }
 
     /**

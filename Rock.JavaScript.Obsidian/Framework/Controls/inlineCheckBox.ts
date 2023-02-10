@@ -59,7 +59,7 @@ export default defineComponent({
     template: `
 <div class="checkbox">
     <label title="">
-        <input type="checkbox" v-model="internalValue" />
+        <input type="checkbox" v-model="internalValue" v-bind="$attrs" />
         <span class="label-text ">{{label}}</span>
     </label>
 </div>

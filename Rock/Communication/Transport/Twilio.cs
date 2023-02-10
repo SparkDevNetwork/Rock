@@ -137,7 +137,7 @@ namespace Rock.Communication.Transport
                     return;
                 }
 
-                fromPhone = communication.SMSFromDefinedValue?.Value;
+                fromPhone = communication.SmsFromSystemPhoneNumber?.Number;
                 if ( string.IsNullOrWhiteSpace( fromPhone ) )
                 {
                     // just in case we got this far without a From Number, throw an exception
@@ -249,7 +249,7 @@ namespace Rock.Communication.Transport
             if ( smsMessage != null )
             {
                 // Validate From Number
-                if ( smsMessage.FromNumber == null )
+                if ( smsMessage.FromSystemPhoneNumber == null )
                 {
                     sendMessageResult.Errors.Add( "A From Number was not provided." );
                     return sendMessageResult;
@@ -267,7 +267,7 @@ namespace Rock.Communication.Transport
                 }
 
                 int? throttlingWaitTimeMS = null;
-                if ( this.IsLongCodePhoneNumber( smsMessage.FromNumber.Value ) )
+                if ( this.IsLongCodePhoneNumber( smsMessage.FromSystemPhoneNumber.Number ) )
                 {
                     throttlingWaitTimeMS = this.GetAttributeValue( TwilioAttributeKey.LongCodeThrottling ).AsIntegerOrNull();
                 }
@@ -420,7 +420,7 @@ namespace Rock.Communication.Transport
                             FromPerson = smsMessage.CurrentPerson,
                             ToPersonAliasId = recipientPerson?.PrimaryAliasId,
                             Message = message,
-                            FromPhone = smsMessage.FromNumber,
+                            FromSystemPhoneNumber = smsMessage.FromSystemPhoneNumber,
                             CommunicationName = smsMessage.CommunicationName,
                             ResponseCode = string.Empty,
                             SystemCommunicationId = smsMessage.SystemCommunicationId
@@ -453,7 +453,7 @@ namespace Rock.Communication.Transport
                     }
                     else
                     {
-                        MessageResource response = await SendToTwilioAsync( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipient.To ).ConfigureAwait( false );
+                        MessageResource response = await SendToTwilioAsync( smsMessage.FromSystemPhoneNumber.Number, null, attachmentMediaUrls, message, recipient.To ).ConfigureAwait( false );
 
                         if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
                         {

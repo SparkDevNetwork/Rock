@@ -128,7 +128,7 @@ body {
 
     // #region Functions
 
-    async function startRealTime(): Promise<void> {
+    async function startRealTime(isReconnecting: boolean): Promise<void> {
         const experienceToken = config.experienceToken;
 
         if (!experienceToken) {
@@ -137,14 +137,8 @@ body {
 
         const topic = await getTopic<IParticipantTopic>("Rock.RealTime.Topics.InteractiveExperienceParticipantTopic");
 
-        topic.onReconnect(async server => {
-            const response = await server.joinExperience(experienceToken);
-
-            eventId.value = response.occurrenceIdKey ?? null;
-
-            if (response.currentActionIdKey && response.currentActionConfiguration) {
-                setupActionComponent(response.currentActionIdKey, response.currentActionConfiguration);
-            }
+        topic.onDisconnected(async () => {
+            await startRealTime(true);
         });
 
         const response = await topic.server.joinExperience(experienceToken);
@@ -160,7 +154,9 @@ body {
             setupActionComponent(response.currentActionIdKey, response.currentActionConfiguration);
         }
 
-        setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+        if (!isReconnecting) {
+            setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+        }
     }
 
     function setupActionComponent(actionId: string, renderConfiguration: ActionRenderConfigurationBag): void {
@@ -267,6 +263,9 @@ body {
                 await realTimeTopic.value.server.pingExperience(eventId.value);
             }
         }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+        }
         finally {
             setTimeout(onPingTimer, config.keepAliveInterval * 1000);
         }
@@ -285,5 +284,5 @@ body {
     onConfigurationValuesChanged(useReloadBlock());
 
     setupCustomStyles();
-    startRealTime();
+    startRealTime(false);
 </script>

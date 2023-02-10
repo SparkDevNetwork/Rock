@@ -430,7 +430,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="startDate"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveGroupMemberSchedule( Guid groupGuid, int? reminderOffset, Guid scheduleTemplateGuid, DateTimeOffset? startDate )
+        public BlockActionResult SaveGroupMemberSchedule( Guid groupGuid, int? reminderOffset, Guid? scheduleTemplateGuid, DateTimeOffset? startDate )
         {
             // Save the preference. For now this acts as a note to the scheduler and does not effect the list of assignments presented to the user.
             using ( var rockContext = new RockContext() )
@@ -444,14 +444,26 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
-                if ( scheduleTemplateGuid != Guid.Empty )
+                if ( scheduleTemplateGuid != null && scheduleTemplateGuid != Guid.Empty )
                 {
-                    var scheduleTemplate = new GroupMemberScheduleTemplateService( rockContext ).GetNoTracking( scheduleTemplateGuid );
+                    var scheduleTemplate = new GroupMemberScheduleTemplateService( rockContext ).GetNoTracking( scheduleTemplateGuid.Value );
                     groupMember.ScheduleTemplateId = scheduleTemplate.Id;
                     rockContext.SaveChanges();
                 }
+                else
+                {
+                    groupMember.ScheduleTemplateId = null;
+                }
 
-                groupMember.ScheduleStartDate = startDate.HasValue ? startDate.Value.DateTime : RockDateTime.Now.Date;
+                if( startDate.HasValue )
+                {
+                    groupMember.ScheduleStartDate = startDate.Value.Date;
+                }
+                else
+                {
+                    groupMember.ScheduleStartDate = null;
+                }
+                
                 groupMember.ScheduleReminderEmailOffsetDays = reminderOffset ?? 0;
 
                 rockContext.SaveChanges();

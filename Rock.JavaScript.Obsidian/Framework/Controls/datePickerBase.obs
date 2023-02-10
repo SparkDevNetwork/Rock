@@ -167,7 +167,10 @@
             showOnFocus: !props.disableShowOnFocus,
             format: "mm/dd/yyyy",
             todayHighlight: !props.disableHighlightToday,
-            forceParse: !props.disableForceParse
+            forceParse: !props.disableForceParse,
+            onChangeScript: () => {
+                internalValue.value = input.value;
+            }
         });
     });
 

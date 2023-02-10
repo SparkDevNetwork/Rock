@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
                 if ( component.IsActive && component.RequiresRemoteAuthentication )
                 {
                     var entityType = EntityTypeCache.Get( component.GetType() );
-                    if ( entityType != null )
+                    if ( entityType != null && entityType.Guid != SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() )
                     {
                         this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Guid.ToString() ) );
                     }

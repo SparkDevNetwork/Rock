@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
 
         /// <summary>
+        /// The passwordless authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PASSWORDLESS = "2D037783-09BD-48BA-8C1D-626B0BC82495";
+
+        /// <summary>
         /// The guid for the Rock.Model.Badge entity
         /// </summary>
         public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
@@ -1769,5 +1774,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.SnippetType"/> 
         /// </summary>
         public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SystemPhoneNumber"/> 
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "66D62A9F-13CD-4160-8653-211B2A4ABF16";
     }
 }

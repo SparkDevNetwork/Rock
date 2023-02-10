@@ -226,12 +226,12 @@ namespace Rock.ViewModels.Entities
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets from number.
+        /// Gets or sets the system phone number identifier used for SMS sending.
         /// </summary>
         /// <value>
-        /// From number.
+        /// The system phone number identifier used for SMS sending.
         /// </value>
-        public int? SMSFromDefinedValueId { get; set; }
+        public int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.

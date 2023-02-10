@@ -44,7 +44,16 @@ namespace Rock.Client
         public Rock.Client.Enums.AgeClassification AgeClassification { get; set; }
 
         /// <summary />
+        public string CampusName { get; set; }
+
+        /// <summary />
+        public string CampusShortCode { get; set; }
+
+        /// <summary />
         public string ConnectionStatus { get; set; }
+
+        /// <summary />
+        public string ConnectionStatusColor { get; set; }
 
         /// <summary />
         public string Email { get; set; }
@@ -113,7 +122,10 @@ namespace Rock.Client
             this.Address = source.Address;
             this.Age = source.Age;
             this.AgeClassification = source.AgeClassification;
+            this.CampusName = source.CampusName;
+            this.CampusShortCode = source.CampusShortCode;
             this.ConnectionStatus = source.ConnectionStatus;
+            this.ConnectionStatusColor = source.ConnectionStatusColor;
             this.Email = source.Email;
             this.FormattedAge = source.FormattedAge;
             this.Gender = source.Gender;

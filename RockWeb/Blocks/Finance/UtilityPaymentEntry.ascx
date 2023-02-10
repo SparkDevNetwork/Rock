@@ -1,5 +1,59 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UtilityPaymentEntry.ascx.cs" Inherits="RockWeb.Blocks.Finance.UtilityPaymentEntry" %>
 
+<style>    
+    .dropdown-header {
+        display: block;
+        padding: 5px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #535353;
+        white-space: nowrap;
+        font-weight: 700;
+    }
+    .dropdown-menu .dropdown-submenu-toggle {
+        display: flex;
+        align-items: center;
+    }
+    .dropdown-submenu-toggle > .caret {
+        color: rgb(52 58 64 / 50%);
+        margin-left: auto;
+        transform: rotate(-90deg);
+        transition: transform 125ms;
+    }
+    .dropdown-submenu-toggle.open > .caret {
+        transform: rotate(0deg);
+    }
+    
+    .dropdown-submenu > ul.dropdown-menu {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        list-style: none;
+        border: 0;
+        width: 100%;
+    }
+    
+    .dropdown-submenu > .dropdown-menu>li>a {
+        padding-left: 40px;
+    }
+</style>
+
+<script>
+    Sys.Application.add_load(function () {
+        // jquery ready
+        $(document).ready(function () {
+            // Make Dropdown Submenus possible
+            $('.dropdown-submenu-toggle').on("click", function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                $(this).toggleClass('open').next('ul').toggle();
+            });
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
@@ -64,6 +118,10 @@
                                         <fieldset>
                                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
+                                            <div class="form-group">
+                                                <asp:PlaceHolder ID="phbtnAddAccount" runat="server" Visible="false" />
+                                            </div>
+
                                             <div id="divRepeatingPayments" runat="server" visible="false">
                                                 <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
                                                 <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
@@ -98,7 +156,7 @@
                                     <div class="panel-body">
                                         <fieldset>
                                             <%-- Special input with rock-fullname class --%>
-                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                                 <div class="row">

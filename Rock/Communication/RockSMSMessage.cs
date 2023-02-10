@@ -49,13 +49,46 @@ namespace Rock.Communication
         /// <value>
         /// From number.
         /// </value>
+        [Obsolete( "Use FromSystemPhoneNumber instead." )]
+        [RockObsolete( "1.15" )]
         public DefinedValueCache FromNumber
         {
             get
             {
-                if ( fromNumberValueId.HasValue  )
+                if ( !_fromSystemPhoneNumberId.HasValue )
                 {
-                    return DefinedValueCache.Get( fromNumberValueId.Value );
+                    return null;
+                }
+
+                var systemPhoneNumberCache = SystemPhoneNumberCache.Get( _fromSystemPhoneNumberId.Value );
+
+                if ( systemPhoneNumberCache == null )
+                {
+                    return null;
+                }
+
+                return DefinedValueCache.Get( systemPhoneNumberCache.Guid );
+            }
+
+            set
+            {
+                _fromSystemPhoneNumberId = SystemPhoneNumberCache.Get( value.Guid )?.Id;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets system phone number that will be used to send this message.
+        /// </summary>
+        /// <value>
+        /// The system phone number that will be used to send this message.
+        /// </value>
+        public SystemPhoneNumberCache FromSystemPhoneNumber
+        {
+            get
+            {
+                if ( _fromSystemPhoneNumberId.HasValue )
+                {
+                    return SystemPhoneNumberCache.Get( _fromSystemPhoneNumberId.Value );
                 }
 
                 return null;
@@ -63,11 +96,11 @@ namespace Rock.Communication
 
             set
             {
-                fromNumberValueId = value?.Id;
+                _fromSystemPhoneNumberId = value?.Id;
             }
         }
 
-        private int? fromNumberValueId = null;
+        private int? _fromSystemPhoneNumberId = null;
 
         /// <summary>
         /// Gets or sets the message.
@@ -129,7 +162,9 @@ namespace Rock.Communication
                 return;
             }
 
-            this.FromNumber = DefinedValueCache.Get( systemCommunication.SMSFromDefinedValue );
+            this.FromSystemPhoneNumber = systemCommunication.SmsFromSystemPhoneNumberId.HasValue
+                ? SystemPhoneNumberCache.Get( systemCommunication.SmsFromSystemPhoneNumberId.Value )
+                : null;
             this.Message = systemCommunication.SMSMessage;
             this.SystemCommunicationId = systemCommunication.Id;
         }
@@ -145,15 +180,10 @@ namespace Rock.Communication
             Rock.Model.Person person = CurrentPerson;
 
             // If the response recipient exists use it
-            var fromPersonAliasGuid = FromNumber.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
-            if ( fromPersonAliasGuid.HasValue )
+            if ( FromSystemPhoneNumber.AssignedToPersonAliasId.HasValue )
             {
                 person = new Rock.Model.PersonAliasService( new Data.RockContext() )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( p => p.Guid.Equals( fromPersonAliasGuid.Value ) )
-                    .Select( p => p.Person )
-                    .FirstOrDefault();
+                    .GetPerson( FromSystemPhoneNumber.AssignedToPersonAliasId.Value );
             }
 
             return person;

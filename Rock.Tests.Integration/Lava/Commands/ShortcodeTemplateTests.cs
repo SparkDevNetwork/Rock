@@ -521,15 +521,8 @@ var options = {
         bodyFontColor: '#fff',
         titleFontColor: '#fff',
         callbacks: {
-            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(tooltipItem.yLabel); }
+            label: function(tooltipItem,data) { return data.labels[tooltipItem.index] + ``:`` + Intl.NumberFormat().format( data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] ); }
         }
-    },
-    scales: {
-        yAxes:[ {
-            ticks: {
-                callback: function(label,index,labels) { returnIntl.NumberFormat().format(label); },
-            },
-        } ]
     }
 };
 var data = {
@@ -558,7 +551,7 @@ Chart.defaults.global.defaultFontFamily = ``sans-serif``;
 
 var ctx = document.getElementById('chart-id-<<guid>>').getContext('2d');
 var chart = new Chart(ctx, {
-    type: 'bar',
+    type: 'pie',
     data: data,
     options: options
 });    

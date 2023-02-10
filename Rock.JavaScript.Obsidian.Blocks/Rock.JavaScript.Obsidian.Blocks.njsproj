@@ -40,10 +40,33 @@
     <Content Include="src\Communication\snippetTypeDetail.obs" />
     <Content Include="src\Communication\SnippetTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Communication\systemPhoneNumberDetail.obs" />
+    <Content Include="src\Communication\SystemPhoneNumberDetail\editPanel.partial.obs" />
+    <Content Include="src\Communication\SystemPhoneNumberDetail\viewPanel.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\interactiveExperienceDetail.obs" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.obs" />
+    <Content Include="src\Security\accountEntry.obs" />
+    <Content Include="src\Security\AccountEntry\completedStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\confirmationSentStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\duplicatePersonSelectionStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\existingAccountStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\passwordlessConfirmationSentStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\phoneNumberDetails.partial.obs" />
+    <Content Include="src\Security\AccountEntry\registrationStep.partial.obs" />
+    <Content Include="src\Security\AccountEntry\registrationStepAccountInfo.partial.obs" />
+    <Content Include="src\Security\AccountEntry\registrationStepPersonInfo.partial.obs" />
+    <Content Include="src\Security\AccountEntry\simpleGrid.partial.obs" />
+    <Content Include="src\Security\codeBox.obs" />
+    <Content Include="src\Security\divider.obs" />
+    <Content Include="src\Security\login.obs" />
+    <Content Include="src\Security\Login\credentialLogin.partial.obs" />
+    <Content Include="src\Security\Login\externalLogin.partial.obs" />
+    <Content Include="src\Security\Login\loginMethodPicker.partial.obs" />
+    <Content Include="src\Security\Login\passwordlessLogin.partial.obs" />
+    <Content Include="src\Security\Login\passwordlessLoginStartStep.partial.obs" />
+    <Content Include="src\Security\Login\passwordlessLoginVerifyStep.partial.obs" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +82,7 @@
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
+    <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
@@ -74,6 +98,8 @@
     <Folder Include="src\Example\" />
     <Folder Include="src\Finance\" />
     <Folder Include="src\Security\" />
+    <Folder Include="src\Security\AccountEntry\" />
+    <Folder Include="src\Security\Login\" />
     <Folder Include="src\Utility\" />
     <Folder Include="src\WorkFlow\" />
     <Folder Include="src\WorkFlow\FormBuilder\" />
@@ -114,6 +140,7 @@
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
@@ -153,7 +180,7 @@
     <TypeScriptCompile Include="src\Example\personDetail.ts" />
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
-    <TypeScriptCompile Include="src\Security\login.ts" />
+    <TypeScriptCompile Include="src\Security\Login\passwordlessCommunicationType.d.ts" />
     <TypeScriptCompile Include="src\shims-vue.d.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

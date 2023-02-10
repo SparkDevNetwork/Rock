@@ -107,6 +107,8 @@ export const EntityType = {
     AuthScope: "8926FE3B-5AB6-4E48-8191-09EB1682F743",
     /** The database authentication provider */
     AuthenticationDatabase: "4E9B798F-BB68-4C0E-9707-0928D15AB020",
+    /** The passwordless authentication provider */
+    AuthenticationPasswordless: "2D037783-09BD-48BA-8C1D-626B0BC82495",
     /** The pin authentication provider */
     AuthenticationPin: "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
     /** The EntityType Guid for Rock.Model.BackgroundCheck  */
@@ -685,6 +687,8 @@ export const EntityType = {
     SystemCommunication: "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
     /** The EntityType Guid for Rock.Model.SystemEmail  */
     SystemEmail: "B21FD119-893E-46C0-B42D-E4CDD5C8C49D",
+    /** The EntityType Guid for Rock.Model.SystemPhoneNumber  */
+    SystemPhoneNumber: "66D62A9F-13CD-4160-8653-211B2A4ABF16",
     /** The EntityType Guid for Tag. */
     Tag: "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for Rock.Model.TaggedItem  */

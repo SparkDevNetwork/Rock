@@ -224,6 +224,11 @@ namespace Rock.WebStartup
             LogStartupMessage( "Starting the Web Farm (Stage 2)" );
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
+
+            // Start the RockQueue fast-queue processing.
+            LogStartupMessage( "Starting the Rock Fast Queue" );
+            Rock.Transactions.RockQueue.StartFastQueue();
+            ShowDebugTimingMessage( "Rock Fast Queue" );
         }
 
         /// <summary>

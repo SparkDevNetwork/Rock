@@ -62,6 +62,12 @@ export default defineComponent({
             required: false
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
         grouped: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -276,6 +282,7 @@ export default defineComponent({
 <DropDownList v-if="isDropDownListStyle"
     v-model="internalValue"
     v-bind="standardProps"
+    :disabled="disabled"
     :grouped="grouped"
     :loading="isLoading"
     :items="actualItems"
@@ -296,6 +303,7 @@ export default defineComponent({
 <CheckBoxList v-if="isCheckBoxListStyle"
     v-model="internalValue"
     v-bind="standardProps"
+    :disabled="disabled"
     :horizontal="isHorizontal"
     :items="actualItems"
     :repeatColumns="columnCount">
@@ -308,6 +316,7 @@ export default defineComponent({
 <RadioButtonList v-if="isRadioButtonListStyle"
     v-model="internalValue"
     v-bind="standardProps"
+    :disabled="disabled"
     :horizontal="isHorizontal"
     :items="actualItems"
     :repeatColumns="columnCount"

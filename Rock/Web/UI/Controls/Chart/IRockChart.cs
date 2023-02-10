@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Represents a chart that provides a graphical representation of Rock data.
     /// </summary>
-    [RockInternal]
+    [RockInternal( "1.14" )]
     public interface IRockChart
     {
         #region Events

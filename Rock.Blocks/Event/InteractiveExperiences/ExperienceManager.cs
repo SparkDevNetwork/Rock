@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceManager;
 using Rock.ViewModels.Event.InteractiveExperiences;
@@ -141,7 +142,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     IsModerator = true
                 };
 
-                box.ExperienceToken = Security.Encryption.EncryptString( token.ToJson() );
+                box.ExperienceToken = Encryption.EncryptString( token.ToJson() );
 
                 return box;
             }

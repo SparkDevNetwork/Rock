@@ -21,7 +21,6 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
- * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
@@ -200,6 +199,7 @@ import LocationList from "@Obsidian/Controls/locationList.obs";
 import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
 import RacePicker from "@Obsidian/Controls/racePicker.obs";
 import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
 
 // #region Gallery Support
 
@@ -6900,6 +6900,58 @@ const mediaElementPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates merge field picker */
+const mergeFieldPickerGallery = defineComponent({
+    name: "MergeFieldPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        MergeFieldPicker,
+        TextBox
+    },
+    setup() {
+        const value = ref([
+            {
+                "value": "Rock.Model.Group|ArchivedByPersonAlias|Person|Aliases|AliasedDateTime",
+                "text": "Aliased Date Time"
+            },
+            {
+                "value": "Rock.Model.Person|ConnectionStatusValue|Category|CreatedByPersonAliasId",
+                "text": "Created By Person Alias Id"
+            }
+        ]);
+
+        return {
+            multiple: ref(true),
+            value,
+            additionalFields: ref("GlobalAttribute,Rock.Model.Person,Rock.Model.Group"),
+            importCode: getSfcControlImportPath("mergeFieldPicker"),
+            exampleCode: `<MergeFieldPicker label="Merge Field" v-model="value" :multiple="false" additionalFields="GlobalAttribute,Rock.Model.Person,Rock.Model.Group" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MergeFieldPicker label="Merge Field" v-model="value" :multiple="multiple" :additionalFields="additionalFields" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Root Merge Fields" v-model="additionalFields" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
     attributeValuesContainerGallery,
@@ -7028,6 +7080,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ethnicityPickerGallery,
     racePickerGallery,
     mediaElementPickerGallery,
+    mergeFieldPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

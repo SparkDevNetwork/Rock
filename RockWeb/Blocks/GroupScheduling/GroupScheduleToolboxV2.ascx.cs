@@ -1533,8 +1533,8 @@ $('#{0}').tooltip();
             var availableSchedules = availableGroupLocationSchedules
                 .GroupBy( s => new { s.GroupId, ScheduleId = s.ScheduleId, s.ScheduledDateTime.Date } )
                 .Select( s => s.First() )
-                .OrderBy( a => a.GroupOrder )
-                .ThenBy( a => a.GroupName )
+                .OrderBy( a => a.GroupName )
+                .ThenBy( a => a.GroupId )
                 .ThenBy( a => a.ScheduledDateTime )
                 .ThenBy( a => a.LocationOrder )
                 .ThenBy( a => a.LocationName )
@@ -1551,6 +1551,12 @@ $('#{0}').tooltip();
 
             foreach ( var availableSchedule in availableSchedules )
             {
+                if ( availableSchedule.MaxScheduledAcrossAllLocations )
+                {
+                    // This schedule is filled, so we don't need signup controls for it.
+                    continue;
+                }
+
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
                     if ( currentGroupId != -1 )
@@ -1648,15 +1654,10 @@ $('#{0}').tooltip();
             cbSignupSchedule.Checked = false;
             cbSignupSchedule.AutoPostBack = true;
             cbSignupSchedule.CheckedChanged += cbSignupSchedule_CheckedChanged;
-            cbSignupSchedule.Enabled = !groupScheduleSignup.MaxScheduledAcrossAllLocations;
 
             if ( groupScheduleSignup.PeopleNeeded > 0 )
             {
                 cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed text-muted small'>({groupScheduleSignup.PeopleNeeded} {"person".PluralizeIf( groupScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
-            }
-            else if ( groupScheduleSignup.MaxScheduledAcrossAllLocations )
-            {
-                cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
 
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
@@ -1690,7 +1691,7 @@ $('#{0}').tooltip();
             ddlSignupLocations.AddCssClass( "my-1" );
 
             var requireLocation = GetAttributeValue( AttributeKey.RequireLocationForAdditionalSignups ).AsBoolean();
-            if ( !requireLocation )
+            if ( !requireLocation && locations.Count > 1 )
             {
                 ddlSignupLocations.Items.Insert( 0, new ListItem( NO_LOCATION_PREFERENCE, string.Empty ) );
             }
@@ -1702,6 +1703,11 @@ $('#{0}').tooltip();
 
             ddlSignupLocations.AutoPostBack = true;
             ddlSignupLocations.SelectedIndexChanged += ddlSignupLocations_SelectedIndexChanged;
+
+            if ( locations.Count == 1 )
+            {
+                ddlSignupLocations.Visible = false;
+            }
 
             var pnlLocationCol = new Panel();
             pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
@@ -1771,9 +1777,11 @@ $('#{0}').tooltip();
             ddlSignupLocations.Visible = cbSignupSchedule.Checked;
 
             var requireLocation = GetAttributeValue( AttributeKey.RequireLocationForAdditionalSignups ).AsBoolean();
-            if ( requireLocation && ddlSignupLocations.Items.Count < 2 )
+            if ( ( requireLocation && ddlSignupLocations.Items.Count < 2 )
+                || ( !requireLocation && ddlSignupLocations.Items.Count < 3 ) )
             {
                 ddlSignupLocations.Enabled = false;
+                ddlSignupLocations.Visible = false;
             }
             else
             {
