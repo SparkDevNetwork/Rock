@@ -77,7 +77,7 @@ namespace Rock.RealTime.AspNet
 
             if ( joined )
             {
-                await Groups.Add( Context.ConnectionId, topicIdentifier );
+                await Groups.Add( Context.ConnectionId, Engine.GetQualifiedAllChannelName( topicIdentifier ) );
 
                 if ( Context.User is ClaimsPrincipal claimsPrincipal )
                 {
@@ -91,8 +91,8 @@ namespace Rock.RealTime.AspNet
 
                         if ( personId.HasValue )
                         {
-                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, $"rock:person:{personId}" );
-                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:person:{personId}" );
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, Engine.GetPersonChannelName( personId.Value ) );
+                            await Groups.Add( Context.ConnectionId, Engine.GetQualifiedPersonChannelName( topicIdentifier, personId.Value ) );
                         }
                     }
 
@@ -106,8 +106,8 @@ namespace Rock.RealTime.AspNet
 
                         if ( visitorId.HasValue )
                         {
-                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, $"rock:person:{visitorId}" );
-                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:visitor:{visitorId}" );
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, Engine.GetVisitorChannelName( visitorId.Value ) );
+                            await Groups.Add( Context.ConnectionId, Engine.GetQualifiedPersonChannelName( topicIdentifier, visitorId.Value ) );
                         }
                     }
                 }

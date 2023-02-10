@@ -64,7 +64,7 @@ namespace Rock.RealTime.AspNet
         {
             RealTimeHelper.Engine.ClientAddedToChannel( connectionId, _topicIdentifier, channelName );
 
-            return _groupManager.Add( connectionId, $"{_topicIdentifier}-{channelName}" );
+            return _groupManager.Add( connectionId, Engine.GetQualifiedChannelName( _topicIdentifier, channelName ) );
         }
 
         /// <inheritdoc/>
@@ -72,7 +72,7 @@ namespace Rock.RealTime.AspNet
         {
             RealTimeHelper.Engine.ClientRemovedFromChannel( connectionId, _topicIdentifier, channelName );
 
-            return _groupManager.Remove( connectionId, $"{_topicIdentifier}-{channelName}" );
+            return _groupManager.Remove( connectionId, Engine.GetQualifiedChannelName( _topicIdentifier, channelName ) );
         }
 
         #endregion

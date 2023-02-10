@@ -34,6 +34,14 @@ namespace Rock.RealTime
         #region Fields
 
         /// <summary>
+        /// The rock instance identifier. This value is unique for every Rock
+        /// installation - but is the same across all servers in a single farm.
+        /// This is used to prefix all channel names to allow for sharing
+        /// cloud RealTime providers.
+        /// </summary>
+        private static readonly Lazy<string> _rockInstanceId = new Lazy<string>( () => Rock.Web.SystemSettings.GetRockInstanceId().ToString() );
+
+        /// <summary>
         /// The lazy-initialized list of registered topics.
         /// </summary>
         private readonly Lazy<List<TopicConfiguration>> _registeredTopics;
@@ -230,17 +238,6 @@ namespace Rock.RealTime
 
             return true;
         }
-
-        /// <summary>
-        /// Removes the connection from the specified topic channels. Called when
-        /// a connection requests to be disconnected from a topic.
-        /// </summary>
-        /// <param name="realTimeHub">The real time hub.</param>
-        /// <param name="connectionIdentifier">The identifier of the connection to be removed.</param>
-        /// <param name="topicIdentifier">The topic identifier.</param>
-        /// <param name="channelNames">The channel names to be removed from.</param>
-        /// <returns>A <see cref="Task"/> that indicates when the operation has completed.</returns>
-        protected abstract Task RemoveFromTopicChannelsAsync( object realTimeHub, string connectionIdentifier, string topicIdentifier, IEnumerable<string> channelNames );
 
         /// <summary>
         /// Notifies the engine that a client connection has connected. Handles
@@ -465,6 +462,75 @@ namespace Rock.RealTime
         }
 
         /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation to communicate with all connections to a topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedAllChannelName( string topicIdentifier )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:all";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this channel is associated with.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedChannelName( string topicIdentifier, string channelName )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-{channelName}";
+        }
+
+        /// <summary>
+        /// Gets the base channel name to use for the specified person.
+        /// </summary>
+        /// <param name="personAliasId">The identifier of the Person object.</param>
+        /// <returns>A string that represents the channel name to be used.</returns>
+        public static string GetPersonChannelName( int personAliasId )
+        {
+            return $"rock:person:{personAliasId}";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation for a personal channel. This channel can be used to
+        /// send a message to all connections belonging to the specified person.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this person is associated with.</param>
+        /// <param name="personId">The identifier of the Person object.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedPersonChannelName( string topicIdentifier, int personId )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:person:{personId}";
+        }
+
+        /// <summary>
+        /// Gets the base channel name to use for the specified visitor.
+        /// </summary>
+        /// <param name="personAliasId">The identifier of the PersonAlias object.</param>
+        /// <returns>A string that represents the channel name to be used.</returns>
+        public static string GetVisitorChannelName( int personAliasId )
+        {
+            return $"rock:visitor:{personAliasId}";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation for a visitor channel. This channel can be used to
+        /// send a message to all connections belonging to the specified visitor.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this visitor is associated with.</param>
+        /// <param name="visitorAliasId">The identifier of the PersonAlias object.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedVisitorChannelName( string topicIdentifier, int visitorAliasId )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:visitor:{visitorAliasId}";
+        }
+
+        /// <summary>
         /// Gets the topic configuration for the given topic type.
         /// </summary>
         /// <param name="topicType">The <see cref="Type"/> that describes the topic to be configured.</param>
@@ -489,6 +555,17 @@ namespace Rock.RealTime
         /// <param name="parameters">The parameters to be passed in the message.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
         public abstract Task SendMessageAsync( object proxy, string topicIdentifier, string messageName, object[] parameters, CancellationToken cancellationToken );
+
+        /// <summary>
+        /// Removes the connection from the specified topic channels. Called when
+        /// a connection requests to be disconnected from a topic.
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection to be removed.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelNames">The channel names to be removed from.</param>
+        /// <returns>A <see cref="Task"/> that indicates when the operation has completed.</returns>
+        protected abstract Task RemoveFromTopicChannelsAsync( object realTimeHub, string connectionIdentifier, string topicIdentifier, IEnumerable<string> channelNames );
 
         #endregion
     }

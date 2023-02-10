@@ -129,10 +129,10 @@ namespace Rock.RealTime
 
             foreach ( var channelName in channelNames )
             {
-                await hub.Groups.Remove( connectionIdentifier, $"{topicIdentifier}-{channelName}" );
+                await hub.Groups.Remove( connectionIdentifier, GetQualifiedChannelName( topicIdentifier, channelName ) );
             }
 
-            await hub.Groups.Remove( connectionIdentifier, topicIdentifier );
+            await hub.Groups.Remove( connectionIdentifier, GetQualifiedAllChannelName( topicIdentifier ) );
         }
 
         #endregion
