@@ -575,7 +575,7 @@ namespace Rock.Data
                 }
                 transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 
@@ -610,7 +610,7 @@ namespace Rock.Data
                 }
                 transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 

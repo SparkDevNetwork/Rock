@@ -1626,7 +1626,9 @@
     <Compile Include="Tasks\UpdatePersonAliasLastVisitDateTime.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Transactions\AggregateTransaction.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Transactions\IQueuedTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />

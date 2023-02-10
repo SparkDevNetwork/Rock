@@ -792,7 +792,7 @@ namespace Rock.Data
                     var indexingEnabled = IndexContainer.GetActiveComponent() != null;
                     if ( indexingEnabled )
                     {
-                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
+                        indexTransactions.ForEach( t => t.Enqueue() );
                         deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
