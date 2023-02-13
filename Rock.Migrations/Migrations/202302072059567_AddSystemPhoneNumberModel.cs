@@ -209,11 +209,11 @@ SELECT
         WHERE [AV].[EntityId] = [DV].[Id] AND [AV].[AttributeId] = @ResponseRecipientAttributeId
     ) AS [RecipientAliasId],
     1,
-    (SELECT TOP 1
+    ISNULL((SELECT TOP 1
         CASE [AV].[Value] WHEN 'True' THEN 1 ELSE 0 END
         FROM [AttributeValue] AS [AV]
         WHERE [AV].[EntityId] = [DV].[Id] AND [AV].[AttributeId] = @EnableResponseRecipientForwardingAttributeId
-    ) AS [EnableForwarding],
+    ), 1) AS [EnableForwarding],
     (SELECT TOP 1
         [WT].[Id]
         FROM [AttributeValue] AS [AV]
