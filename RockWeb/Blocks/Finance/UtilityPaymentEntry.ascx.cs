@@ -1223,57 +1223,61 @@ mission. We are so grateful for your commitment.</p>
             // If the child account has children of their own it will act as the root of a hierarchy, and should not be included in the parent's list of child accounts
             // and if the parent account has no direct child accounts without children of their own then it is not displayed. 
             var hierarchicalAccounts = AvailableAccounts.Where( a => a.IsRootItem && a.Children.Any( c => !c.HasChildren ) );
+            phbtnAddAccount.Visible = GetAttributeValue( AttributeKey.AdditionalAccounts ).AsBoolean();
 
-            phbtnAddAccount.Visible = enableAccountHierachy ? hierarchicalAccounts.Any() : AvailableAccounts.Any();
-            phbtnAddAccount.Controls.Clear();
+            if ( phbtnAddAccount.Visible )
+            {
+                phbtnAddAccount.Visible = enableAccountHierachy ? hierarchicalAccounts.Any() : AvailableAccounts.Any();
+                phbtnAddAccount.Controls.Clear();
 
-            var additionalAccounts = enableAccountHierachy ? hierarchicalAccounts : AvailableAccounts;
+                var additionalAccounts = enableAccountHierachy ? hierarchicalAccounts : AvailableAccounts;
 
-            var literal = new LiteralControl() { ID = "btnAddAccountLiteral" };
-            var openingHtml = $@"
+                var literal = new LiteralControl() { ID = "btnAddAccountLiteral" };
+                var openingHtml = $@"
 <div class=""btn-group js-button-dropdownlist"">
     <button type=""button"" class=""btn btn-default dropdown-toggle js-buttondropdown-btn-select"" data-toggle=""dropdown"" aria-expanded=""false"">{GetAttributeValue( AttributeKey.AddAccountText )} <span class=""fa fa-caret-down""></span></button>
     <ul class=""dropdown-menu"">
 ";
 
-            const string closingHtml = @"
+                const string closingHtml = @"
     </ul>
 </div>
 ";
-            var htmlBuilder = new StringBuilder( openingHtml );
-            foreach ( var accountItem in additionalAccounts )
-            {
-                if ( accountItem.HasChildren )
+                var htmlBuilder = new StringBuilder( openingHtml );
+                foreach ( var accountItem in additionalAccounts )
                 {
-                    htmlBuilder.Append( "<li class=\"dropdown-submenu\"><a class=\"dropdown-submenu-toggle\">" );
-                }
-                else
-                {
-                    htmlBuilder.Append( $"<li><a href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={accountItem.Id}')\" data-id='{accountItem.Id}'>" );
-                }
-
-                if ( accountItem.HasChildren )
-                {
-                    htmlBuilder.Append( $"{accountItem.PublicName}<span class=\"caret\"></span></a><ul class=\"dropdown-menu\">" );
-                    foreach ( var listItemChild in accountItem.Children )
+                    if ( accountItem.HasChildren )
                     {
-                        htmlBuilder.Append( $"<li><a " );
-                        htmlBuilder.Append( $"href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={listItemChild.Id}')\" data-id='{listItemChild.Id}'>" );
-                        htmlBuilder.Append( $"{listItemChild.PublicName}</a></li>" );
+                        htmlBuilder.Append( "<li class=\"dropdown-submenu\"><a class=\"dropdown-submenu-toggle\">" );
                     }
-                    htmlBuilder.Append( "</ul></li>" );
+                    else
+                    {
+                        htmlBuilder.Append( $"<li><a href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={accountItem.Id}')\" data-id='{accountItem.Id}'>" );
+                    }
+
+                    if ( accountItem.HasChildren )
+                    {
+                        htmlBuilder.Append( $"{accountItem.PublicName}<span class=\"caret\"></span></a><ul class=\"dropdown-menu\">" );
+                        foreach ( var listItemChild in accountItem.Children )
+                        {
+                            htmlBuilder.Append( $"<li><a " );
+                            htmlBuilder.Append( $"href=\"javascript:__doPostBack('{upPayment.ClientID}', '{literal.ID}={listItemChild.Id}')\" data-id='{listItemChild.Id}'>" );
+                            htmlBuilder.Append( $"{listItemChild.PublicName}</a></li>" );
+                        }
+                        htmlBuilder.Append( "</ul></li>" );
+                    }
+                    else
+                    {
+                        htmlBuilder.Append( $"{accountItem.PublicName}</a></li>" );
+                    }
                 }
-                else
-                {
-                    htmlBuilder.Append( $"{accountItem.PublicName}</a></li>" );
-                }
+
+                htmlBuilder.Append( closingHtml );
+
+                literal.Text = htmlBuilder.ToString();
+
+                phbtnAddAccount.Controls.Add( literal );
             }
-
-            htmlBuilder.Append( closingHtml );
-
-            literal.Text = htmlBuilder.ToString();
-
-            phbtnAddAccount.Controls.Add( literal );
         }
 
         /// <summary>
@@ -1365,7 +1369,7 @@ mission. We are so grateful for your commitment.</p>
                 parentAccount?.RemoveFromChildItems( accountItem );
             }
 
-            DatabindAddAccountsButton( phbtnAddAccount.Visible );
+            DatabindAddAccountsButton( GetAttributeValue( AttributeKey.EnableAccountHierarchy ).AsBoolean() );
 
             if ( accountId.HasValue )
             {
