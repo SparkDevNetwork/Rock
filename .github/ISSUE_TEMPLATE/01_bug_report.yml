@@ -64,7 +64,7 @@ body:
     id: version
     attributes:
       label: Rock Version
-      description: Enter Rock version here
+      description: Which version of Rock is this happening on?
       placeholder: 
     validations:
       required: true
@@ -72,7 +72,7 @@ body:
     id: client-culture-settings
     attributes:
       label: Client Culture Setting
-      description: Enter Client Culture here
+      description: This is found in your Rock System Information ⓘ toolbar popup. ![As seen in the ](https://rockrms.blob.core.windows.net/public-images/githubdocs/01_bug_report.system_information_popup.png)
       placeholder: 
     validations:
       required: true
