@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +32,7 @@ namespace Rock.Model
     [Table( "SystemPhoneNumber" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "66D62A9F-13CD-4160-8653-211B2A4ABF16" )]
-    public class SystemPhoneNumber : Model<SystemPhoneNumber>, IOrdered
+    public partial class SystemPhoneNumber : Model<SystemPhoneNumber>, IOrdered, ICacheable
     {
         #region Entity Properties
 
