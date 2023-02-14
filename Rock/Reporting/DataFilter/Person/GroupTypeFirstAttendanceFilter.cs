@@ -24,7 +24,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -34,11 +33,11 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     ///
     /// </summary>
-    [Description( "Filter people on whether they have attended a group type a specific number of times" )]
+    [Description( "Filter people on whether they have attended a group type for the first time" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "55E78F48-F849-444A-B285-FDA99E7236E7" )]
-    public class GroupTypeAttendanceFilter : DataFilterComponent
+    [ExportMetadata( "ComponentName", "Person Group Type First Attendance Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5748F0E7-E033-4D36-819C-0AA3823A8935" )]
+    public class GroupTypeFirstAttendanceFilter : DataFilterComponent
     {
         #region Properties
 
@@ -67,7 +66,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override string GetTitle( Type entityType )
         {
-            return "Attendance in Group Types";
+            return "First Attendance in Group Types";
         }
 
         /// <inheritdoc/>
@@ -84,7 +83,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override string FormatSelection( Type entityType, string selection )
         {
-            var filterName = "Group Type Attendance";
+            string filterName = "Group Type First Attendance";
 
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
@@ -190,8 +189,6 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var gtpGroupsTypes = controls[0] as GroupTypesPicker;
             var cbChildGroupTypes = controls[1] as RockCheckBox;
-            var ddlIntegerCompare = controls[2] as DropDownList;
-            var tbAttendedCount = controls[3] as RockTextBox;
             var slidingDateRangePicker = controls[4] as SlidingDateRangePicker;
 
             // Row 1
@@ -220,16 +217,6 @@ namespace Rock.Reporting.DataFilter.Person
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "col-md-4" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            ddlIntegerCompare.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "col-md-1" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbAttendedCount.RenderControl( writer );
-            writer.RenderEndTag();
-
             writer.AddAttribute( "class", "col-md-7" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             slidingDateRangePicker.RenderControl( writer );
@@ -257,7 +244,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             // convert the date range from pipe-delimited to comma since we use pipe delimited for the selection values
             var dateRangeCommaDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( '|', ',' );
-            return string.Format( "{0}|{1}|{2}|{3}|{4}", groupValues, ddlIntegerCompare.SelectedValue, tbAttendedCount.Text, dateRangeCommaDelimitedValues, cbChildGroupTypes.Checked.ToTrueFalse() );
+            return string.Format( "{0}|1|1|{3}|{4}", groupValues, ddlIntegerCompare.SelectedValue, tbAttendedCount.Text, dateRangeCommaDelimitedValues, cbChildGroupTypes.Checked.ToTrueFalse() );
         }
 
         /// <inheritdoc/>
