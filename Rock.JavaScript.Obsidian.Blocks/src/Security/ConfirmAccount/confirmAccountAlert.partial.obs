@@ -1,0 +1,38 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="alert">
+        <Alert v-if="alert.isHtml" :alertType="getAlertType()" v-html="alert.content"></Alert>
+        <Alert v-else :alertType="getAlertType()">{{ alert.content }}</Alert>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { ConfirmAccountAlertControlBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountAlertControlBag";
+
+    const props = defineProps({
+        alert: {
+            type: Object as PropType<ConfirmAccountAlertControlBag | null>,
+            default: null,
+            required: false
+        }
+    });
+
+    //#region Functions
+
+    /**
+     * Gets the alert type.
+     */
+    function getAlertType(): AlertType {
+        if (!props.alert?.type) {
+            return AlertType.Default;
+        }
+
+        return AlertType[toTitleCase(props.alert.type)] ?? AlertType.Default;
+    }
+
+    //#endregion
+</script>

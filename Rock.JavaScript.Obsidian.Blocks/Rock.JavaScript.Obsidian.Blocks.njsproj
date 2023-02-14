@@ -50,6 +50,11 @@
     <Content Include="src\Crm\BadgeDetail\viewPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\editPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\viewPanel.partial.vue" />
+    <Content Include="src\Security\ConfirmAccount.obs" />
+    <Content Include="src\Security\ConfirmAccount\accountConfirmation.partial.obs" />
+    <Content Include="src\Security\ConfirmAccount\changePassword.partial.obs" />
+    <Content Include="src\Security\ConfirmAccount\confirmAccountAlert.partial.obs" />
+    <Content Include="src\Security\ConfirmAccount\deleteConfirmation.partial.obs" />
     <Content Include="src\Security\forgotUserName.obs" />
     <Content Include="src\Security\restkeyDetail.vue" />
     <Content Include="src\Security\RestKeyDetail\editPanel.partial.vue" />
@@ -107,6 +112,7 @@
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
     <Folder Include="src\Engagement\Steps\" />
@@ -214,6 +220,8 @@
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
+    <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.partial.ts" />

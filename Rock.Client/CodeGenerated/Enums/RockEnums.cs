@@ -1093,6 +1093,21 @@ namespace Rock.Client.Enums
 
 }
 
+namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
+{
+    /// <summary>
+    /// </summary>
+    public enum ConfirmAccountViewType
+    {
+        AccountConfirmation = 0x0,
+        Alert = 0x1,
+        DeleteConfirmation = 0x2,
+        ChangePassword = 0x3,
+        Content = 0x4,
+    }
+
+}
+
 namespace Rock.Client.Enums.Cms
 {
     /// <summary>
@@ -1232,6 +1247,19 @@ namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
         Oldest = 0x2,
         Trending = 0x3,
         Alphabetical = 0x4,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Security.ForgotUserName
+{
+    /// <summary>
+    /// </summary>
+    public enum SendInstructionsResultType
+    {
+        InstructionsSent = 0x0,
+        EmailInvalid = 0x1,
+        ChangePasswordNotSupported = 0x2,
     }
 
 }
