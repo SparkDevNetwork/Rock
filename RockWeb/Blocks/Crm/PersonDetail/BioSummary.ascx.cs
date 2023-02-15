@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void ShowPersonName()
         {
             var groupTypeId = GroupTypeCache.GetId( RockPage.GetSharedItem( SharedItemKey.GroupType )?.ToString()?.AsGuid() ?? Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-            var showOnlyPrimaryGroupMembers = RockPage.GetSharedItem( SharedItemKey.ShowOnlyPrimaryGroupMembers ).ToString().AsBoolean();
+            var showOnlyPrimaryGroupMembers = RockPage.GetSharedItem( SharedItemKey.ShowOnlyPrimaryGroupMembers )?.ToString()?.AsBoolean() ?? false;
 
             var groupMemberService = new GroupMemberService( new RockContext() );
             var orderedGroupMemberList = groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, groupTypeId.Value, showOnlyPrimaryGroupMembers ).ToList();
