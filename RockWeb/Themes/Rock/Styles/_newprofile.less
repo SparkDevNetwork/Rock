@@ -746,4 +746,9 @@
     height: 100%;
   }
 
+  // Fluidbox Ghost extends outside of the image container and causes zoom to open incorrectly
+  // Suppress pointer events on the ghost to prevent this
+  .fluidbox-ghost {
+    pointer-events: none;
+  }
 }
