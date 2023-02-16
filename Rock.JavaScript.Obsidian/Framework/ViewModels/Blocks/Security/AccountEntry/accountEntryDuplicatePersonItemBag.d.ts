@@ -23,14 +23,8 @@
 
 /** A bag that contains the required information to render an account entry block's duplicate person item. */
 export type AccountEntryDuplicatePersonItemBag = {
-    /** Gets or sets the person's birth date. */
-    birthDate?: string | null;
-
     /** Gets or sets the person's full name. */
     fullName?: string | null;
-
-    /** Gets or sets the person's gender. */
-    gender?: string | null;
 
     /** Gets or sets the person identifier. */
     id: number;

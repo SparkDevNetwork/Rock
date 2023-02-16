@@ -415,7 +415,7 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="box">The register request box.</param>
         [BlockAction]
-        public BlockActionResult Register(AccountEntryRegisterRequestBox box)
+        public BlockActionResult Register( AccountEntryRegisterRequestBox box )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -453,13 +453,7 @@ namespace Rock.Blocks.Security
                     Step = AccountEntryStep.DuplicatePersonSelection,
                     DuplicatePersonSelectionStepBag = new AccountEntryDuplicatePersonSelectionStepBag
                     {
-                        DuplicatePeople = duplicatePeople.Select( p => new AccountEntryDuplicatePersonItemBag
-                        {
-                            Id = p.Id,
-                            FullName = p.FullName,
-                            Gender = p.Gender.ToString(),
-                            BirthDate = p.BirthDate?.ToString( "s" )
-                        } ).ToList(),
+                        DuplicatePeople = GetDuplicatePersonItemBags( box, duplicatePeople ),
                         Caption = GetAttributeValue( AttributeKey.FoundDuplicateCaption )
                     }
                 } );
@@ -469,6 +463,46 @@ namespace Rock.Blocks.Security
         #endregion
 
         #region Private Methods
+
+        private List<AccountEntryDuplicatePersonItemBag> GetDuplicatePersonItemBags( AccountEntryRegisterRequestBox box, List<Person> duplicatePeople )
+        {
+            var items = new List<AccountEntryDuplicatePersonItemBag>();
+
+            var enteredFirstName = box.PersonInfo?.FirstName;
+            var enteredLastName = box.PersonInfo?.LastName;
+
+            foreach ( var duplicatePerson in duplicatePeople )
+            {
+                var isFirstNameMatching = string.Equals( enteredFirstName, duplicatePerson.FirstName, StringComparison.InvariantCultureIgnoreCase );
+                var isLastNameMatching = string.Equals( enteredLastName, duplicatePerson.LastName, StringComparison.InvariantCultureIgnoreCase );
+                var title = duplicatePerson.TitleValueId.HasValue ? $"{DefinedValueCache.GetValue( duplicatePerson.TitleValueId )} " : string.Empty;
+                var suffix = duplicatePerson.SuffixValueId.HasValue ? $" {DefinedValueCache.GetValue( duplicatePerson.SuffixValueId )}" : string.Empty;
+
+                string safeFirstName;
+                string safeLastName;
+                if ( duplicatePerson.TitleValueId.HasValue || duplicatePerson.SuffixValueId.HasValue )
+                {
+                    // Since the registering person doesn't set a title or suffix during registration,
+                    // and the matched person has at least one of those values,
+                    // the matched person's first name should be obscured and the last name should be shown only if it matches.
+                    safeFirstName = Obscure( duplicatePerson.FirstName );
+                    safeLastName = isLastNameMatching ? duplicatePerson.LastName : Obscure( duplicatePerson.LastName );
+                }
+                else
+                {
+                    safeFirstName = isFirstNameMatching ? duplicatePerson.FirstName : Obscure( duplicatePerson.FirstName );
+                    safeLastName = isLastNameMatching ? duplicatePerson.LastName : Obscure( duplicatePerson.LastName );
+                }
+
+                items.Add( new AccountEntryDuplicatePersonItemBag
+                {
+                    Id = duplicatePerson.Id,
+                    FullName = $"{title}{safeFirstName} {safeLastName}{suffix}"
+                } );
+            }
+
+            return items;
+        }
 
         /// <summary>
         /// Authenticates the individual associated with the <paramref name="userLogin"/>.
@@ -672,24 +706,33 @@ namespace Rock.Blocks.Security
                 .AsNoTracking()
                 .ToList();
 
-            // Remove duplicates that share the same name, age, and family role.
             return people
+                // Remove duplicates that share the same name, age, and family role.
                 .GroupBy( p => new
                 {
+                    p.TitleValueId,
                     FirstishName = p.NickName + p.FirstName,
                     p.LastName,
+                    p.SuffixValueId,
                     p.Age,
                     Role = p.GetFamilyRole()?.Id
                 } )
                 .Select( g => g.OrderBy( p => p.Id ).First() )
+
+                // Remove duplicates that have the same title, nickname, and suffix.
                 .GroupBy( p => new
                 {
-                    p.NickName
+                    p.TitleValueId,
+                    p.NickName,
+                    p.SuffixValueId,
                 } )
                 .Select( g => g.OrderBy( p => p.Id ).First() )
+                // Remove duplicates that have the same title, first name, and suffix.
                 .GroupBy( p => new
                 {
-                    p.FirstName
+                    p.TitleValueId,
+                    p.FirstName,
+                    p.SuffixValueId,
                 } )
                 .Select( g => g.OrderBy( p => p.Id ).First() )
                 .ToList();
@@ -1171,6 +1214,16 @@ namespace Rock.Blocks.Security
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Obscures the <paramref name="value"/> by concatenating its first character and 5 asterisks (*).
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The obscured value.</returns>
+        private static string Obscure( string value )
+        {
+            return $"{value.SubstringSafe( 0, 1 )}*****";
         }
 
         /// <summary>
