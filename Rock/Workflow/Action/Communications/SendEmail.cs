@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,13 +38,21 @@ namespace Rock.Workflow.Action
 
     #region Block Attributes
 
+    [WorkflowTextOrAttribute( "From Name",
+        "From Name Attribute",
+        Description = "The name or an attribute that contains the person or name that email should be sent from. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.FromName,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
+
     [WorkflowTextOrAttribute( "From Email Address",
         "From Attribute",
         "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
         false,
         "",
         "",
-        0,
+        1,
         AttributeKey.From,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
@@ -52,7 +60,7 @@ namespace Rock.Workflow.Action
         "Reply To Attribute",
         Description = "The email address or an attribute that contains the person or email address that email replies should be sent to (will default to 'From' email). <span class='tip tip-lava'></span>",
         IsRequired = false,
-        Order = 1,
+        Order = 2,
         Key = AttributeKey.ReplyTo,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
@@ -62,7 +70,7 @@ namespace Rock.Workflow.Action
         true,
         "",
         "",
-        2,
+        3,
         AttributeKey.To,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
@@ -70,14 +78,14 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.GroupRole,
         Description = "An optional Group Role attribute to limit recipients to if the 'Send to Email Addresses' is a group or security role.",
         IsRequired = false,
-        Order = 3,
+        Order = 4,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupRoleFieldType" } )]
 
     [TextField( "Subject",
         Key = AttributeKey.Subject,
         Description = "The subject that should be used when sending email. <span class='tip tip-lava'></span>",
         IsRequired = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [CodeEditorField( "Body",
         Key = AttributeKey.Body,
@@ -86,7 +94,7 @@ namespace Rock.Workflow.Action
         EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [WorkflowTextOrAttribute( "CC Email Addresses",
         "CC Attribute",
@@ -94,7 +102,7 @@ namespace Rock.Workflow.Action
         false,
         "",
         "",
-        6,
+        7,
         AttributeKey.Cc,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
@@ -104,7 +112,7 @@ namespace Rock.Workflow.Action
         false,
         "",
         "",
-        7,
+        8,
         AttributeKey.Bcc,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
@@ -112,28 +120,28 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.AttachmentOne,
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
-        Order = 8,
+        Order = 9,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [WorkflowAttribute( "Attachment Two",
         Key = AttributeKey.AttachmentTwo,
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
-        Order = 9,
+        Order = 10,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [WorkflowAttribute( "Attachment Three",
         Key = AttributeKey.AttachmentThree,
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
-        Order = 10,
+        Order = 11,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [BooleanField( "Save Communication History",
         Key = AttributeKey.SaveCommunicationHistory,
         Description = "Should a record of this communication be saved to the recipient's profile?",
         DefaultBooleanValue = false,
-        Order = 11 )]
+        Order = 12 )]
 
     #endregion
 
@@ -156,6 +164,7 @@ namespace Rock.Workflow.Action
             public const string AttachmentTwo = "AttachmentTwo";
             public const string AttachmentThree = "AttachmentThree";
             public const string SaveCommunicationHistory = "SaveCommunicationHistory";
+            public const string FromName = "FromName";
         }
 
         #endregion
@@ -184,6 +193,7 @@ namespace Rock.Workflow.Action
             var attachmentOneGuid = GetAttributeValue( action, AttributeKey.AttachmentOne, true ).AsGuid();
             var attachmentTwoGuid = GetAttributeValue( action, AttributeKey.AttachmentTwo, true ).AsGuid();
             var attachmentThreeGuid = GetAttributeValue( action, AttributeKey.AttachmentThree, true ).AsGuid();
+            string fromNameValue = GetAttributeValue( action, AttributeKey.FromName );
 
             var attachmentList = new List<BinaryFile>();
             if ( !attachmentOneGuid.IsEmpty() )
@@ -205,8 +215,8 @@ namespace Rock.Workflow.Action
 
             bool createCommunicationRecord = GetAttributeValue( action, AttributeKey.SaveCommunicationHistory ).AsBoolean();
 
-            string fromEmailAddress = string.Empty;
             string fromName = string.Empty;
+            string fromEmailAddress = string.Empty;
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
@@ -242,6 +252,43 @@ namespace Rock.Workflow.Action
             else
             {
                 fromEmailAddress = fromValue.ResolveMergeFields( mergeFields );
+            }
+
+            Guid? fromNameGuid = fromNameValue.AsGuidOrNull();
+            if ( fromNameGuid.HasValue )
+            {
+                var attribute = AttributeCache.Get( fromNameGuid.Value, rockContext );
+                if ( attribute != null )
+                {
+                    string fromNameAttributeValue = action.GetWorkflowAttributeValue( fromNameGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( fromNameAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
+                        {
+                            Guid personAliasGuid = fromNameAttributeValue.AsGuid();
+                            if ( !personAliasGuid.IsEmpty() )
+                            {
+                                var person = new PersonAliasService( rockContext ).Queryable()
+                                    .Where( a => a.Guid.Equals( personAliasGuid ) )
+                                    .Select( a => a.Person )
+                                    .FirstOrDefault();
+                                if ( person != null && !string.IsNullOrWhiteSpace( person.FullName ) )
+                                {
+                                    fromName = person.FullName;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            fromName = fromNameAttributeValue;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var resolvedFromName = fromNameValue.ResolveMergeFields( mergeFields );
+                fromName = resolvedFromName.IsNullOrWhiteSpace() ? fromName : resolvedFromName;
             }
 
             string replyToEmailAddress = string.Empty;

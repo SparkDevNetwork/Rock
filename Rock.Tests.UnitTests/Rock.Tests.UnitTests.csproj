@@ -125,7 +125,6 @@
     <Compile Include="Rock\Slingshot\PersonNoteCsvMapperTest.cs" />
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
-    <Compile Include="Rock\Utilities\ScheduleTestHelper.cs" />
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
@@ -142,12 +141,14 @@
     <Compile Include="Rock\Model\BinaryFileTypeTests.cs" />
     <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\RequestExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateKeyExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringHtmlExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Communication\EmailAddressFieldValidatorTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
+    <Compile Include="Rock\Utility\RockDateTimeHelperTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableDictionaryTests.cs" />
     <Compile Include="Rock\Utility\RockDynamicTests.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Rock\Utility\ReflectionTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
     <Compile Include="Rock\Utility\MethodRetryTests.cs" />
+    <Compile Include="Rock\Utility\WebRequestHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

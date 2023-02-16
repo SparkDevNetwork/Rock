@@ -41,7 +41,6 @@ namespace Rock.Tests.Shared
         public static void SetRockDateTimeToAlternateTimezone()
         {
             var tz = GetTestTimeZoneAlternate();
-
             RockDateTime.Initialize( tz );
         }
 
@@ -76,15 +75,47 @@ namespace Rock.Tests.Shared
         /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
         /// in which the organization timezone supports daylight saving time.
         /// </summary>
+        public static TimeZoneInfo GetTestTimeZoneDaylightSaving()
+        {
+            var timezoneDst = TimeZoneInfo.GetSystemTimeZones()
+                .FirstOrDefault( x => x.SupportsDaylightSavingTime );
+
+            Assert.That.IsNotNull( timezoneDst, "A timezone configured for Daylight Saving Time (DST) could not be found in this environment." );
+
+            return timezoneDst;
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone supports daylight saving time.
+        /// </summary>
         public static void SetRockDateTimeToDaylightSavingTimezone()
         {
-            // Set to Mountain Standard Time (MST), a timezone that supports Daylight Saving Time (DST).
-            var tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+            var tz = GetTestTimeZoneDaylightSaving();
+            RockDateTime.Initialize( tz );
+        }
 
-            Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+        /// <summary>
+        /// Gets a timezone that is suitable for testing an operating environment
+        /// in which the organization timezone does not support daylight saving time.
+        /// </summary>
+        public static TimeZoneInfo GetTestTimeZoneStandard()
+        {
+            var timezoneStd = TimeZoneInfo.GetSystemTimeZones()
+                .FirstOrDefault( x => !x.SupportsDaylightSavingTime );
 
-            Assert.That.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
+            Assert.That.IsNotNull( timezoneStd, "A timezone without Daylight Saving Time (DST) could not be found in this environment." );
 
+            return timezoneStd;
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone does not support daylight saving time.
+        /// </summary>
+        public static void SetRockDateTimeToStandardTimezone()
+        {
+            var tz = GetTestTimeZoneStandard();
             RockDateTime.Initialize( tz );
         }
 

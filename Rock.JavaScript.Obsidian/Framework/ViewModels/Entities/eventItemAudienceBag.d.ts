@@ -25,30 +25,30 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventItemAudience View Model */
 export type EventItemAudienceBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Id of the Rock.Model.DefinedValue that this EventItemAudience is associated with. This property is required. */
     definedValueId: number;
 
     /** Gets or sets the Id of the Rock.Model.EventItem that this EventItemAudience is associated with. This property is required. */
     eventItemId: number;
 
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 };

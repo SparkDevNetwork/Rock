@@ -55,6 +55,18 @@ export type GroupTypeBag = {
     /** Gets or sets the Rock.Model.AttendanceRule that indicates how attendance is managed a Rock.Model.Group of this GroupType */
     attendanceRule: number;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Id of the Rock.Model.GroupTypeRole that a Rock.Model.GroupMember of a Rock.Model.Group belonging to this GroupType is given by default. */
     defaultGroupRoleId?: number | null;
 
@@ -112,6 +124,9 @@ export type GroupTypeBag = {
     /** Gets or sets the icon CSS class name for a font vector based icon. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /**
      * Gets or sets a value indicating whether to ignore person inactivated.
      * By default group members are inactivated in their group whenever the person
@@ -138,6 +153,12 @@ export type GroupTypeBag = {
     /** Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type */
     locationSelectionMode: number;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Name of the GroupType. This property is required. */
     name?: string | null;
 
@@ -161,6 +182,9 @@ export type GroupTypeBag = {
 
     /** Gets or sets the number of days prior to the schedule to send a confirmation email. */
     scheduleConfirmationEmailOffsetDays?: number | null;
+
+    /** Gets or sets the schedule confirmation logic. */
+    scheduleConfirmationLogic: number;
 
     /** Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated. */
     scheduleConfirmationSystemCommunicationId?: number | null;
@@ -194,25 +218,4 @@ export type GroupTypeBag = {
 
     /** Gets or sets a flag indicating if a Rock.Model.Group of this GroupType supports taking attendance. */
     takesAttendance: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

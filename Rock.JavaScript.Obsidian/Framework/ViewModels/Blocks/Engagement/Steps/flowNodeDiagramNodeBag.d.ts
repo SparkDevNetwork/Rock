@@ -26,14 +26,14 @@
  * For Step Flow diagrams, this represents a Step
  */
 export type FlowNodeDiagramNodeBag = {
+    /** Gets or sets the color */
+    color?: string | null;
+
     /** Gets or sets the id */
     id: number;
 
     /** Gets or sets the name */
     name?: string | null;
-
-    /** Gets or sets the color */
-    color?: string | null;
 
     /** Gets or sets the order */
     order: number;

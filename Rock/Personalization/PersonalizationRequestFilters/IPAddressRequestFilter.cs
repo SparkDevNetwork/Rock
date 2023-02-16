@@ -17,6 +17,7 @@
 using System;
 using System.Web;
 
+using Rock.Net;
 using Rock.Utility;
 
 namespace Rock.Personalization
@@ -55,11 +56,7 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
             var isInRange = WebRequestHelper.IsIPAddressInRange( new HttpRequestWrapper( httpRequest ), BeginningIPAddress, EndingIPAddress );
@@ -71,6 +68,14 @@ namespace Rock.Personalization
             {
                 return !isInRange;
             }
+        }
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            var isInRange = WebRequestHelper.IsIPAddressInRange( request.ClientInformation.IpAddress, BeginningIPAddress, EndingIPAddress );
+
+            return MatchType == RangeType.InRange ? isInRange : !isInRange;
         }
 
         /// <summary>

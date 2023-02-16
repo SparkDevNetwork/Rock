@@ -280,5 +280,20 @@ namespace Rock.SystemKey
         /// Job Settings for <see cref="Rock.Jobs.PopulateInteractionSessionData"/>
         /// </summary>
         public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
+
+        /// <summary>
+        /// Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database.
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES = "core_PersonalizationSegmentCookieAffinityDurationMinutes";
+
+        /// <summary>
+        /// The name of the standard Rock Context.
+        /// </summary>
+        public const string ROCK_CONTEXT = "RockContext";
+
+        /// <summary>
+        /// The name of the standard Rock Context for Read Only queries.
+        /// </summary>
+        public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
     }
 }

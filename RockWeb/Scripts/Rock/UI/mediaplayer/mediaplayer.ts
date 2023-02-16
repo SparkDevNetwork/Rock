@@ -148,6 +148,9 @@ namespace Rock.UI {
         /** The watch map in RLE format. */
         WatchMap: string;
 
+        /** The page identifier of the current Rock page. */
+        PageId?: number;
+
         /** The related EntityTypeId for the interaction. */
         RelatedEntityTypeId?: number;
 
@@ -891,7 +894,8 @@ namespace Rock.UI {
                 RelatedEntityTypeId: this.options.relatedEntityTypeId,
                 RelatedEntityId: this.options.relatedEntityId,
                 SessionGuid: this.options.sessionGuid,
-                OriginalUrl: window.location.href
+                OriginalUrl: window.location.href,
+                PageId: (Rock as any).settings.get("pageId")
             }
 
             // Initialize the API request.

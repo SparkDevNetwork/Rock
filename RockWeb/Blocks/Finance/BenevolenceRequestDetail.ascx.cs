@@ -306,8 +306,8 @@ namespace RockWeb.Blocks.Finance
 
 
                     // load the attributes of the BenevolenceRequestType
-                    benevolenceRequest.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phEditAttributes, benevolenceRequest );
+                    benevolenceRequest.LoadAttributes( rockContext );
+                    avcAttributes.GetEditValues( benevolenceRequest );
 
                     rockContext.WrapTransaction( () =>
                     {
@@ -998,21 +998,15 @@ namespace RockWeb.Blocks.Finance
                 _documentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
                 BindUploadDocuments(  );
 
-                benevolenceRequest.LoadAttributes();
-                Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phEditAttributes, true, BlockValidationGroup, 2 );
+                avcAttributes.AddEditControls( benevolenceRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
                 // call the OnSelectPerson of the person picker which will update the UI based on the selected person
                 ppPerson_SelectPerson( null, null );
             }
             else
             {
-
                 var benevolenceRequest = GetBenevolenceRequest();
                 benevolenceRequest.BenevolenceTypeId = ddlEditRequestType.SelectedValue.ToIntSafe();
-                benevolenceRequest.LoadAttributes();
-                phEditAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phEditAttributes, false, BlockValidationGroup, 2 );
-
                 confirmEditExit.Enabled = true;
             }
         }
@@ -1441,17 +1435,10 @@ namespace RockWeb.Blocks.Finance
             hlViewBenevolenceType.Text = $"{benevolenceRequest?.BenevolenceType?.Name}";
             hlViewBenevolenceType.LabelType = LabelType.Type;
 
-            var campus = _requester?.GetCampus();
+            var campus = benevolenceRequest?.Campus;
 
             hlViewCampus.LabelType = LabelType.Campus;
-            if ( campus != null )
-            {
-                hlViewCampus.Text = $"{campus?.Name}";
-            }
-            else
-            {
-                hlViewCampus.Text = $"{CampusCache.All()?.FirstOrDefault()?.Name}";
-            }
+            hlViewCampus.Text = ( campus != null ? campus.Name : string.Empty );
 
             switch ( benevolenceRequest?.RequestStatusValue?.Value.ToUpper() )
             {
@@ -1465,7 +1452,7 @@ namespace RockWeb.Blocks.Finance
                     hlViewStatus.LabelType = LabelType.Danger;
                     break;
             }
-            
+
             hlViewStatus.Text = $"{benevolenceRequest?.RequestStatusValue?.Value}";
 
             DisplayPersonName();
@@ -1614,7 +1601,7 @@ namespace RockWeb.Blocks.Finance
 
             lViewBenevolenceTypeDescription.Text = $"{benevolenceRequest?.RequestText}";
 
-            avcViewBenevolenceTypeAttributes.AddDisplayControls( benevolenceRequest );
+            avcViewBenevolenceTypeAttributes.AddDisplayControls( benevolenceRequest, Rock.Security.Authorization.VIEW, CurrentPerson );
 
             var documentList = benevolenceRequest?.Documents.ToList();
 

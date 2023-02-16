@@ -34,6 +34,18 @@ export type AttendanceOccurrenceBag = {
     /** Gets or sets the attendance type value identifier. */
     attendanceTypeValueId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the Decline Confirmation Message (for RSVP). */
     declineConfirmationMessage?: string | null;
 
@@ -46,8 +58,17 @@ export type AttendanceOccurrenceBag = {
     /** Gets or sets the Id of the Rock.Model.Group that the Rock.Model.Person checked in to. */
     groupId?: number | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the Id of the Rock.Model.Location that the individual attended/checked in to.  */
     locationId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name. */
     name?: string | null;
@@ -69,25 +90,4 @@ export type AttendanceOccurrenceBag = {
 
     /** Gets Sunday date. */
     sundayDate?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

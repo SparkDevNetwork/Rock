@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -144,15 +144,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
+            var defaultYear = new DateTime().Year;
             DateTime currentDate = RockDateTime.Today;
             int currentDayOfYear = currentDate.DayOfYear;
-            
+
             //// have SQL Server do the following math (DateDiff only returns the integers):
+            //// If the person doesn't have a birth year, the value on the date of birth will be the default year value, in that case return a null age,
             //// If the person hasn't had their birthday this year, their age is the DateDiff in Years - 1, otherwise, it is DateDiff in Years (without adjustment)
             var personAgeQuery = new PersonService( context ).Queryable()
-                .Select( p => p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
-                    ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                    : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ));
+                .Select( p => p.BirthDate.Value.Year == defaultYear
+                ? null
+                : p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) );
 
             var selectAgeExpression = SelectExpressionExtractor.Extract( personAgeQuery, entityIdProperty, "p" );
 

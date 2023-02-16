@@ -16,8 +16,6 @@
 //
 using System;
 using System.Web;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace Rock
 {
@@ -40,8 +38,11 @@ namespace Rock
         /// <returns></returns>
         public static Uri UrlProxySafe( this HttpRequest request )
         {
+            // Some proxies use X-Original-Host.
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+
             // If no proxy just return the request URL
-            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
+            var isRequestForwardedFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwardedFromProxy )
             {
@@ -49,11 +50,23 @@ namespace Rock
             }
 
             // Assemble a URI from the proxied headers
-            return new UriBuilder( request.Url )
+            var builder = new UriBuilder( request.Url )
             {
                 Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
-                Host = request.Headers["X-Forwarded-Host"].ToString()
-            }.Uri;
+                Host = forwardedHost,
+            };
+
+            // If we have the original port then use it, otherwise reset to default port.
+            if ( request.Headers["X-Forwarded-Port"] != null )
+            {
+                builder.Port = request.Headers["X-Forwarded-Port"].AsIntegerOrNull() ?? -1;
+            }
+            else
+            {
+                builder.Port = -1;
+            }
+
+            return builder.Uri;
         }
 
         /// <summary>
@@ -69,8 +82,11 @@ namespace Rock
         /// <returns></returns>
         public static Uri UrlProxySafe( this HttpRequestBase request )
         {
+            // Some proxies use X-Original-Host.
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+
             // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
+            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwaredFromProxy )
             {
@@ -78,11 +94,67 @@ namespace Rock
             }
 
             // Assemble a URI from the proxied headers
-            return new UriBuilder( request.Url )
+            var builder = new UriBuilder( request.Url )
             {
                 Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
-                Host = request.Headers["X-Forwarded-Host"].ToString()
-            }.Uri;
+                Host = forwardedHost,
+            };
+
+            // If we have the original port then use it, otherwise reset to default port.
+            if ( request.Headers["X-Forwarded-Port"] != null )
+            {
+                builder.Port = request.Headers["X-Forwarded-Port"].AsIntegerOrNull() ?? -1;
+            }
+            else
+            {
+                builder.Port = -1;
+            }
+
+            return builder.Uri;
+        }
+
+        /// <summary>
+        /// Returns a URL from the request object that checks to see if the request has been proxied from a CDN or
+        /// other form of web proxy / load balancers. These devices will convert the Request.Url to be their private
+        /// proxied address. The client's original address will be in the "X-Forwarded-For" header. This method will check
+        /// if the request is proxied. If so it will return the original source URI, otherwise if it's not proxied it will
+        /// return the Request.Uri.
+        ///
+        /// Safe to use for both proxied and non-proxied traffic.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        internal static Uri UrlProxySafe( this Net.IRequest request )
+        {
+            // Some proxies use X-Original-Host.
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+
+            // If no proxy just return the request URL
+            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
+
+            if ( !isRequestForwaredFromProxy )
+            {
+                return request.RequestUri;
+            }
+
+            // Assemble a URI from the proxied headers
+            var builder = new UriBuilder( request.RequestUri )
+            {
+                Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
+                Host = forwardedHost
+            };
+
+            // If we have the original port then use it, otherwise reset to default port.
+            if ( request.Headers["X-Forwarded-Port"] != null )
+            {
+                builder.Port = request.Headers["X-Forwarded-Port"].AsIntegerOrNull() ?? -1;
+            }
+            else
+            {
+                builder.Port = -1;
+            }
+
+            return builder.Uri;
         }
 
         /// <summary>

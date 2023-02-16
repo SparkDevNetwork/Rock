@@ -35,10 +35,10 @@ namespace Rock.Migrations
                 DECLARE @emailCommunicationMediumEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Medium.Email')
 
                 DECLARE @mandrillEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Transport.MandrillSmtp')
-                DECLARE @mandrillEntityTypeGuid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [EntityType] WHERE [Id] = @mandrillEntityTypeId)
+                DECLARE @mandrillEntityTypeGuid VARCHAR(36) = (SELECT [Guid] FROM [EntityType] WHERE [Id] = @mandrillEntityTypeId)
 
                 DECLARE @mailgunEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Transport.MailgunSmtp')
-                DECLARE @mailgunEntityTypeGuid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [EntityType] WHERE [Id] = @mailgunEntityTypeId)
+                DECLARE @mailgunEntityTypeGuid VARCHAR(36) = (SELECT [Guid] FROM [EntityType] WHERE [Id] = @mailgunEntityTypeId)
 
                 DECLARE @checklistCompletedAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'FBB2E564-29A3-4756-A255-38565B486000')
                 DECLARE @AdminChecklistDefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '4BF34677-37E9-4E71-BD03-252B66C9373D')
@@ -50,7 +50,6 @@ namespace Rock.Migrations
                 JOIN [AttributeValue] av ON a.[Id] = av.[AttributeId]
                 WHERE a.[Key] = 'TransportContainer'
 	                AND a.[EntityTypeId] = @emailCommunicationMediumEntityTypeId
-	                AND av.[Value] IS NOT NULL
 	                AND (av.[Value] = @mandrillEntityTypeGuid OR av.[Value] = @mailgunEntityTypeGuid ))
 
                 -- Create the admin checklist item

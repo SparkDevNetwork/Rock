@@ -31,21 +31,21 @@ export interface ISuspenseProvider {
     /**
      * Adds a new operation identified by the promise. When the promise
      * either resolves or fails the operation is considered completed.
-     * 
+     *
      * @param operation The promise that represents the operation.
      */
-    addOperation(operation: Promise<void>): void;
+    addOperation(operation: Promise<unknown>): void;
 
     /**
      * Notes that an asynchronous operation has started on a child component.
-     * 
+     *
      * @param key The key that identifies the operation.
      */
     startAsyncOperation(key: Guid): void;
 
     /**
      * Notes that an asynchrounous operation has completed on a child component.
-     * 
+     *
      * @param key The key that was previously passed to startAsyncOperation.
      */
     completeAsyncOperation(key: Guid): void;
@@ -67,7 +67,7 @@ export class BasicSuspenseProvider implements ISuspenseProvider {
 
     /**
      * Creates a new suspense provider.
-     * 
+     *
      * @param parentProvider The parent suspense provider that will be notified of pending operations.
      */
     constructor(parentProvider: ISuspenseProvider | undefined) {
@@ -113,7 +113,7 @@ export class BasicSuspenseProvider implements ISuspenseProvider {
      *
      * @param operation The promise that represents the operation.
      */
-    public addOperation(operation: Promise<void>): void {
+    public addOperation(operation: Promise<unknown>): void {
         const operationKey = newGuid();
 
         this.startAsyncOperation(operationKey);
@@ -170,7 +170,7 @@ export class BasicSuspenseProvider implements ISuspenseProvider {
      * when the current pending operations have completed. If new operations
      * begin after the callback is executed it will not be called again unless
      * it is added with this method again.
-     * 
+     *
      * @param callback The function to call when all pending operations have completed.
      */
     public addFinishedHandler(callback: () => void): void {
@@ -180,7 +180,7 @@ export class BasicSuspenseProvider implements ISuspenseProvider {
 
 /**
  * Provides a new suspense provider to any child components.
- * 
+ *
  * @param provider The provider to make available to child components.
  */
 export function provideSuspense(provider: ISuspenseProvider): void {

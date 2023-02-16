@@ -30,6 +30,24 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * in the database.
  */
 export type ContentCollectionFilterSettingsBag = {
+    /**
+     * Gets or sets the attributes that are enabled for filtering
+     * and indexing on the content collection.
+     */
+    attributeFilters?: Record<string, ContentCollectionAttributeFilterSettingsBag> | null;
+
+    /**
+     * Gets or sets the attribute values that have been learned. These
+     * are used to display the known values in the filter panel.
+     */
+    attributeValues?: Record<string, ListItemBag[]> | null;
+
+    /**
+     * Gets or sets the field values that have been learned. These
+     * are used to display the known values in the filter panel.
+     */
+    fieldValues?: Record<string, ListItemBag[]> | null;
+
     /** Gets or sets a value indicating whether full text search should be enabled. */
     fullTextSearchEnabled: boolean;
 
@@ -38,12 +56,6 @@ export type ContentCollectionFilterSettingsBag = {
      * should be enabled.
      */
     yearSearchEnabled: boolean;
-
-    /**
-     * Gets or sets the label to use for the filter that allows an
-     * individual to search for content by a specific year.
-     */
-    yearSearchLabel?: string | null;
 
     /** Gets or sets the year search filter control. */
     yearSearchFilterControl: ContentCollectionFilterControl;
@@ -55,20 +67,8 @@ export type ContentCollectionFilterSettingsBag = {
     yearSearchFilterIsMultipleSelection: boolean;
 
     /**
-     * Gets or sets the attributes that are enabled for filtering
-     * and indexing on the content collection.
+     * Gets or sets the label to use for the filter that allows an
+     * individual to search for content by a specific year.
      */
-    attributeFilters?: Record<string, ContentCollectionAttributeFilterSettingsBag> | null;
-
-    /**
-     * Gets or sets the field values that have been learned. These
-     * are used to display the known values in the filter panel.
-     */
-    fieldValues?: Record<string, ListItemBag[]> | null;
-
-    /**
-     * Gets or sets the attribute values that have been learned. These
-     * are used to display the known values in the filter panel.
-     */
-    attributeValues?: Record<string, ListItemBag[]> | null;
+    yearSearchLabel?: string | null;
 };

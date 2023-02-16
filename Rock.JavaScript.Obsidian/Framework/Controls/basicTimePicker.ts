@@ -93,13 +93,11 @@ export default defineComponent({
             }
         }
 
-        function toggleMeridiem(e: Event): boolean {
-            e.preventDefault();
-
-            internalMeridiem.value = internalMeridiem.value === "AM" ? "PM" : "AM";
-            maybeUpdateValue();
-
-            return false;
+        function toggleMeridiem(): void {
+            if (!props.disabled) {
+                internalMeridiem.value = internalMeridiem.value === "AM" ? "PM" : "AM";
+                maybeUpdateValue();
+            }
         }
 
         watch(() => props.modelValue, (): void => {
@@ -151,7 +149,7 @@ export default defineComponent({
     template: `
 <div class="input-group input-width-md">
     <input class="form-control" type="text" v-model="internalValue" @change="updateValue" @keypress="keyPress" :disabled="disabled" />
-    <span class="input-group-btn"><button class="btn btn-default" @click="toggleMeridiem" :disabled="disabled">{{ internalMeridiem }}</button></span>
+    <span class="input-group-addon clickable" @click.prevent="toggleMeridiem">{{ internalMeridiem }}</span>
 </div>
 `
 });

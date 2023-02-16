@@ -55,6 +55,12 @@ export type AchievementTypeBag = {
     /** An alternate image that can be used for custom purposes. */
     alternateImageBinaryFileId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the lava template used to render a badge. */
     badgeLavaTemplate?: string | null;
 
@@ -67,6 +73,12 @@ export type AchievementTypeBag = {
     /** Gets or sets the Id of the achievement component Rock.Model.EntityType */
     componentEntityTypeId: number;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the lava template used to render the status summary of the achievement. */
     customSummaryLavaTemplate?: string | null;
 
@@ -75,6 +87,9 @@ export type AchievementTypeBag = {
 
     /** Gets or sets the color of the highlight. */
     highlightColor?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /**
      * Gets or sets the image binary file identifier. This would be the image
@@ -91,6 +106,12 @@ export type AchievementTypeBag = {
     /** Gets or sets the maximum accomplishments allowed. */
     maxAccomplishmentsAllowed?: number | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the name of the achievement type. This property is required. */
     name?: string | null;
 
@@ -102,25 +123,4 @@ export type AchievementTypeBag = {
      * The original achievement sources were Streaks.
      */
     sourceEntityTypeId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

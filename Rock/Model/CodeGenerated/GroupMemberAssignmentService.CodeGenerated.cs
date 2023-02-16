@@ -84,7 +84,7 @@ namespace Rock.Model
                 IdKey = model.IdKey,
                 ConfirmationSentDateTime = model.ConfirmationSentDateTime,
                 GroupMemberId = model.GroupMemberId,
-                LastRSVPReminderSentDateTime = model.LastRSVPReminderSentDateTime,
+                LastReminderSentDateTime = model.LastReminderSentDateTime,
                 LocationId = model.LocationId,
                 ScheduleId = model.ScheduleId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -160,7 +160,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
-            target.LastRSVPReminderSentDateTime = source.LastRSVPReminderSentDateTime;
+            target.LastReminderSentDateTime = source.LastReminderSentDateTime;
             target.LocationId = source.LocationId;
             target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;

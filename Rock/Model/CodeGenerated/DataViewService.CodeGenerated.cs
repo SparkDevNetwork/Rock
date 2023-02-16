@@ -165,6 +165,7 @@ namespace Rock.Model
                 CategoryId = model.CategoryId,
                 DataViewFilterId = model.DataViewFilterId,
                 Description = model.Description,
+                DisableUseOfReadOnlyContext = model.DisableUseOfReadOnlyContext,
                 EntityTypeId = model.EntityTypeId,
                 IncludeDeceased = model.IncludeDeceased,
                 IsSystem = model.IsSystem,
@@ -249,6 +250,7 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.DataViewFilterId = source.DataViewFilterId;
             target.Description = source.Description;
+            target.DisableUseOfReadOnlyContext = source.DisableUseOfReadOnlyContext;
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

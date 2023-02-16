@@ -25,6 +25,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupTypeRole View Model */
 export type GroupTypeRoleBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a value indicating whether this instance can edit. */
     canEdit: boolean;
 
@@ -34,11 +40,20 @@ export type GroupTypeRoleBag = {
     /** Gets or sets a value indicating whether this instance can view. */
     canView: boolean;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the user defined description of the GroupRole. This property is required. */
     description?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.GroupType that this GroupRole belongs to. This property is required. */
     groupTypeId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this is a group leader role.   */
     isLeader: boolean;
@@ -55,6 +70,12 @@ export type GroupTypeRoleBag = {
     /** Gets or sets the minimum count of GroupMembers that a Rock.Model.Group can have who belong to this GroupRole. */
     minCount?: number | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the Name of the GroupRole. This property is required. */
     name?: string | null;
 
@@ -63,25 +84,4 @@ export type GroupTypeRoleBag = {
 
     /** Gets or sets a value indicating whether this role should receive requirements notifications]. */
     receiveRequirementsNotifications: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

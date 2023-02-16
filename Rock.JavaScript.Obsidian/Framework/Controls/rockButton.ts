@@ -79,6 +79,12 @@ export default defineComponent({
         onClick: {
             type: Function as PropType<((event: MouseEvent) => void | PromiseLike<void>)>,
             required: false
+        },
+
+        /** Change button proportions to make it a square. Used for buttons with only an icon. */
+        isSquare: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -109,7 +115,7 @@ export default defineComponent({
         });
 
         const cssClass = computed((): string => {
-            return `btn ${typeClass.value} ${sizeClass.value}`;
+            return `btn ${typeClass.value} ${sizeClass.value} ${props.isSquare ? "btn-square" : ""}`;
         });
 
         const onButtonClick = async (event: MouseEvent): Promise<void> => {

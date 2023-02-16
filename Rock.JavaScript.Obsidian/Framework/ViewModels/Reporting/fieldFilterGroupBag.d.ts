@@ -26,15 +26,15 @@ import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRu
 
 /** A group of filter rules/expressions that make up a logical comparison group. */
 export type FieldFilterGroupBag = {
-    /** The unique identifier of this filter group. */
-    guid?: Guid | null;
-
     /** The logic operator to use when joining all rules and child-groups in this group. */
     expressionType: number;
 
-    /** The collection of rules/expression that make up this group. */
-    rules?: FieldFilterRuleBag[] | null;
-
     /** The collection of child groups that make up any nested expressions in this group. */
     groups?: FieldFilterGroupBag[] | null;
+
+    /** The unique identifier of this filter group. */
+    guid?: Guid | null;
+
+    /** The collection of rules/expression that make up this group. */
+    rules?: FieldFilterRuleBag[] | null;
 };

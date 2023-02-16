@@ -98,6 +98,7 @@ namespace Rock.Model
                 AudienceSecondaryColor = model.AudienceSecondaryColor,
                 AudienceTextColor = model.AudienceTextColor,
                 Description = model.Description,
+                ExperienceSettingsJson = model.ExperienceSettingsJson,
                 IsActive = model.IsActive,
                 Name = model.Name,
                 NoActionHeaderImageBinaryFileId = model.NoActionHeaderImageBinaryFileId,
@@ -105,6 +106,8 @@ namespace Rock.Model
                 NoActionTitle = model.NoActionTitle,
                 PhotoBinaryFileId = model.PhotoBinaryFileId,
                 PublicLabel = model.PublicLabel,
+                PushNotificationDetail = model.PushNotificationDetail,
+                PushNotificationTitle = model.PushNotificationTitle,
                 PushNotificationType = ( int ) model.PushNotificationType,
                 WelcomeHeaderImageBinaryFileId = model.WelcomeHeaderImageBinaryFileId,
                 WelcomeMessage = model.WelcomeMessage,
@@ -194,6 +197,7 @@ namespace Rock.Model
             target.AudienceSecondaryColor = source.AudienceSecondaryColor;
             target.AudienceTextColor = source.AudienceTextColor;
             target.Description = source.Description;
+            target.ExperienceSettingsJson = source.ExperienceSettingsJson;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
@@ -203,6 +207,8 @@ namespace Rock.Model
             target.NoActionTitle = source.NoActionTitle;
             target.PhotoBinaryFileId = source.PhotoBinaryFileId;
             target.PublicLabel = source.PublicLabel;
+            target.PushNotificationDetail = source.PushNotificationDetail;
+            target.PushNotificationTitle = source.PushNotificationTitle;
             target.PushNotificationType = source.PushNotificationType;
             target.WelcomeHeaderImageBinaryFileId = source.WelcomeHeaderImageBinaryFileId;
             target.WelcomeMessage = source.WelcomeMessage;

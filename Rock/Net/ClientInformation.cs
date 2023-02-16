@@ -79,26 +79,10 @@ namespace Rock.Net
         /// <param name="request">The request to initialize from.</param>
         internal ClientInformation( HttpRequest request )
         {
-            //
             // Set IP Address.
-            //
-            IpAddress = string.Empty;
-
-            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-
-            if ( !string.IsNullOrEmpty( ipAddress ) )
-            {
-                string[] addresses = ipAddress.Split( ',' );
-                if ( addresses.Length != 0 )
-                {
-                    IpAddress = addresses[0];
-                }
-            }
-            else
-            {
-                IpAddress = request.ServerVariables["REMOTE_ADDR"];
-            }
+            IpAddress = Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( request.ServerVariables["HTTP_X_FORWARDED_FOR"] )
+                ?? request.ServerVariables["REMOTE_ADDR"]
+                ?? string.Empty;
 
             // nicely format localhost
             if ( IpAddress == "::1" )
@@ -114,22 +98,11 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
         /// <param name="request">The request to initalize from.</param>
-        internal ClientInformation( HttpRequestMessage request )
+        internal ClientInformation( IRequest request )
         {
-            //
-            // Set IP Address.
-            //
-            IpAddress = string.Empty;
-
-            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-            if ( request.Headers.Contains( "X-FORWARDED-FOR" ) )
-            {
-                IpAddress = request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
-            }
-            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
-            {
-                IpAddress = ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] )?.Request?.UserHostAddress ?? string.Empty;
-            }
+            IpAddress = Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( request.Headers["X-FORWARDED-FOR"] )
+                ?? request.RemoteAddress?.ToString()
+                ?? string.Empty;
 
             // nicely format localhost
             if ( IpAddress == "::1" )
@@ -137,7 +110,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
-            UserAgent = request.Headers.UserAgent.ToString();
+            UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
             _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 

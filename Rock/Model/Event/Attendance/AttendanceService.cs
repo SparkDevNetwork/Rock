@@ -1296,11 +1296,13 @@ namespace Rock.Model
 
                 if ( dataView != null )
                 {
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                    {
-                        DbContext = rockContext
-                    };
-
+                    /*
+                        SK - 01-13-2023
+                        It's necessary to pass rockContext to dataview GetQuery method as the result is being used as part of subquery later
+                        which may result in two different rockContext if not passed.
+                    */
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                    dataViewGetQueryArgs.DbContext = rockContext;
                     personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                 }
             }
@@ -1697,7 +1699,8 @@ namespace Rock.Model
                 // sort the ResourceList first by the GroupRole.Order (so that Leaders are listed at the top, followed by Members, followed by non-group members)
                 // then sort by LastName/FirstName
                 schedulerResourceList = schedulerResourceList
-                    .OrderBy( a => a.GroupRole?.Order ?? int.MaxValue )
+                    .OrderBy( a => a.BlackoutDates?.Count ?? 0 )
+                    .ThenBy( a => a.GroupRole?.Order ?? int.MaxValue )
                     .ThenBy( a => a.PersonLastName )
                     .ThenBy( a => a.PersonNickName )
                     .ThenBy( a => a.PersonId ).ToList();
@@ -2259,12 +2262,21 @@ namespace Rock.Model
         {
             var rockContext = this.Context as RockContext;
             var scheduledAttendance = this.Queryable()
+                .Include( a => a.Occurrence.Group )
                 .FirstOrDefault( a => a.PersonAlias.PersonId == personId
-                    && a.OccurrenceId == attendanceOccurrenceId );
+                   && a.OccurrenceId == attendanceOccurrenceId );
 
+            var rsvp = RSVP.Unknown;
+            var scheduledToAttend = false;
             // If there already is a scheduled attendance
             if ( scheduledAttendance != null )
             {
+                if ( scheduledAttendance.Occurrence.GroupId.HasValue && scheduledAttendance.Occurrence.Group.GetScheduleConfirmationLogic() == Enums.Group.ScheduleConfirmationLogic.AutoAccept )
+                {
+                    rsvp = RSVP.Yes;
+                    scheduledToAttend = true;
+                }
+
                 if ( scheduledAttendance.RequestedToAttend != true )
                 {
                     scheduledAttendance.RequestedToAttend = true;
@@ -2273,17 +2285,29 @@ namespace Rock.Model
                 // if they previously declined, set RSVP back to Unknown if they are added as pending again
                 if ( scheduledAttendance.RSVP == RSVP.No )
                 {
-                    scheduledAttendance.RSVP = RSVP.Unknown;
+                    scheduledAttendance.RSVP = rsvp;
+                    scheduledAttendance.DeclineReasonValueId = null;
+                    scheduledAttendance.ScheduledToAttend = scheduledToAttend;
+                }
+                else if ( scheduledAttendance.RSVP != RSVP.Maybe )
+                {
+                    scheduledAttendance.RSVP = rsvp;
+                    scheduledAttendance.ScheduledToAttend = scheduledToAttend;
                 }
             }
-
             // There was not an already scheduled attendance, so let's add it
-            else 
+            else
             {
                 var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( attendanceOccurrenceId );
                 var scheduledDateTime = attendanceOccurrence.OccurrenceDate.Add( attendanceOccurrence.Schedule.StartTimeOfDay );
                 int? campusId = new LocationService( rockContext ).GetCampusIdForLocation( attendanceOccurrence.LocationId ) ?? new GroupService( rockContext ).Get( attendanceOccurrence.GroupId.Value ).CampusId;
+                if ( attendanceOccurrence.GroupId.HasValue && attendanceOccurrence.Group.GetScheduleConfirmationLogic() == Enums.Group.ScheduleConfirmationLogic.AutoAccept )
+                {
+                    rsvp = RSVP.Yes;
+                    scheduledToAttend = true;
+                }
+
                 scheduledAttendance = new Attendance
                 {
                     CampusId = campusId,
@@ -2294,8 +2318,10 @@ namespace Rock.Model
                     DidAttend = false,
                     RequestedToAttend = true,
                     ScheduledToAttend = false,
-                    RSVP = RSVP.Unknown
                 };
+
+                scheduledAttendance.RSVP = rsvp;
+                scheduledAttendance.ScheduledToAttend = scheduledToAttend;
 
                 this.Add( scheduledAttendance );
             }
@@ -2319,6 +2345,7 @@ namespace Rock.Model
             scheduledAttendance.ScheduledToAttend = false;
             scheduledAttendance.RequestedToAttend = false;
             scheduledAttendance.RSVP = RSVP.Unknown;
+            scheduledAttendance.DeclineReasonValueId = null;
         }
 
         /// <summary>
@@ -2337,6 +2364,7 @@ namespace Rock.Model
             scheduledAttendance.ScheduledToAttend = true;
             scheduledAttendance.RSVPDateTime = RockDateTime.Now;
             scheduledAttendance.RSVP = RSVP.Yes;
+            scheduledAttendance.DeclineReasonValueId = null;
         }
 
         /// <summary>
@@ -2373,6 +2401,7 @@ namespace Rock.Model
             scheduledAttendance.RequestedToAttend = true;
             scheduledAttendance.ScheduledToAttend = false;
             scheduledAttendance.RSVP = RSVP.Unknown;
+            scheduledAttendance.DeclineReasonValueId = null;
         }
 
         /// <summary>
@@ -2389,9 +2418,9 @@ namespace Rock.Model
                 return;
             }
 
-            scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
             scheduledAttendance.RSVPDateTime = RockDateTime.Now;
             scheduledAttendance.RSVP = RSVP.No;
+            scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
         }
 
         /// <summary>
@@ -2481,6 +2510,30 @@ namespace Rock.Model
 
                 // Explicitly include Group and Location objects to prevent issues with lazy loading after databinding (e.g., in GroupScheduleToolbox block).
                 .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Location );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Attendance Records that are Scheduled Attendances that are pending confirmation as well as the ones that are marked as confirmed as the part of auto accept.
+        /// This includes attendance records that have RequestedToAttend, not yet confirmed (not confirmed as scheduled and not declined), and didn't attend yet.
+        /// This doesn't include attendance records that occurred in prior dates.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetPendingAndAutoAcceptScheduledConfirmations()
+        {
+            var currentDate = RockDateTime.Now.Date;
+            return Queryable()
+                .Where( a => a.RequestedToAttend == true )
+                .Where( a => a.DeclineReasonValueId == null )
+                .Where( a => a.DidAttend != true )
+                .Where( a => a.Occurrence.OccurrenceDate >= currentDate )
+
+                // RSVP.Maybe is not used by the Group Scheduler. But, just in case, treat it as that the person has not responded.
+                .Where( a => ( a.ScheduledToAttend != true && ( a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown ) ) ||
+                    ( a.ScheduledToAttend == true && a.RSVP == RSVP.Yes && a.Occurrence.GroupId.HasValue && ( ( !a.Occurrence.Group.ScheduleConfirmationLogic.HasValue && a.Occurrence.Group.GroupType.ScheduleConfirmationLogic == Enums.Group.ScheduleConfirmationLogic.AutoAccept ) || a.Occurrence.Group.ScheduleConfirmationLogic == Enums.Group.ScheduleConfirmationLogic.AutoAccept ) ) )
+
+                // Explicitly include Group and Location objects to prevent issues with lazy loading after databinding (e.g., in GroupScheduleToolbox block).
+                .Include( a => a.Occurrence.Group.GroupType )
                 .Include( a => a.Occurrence.Location );
         }
 

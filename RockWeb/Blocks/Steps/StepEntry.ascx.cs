@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Steps
                 else
                 {
                     // The workflow has run to completion, and it has no requirement for user interaction.
-                    mdWorkflowResult.Show( string.Format( "A '{0}' workflow was processed.", workflowType.Name ), ModalAlertType.Information );
+                    mdWorkflowResult.Show( string.Format( "A '{0}' workflow was started.", workflowType.Name ), ModalAlertType.Information );
 
                     return true;
                 }

@@ -38,14 +38,35 @@ export type WorkflowActionFormBag = {
     /** Gets or sets a value indicating whether a new person (and spouse) can be added */
     allowPersonEntry: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the footer. */
     footer?: string | null;
 
     /** Gets or sets the header. */
     header?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether [include actions in notification]. */
     includeActionsInNotification: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the notification system communication identifier. */
     notificationSystemCommunicationId?: number | null;
@@ -83,6 +104,9 @@ export type WorkflowActionFormBag = {
     /** Gets or sets the person entry email entry option. */
     personEntryEmailEntryOption: number;
 
+    /** Gets or sets the person entry ethnicity entry option. */
+    personEntryEthnicityEntryOption: number;
+
     /** Gets or sets the person entry family attribute unique identifier. (The one used to set the Added/Edited Person's Family to) */
     personEntryFamilyAttributeGuid?: Guid | null;
 
@@ -110,6 +134,9 @@ export type WorkflowActionFormBag = {
     /** Gets or sets the person entry preHTML. */
     personEntryPreHtml?: string | null;
 
+    /** Gets or sets the person entry race entry option. */
+    personEntryRaceEntryOption: number;
+
     /** Gets or sets the person entry record status value identifier. */
     personEntryRecordStatusValueId?: number | null;
 
@@ -130,25 +157,4 @@ export type WorkflowActionFormBag = {
 
     /** Gets or sets the Title to display at the top the Person Entry Section */
     personEntryTitle?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

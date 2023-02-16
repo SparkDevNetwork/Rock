@@ -28,8 +28,20 @@ export type MetricBag = {
     /** Gets or sets the admin person alias identifier. */
     adminPersonAliasId?: number | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** If set to true this feature will auto partition the individuals in the data view based on their primary campus. */
     autoPartitionOnPrimaryCampus: boolean;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the data view identifier. */
     dataViewId?: number | null;
@@ -46,6 +58,9 @@ export type MetricBag = {
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether [is cumulative]. */
     isCumulative: boolean;
 
@@ -57,6 +72,12 @@ export type MetricBag = {
 
     /** Gets or sets the metric champion person alias identifier. */
     metricChampionPersonAliasId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /**
      * Gets or sets the type of the numeric data that the values represent. Although all values
@@ -95,25 +116,4 @@ export type MetricBag = {
 
     /** Gets or sets the y axis label. */
     yAxisLabel?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

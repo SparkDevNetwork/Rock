@@ -239,18 +239,31 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <summary>
+        /// Gets the text value from the configured values.
+        /// </summary>
+        /// <param name="privateValue">The private (database) value.</param>
+        /// <param name="configuredValues">The key-value pairs that describe which values can be displayed.</param>
+        /// <returns>A plain string of text.</returns>
+        private string GetTextValueFromConfiguredValues( string privateValue, Dictionary<string, string> configuredValues )
+        {
+            var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            return configuredValues
+                .Where( v => selectedValues.Contains( v.Key ) )
+                .Select( v => v.Value )
+                .ToList()
+                .AsDelimited( ", " );
+        }
+
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
             {
                 var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
-                var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                return configuredValues
-                    .Where( v => selectedValues.Contains( v.Key ) )
-                    .Select( v => v.Value )
-                    .ToList()
-                    .AsDelimited( ", " );
+
+                return GetTextValueFromConfiguredValues( privateValue, configuredValues );
             }
 
             return base.GetTextValue( privateValue, privateConfigurationValues );
@@ -539,13 +552,18 @@ namespace Rock.Field.Types
         #region Persistence
 
         /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            return !values.IsStrictLavaTemplate();
+        }
+
+        /// <inheritdoc/>
         public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
         {
             var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
             var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
-
-            var oldSqlQuery = oldValues.ToUpper().Contains( "SELECT" ) && oldValues.ToUpper().Contains( "FROM" );
-            var newSqlQuery = newValues.ToUpper().Contains( "SELECT" ) && newValues.ToUpper().Contains( "FROM" );
 
             if ( oldValues != newValues )
             {
@@ -559,17 +577,46 @@ namespace Rock.Field.Types
         public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
         {
             var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
-            var options = new Lava.CommonMergeFieldsOptions
-            {
-                GetLegacyGlobalMergeFields = false
-            };
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
-            var listSource = values.ResolveMergeFields( mergeFields );
+            // No need to resolve lava fields since we don't support lava.
+            values = values.ToUpper();
 
             // If the source is a SQL query then it is volatile since the results
             // of the query might change at any time.
-            return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
+            return values.Contains( "SELECT" ) && values.Contains( "FROM" );
+        }
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) || !privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = privateValue,
+                    CondensedTextValue = privateValue,
+                    HtmlValue = privateValue,
+                    CondensedHtmlValue = privateValue
+                };
+            }
+
+            if ( !( cache?.GetValueOrNull( "configuredValues" ) is Dictionary<string, string> configuredValues ) )
+            {
+                configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+                cache?.AddOrReplace( "configuredValues", configuredValues );
+            }
+
+            var textValue = GetTextValueFromConfiguredValues( privateValue, configuredValues ) ?? string.Empty;
+            var condensedTextValue = textValue.Truncate( 100 );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue,
+                CondensedHtmlValue = condensedTextValue
+            };
         }
 
         #endregion

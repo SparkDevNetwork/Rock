@@ -35,6 +35,60 @@
                         <asp:LinkButton ID="btnAddTransaction" runat="server" CssClass="btn btn-default btn-sm btn-block" Text="Add One-time Gift" OnClick="btnAddTransaction_Click" />
                     </div>
 
+                    <div class="giving-text-to-give panel-body border-top border-panel">
+                        <div class="row">
+                            <div class="col-sm-10">
+                                <h5 class="my-0">Text-To-Give Settings</h5>
+                            </div>
+                            <div class="col-sm-2">
+                                <asp:LinkButton ID="btnEditTextToGive" runat="server" AccessKey="e" ToolTip="Edit Text-To-Give Settings" Text="<i class='fa fa-pencil'></i>" CssClass="btn btn-default btn-square btn-xs pull-right" OnClick="btnEditTextToGive_Click" CausesValidation="false" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlTextToGive" runat="server" Visible="false">
+                            <div id="pnlTextToGiveView" runat="server">
+                                <div class="row">
+                                    <div class="col-md-6 col-sm-12">
+                                        <strong class="d-block text-sm">Default Account</strong>
+                                        <span class="d-block text-sm text-muted margin-b-sm"><asp:Literal ID="lTTGDefaultAccount" runat="server" /></span>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <strong class="d-block text-sm">Saved Account</strong>
+                                        <span class="d-block text-sm text-muted"><asp:Literal ID="lTTGSavedAccount" runat="server" /></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pnlTextToGiveEdit" runat="server" visible="false">
+                                <div class="row margin-t-sm">
+                                    <div class="col-md-5 col-sm-12">
+                                        <Rock:AccountPicker ID="apAccountPicker" runat="server" Label="Default Account" />
+                                    </div>
+                                    <div class="col-md-7 col-sm-12">
+                                        <Rock:RockDropDownList ID="ddlSavedAccount" label="Saved Account" runat="server" DataTextField="Name" DataValueField="Id" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <asp:LinkButton ID="btnSaveTextToGive" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-sm btn-primary" OnClick="btnSaveTextToGive_Click" />
+                                    <asp:LinkButton ID="btnCanceTextToGive" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-sm btn-link" CausesValidation="false" OnClick="btnCanceTextToGive_Click" />
+                                </div>
+                            </div>
+                        </asp:Panel>
+
+                        <asp:Panel ID="pnlTextToGiveAddSettings" runat="server" Visible="false" CssClass="row">
+                            <div class="col-sm-12">
+                                <asp:LinkButton ID="lbTextToGiveAdd"
+                                    runat="server"
+                                    CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
+                                    ToolTip="Add Text-To-Give Configuration"
+                                    Text="<i class='fa fa-plus'></i>"
+                                    OnClick="btnEditTextToGive_Click"
+                                    CausesValidation="false" />
+                            </div>
+                        </asp:Panel>
+                    </div>
+
                     <div class="giving-scheduled panel-body border-top border-panel">
                         <div class="d-flex justify-content-between align-items-start">
                             <h5 class="my-0">Scheduled Transactions</h5>

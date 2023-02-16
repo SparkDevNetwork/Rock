@@ -280,6 +280,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 

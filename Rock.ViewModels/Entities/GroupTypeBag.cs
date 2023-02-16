@@ -391,6 +391,14 @@ namespace Rock.ViewModels.Entities
         public int? ScheduleConfirmationEmailOffsetDays { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        public int ScheduleConfirmationLogic { get; set; }
+
+        /// <summary>
         /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated.
         /// </summary>
         /// <value>

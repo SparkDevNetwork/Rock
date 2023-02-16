@@ -23,12 +23,12 @@
 
 /** Identifies a single item that will be displayed through some UI control. */
 export type ListItemBag = {
-    /** Gets or sets the value. */
-    value?: string | null;
+    /** Gets or sets the category for this item. */
+    category?: string | null;
 
     /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** Gets or sets the value. */
+    value?: string | null;
 };

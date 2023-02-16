@@ -66,6 +66,14 @@ namespace Rock.ViewModels.Entities
         public int ScheduleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the JSON representing the additional settings.
+        /// </summary>
+        /// <value>
+        /// The JSON representing the additional settings.
+        /// </value>
+        public string ScheduleSettingsJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the created date time.
         /// </summary>
         /// <value>

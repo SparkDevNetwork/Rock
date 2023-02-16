@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Common.Tv
 {
     /// <summary>
@@ -21,13 +23,12 @@ namespace Rock.Common.Tv
     /// </summary>
     public class AuthCodeCheckResponse
     {
+
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is authenciated.
+        /// Gets or sets a value indicating whether this instance is authenticated.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is authenciated; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsAuthenciated { get; set; }
+        /// <value><c>true</c> if this instance is authenticated; otherwise, <c>false</c>.</value>
+        public bool IsAuthenticated { get; set; }
 
         /// <summary>
         /// Gets or sets the current person.
@@ -36,5 +37,11 @@ namespace Rock.Common.Tv
         /// The current person.
         /// </value>
         public TvPerson CurrentPerson { get; set; }
+
+        /// <summary>
+        /// Obsolete as of Rock v14.1. Please use 'IsAuthenticated' as it is proper spelling.
+        /// </summary>
+        [Obsolete]
+        public bool IsAuthenciated { get; set; }
     }
 }

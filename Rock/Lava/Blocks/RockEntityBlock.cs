@@ -149,7 +149,7 @@ namespace Rock.Lava.Blocks
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].ToString() );
+                        selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );
@@ -851,6 +851,14 @@ namespace Rock.Lava.Blocks
                     var property = expressionParts[0];
                     var operatorType = expressionParts[1];
                     var value = expressionParts[2].Replace( "\"", "" );
+
+                    // Check if the property is Id, if so ensure that it's an integer to prevent
+                    // returning everything in the database.
+                    // https://github.com/SparkDevNetwork/Rock/issues/5236
+                    if ( property == "Id" )
+                    {
+                        value = value.AsInteger().ToString();
+                    }
 
                     List<string> selectionParms = new List<string>();
                     selectionParms.Add( PropertyComparisonConversion( operatorType ).ToString() );

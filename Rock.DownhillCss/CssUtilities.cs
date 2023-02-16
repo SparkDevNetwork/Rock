@@ -537,12 +537,18 @@ namespace Rock.DownhillCss
                 mixcolor = "#000000";
             }
 
-            var originalColor = RockColor.FromHex( color );
+            var originalColor = new RockColor( color );
+            
             var mixColor = RockColor.FromHex( mixcolor );
 
             var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
 
             originalColor.Mix( mixColor, mixPercent );
+
+            if( originalColor.Alpha < 1 )
+            {
+                return originalColor.ToRGBA();
+            }
 
             return originalColor.ToHex();
         }
@@ -891,7 +897,7 @@ icon {
 /* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
 
 /* Cover Sheet Styling */
-.android.cover-sheet {
+.cover-sheet {
     -xf-bar-background-color: ?color-bar-background;
 }
 

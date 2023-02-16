@@ -683,37 +683,36 @@ namespace Rock.Web
         /// <returns></returns>
         public static PageReference GetBestMatchForParameters( int pageId, Dictionary<string, string> parameters )
         {
-            // Get the definition of the specified page.
+            // Get the definition of the specified page if it exists.
             var outputPage = PageCache.Get( pageId );
-            if ( outputPage == null )
-            {
-                return null;
-            }
 
             // Find a route associated with the page that contains the maximum number of available parameters.
             int matchedRouteId = 0;
             var routeParameters = new List<string>();
-            foreach ( var route in outputPage.PageRoutes )
+            if ( outputPage != null )
             {
-                if ( string.IsNullOrEmpty( route.Route ) )
+                foreach ( var route in outputPage.PageRoutes )
                 {
-                    continue;
-                }
-
-                var matchedTokens = new List<string>();
-                foreach ( var parameterName in parameters.Keys )
-                {
-                    var token = "{" + parameterName + "}";
-                    if ( route.Route.IndexOf( token, StringComparison.OrdinalIgnoreCase ) > 0 )
+                    if ( string.IsNullOrEmpty( route.Route ) )
                     {
-                        matchedTokens.Add( parameterName );
-                        matchedRouteId = route.Id;
-                        break;
+                        continue;
                     }
-                }
-                if ( routeParameters.Count == 0 || matchedTokens.Count > routeParameters.Count )
-                {
-                    routeParameters = matchedTokens;
+
+                    var matchedTokens = new List<string>();
+                    foreach ( var parameterName in parameters.Keys )
+                    {
+                        var token = "{" + parameterName + "}";
+                        if ( route.Route.IndexOf( token, StringComparison.OrdinalIgnoreCase ) > 0 )
+                        {
+                            matchedTokens.Add( parameterName );
+                            matchedRouteId = route.Id;
+                            break;
+                        }
+                    }
+                    if ( routeParameters.Count == 0 || matchedTokens.Count > routeParameters.Count )
+                    {
+                        routeParameters = matchedTokens;
+                    }
                 }
             }
 

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -67,7 +68,38 @@ namespace Rock.IpAddress
         // The maximum number of requests we can send in one call
         // https://ipregistry.co/docs/endpoints#batch-ip
         private const int _maxBulkRequestSize = 1024;
+
         #endregion
+
+        /// <inheritdoc/>
+        public override bool VerifyCanProcess( out string statusMessage )
+        {
+            // Check the available credits to indicate the status of the account.
+            var client = GetIpRegistryRestClient();
+            var status = GetStatus( client );
+
+            if ( !status.IsAvailable )
+            {
+                statusMessage = status.StatusMessage.ToStringOrDefault( "Service not available." );
+                return false;
+            }
+
+            // The service is responding, so check credit and rate limits.
+            if ( status.AvailableCreditTotal.GetValueOrDefault(-1) == 0 )
+            {
+                statusMessage = "Insufficient account credit to process the request.";
+                return false;
+            }
+            if ( status.AvailableCreditInRateWindow.GetValueOrDefault(-1) == 0 )
+            {
+                statusMessage = $"Rate limited until {status.RateWindowResetTime.ToShortDateString()}.";
+                return false;
+            }
+
+            statusMessage = status.StatusMessage;
+            return true;
+
+        }
 
         /// <summary>
         /// It takes the single IpAddress and returns the location.
@@ -114,7 +146,6 @@ namespace Rock.IpAddress
 
             return result;
         }
-
 
         /// <summary>
         /// Takes a list of IP Addresses and returns the location information associated with them.
@@ -185,6 +216,11 @@ namespace Rock.IpAddress
                     // Otherwise take a break and wait
                     System.Threading.Thread.Sleep( rateLimitResetInSeconds.Value );
                 }
+                else if ( ( int ) response.StatusCode == 402 )
+                {
+                    // Failure Code: Payment Required.
+                    throw new Exception( "Processing failed. Insufficient account credit." );
+                }
                 else // Some other HTTP result
                 {
                     resultMsg = response.StatusDescription;
@@ -193,6 +229,80 @@ namespace Rock.IpAddress
             }
 
             return results;
+        }
+
+        internal IpRegistryStatusInfo GetServiceStatus()
+        {
+            var client = GetIpRegistryRestClient();
+
+            var status = GetStatus( client );
+            return status;
+        }
+
+        private IpRegistryStatusInfo GetStatus( RestClient client )
+        {
+            // Create and configure REST request
+            var request = new RestRequest( Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddHeader( "Accept", "application/json" );
+
+            var ipList = new List<string> { "test_ip" };
+            request.AddParameter( "application/json", ipList.ToJson(), ParameterType.RequestBody );
+
+            var response = client.Execute( request );
+
+            var status = GetStatusFromResponse( response );
+            return status;
+        }
+
+        private IpRegistryStatusInfo GetStatusFromResponse( IRestResponse response )
+        {
+            var status = new IpRegistryStatusInfo();
+            status.IsAvailable = true;
+            status.CanProcess = false;
+            
+            if ( response == null )
+            {
+                status.IsAvailable = false;
+            }
+            else if ( response.StatusCode == HttpStatusCode.OK )
+            {
+                var availableCreditTotal = response.Headers.Where( a => a.Name == "ipregistry-credits-remaining" ).FirstOrDefault();
+                if ( availableCreditTotal != null )
+                {
+                    status.AvailableCreditTotal = availableCreditTotal.Value.ToStringSafe().AsInteger();
+                };
+
+                var rateLimitResetInSeconds = response.Headers.Where( a => a.Name == "X-Rate-Limit-Reset" ).FirstOrDefault()?.Value.ToString().AsIntegerOrNull();
+                if ( rateLimitResetInSeconds != null )
+                {
+                    status.RateWindowResetTime = RockDateTime.Now.AddSeconds( rateLimitResetInSeconds.Value );
+                }
+
+                var rateLimitCreditsRemaining = response.Headers.Where( a => a.Name == "X-Rate-Limit-Remaining" ).FirstOrDefault();
+                if ( rateLimitCreditsRemaining != null )
+                {
+                    status.AvailableCreditInRateWindow = rateLimitCreditsRemaining.Value.ToStringSafe().AsInteger();
+                }
+
+                if ( status.AvailableCreditTotal.GetValueOrDefault(1) > 0
+                    && status.AvailableCreditInRateWindow.GetValueOrDefault(1) > 0 )
+                {
+                    status.CanProcess = true;
+                }
+            }
+            else if ( ( int ) response.StatusCode == 402 )
+            {
+                // Status Code: PaymentRequired
+                status.AvailableCreditTotal = 0;
+                status.AvailableCreditInRateWindow = 0;
+            }
+            else
+            {
+                status.StatusMessage = response.ErrorMessage;
+            }
+
+            return status;
         }
 
         /// <summary>
@@ -264,8 +374,8 @@ namespace Rock.IpAddress
             }
 
             // Upate the Lat/Long
-            locationInformation.Latitude = result.Location.Latitude;
-            locationInformation.Longitude = result.Location.Longitude;
+            locationInformation.Latitude = result.Location.Latitude ?? 0;
+            locationInformation.Longitude = result.Location.Longitude ?? 0;
 
             locationInformation.PostalCode = result.Location.PostalCode;
             locationInformation.Location = FormatLocation( result ).SubstringSafe( 0, 250 );
@@ -312,6 +422,42 @@ namespace Rock.IpAddress
     }
 
     #region POCO Classes
+
+    /// <summary>
+    /// Information about the current status of the service.
+    /// </summary>
+    internal class IpRegistryStatusInfo
+    {
+        /// <summary>
+        /// Is the service currently responding?
+        /// </summary>
+        public bool IsAvailable { get; set; }
+
+        /// <summary>
+        /// Is the service ready to process requests?
+        /// </summary>
+        public bool CanProcess { get; set; }
+
+        /// <summary>
+        /// The total credits available in the active account for processing.
+        /// </summary>
+        public int? AvailableCreditTotal { get; set; }
+
+        /// <summary>
+        /// The credits available for the current rate-limited processing window.
+        /// </summary>
+        public int? AvailableCreditInRateWindow { get; set; }
+
+        /// <summary>
+        /// The time at which the current rate-limited processing window will reset.
+        /// </summary>
+        public DateTime? RateWindowResetTime { get; set; }
+
+        /// <summary>
+        /// A status message providing additional information about the service status.
+        /// </summary>
+        public string StatusMessage { get; set; }
+    }
 
     /// <summary>
     /// POCO for the Result body
@@ -394,7 +540,7 @@ namespace Rock.IpAddress
         /// The latitude.
         /// </value>
         [JsonProperty( "latitude" )]
-        public double Latitude { get; set; }
+        public double? Latitude { get; set; }
 
         /// <summary>
         /// Gets or sets the longitude
@@ -403,7 +549,7 @@ namespace Rock.IpAddress
         /// The longitude.
         /// </value>
         [JsonProperty( "longitude" )]
-        public double Longitude { get; set; }
+        public double? Longitude { get; set; }
 
         /// <summary>
         /// Gets or sets the country

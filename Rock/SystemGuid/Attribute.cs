@@ -562,6 +562,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 
+        /// <summary>
+        /// The group attribute for the type of participation in a Fundraising Opportunity group.
+        /// </summary>
+        public const string PARTICIPATION_TYPE = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC";
+
+        /// <summary>
+        /// The attribute for Transaction Header in the Fundraising Transaction Entry block.
+        /// </summary>
+        public const string FUNDRAISING_TRANSACTION_HEADER = "65FB0B9A-670E-4AB9-9666-77959B4B702E";
+
         #endregion
 
         #region BIO Block
@@ -696,6 +706,11 @@ namespace Rock.SystemGuid
         /// The Workflow Entry Block Attribute that disables passing the WorkflowTypeID.
         /// </summary>
         public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
+
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWID = "890676BC-18D3-445F-A6FA-CC2F515F1930";
 
         #endregion Workflow Entry Block Attributes
 

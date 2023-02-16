@@ -300,6 +300,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockLiteral ID="lCurrentRegistrationInstance" runat="server" Label="Current Registration Instance" />
+                        <Rock:RockTextBox ID="tbComment" runat="server" Label="Comment" Help="Optional comment that will be added to the audit history." TextMode="MultiLine" Rows="2" />
                     </div>
                     <div class="col-md-6">
                         <div class="row">

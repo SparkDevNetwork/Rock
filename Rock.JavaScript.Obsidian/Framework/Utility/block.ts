@@ -29,7 +29,7 @@ const configurationValuesChangedSymbol = Symbol();
 
 /**
  * Maps the block configuration values to the expected type.
- * 
+ *
  * @returns The configuration values for the block.
  */
 export function useConfigurationValues<T>(): T {
@@ -60,7 +60,7 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
 /**
  * Provides the reload block callback function for a block. This is an internal
  * method and should not be used by plugins.
- * 
+ *
  * @param callback The callback that will be called when a block wants to reload itself.
  */
 export function provideReloadBlock(callback: () => void): void {
@@ -105,7 +105,7 @@ export function provideConfigurationValuesChanged(): { invoke: () => void, reset
 /**
  * Registered a function to be called when the block configuration values have
  * changed.
- * 
+ *
  * @param callback The function to be called when the configuration values have changed.
  */
 export function onConfigurationValuesChanged(callback: () => void): void {
@@ -156,8 +156,32 @@ export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings
 }
 
 /**
+ * Sets the a value for a property box. This will set the value and then
+ * add the property name to the list of valid properties.
+ *
+ * @param box The box whose property value will be set.
+ * @param propertyName The name of the property on the bag to set.
+ * @param value The new value of the property.
+ */
+ export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
+    if (!box.bag) {
+        box.bag = {} as Record<string, unknown>;
+    }
+
+    box.bag[propertyName] = value;
+
+    if (!box.validProperties) {
+        box.validProperties = [];
+    }
+
+    if (!box.validProperties.includes(propertyName)) {
+        box.validProperties.push(propertyName);
+    }
+}
+
+/**
  * Dispatches a block event to the document.
- * 
+ *
  * @param eventName The name of the event to be dispatched.
  * @param eventData The custom data to be attached to the event.
  *
@@ -178,7 +202,7 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
 /**
  * Tests if the given event is a custom block event. This does not ensure
  * that the event data is the correct type, only the event itself.
- * 
+ *
  * @param event The event to be tested.
  *
  * @returns true if the event is a block event.
@@ -197,7 +221,7 @@ const securityGrantSymbol = Symbol();
  * to the actual value and will automatically handle renewing the token and updating
  * the value. This function is meant to be used by blocks. Controls should use the
  * useSecurityGrant() function instead.
- * 
+ *
  * @param token The token provided by the server.
  *
  * @returns A reference to the security grant that will be updated automatically when it has been renewed.
@@ -271,7 +295,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 
 /**
  * Provides the security grant to child components to use in their API calls.
- * 
+ *
  * @param grant The grant ot provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
@@ -302,7 +326,7 @@ export type PropertyChangedEmitFn<E extends "propertyChanged"> = E extends Array
 /**
  * Watches for changes to the given Ref objects and emits a special event to
  * indicate that a given property has changed.
- * 
+ *
  * @param propertyRefs The ExtendedRef objects to watch for changes.
  * @param emit The emit function for the component.
  */
@@ -359,7 +383,7 @@ const blockGuidSymbol = Symbol("block-guid");
 /**
  * Provides the block unique identifier to all child components.
  * This is an internal method and should not be used by plugins.
- * 
+ *
  * @param blockGuid The unique identifier of the block.
  */
 export function provideBlockGuid(blockGuid: string): void {

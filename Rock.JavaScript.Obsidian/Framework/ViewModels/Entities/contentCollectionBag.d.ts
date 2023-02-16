@@ -25,8 +25,20 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentCollection View Model */
 export type ContentCollectionBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the collection key. */
     collectionKey?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the description. */
     description?: string | null;
@@ -46,11 +58,20 @@ export type ContentCollectionBag = {
     /** Gets or sets the filter settings. */
     filterSettings?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the last index date time. */
     lastIndexDateTime?: string | null;
 
     /** Gets or sets the last index item count. */
     lastIndexItemCount?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the Rock.Model.ContentCollection. */
     name?: string | null;
@@ -72,25 +93,4 @@ export type ContentCollectionBag = {
 
     /** Gets or sets the trending window day. */
     trendingWindowDay: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

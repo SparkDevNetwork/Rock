@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
+using Rock.SystemKey;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -32,6 +33,25 @@ namespace Rock.Model
     /// </summary>
     public partial class DataViewService
     {
+        /// <summary>
+        /// Gets a boolean of whether a read-only replica of the database context was enabled.
+        /// </summary>
+        public bool ReadOnlyContextEnabled
+        {
+            get
+            {
+                var rockContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT]?.ConnectionString;
+                var readOnlyContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT_READ_ONLY]?.ConnectionString;
+
+                if ( rockContext != null && readOnlyContext != null && !rockContext.Equals( readOnlyContext ) )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a DataView associated with them.
         /// </summary>

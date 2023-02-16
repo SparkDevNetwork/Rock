@@ -203,6 +203,52 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | AsDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
         }
 
+        [TestMethod]
+        public void AsDateTimeUtc_WithDateTimeStringAsInput_ConvertsFromRockDateTime()
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var dateTimeInput = LavaDateTime.NewDateTimeOffset( 2018, 5, 1, 10, 0, 0 );
+                var dateTimeInputString = dateTimeInput.ToString( "yyyy-MM-ddTHH:mm:ss" );
+                var expectedOutput = dateTimeInput.ToUniversalTime().ToString( "yyyy-MM-ddTHH:mm:sszzz" );
+
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInputString } };
+
+                // Verify that the filter parses the DateTimeOffset value correctly to include the offset, and the result matches the UTC time.
+                TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            } );
+        }
+
+        [TestMethod]
+        public void AsDateTimeUtc_WithSpecifiedOffsetStringAsInput_ConvertsFromOffset()
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                // Verify that an input date with an offset of UTC+04:00 is converted to the correct UTC date.
+                TestHelper.AssertTemplateOutput( "2018-05-01T23:00:00+00:00",
+                    "{{ '2018-05-02T03:00:00+04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+
+                // Verify that an input date with an offset of UTC-04:00 is converted to the correct UTC date.
+                TestHelper.AssertTemplateOutput( "2018-05-02T03:00:00+00:00",
+                    "{{ '2018-05-01T23:00:00-04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+
+            } );
+        }
+
+        /// <summary>
+        /// Using the Date filter to format a DateTimeOffset type should correctly report the offset in the output.
+        /// </summary>
+        [TestMethod]
+        public void AsDateTimeUtc_WithDateTimeOffsetObjectAsInput_ConvertsToUtc()
+        {
+            // Add an input datetime object of 03:00+04:00 to the Lava context.
+            var dateTimeInput = new DateTimeOffset( 2018, 5, 2, 3, 0, 0, new TimeSpan( 4, 0, 0 ) );
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInput } };
+
+            // Verify that the filter translates the DateTimeOffset to the equivalent datetime with a +00:00 offset.
+            TestHelper.AssertTemplateOutput( "2018-05-01T23:00:00+00:00", "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+        }
+
         #endregion
 
         #region Filter Tests: Date
@@ -1745,8 +1791,11 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
-                                      "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
+                    "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+            } );
         }
 
         /// <summary>
@@ -1755,12 +1804,14 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_Now()
         {
-            var now = RockDateTime.Now;
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                var now = RockDateTime.Now;
+                var midnightUtc = LavaDateTime.NewDateTimeOffset( now.Year, now.Month, now.Day, 0, 0, 0 );
 
-            var midnightUtc = LavaDateTime.NewUtcDateTime( now.Year, now.Month, now.Day, 0, 0, 0 );
-
-            TestHelper.AssertTemplateOutputDate( midnightUtc,
-                                      "{{ 'Now' | ToMidnight }}" );
+                TestHelper.AssertTemplateOutputDate( midnightUtc,
+                    "{{ 'Now' | ToMidnight }}" );
+            } );
         }
 
         /// <summary>
@@ -1769,13 +1820,18 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void ToMidnight_WithDateTimeOffsetAsInput_PreservesOffset()
         {
-            // Get an input time of 10:00+04:00.
-            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                // Get an input time of 10:00+04:00.
+                var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
 
-            // Add the input DateTimeOffset object to the Lava context.
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+                // Add the input DateTimeOffset object to the Lava context.
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+                TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00",
+                    "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}",
+                    mergeValues );
+            } );
         }
 
         #endregion
@@ -1788,8 +1844,10 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void SundayDate_WithDateTimeStringAsInput_YieldsNextSundayDate()
         {
-            TestHelper.AssertTemplateOutput( "2021-10-17",
-                "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17", "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+            } );
         }
 
         /// <summary>
@@ -1803,8 +1861,11 @@ namespace Rock.Tests.UnitTests.Lava
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "2021-10-17",
+            LavaTestHelper.ExecuteForTimeZones( tz =>
+            {
+                TestHelper.AssertTemplateOutput( "2021-10-17",
                 "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", mergeValues );
+            } );
         }
 
         #endregion

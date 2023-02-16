@@ -4,6 +4,7 @@
     <ContentTemplate>
           <asp:HiddenField ID="hfSelectedPersonId" runat="server" />
         <Rock:NotificationBox ID="nbError" runat="server" Visible="false" Title="Sorry" NotificationBoxType="Warning" Text="You are not authorized to view this confirmation." />
+        <Rock:NotificationBox ID="nbSaveDeclineReasonMessage" runat="server" Visible="false" Title="Thank You" NotificationBoxType="Success" Text="Thank you for letting us know the reason." />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -29,7 +30,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-8">
-                                <asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClick="btnSubmit_Click" Visible="false" />
+                                <asp:Button ID="btnSubmitDeclineReason" CssClass="btn btn-primary" runat="server" Text="Submit" OnClick="btnSubmitDeclineReason_Click" Visible="false" />
                             </div>
                         </div>
                     </asp:Panel>
@@ -63,6 +64,6 @@
         </asp:Panel>
     </ContentTemplate>
     <Triggers>
-        <asp:PostBackTrigger ControlID="btnSubmit" />
+        <asp:PostBackTrigger ControlID="btnSubmitDeclineReason" />
     </Triggers>
 </asp:UpdatePanel>

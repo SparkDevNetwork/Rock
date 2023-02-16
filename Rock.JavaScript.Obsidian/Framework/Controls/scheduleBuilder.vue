@@ -1,0 +1,1008 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue"
+                   v-bind="standardProps"
+                   name="schedule-builder">
+        <div class="control-wrapper">
+            <div class="picker">
+                <a class="picker-label"
+                   href="#"
+                   :title="scheduleSummary"
+                   @click.prevent="onEditSchedule">
+                    <i class="fa fa-calendar"></i>
+                    Edit Schedule
+                </a>
+            </div>
+        </div>
+    </RockFormField>
+
+    <Modal v-model="isModalVisible"
+           title="Schedule Builder"
+           saveText="OK"
+           @save="onSaveSchedule">
+        <DateTimePicker v-model="startDateTime"
+                        label="Start Date / Time"
+                        help=""
+                        :rules="requiredRules" />
+
+        <RockFormField :modelValue="duration"
+                       label="Duration"
+                       name="duration"
+                       :rules="requiredRules">
+            <template #default>
+                <div class="form-control-group">
+                    <NumberBox v-model="durationInHours"
+                               inputGroupClasses="input-width-md">
+                        <template #append>
+                            <span class="input-group-addon">hrs</span>
+                        </template>
+                    </NumberBox>
+
+                    <NumberBox v-model="durationInMinutes"
+                               inputGroupClasses="input-width-md">
+                        <template #append>
+                            <span class="input-group-addon">mins</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </template>
+        </RockFormField>
+
+        <RadioButtonList v-model="scheduleType"
+                         :items="scheduleTypeItems"
+                         horizontal />
+
+        <TransitionVerticalCollapse>
+            <div v-if="isRecurringSchedule"
+                 class="mt-3">
+                <legend class="legend-small">Recurrence</legend>
+
+                <RadioButtonList v-model="occurrencePattern"
+                                 label="Occurrence Pattern"
+                                 :items="occurrencePatternItems"
+                                 horizontal />
+
+                <div v-if="isRecurringSpecificDates"
+                     class="recurrence-pattern-type control-group controls recurrence-pattern-specific-date">
+                    <ul>
+                        <li v-for="date of specificDates">
+                            <span>{{ getShortDateText(date) }}</span>&ThinSpace;
+                            <a href="#" class="text-danger" @click.prevent="onRemoveSpecificDate(date)"><i class="fa fa-times"></i></a>
+                        </li>
+                    </ul>
+
+                    <div v-if="isAddSpecificDateVisible">
+                        <table>
+                            <tr>
+                                <td>
+                                    <DatePicker v-model="addSpecificDateValue" />
+                                </td>
+                                <td>
+                                    <a class="btn btn-primary btn-xs add-specific-date-ok ml-3"
+                                       @click.prevent="onAddSpecificDateOk">
+                                        <span>OK</span>
+                                    </a>
+                                    <a class="btn btn-link btn-xs add-specific-date-cancel"
+                                       @click.prevent="onAddSpecificDateCancel">
+                                        <span>Cancel</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <a v-else class="btn btn-action btn-sm add-specific-date"
+                       @click.prevent="onAddSpecificDate">
+                        <i class="fa fa-plus"></i>
+                        <span>&nbsp;Add Date</span>
+                    </a>
+                </div>
+
+                <div v-if="isRecurringDaily"
+                     class="recurrence-pattern-type recurrence-pattern-daily">
+                    <div class="form-control-group">
+                        <label class="radio-inline">
+                            <input :id="dailyRadioId" :name="dailyRadioId" type="radio" value="everyDay" v-model="recurringDailyType" />
+                            <span class="label-text">Every</span>
+                        </label>
+                        <NumberBox v-model="recurringDailyDays"
+                                   inputGroupClasses="input-width-md">
+                            <template #append>
+                                <span class="input-group-addon">days</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+
+                    <div class="form-control-group">
+                        <label class="radio-inline">
+                            <input :id="dailyRadioId" :name="dailyRadioId" type="radio" value="everyWeekday" v-model="recurringDailyType" />
+                            <span class="label-text">Every weekday</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control-group">
+                        <label class="radio-inline">
+                            <input :id="dailyRadioId" :name="dailyRadioId" type="radio" value="everyWeekend" v-model="recurringDailyType" />
+                            <span class="label-text">Every weekend</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div v-if="isRecurringWeekly"
+                     class="recurrence-pattern-type recurrence-pattern-weekly">
+                    <div class="form-control-group">
+                        <span>Every&ThinSpace;</span>
+                        <NumberBox v-model="recurringWeeklyWeeks"
+                                   inputGroupClasses="input-width-md">
+                            <template #append>
+                                <span class="input-group-addon">week(s)</span>
+                            </template>
+                        </NumberBox>
+                        <span>&ThinSpace;on</span>
+                    </div>
+
+                    <div class="week-days">
+                        <CheckBoxList v-model="recurringWeeklyDays"
+                                      :items="recurringWeeklyDaysItems"
+                                      horizontal />
+                    </div>
+                </div>
+
+                <div v-if="isRecurringMonthly"
+                     class="recurrence-pattern-type recurrence-pattern-monthly">
+                    <div class="form-group controls">
+                        <div class="form-control-group">
+                            <label class="radio-inline">
+                                <input :id="monthlyRadioId" :name="monthlyRadioId" type="radio" value="day" v-model="recurringMonthlyType" />
+                                <span class="label-text">Day</span>
+                            </label>
+
+                            <NumberBox v-model="recurringMonthlyDayOfMonth"
+                                       class="input-width-sm"
+                                       :minimumValue="1"
+                                       :maximumValue="31" />
+
+                            <span>&ThinSpace;of every&ThinSpace;</span>
+
+                            <NumberBox v-model="recurringMonthlyMonths"
+                                       class="input-width-sm" />
+
+                            <span>&ThinSpace;months&ThinSpace;</span>
+                        </div>
+
+                        <div class="form-control-group">
+                            <label class="radio-inline">
+                                <input :id="monthlyRadioId" :name="monthlyRadioId" type="radio" value="nth" v-model="recurringMonthlyType" />
+                                <span class="label-text">The</span>
+                            </label>
+
+                            <div class="input-group input-width-xl">
+                                <DropDownList v-model="recurringMonthlyRate"
+                                              :items="recurringMonthlyRateItems"
+                                              multiple />
+                            </div>
+
+                            <div class="input-group input-width-xl">
+                                <DropDownList v-model="recurringMonthlyWeekday"
+                                              :items="recurringMonthlyWeekdayItems" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="isRecurringUntil"
+                     class="continue-until">
+                    <div class="controls">
+                        <hr />
+                    </div>
+
+                    <label class="control-label">Continue Until</label>
+
+                    <div class="controls">
+                        <div class="form-control-group">
+                            <label class="radio-inline">
+                                <input :id="continueUntilRadioId" :name="continueUntilRadioId" type="radio" value="noEnd" v-model="recurringContinueUntilType" />
+                                <span class="label-text">No end</span>
+                            </label>
+                        </div>
+
+                        <div class="form-control-group">
+                            <label class="radio-inline">
+                                <input :id="continueUntilRadioId" :name="continueUntilRadioId" type="radio" value="endBy" v-model="recurringContinueUntilType" />
+                                <span class="label-text">End by</span>
+                            </label>
+
+                            <DatePickerBase v-model="recurringContinueUntilDate" />
+                        </div>
+
+                        <div class="form-control-group">
+                            <label class="radio-inline">
+                                <input :id="continueUntilRadioId" :name="continueUntilRadioId" type="radio" value="endAfter" v-model="recurringContinueUntilType" />
+                                <span class="label-text">End after</span>
+                            </label>
+
+                            <NumberBox v-model="recurringContinueUntilCount"
+                                       inputGroupClasses="input-width-lg">
+                                <template #append>
+                                    <span class="input-group-addon">occurrences</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="isRecurringExclusions"
+                     class="exclusions">
+                    <hr />
+
+                    <label class="control-labe">Exclusions</label>
+
+                    <div class="form-group controls">
+                        <ul>
+                            <li v-for="range of exclusionDateRanges">
+                                <span>{{ getShortDateRangeText(range) }}</span>&ThinSpace;
+                                <a href="#" class="text-danger" @click.prevent="onRemoveExclusionDateRange(range)"><i class="fa fa-times"></i></a>
+                            </li>
+                        </ul>
+
+                        <div v-if="isAddExclusionDateRangeVisible">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <DateRangePicker v-model="addExclusionDateRangeValue" />
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-primary btn-xs add-exclusion-daterange-ok ml-3"
+                                           @click.prevent="onAddExclusionDateRangeOk">
+                                            <span>OK</span>
+                                        </a>
+                                        <a class="btn btn-link btn-xs add-exclusion-daterange-cancel"
+                                           @click.prevent="onAddExclusionDateRangeCancel">
+                                            <span>Cancel</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <a v-else class="btn btn-action btn-sm add-exclusion-daterange"
+                           @click.prevent="onAddExclusionDateRange">
+                            <i class="fa fa-plus"></i>
+                            <span>&nbsp;Add Date Range</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </Modal>
+</template>
+
+<style scoped>
+.recurrence-pattern-specific-date>ul>li>a {
+    display: none;
+}
+
+.recurrence-pattern-specific-date>ul:hover>li>a {
+    display: initial;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, shallowRef, watch } from "vue";
+    import CheckBoxList from "./checkBoxList";
+    import DatePicker, { DatePickerBase } from "./datePicker";
+    import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
+    import DateTimePicker from "./dateTimePicker";
+    import DropDownList from "./dropDownList";
+    import Modal from "./modal";
+    import NumberBox from "./numberBox";
+    import RadioButtonList from "./radioButtonList";
+    import RockFormField from "./rockFormField";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
+    import { containsRequiredRule } from "@Obsidian/ValidationRules";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { updateRefValue, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    type DayName = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
+
+    const props = defineProps({
+        /** The ICS contents that represents the schedule. */
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref(props.modelValue);
+
+    const dailyRadioId = newGuid().toString();
+    const monthlyRadioId = newGuid().toString();
+    const continueUntilRadioId = newGuid().toString();
+
+    const standardProps = useStandardRockFormFieldProps(props);
+    const scheduleSummary = ref("");
+    const isModalVisible = ref(false);
+    const startDateTime = ref<string | null>(null);
+    const duration = ref<number | null>(null);
+    const scheduleType = ref<"oneTime" | "recurring">("oneTime");
+    const occurrencePattern = ref<"specificDates" | "daily" | "weekly" | "monthly">("specificDates");
+
+    // A shallowRef behaves slightly differently than ref, but it the same for
+    // our use case and makes some things happy in the template.
+    const specificDates = shallowRef<RockDateTime[]>([]);
+
+    const isAddSpecificDateVisible = ref(false);
+    const addSpecificDateValue = ref("");
+    const recurringDailyType = ref<"everyDay" | "everyWeekday" | "everyWeekend">("everyDay");
+    const recurringDailyDays = ref(1);
+    const recurringWeeklyWeeks = ref<number | null>(null);
+    const recurringWeeklyDays = ref<DayName[]>([]);
+    const recurringMonthlyType = ref<"day" | "nth">("day");
+    const recurringMonthlyDayOfMonth = ref<number | null>(null);
+    const recurringMonthlyMonths = ref<number | null>(null);
+    const recurringMonthlyRate = ref<("First" | "Second" | "Third" | "Fourth" | "Last")[]>([]);
+    const recurringMonthlyWeekday = ref<DayName | "">("");
+    const recurringContinueUntilType = ref<"noEnd" | "endBy" | "endAfter">("noEnd");
+    const recurringContinueUntilDate = ref("");
+    const recurringContinueUntilCount = ref<number | null>(null);
+    const recurringExclusionDates = shallowRef<RockDateTime[]>([]);
+    const isAddExclusionDateRangeVisible = ref(false);
+    const addExclusionDateRangeValue = ref<DateRangeParts | undefined>(undefined);
+
+    const scheduleTypeItems: ListItemBag[] = [
+        {
+            value: "oneTime",
+            text: "One Time"
+        },
+        {
+            value: "recurring",
+            text: "Recurring"
+        }
+    ];
+
+    const occurrencePatternItems: ListItemBag[] = [
+        {
+            value: "specificDates",
+            text: "Specific Dates"
+        },
+        {
+            value: "daily",
+            text: "Daily"
+        },
+        {
+            value: "weekly",
+            text: "Weekly"
+        },
+        {
+            value: "monthly",
+            text: "Monthly"
+        }
+    ];
+
+    const recurringWeeklyDaysItems: ListItemBag[] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map(d => ({
+        value: d,
+        text: d.substring(0, 3)
+    }));
+
+    const recurringMonthlyRateItems: ListItemBag[] = ["First", "Second", "Third", "Fourth", "Last"].map(i => ({
+        value: i,
+        text: i
+    }));
+
+    const recurringMonthlyWeekdayItems: ListItemBag[] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map(d => ({
+        value: d,
+        text: d
+    }));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const requiredRules = computed((): ValidationRule[] => {
+        if (containsRequiredRule(props.rules)) {
+            return ["required"];
+        }
+        else {
+            return [];
+        }
+    });
+
+    const durationInHours = computed({
+        get(): number | null {
+            return duration.value ? Math.floor(duration.value / 60) : null;
+        },
+
+        set(value: number | null) {
+            const newDuration = ((value ?? 0) * 60) + (durationInMinutes.value ?? 0);
+
+            if (newDuration <= 0) {
+                duration.value = null;
+            }
+            else {
+                duration.value = newDuration;
+            }
+        }
+    });
+
+    const durationInMinutes = computed({
+        get(): number | null {
+            return duration.value ? Math.floor(duration.value % 60) : null;
+        },
+
+        set(value: number | null) {
+            const newDuration = ((durationInHours.value ?? 0) * 60) + (value ?? 0);
+
+            if (newDuration <= 0) {
+                duration.value = null;
+            }
+            else {
+                duration.value = newDuration;
+            }
+        }
+    });
+
+    const isRecurringSchedule = computed((): boolean => {
+        return scheduleType.value == "recurring";
+    });
+
+    const isRecurringSpecificDates = computed((): boolean => {
+        return occurrencePattern.value === "specificDates";
+    });
+
+    const isRecurringDaily = computed((): boolean => {
+        return occurrencePattern.value === "daily";
+    });
+
+    const isRecurringWeekly = computed((): boolean => {
+        return occurrencePattern.value === "weekly";
+    });
+
+    const isRecurringMonthly = computed((): boolean => {
+        return occurrencePattern.value === "monthly";
+    });
+
+    const isRecurringUntil = computed((): boolean => {
+        return isRecurringDaily.value || isRecurringWeekly.value || isRecurringMonthly.value;
+    });
+
+    const isRecurringExclusions = computed((): boolean => {
+        return isRecurringDaily.value || isRecurringWeekly.value || isRecurringMonthly.value;
+    });
+
+    const exclusionDateRanges = computed((): DateRangeParts[] => {
+        const dates = [...recurringExclusionDates.value];
+
+        dates.sort((a, b) => a.toMilliseconds() - b.toMilliseconds());
+
+        const ranges: DateRangeParts[] = [];
+        const range: { lower?: RockDateTime, upper?: RockDateTime } = {};
+
+        for (const date of dates) {
+            if (!range.lower || !range.upper) {
+                range.lower = date.date;
+                range.upper = date.date;
+            }
+            else if (range.upper.addDays(1).toMilliseconds() === date.date.toMilliseconds()) {
+                range.upper = date.date;
+            }
+            else {
+                ranges.push({
+                    lowerValue: range.lower.toISOString(),
+                    upperValue: range.upper.toISOString()
+                });
+
+                range.lower = date.date;
+                range.upper = date.date;
+            }
+        }
+
+        if (range.lower && range.upper) {
+            ranges.push({
+                lowerValue: range.lower.toISOString(),
+                upperValue: range.upper.toISOString()
+            });
+        }
+
+        return ranges;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function updateValuesFromModel(): void {
+        const calendar = getCalendarFromString(props.modelValue);
+        const event = calendar?.events && calendar.events.length > 0 ? calendar.events[0] : null;
+        const rrule = event?.recurrenceRules && event.recurrenceRules.length > 0 ? event.recurrenceRules[0] : null;
+
+        scheduleSummary.value = event?.toFriendlyText() ?? "No Schedule";
+        startDateTime.value = event?.startDateTime?.toISOString() ?? null;
+        duration.value = getEventDuration(event);
+        scheduleType.value = rrule ? "recurring" : "oneTime";
+        occurrencePattern.value = getEventOccurrencePattern(event);
+
+        // Reset everything and then we'll set the values as we go.
+        recurringDailyType.value = "everyDay";
+        recurringDailyDays.value = 1;
+        recurringWeeklyWeeks.value = null;
+        recurringWeeklyDays.value = [];
+        recurringMonthlyType.value = "day";
+        recurringMonthlyDayOfMonth.value = null;
+        recurringMonthlyMonths.value = null;
+        recurringMonthlyRate.value = [];
+        recurringMonthlyWeekday.value = "";
+        recurringContinueUntilType.value = "noEnd";
+        recurringContinueUntilDate.value = "";
+        recurringContinueUntilCount.value = null;
+        recurringExclusionDates.value = [];
+        isAddSpecificDateVisible.value = false;
+        isAddExclusionDateRangeVisible.value = false;
+
+        if (event?.recurrenceDates && event.recurrenceDates.length > 0) {
+            scheduleType.value = "recurring";
+            occurrencePattern.value = "specificDates";
+            specificDates.value = event.recurrenceDates;
+        }
+        else if (rrule) {
+            const isDailyWeekday = rrule.frequency === "WEEKLY"
+                && rrule.byDay.length === 5
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Monday)
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Tuesday)
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Wednesday)
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Thursday)
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Friday)
+                && rrule.interval === 1;
+
+            const isDailyWeekend = rrule.frequency === "WEEKLY"
+                && rrule.byDay.length === 2
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Sunday)
+                && rrule.byDay.some(bd => bd.day === DayOfWeek.Saturday)
+                && rrule.interval === 1;
+
+            if (isDailyWeekday) {
+                occurrencePattern.value = "daily";
+                recurringDailyType.value = "everyWeekday";
+            }
+            else if (isDailyWeekend) {
+                occurrencePattern.value = "daily";
+                recurringDailyType.value = "everyWeekend";
+            }
+            else if (rrule.frequency === "DAILY") {
+                occurrencePattern.value = "daily";
+                recurringDailyType.value = "everyDay";
+                recurringDailyDays.value = rrule.interval;
+            }
+            else if (rrule.frequency === "WEEKLY") {
+                occurrencePattern.value = "weekly";
+                recurringWeeklyWeeks.value = rrule.interval;
+                recurringWeeklyDays.value = rrule.byDay.map(bd => getDayNameFromDayOfWeek(bd.day));
+            }
+            else if (rrule.frequency === "MONTHLY") {
+                if (rrule.byMonthDay.length > 0) {
+                    occurrencePattern.value = "monthly";
+                    recurringMonthlyType.value = "day";
+                    recurringMonthlyDayOfMonth.value = rrule.byMonthDay[0];
+                    recurringMonthlyMonths.value = rrule.interval;
+                }
+                else if (rrule.byDay.length > 0) {
+                    occurrencePattern.value = "monthly";
+                    recurringMonthlyType.value = "nth";
+                    recurringMonthlyRate.value = getMonthlyRates(rrule.byDay.map(bd => bd.value));
+                    recurringMonthlyWeekday.value = getDayNameFromDayOfWeek(rrule.byDay[0].day);
+                }
+            }
+
+            if (rrule.count !== undefined) {
+                recurringContinueUntilType.value = "endAfter";
+                recurringContinueUntilCount.value = rrule.count;
+            }
+            else if (rrule.endDate) {
+                recurringContinueUntilType.value = "endBy";
+                recurringContinueUntilDate.value = rrule.endDate.toISOString();
+            }
+        }
+    }
+
+    function getCalendarString(): string {
+        const event = new Event();
+
+        event.startDateTime = RockDateTime.parseISO(startDateTime.value ?? "") ?? undefined;
+        event.endDateTime = event.startDateTime?.addMinutes(duration.value ?? 0);
+
+        if (scheduleType.value === "recurring") {
+            if (occurrencePattern.value === "specificDates") {
+                event.recurrenceDates = specificDates.value;
+            }
+            else {
+                const rrule = new RecurrenceRule();
+
+                event.excludedDates = recurringExclusionDates.value;
+
+                if (recurringContinueUntilType.value === "endBy" && recurringContinueUntilDate.value) {
+                    rrule.endDate = RockDateTime.parseISO(recurringContinueUntilDate.value) ?? undefined;
+                }
+                else if (recurringContinueUntilType.value === "endAfter" && recurringContinueUntilCount.value) {
+                    rrule.count = recurringContinueUntilCount.value;
+                }
+
+                if (occurrencePattern.value === "daily") {
+                    if (recurringDailyType.value === "everyDay") {
+                        rrule.frequency = "DAILY";
+                        rrule.interval = recurringDailyDays.value || 1;
+                    }
+                    else if (recurringDailyType.value === "everyWeekday") {
+                        rrule.frequency = "WEEKLY";
+                        rrule.byDay = [
+                            {
+                                value: 1,
+                                day: DayOfWeek.Monday
+                            },
+                            {
+                                value: 1,
+                                day: DayOfWeek.Tuesday
+                            },
+                            {
+                                value: 1,
+                                day: DayOfWeek.Wednesday
+                            },
+                            {
+                                value: 1,
+                                day: DayOfWeek.Thursday
+                            },
+                            {
+                                value: 1,
+                                day: DayOfWeek.Friday
+                            },
+                        ];
+                    }
+                    else if (recurringDailyType.value === "everyWeekend") {
+                        rrule.frequency = "WEEKLY";
+                        rrule.byDay = [
+                            {
+                                value: 1,
+                                day: DayOfWeek.Sunday
+                            },
+                            {
+                                value: 1,
+                                day: DayOfWeek.Saturday
+                            }
+                        ];
+                    }
+
+                    event.recurrenceRules.push(rrule);
+                }
+                else if (occurrencePattern.value === "weekly") {
+                    rrule.frequency = "WEEKLY";
+                    rrule.interval = recurringWeeklyWeeks.value ?? 1;
+                    rrule.byDay = recurringWeeklyDays.value.map(d => ({
+                        value: 1,
+                        day: getDayOfWeekFromDayName(d)
+                    }));
+
+                    event.recurrenceRules.push(rrule);
+                }
+                else if (occurrencePattern.value === "monthly") {
+                    rrule.frequency = "MONTHLY";
+
+                    if (recurringMonthlyType.value === "day") {
+                        rrule.interval = recurringMonthlyMonths.value ?? 1;
+                        rrule.byMonthDay = [recurringMonthlyDayOfMonth.value || 1];
+
+                        event.recurrenceRules.push(rrule);
+                    }
+                    else if (recurringMonthlyType.value === "nth") {
+                        const weekday = recurringMonthlyWeekday.value || "Sunday";
+                        rrule.interval = 1;
+                        rrule.byDay = recurringMonthlyRate.value.map(r => ({
+                            value: getMonthlyIndexFromRate(r),
+                            day: getDayOfWeekFromDayName(weekday)
+                        }));
+
+                        event.recurrenceRules.push(rrule);
+                    }
+                }
+            }
+        }
+
+        if (event.startDateTime && event.endDateTime && duration.value !== null && duration.value > 0) {
+            const calendar = new Calendar();
+            calendar.events.push(event);
+
+            return calendar.build() ?? "";
+
+        }
+        else {
+            return "";
+        }
+    }
+
+    function getCalendarFromString(ical: string): Calendar | null {
+        if (!ical) {
+            return null;
+        }
+
+        try {
+            return new Calendar(ical);
+        }
+        catch {
+            return null;
+        }
+    }
+
+    function getEventDuration(event: Event | null): number | null {
+        if (!event || !event.startDateTime || !event.endDateTime) {
+            return null;
+        }
+
+        const totalDurationInMinutes = (event.endDateTime.toMilliseconds() - event.startDateTime.toMilliseconds()) / 1000 / 60;
+
+        if (totalDurationInMinutes <= 0) {
+            return null;
+        }
+
+        return Math.floor(totalDurationInMinutes);
+    }
+
+    function getEventOccurrencePattern(event: Event | null): "specificDates" | "daily" | "weekly" | "monthly" {
+        if (!event || !event.recurrenceRules.length) {
+            return "specificDates";
+        }
+
+        const rrule = event.recurrenceRules[0];
+
+        if (rrule.frequency === "DAILY") {
+            return "daily";
+        }
+        else if (rrule.frequency === "WEEKLY") {
+            return "weekly";
+        }
+        else if (rrule.frequency === "MONTHLY") {
+            return "monthly";
+        }
+        else {
+            return "specificDates";
+        }
+    }
+
+    function getShortDateText(date: RockDateTime): string {
+        return date.toLocaleString({
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        });
+    }
+
+    function getShortDateRangeText(range: DateRangeParts): string {
+        if (!range.lowerValue || !range.upperValue) {
+            return "";
+        }
+
+        const lowerDate = RockDateTime.parseISO(range.lowerValue);
+        const upperDate = RockDateTime.parseISO(range.upperValue);
+
+        if (!lowerDate || !upperDate) {
+            return "";
+        }
+
+        const lowerDateText = lowerDate.toLocaleString({
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        });
+
+        const upperDateText = upperDate.toLocaleString({
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        });
+
+        return `${lowerDateText} - ${upperDateText}`;
+    }
+
+    function getDayNameFromDayOfWeek(day: DayOfWeek): DayName {
+        if (day === DayOfWeek.Sunday) {
+            return "Sunday";
+        }
+        else if (day === DayOfWeek.Monday) {
+            return "Monday";
+        }
+        else if (day === DayOfWeek.Tuesday) {
+            return "Tuesday";
+        }
+        else if (day === DayOfWeek.Wednesday) {
+            return "Wednesday";
+        }
+        else if (day === DayOfWeek.Thursday) {
+            return "Thursday";
+        }
+        else if (day === DayOfWeek.Friday) {
+            return "Friday";
+        }
+        else if (day === DayOfWeek.Saturday) {
+            return "Saturday";
+        }
+
+        return "Sunday";
+    }
+
+    function getDayOfWeekFromDayName(day: DayName): DayOfWeek {
+        if (day === "Sunday") {
+            return DayOfWeek.Sunday;
+        }
+        else if (day === "Monday") {
+            return DayOfWeek.Monday;
+        }
+        else if (day === "Tuesday") {
+            return DayOfWeek.Tuesday;
+        }
+        else if (day === "Wednesday") {
+            return DayOfWeek.Wednesday;
+        }
+        else if (day === "Thursday") {
+            return DayOfWeek.Thursday;
+        }
+        else if (day === "Friday") {
+            return DayOfWeek.Friday;
+        }
+        else if (day === "Saturday") {
+            return DayOfWeek.Saturday;
+        }
+
+        return DayOfWeek.Sunday;
+    }
+
+    function getMonthlyRates(indexes: number[]): ("First" | "Second" | "Third" | "Fourth" | "Last")[] {
+        const rateMap = {
+            [1]: "First",
+            [2]: "Second",
+            [3]: "Third",
+            [4]: "Fourth",
+            [-1]: "Last"
+        };
+        const rates: ("First" | "Second" | "Third" | "Fourth" | "Last")[] = [];
+
+        for (const index of indexes) {
+            const rate = rateMap[index];
+
+            if (rate !== undefined && !rates.includes(rate)) {
+                rates.push(rate);
+            }
+        }
+
+        return rates;
+    }
+
+    function getMonthlyIndexFromRate(rate: ("First" | "Second" | "Third" | "Fourth" | "Last")): number {
+        if (rate === "Last") {
+            return -1;
+        }
+        else if (rate === "Fourth") {
+            return 4;
+        }
+        else if (rate === "Third") {
+            return 3;
+        }
+        else if (rate === "Second") {
+            return 2;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onEditSchedule(): void {
+        isModalVisible.value = true;
+    }
+
+    function onSaveSchedule(): void {
+        internalValue.value = getCalendarString();
+
+        emit("update:modelValue", internalValue.value);
+        isModalVisible.value = false;
+    }
+
+    function onAddSpecificDate(): void {
+        addSpecificDateValue.value = "";
+        isAddSpecificDateVisible.value = true;
+    }
+
+    function onRemoveSpecificDate(date: RockDateTime): void {
+        var newSpecificDates = specificDates.value.filter(d => d.toMilliseconds() !== date.toMilliseconds());
+
+        updateRefValue(specificDates, newSpecificDates);
+    }
+
+    function onAddSpecificDateOk(): void {
+        const date = RockDateTime.parseISO(addSpecificDateValue.value);
+
+        if (date !== null && !specificDates.value.some(d => d.toMilliseconds() === date.toMilliseconds())) {
+            const newSpecificDates = [date, ...specificDates.value];
+
+            newSpecificDates.sort((a, b) => a.toMilliseconds() - b.toMilliseconds());
+
+            updateRefValue(specificDates, newSpecificDates);
+        }
+
+        isAddSpecificDateVisible.value = false;
+    }
+
+    function onAddSpecificDateCancel(): void {
+        isAddSpecificDateVisible.value = false;
+    }
+
+    function onAddExclusionDateRange(): void {
+        addExclusionDateRangeValue.value = {};
+        isAddExclusionDateRangeVisible.value = true;
+    }
+
+    function onRemoveExclusionDateRange(range: DateRangeParts): void {
+        const lowerDate = RockDateTime.parseISO(range.lowerValue ?? "");
+        const upperDate = RockDateTime.parseISO(range.upperValue ?? "");
+
+        if (!lowerDate || !upperDate) {
+            return;
+        }
+
+        let newExclusionDates = [...recurringExclusionDates.value];
+
+        for (let date = lowerDate; date.toMilliseconds() <= upperDate.toMilliseconds(); date = date.addDays(1)) {
+            newExclusionDates = newExclusionDates.filter(d => d.toMilliseconds() !== date.toMilliseconds());
+        }
+
+        updateRefValue(recurringExclusionDates, newExclusionDates);
+    }
+
+    function onAddExclusionDateRangeOk(): void {
+        let lowerDate = RockDateTime.parseISO(addExclusionDateRangeValue.value?.lowerValue ?? "");
+        let upperDate = RockDateTime.parseISO(addExclusionDateRangeValue.value?.upperValue ?? "");
+
+        if (lowerDate && upperDate) {
+            if (upperDate.toMilliseconds() < lowerDate.toMilliseconds()) {
+                const swapDate = lowerDate;
+                lowerDate = upperDate;
+                upperDate = swapDate;
+            }
+
+            const newExclusionDates = [...recurringExclusionDates.value];
+
+            for (let date = lowerDate; date.toMilliseconds() <= upperDate.toMilliseconds(); date = date.addDays(1)) {
+                if (!newExclusionDates.some(d => d.toMilliseconds() === date.toMilliseconds())) {
+                    newExclusionDates.push(date);
+                }
+            }
+
+            newExclusionDates.sort((a, b) => a.toMilliseconds() - b.toMilliseconds());
+
+            updateRefValue(recurringExclusionDates, newExclusionDates);
+        }
+
+        isAddExclusionDateRangeVisible.value = false;
+    }
+
+    function onAddExclusionDateRangeCancel(): void {
+        isAddExclusionDateRangeVisible.value = false;
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+        updateValuesFromModel();
+    });
+
+    updateValuesFromModel();
+</script>

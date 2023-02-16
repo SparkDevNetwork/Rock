@@ -25,7 +25,7 @@ import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types";
 

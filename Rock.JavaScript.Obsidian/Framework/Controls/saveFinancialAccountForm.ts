@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject, PropType } from "vue";
-import Alert from "./alert";
+import Alert from "./alert.vue";
 import InlineCheckBox from "./inlineCheckBox";
 import RockButton from "./rockButton";
 import TextBox from "./textBox";

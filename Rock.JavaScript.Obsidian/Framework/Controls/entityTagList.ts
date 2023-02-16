@@ -490,7 +490,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="taglist clearfix">
+<div class="taglist">
     <v-style>
 .taglist .ant-select-auto-complete.ant-select {
     width: 125px;
@@ -541,21 +541,21 @@ export default defineComponent({
                 :modelValue="tag"
                 :disabled="disabled"
                 @removeTag="onRemoveTag" />
-
-            <template v-if="!disabled">
-                <AutoComplete v-if="isNewTagVisible"
-                    v-model:value="searchValue"
-                    :options="searchOptions"
-                    placeholder="tag name"
-                    @select="onSelect"
-                    @search="onSearch"
-                    @inputKeyDown="onInputKeyDown" />
-
-                <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
-                    <i class="fa fa-plus"></i>
-                </span>
-            </template>
         </div>
+
+        <template v-if="!disabled">
+            <AutoComplete v-if="isNewTagVisible"
+                v-model:value="searchValue"
+                :options="searchOptions"
+                placeholder="tag name"
+                @select="onSelect"
+                @search="onSearch"
+                @inputKeyDown="onInputKeyDown" />
+
+            <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
+                <i class="fa fa-plus"></i>
+            </span>
+        </template>
     </div>
 </div>
 `

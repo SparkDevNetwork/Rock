@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplateDiscount View Model */
 export type RegistrationTemplateDiscountBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a value indicating whether the discount applies automatically. */
     autoApplyDiscount: boolean;
 
     /** Gets or sets the code. */
     code?: string | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the discount amount. */
     discountAmount: number;
@@ -40,6 +52,9 @@ export type RegistrationTemplateDiscountBag = {
     /** Gets or sets the last day that the discount code can be used */
     endDate?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the maximum number of registrants per registration that the discount code can used for. */
     maxRegistrants?: number | null;
 
@@ -49,6 +64,12 @@ export type RegistrationTemplateDiscountBag = {
     /** Gets or sets the minimum number of registrants a registration is required to have in order to be able to use this discount code. */
     minRegistrants?: number | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the order. */
     order: number;
 
@@ -57,25 +78,4 @@ export type RegistrationTemplateDiscountBag = {
 
     /** Gets or sets the first day that the discount code can be used. */
     startDate?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

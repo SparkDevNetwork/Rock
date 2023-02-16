@@ -377,6 +377,51 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets a DataView object from a Lava input parameter containing a Data View reference.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static DataView GetDataViewFromInputParameter( object input, RockContext rockContext )
+        {
+            DataView dataView = null;
+
+            // Parse the input object for a dataView.
+            if ( input is DataView dv )
+            {
+                dataView = dv;
+            }
+            else if ( input is string s )
+            {
+                var dataViewService = new DataViewService( rockContext );
+
+                var inputAsGuid = s.AsGuidOrNull();
+                if ( inputAsGuid != null )
+                {
+                    // If the input is a Guid, retrieve the corresponding DataView.
+                    dataView = dataViewService.Get( inputAsGuid.Value );
+                }
+                else
+                {
+                    var inputAsInt = s.AsIntegerOrNull();
+                    if ( inputAsInt != null )
+                    {
+                        // If the input is an integer, retrieve the corresponding dataView.
+                        dataView = dataViewService.Get( inputAsInt.Value );
+                    }
+                    else
+                    {
+                        // If the input is a string, retrieve by name.
+                        var inputAsString = s.ToStringSafe().Trim();
+                        dataView = dataViewService.Queryable()
+                            .FirstOrDefault( d => d.Name != null && d.Name.Equals( inputAsString ) );
+                    }
+                }
+            }
+            return dataView;
+        }
+
+        /// <summary>
         /// Gets a PersonAlias representing the current visitor for whom a request is being processed.
         /// </summary>
         /// <param name="context">The Lava context.</param>
@@ -654,6 +699,32 @@ namespace Rock.Lava
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Compiled Regex for detecting if a string has lava tags. This is
+        /// a more strict version that should prevent false positives.
+        /// </summary>
+        private static readonly Regex _hasStrictLavaTags = new Regex( @"{{.*}}|{%.*%}|{\[.*\]}", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// This is a much stricter check as it specifically looks for {{...}}, {%...%}
+        /// and {[...]}. This should reduce the risk of false positives at the expense
+        /// of a slightly longer check time.
+        /// </summary>
+        /// <param name="content">The content to be checked.</param>
+        /// <returns><c>true</c> if the content contains lava tags; otherwise <c>false</c>.</returns>
+        internal static bool IsStrictLavaTemplate( string content )
+        {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // On a 3KB test string with a single lava merge field at the end, this
+            // took 0.002ms on the development machine.
+            return _hasStrictLavaTags.IsMatch( content );
         }
 
         /// <summary>

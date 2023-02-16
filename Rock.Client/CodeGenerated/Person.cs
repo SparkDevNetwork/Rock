@@ -74,6 +74,9 @@ namespace Rock.Client
         public Rock.Client.Enums.EmailPreference EmailPreference { get; set; }
 
         /// <summary />
+        public int? EthnicityValueId { get; set; }
+
+        /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
@@ -144,6 +147,9 @@ namespace Rock.Client
         public int? PrimaryFamilyId { get; set; }
 
         /// <summary />
+        public int? RaceValueId { get; set; }
+
+        /// <summary />
         public DateTime? RecordStatusLastModifiedDateTime { get; set; }
 
         /// <summary />
@@ -154,6 +160,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? RecordTypeValueId { get; set; }
+
+        /// <summary />
+        public int? ReminderCount { get; set; }
 
         /// <summary />
         public string ReviewReasonNote { get; set; }
@@ -228,6 +237,7 @@ namespace Rock.Client
             this.Email = source.Email;
             this.EmailNote = source.EmailNote;
             this.EmailPreference = source.EmailPreference;
+            this.EthnicityValueId = source.EthnicityValueId;
             this.FirstName = source.FirstName;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -250,10 +260,12 @@ namespace Rock.Client
             this.PreferredLanguageValueId = source.PreferredLanguageValueId;
             this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
+            this.RaceValueId = source.RaceValueId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             this.RecordStatusValueId = source.RecordStatusValueId;
             this.RecordTypeValueId = source.RecordTypeValueId;
+            this.ReminderCount = source.ReminderCount;
             this.ReviewReasonNote = source.ReviewReasonNote;
             this.ReviewReasonValueId = source.ReviewReasonValueId;
             this.SuffixValueId = source.SuffixValueId;
@@ -291,6 +303,9 @@ namespace Rock.Client
         public int? DaysUntilBirthday { get; set; }
 
         /// <summary />
+        public DefinedValue EthnicityValue { get; set; }
+
+        /// <summary />
         public string GivingId { get; set; }
 
         /// <summary />
@@ -309,6 +324,9 @@ namespace Rock.Client
         /// The Primary PersonAliasId of the Person
         /// </summary>
         public int? PrimaryAliasId { get; set; }
+
+        /// <summary />
+        public DefinedValue RaceValue { get; set; }
 
         /// <summary />
         public DefinedValue RecordStatusReasonValue { get; set; }

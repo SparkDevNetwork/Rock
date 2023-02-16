@@ -158,6 +158,25 @@ namespace Rock.Field.Types
             get { return ComparisonHelper.NumericFilterComparisonTypes; }
         }
 
+        /// <inheritdoc/>
+        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values?.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = ComparisonType.EqualTo,
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return base.GetPublicFilterValue( privateValue, privateConfigurationValues );
+            }
+        }
+
         /// <summary>
         /// Gets a filter expression for an attribute value.
         /// </summary>

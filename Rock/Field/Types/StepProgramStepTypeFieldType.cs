@@ -329,7 +329,7 @@ namespace Rock.Field.Types
             {
                 if ( stepTypeGuid.HasValue )
                 {
-                    var stepTypeId = new StepTypeService( rockContext ).GetId( stepTypeGuid.Value );
+                    var stepTypeId = StepTypeCache.GetId( stepTypeGuid.Value );
 
                     if ( stepTypeId.HasValue )
                     {

@@ -12,6 +12,7 @@
             <asp:Literal ID="lLavaOutputDebug" runat="server" />
 
             <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+            <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
 
             <div class="row">
                 <asp:Panel id="pnlCol1" runat="server">

@@ -31,7 +31,7 @@ export const rulesPropType: RulesPropType = {
  * lifting to take a string and spit out the rule name and parameters. This
  * assumes the rule has already been normalized and does not contain multiple
  * rules separated by a | character.
- * 
+ *
  * @param rule The rule to be parsed.
  *
  * @returns The rule reference that contains the name and parameters.
@@ -59,7 +59,7 @@ export function parseRule(rule: string): ValidationRuleReference {
  * Normalize a single rule or array of rules into a flat array of rules. This
  * handles strings that contain multiple rules and splits them out into individual
  * rule strings.
- * 
+ *
  * @param rules The rules to be normalized.
  *
  * @returns A flattened array that contains all the individual rules.
@@ -97,19 +97,19 @@ export function normalizeRules(rules: ValidationRule | ValidationRule[]): Valida
 /**
  * Checks if any of the specified rules indicates a rule that requires the value
  * to be filled in.
- * 
+ *
  * @param rules The rules to be checked.
  *
  * @returns True if any of the rules is considered a required rule; otherwise false.
  */
 export function containsRequiredRule(rules: ValidationRule | ValidationRule[]): boolean {
-    return normalizeRules(rules).some(r => r === "string");
+    return normalizeRules(rules).some(r => r === "required");
 }
 
 /**
  * Normalizes rules to callable functions. This is used to translate string
  * and reference rules to their final function that will be called.
- * 
+ *
  * @param rules The ruels to be normalized to functions.
  *
  * @returns An array of rule functions that will perform validation checks.
@@ -150,7 +150,7 @@ function normalizeRulesToFunctions(rules: ValidationRule[]): ValidationRuleFunct
 /**
  * Normalize a validation result into a useful text message that can be
  * displayed to the user.
- * 
+ *
  * @param result The validation error message or a blank string if validation passed.
  */
 function normalizeRuleResult(result: ValidationResult): string {
@@ -167,7 +167,7 @@ function normalizeRuleResult(result: ValidationResult): string {
 
 /**
  * Runs validation on the value for all the rules provided.
- * 
+ *
  * @param value The value to be checked.
  * @param rule The array of rules that will be used during validation.
  *
@@ -191,7 +191,7 @@ export function validateValue(value: unknown, rule: ValidationRule | ValidationR
 
 /**
  * Define a new rule by name and provide the validation function.
- * 
+ *
  * @param ruleName The name of the rule to be registered.
  * @param validator The validation function.
  */

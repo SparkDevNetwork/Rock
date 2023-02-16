@@ -256,6 +256,7 @@
                                 <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemCommunication" runat="server" Label="Schedule Confirmation Communication" Help="The system communication to use when a person is scheduled or when the schedule has been updated." />
                                 <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason If Schedule Declined" Help="Indicates whether a person must specify a reason when declining/cancelling." />
                                 <Rock:NumberBox ID="nbScheduleConfirmationOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Offset Days" Help="The number of days prior to the schedule to send a confirmation notification." />
+                                <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting will be the default for all groups of this type." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />
@@ -392,6 +393,8 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                    <Rock:RockBoundField DataField="AppliesToAgeClassification" HeaderText="Age Classification" />
+                                    <Rock:RockLiteralField ID="lAppliesToDataViewId" runat="server" ItemStyle-HorizontalAlign="Center" HeaderText="Data View" OnDataBound="lAppliesToDataViewId_OnDataBound" />
                                     <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
                                     <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
                                     <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
@@ -551,9 +554,22 @@
 
                 <asp:ValidationSummary ID="vsGroupTypeGroupRequirement" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vg_GroupTypeGroupRequirement" />
 
-                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupRequirementType_SelectedIndexChanged" ValidationGroup="vg_GroupTypeGroupRequirement" />
 
-                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Applies to Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupTypeGroupRequirement" />
+
+                <Rock:RockRadioButtonList ID="rblAppliesToAgeClassification" runat="server" Label="Applies to Age Classification" RepeatDirection="Horizontal" Help="Determines which age classifications this requirement applies to."></Rock:RockRadioButtonList>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataViewItemPicker ID="dvpAppliesToDataView" runat="server" Label="Applies to Data View" EntityTypeId="15" Help="An optional data view to determine who the requirement applies to." />
+                    </div>
+                </div>
+
+                <Rock:RockCheckBox ID="cbAllowLeadersToOverride" runat="server" Text="Allow Leaders to Override" Help="Determines if the leader should be allowed to override meeting the requirement." />
+
+                <Rock:DatePicker ID="dpDueDate" runat="server" Label="Due Date" ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <Rock:RockDropDownList ID="ddlDueDateGroupAttribute" runat="server" Label="Due Date Group Attribute" Help="The group attribute that contains the due date for requirements." ValidationGroup="vg_GroupTypeGroupRequirement" />
 
                 <Rock:RockCheckBox ID="cbMembersMustMeetRequirementOnAdd" runat="server" Text="Members must meet this requirement before adding" Help="If this is enabled, a person can only become a group member if this requirement is met. Note: only applies to Data View and SQL type requirements since manual ones can't be checked until after the person is added." />
             </Content>

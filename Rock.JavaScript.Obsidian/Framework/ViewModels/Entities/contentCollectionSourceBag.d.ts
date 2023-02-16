@@ -28,8 +28,20 @@ export type ContentCollectionSourceBag = {
     /** Gets or sets the additional settings. */
     additionalSettings?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Id of the Rock.Model.ContentCollection. This property is required. */
     contentCollectionId: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets the entity id. This property is required. */
     entityId: number;
@@ -37,30 +49,18 @@ export type ContentCollectionSourceBag = {
     /** Gets or sets the entity. This property is required. */
     entityTypeId: number;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the occurrences to show. */
     occurrencesToShow: number;
 
     /** Gets or sets the Order. */
     order: number;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

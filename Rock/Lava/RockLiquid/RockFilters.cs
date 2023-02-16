@@ -3853,17 +3853,33 @@ namespace Rock.Lava
             return LavaFilters.PersonalizationItems( lavaContext, input, itemTypeList );
         }
 
+        /// <summary>
+        /// Temporarily adds one or more personalization segments for the specified person.
+        /// </summary>
+        /// <remarks>
+        /// If executed in the context of a HttpRequest, the result is stored in a session cookie and applies until the cookie expires.
+        /// If no HttpRequest is active, the result is stored in the Lava context and applies only for the current render operation.
+        /// </remarks>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The filter input, a reference to a Person or a Person object.</param>
+        /// <param name="segmentKeyList">A comma-delimited list of segment keys to add.</param>
+        public static void AddSegment( Context context, object input, string segmentKeyList )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            LavaFilters.AddSegment( lavaContext, input, segmentKeyList );
+        }
+
         #endregion
 
         #region Group Filters
 
-            /// <summary>
-            /// Loads a Group record from the database from it's GUID.
-            /// </summary>
-            /// <param name="context">The context.</param>
-            /// <param name="input">The input.</param>
-            /// <returns></returns>
-            public static Rock.Model.Group GroupByGuid( Context context, object input )
+        /// <summary>
+        /// Loads a Group record from the database from it's GUID.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupByGuid( Context context, object input )
         {
             if ( input == null )
             {
@@ -5032,6 +5048,18 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Sets a parameter in the input URL and returns a modified URL in the specified format.
+        /// </summary>
+        /// <param name="inputUrl">The input URL to be modified.</param>
+        /// <param name="parameterName">The name of the URL parameter to modify.</param>
+        /// <param name="parameterValue">The new value parameter value.</param>
+        /// <returns></returns>
+        public static string SetUrlParameter( object inputUrl, object parameterName = null, object parameterValue = null )
+        {
+            return LavaFilters.SetUrlParameter( inputUrl, parameterName, parameterValue, null );
+        }
+
+        /// <summary>
         /// Converts a lava property to a key value pair
         /// </summary>
         /// <param name="input">The input.</param>
@@ -5159,12 +5187,18 @@ namespace Rock.Lava
                 return null;
             }
 
-            // DotLiquid does not handle UTC dates correctly, so we need to return the Rock time with a Kind of "Unspecified".
-            // For example, in DotLiquid the Condition.Equals operator parses a string literal date as a local system time.
-            // If the system time is not the same timezone as Rock time, the equals comparison fails because the parsed value does not match Rock time.
-            //rockDateTime = RockDateTime.ConvertToRockOffset( rockDateTime.Value );
-
             return offset;
+        }
+
+        /// <summary>
+        /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
+        /// If the input value does not specify an offset, the current Rock time zone is assumed.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
+        public static DateTimeOffset? AsDateTimeUtc( object input )
+        {
+            return LavaFilters.AsDateTimeUtc( input );
         }
 
         /// <summary>
@@ -6183,6 +6217,19 @@ namespace Rock.Lava
 
                 return followedQry.Any();
             }
+        }
+
+        /// <summary>
+        /// Gets a flag indicating if the input entity exists in the result set of the specified Data View.
+        /// </summary>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The filter input, a reference to an Entity.</param>
+        /// <param name="dataViewIdentifier">A reference to a Data View.</param>
+        /// <returns><c>true</c> if the entity exists in the Data View result set.</returns>
+        public static bool IsInDataView( Context context, object input, object dataViewIdentifier )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.IsInDataView( lavaContext, input, dataViewIdentifier );
         }
 
         /// <summary>

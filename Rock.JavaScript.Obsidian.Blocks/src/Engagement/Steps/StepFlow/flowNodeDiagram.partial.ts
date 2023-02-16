@@ -38,11 +38,12 @@ type FlowDiagramData = FlowDiagramLevel[];
 type NonNullValues<T> = { [P in keyof T]: NonNullable<T[P]> };
 type FlowNodeDiagramSettingsFull = NonNullValues<Required<FlowNodeDiagramSettingsBag>>;
 
-const defaultSettings = {
+const defaultSettings: FlowNodeDiagramSettingsFull = {
     nodeWidth: 12,
     nodeVerticalSpacing: 12,
-    nodeHorizontalSpacing: 200,
-    chartHeight: 900
+    chartWidth: 1200,
+    chartHeight: 900,
+    legendHtml: ""
 };
 
 function round(num: number): number {
@@ -132,8 +133,8 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
 
     template: `
 <g v-if="levelNumber == 1">
-    <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" dx="-3" font-size="12" text-anchor="end">
-        {{ node.name }}
+    <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" font-size="12" text-anchor="end">
+        {{ node.order }}
     </text>
 </g>
 <g v-if="levelNumber > 1">
@@ -187,6 +188,12 @@ export default defineComponent({
             default: () => []
         },
 
+        // Generated HTML string for the chart legend
+        legendHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         // Settings that control the sizes of different items in the diagram.
         settings: {
             type: Object as PropType<FlowNodeDiagramSettingsBag>,
@@ -213,12 +220,10 @@ export default defineComponent({
         });
         const nodeCount = computed(() => props.flowNodes.length);
         const levelsCount = computed(() => props.flowEdges.reduce((count, edge) => Math.max(count, edge.level), 0));
-        const chartWidth = computed(() => {
-            // 24 is the left margin before the first level nodes so we have room for labels and a bit of padding.
-            const calculated = 24 + /* nodes */ (settings.value.nodeWidth * levelsCount.value) + /* flows */ (settings.value.nodeHorizontalSpacing * (levelsCount.value - 1));
-
-            // Want to make sure it always has a minimum size so we can display "loading" while we have no data
-            return Math.max(calculated, 200);
+        const chartWidth = computed(() => settings.value.chartWidth);
+        const nodeHorizontalSpacing = computed(() => {
+            const flowSpace = settings.value.chartWidth - /* nodes */ (settings.value.nodeWidth * levelsCount.value) - /* Label Text */ 24;
+            return flowSpace / (levelsCount.value - 1);
         });
         // Set the chart height based on settings if we have chart data, otherwise set it to a minimal value
         const chartHeight = computed(() => nodeCount.value > 0 ? settings.value.chartHeight : 50);
@@ -239,7 +244,7 @@ export default defineComponent({
             }
 
             const data: FlowDiagramData = [];
-            const { nodeWidth, nodeHorizontalSpacing, nodeVerticalSpacing, chartHeight } = settings.value;
+            const { nodeWidth, nodeVerticalSpacing, chartHeight } = settings.value;
             const totalNodeVerticalGap = nodeVerticalSpacing * (nodeCount.value - 1);
             let previousTotalUnits = 0;
             let useableHeight = chartHeight - totalNodeVerticalGap - 50; // The 50 gives some padding at the bottom for long labels
@@ -332,7 +337,7 @@ export default defineComponent({
                 // Set up for the next level
                 previousTotalUnits = totalLevelUnits;
                 previousX = currentX;
-                currentX += nodeWidth + nodeHorizontalSpacing;
+                currentX += nodeWidth + nodeHorizontalSpacing.value;
 
                 data.push(levelNodes);
             } // End for each level
@@ -439,6 +444,27 @@ export default defineComponent({
 .step-flow-svg .edge:hover {
     fill: rgba(170, 170, 170, 0.8);
 }
+.flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto 0;
+    gap: 12px;
+    width: 100%;
+}
+.flow-key {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.1;
+}
+.flow-key .color {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
 </v-style>
 
 <div class="flow-node-diagram-container">
@@ -453,6 +479,8 @@ export default defineComponent({
             @showTooltip="showTooltip"
         />
     </svg>
+
+    <div class="step-flow-legend" v-html="settings.legendHtml" />
 
     <transition name="fade" appear>
         <div v-if="isLoading" class="loadingContainer">

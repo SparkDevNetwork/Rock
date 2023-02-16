@@ -364,7 +364,13 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             /* 
-                05/18/2022 MDP
+                01/20/2023 ETD
+                Update to Mike's comment on 5/18/2022
+                The cancel button is being used as a psuedo "save form" button that multiple churches are depending on.
+                This functionality needs to remain until a new button is created to perform a "Save Form" function. With this in mind the changes
+                in commit 70a484a9 have been undone.
+
+                05/18/2022 MDP (this comment is no longer valid as of 5/18/2023)
 
                 Update on the 04/27/2022 note. After discussing with Product team,
                 the intended behavior is that *none* of the form values should save
@@ -380,19 +386,23 @@ namespace RockWeb.Blocks.WorkFlow
             */
             var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
             var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
+            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
+
+            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
+            {
+                // Out if the action does not cause validation and does not have an Activate Activity.
+                return;
+            }
 
             if ( formUserAction != null && formUserAction.CausesValidation )
             {
-                // Only save the User Form values to the database if the form is getting validated. In other words,
-                // if the intent is to cancel, don't keep any of the form person values or any other form values.
                 using ( var personEntryRockContext = new RockContext() )
                 {
                     GetWorkflowFormPersonEntryValues( personEntryRockContext );
                 }
-
-                SetWorkflowFormAttributeValues();
             }
 
+            SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
 
@@ -1009,6 +1019,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
                     FormFieldId = formAttribute.AttributeId,
+                    FormType = FieldVisibilityWrapper.FormTypes.Workflow,
                     FieldVisibilityRules = formAttribute.FieldVisibilityRules
                 };
 
@@ -2036,11 +2047,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
-
-            /* 05/18/2022
-             * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
-             * get one, we'll need to review this logic to make sure it doesn't the right thing
-            */
             var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
             switch ( workflowCampusSetFrom )
             {
@@ -2245,10 +2251,6 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( notificationEmailSettings != null )
                 {
-                    /* 05/18/2022
-                    * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
-                    * get one, we'll need to review this logic to make sure it doesn't the right thing
-                    */
                     SendFormBuilderNotificationEmail( notificationEmailSettings );
                 }
 

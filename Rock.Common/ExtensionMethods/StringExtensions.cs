@@ -50,6 +50,7 @@ namespace Rock
                     // Can be "x2" if you want lowercase
                     sb.Append( b.ToString( "x2" ) );
                 }
+
                 return sb.ToString();
             }
         }
@@ -93,6 +94,7 @@ namespace Rock
                     // Can be "x2" if you want lowercase
                     sb.Append( b.ToString( "x2" ) );
                 }
+
                 return sb.ToString();
             }
         }
@@ -185,7 +187,7 @@ namespace Rock
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="separator">The separator.</param>
-        /// <returns>Concatencated string.</returns>
+        /// <returns>Concatenated string.</returns>
         public static string JoinStrings( this IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
@@ -217,6 +219,46 @@ namespace Rock
             {
                 // only one element, just use it
                 output = list[0];
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Joins an array of English strings together with a chosen delimiter, plus a final delimiter for last element, with a maximum length of results and truncation value.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="repeatDelimiter">The delimiter for all but the final string.</param>
+        /// <param name="finalDelimiter">The delimiter for only the final string.</param>
+        /// <param name="maxLength">The maximum length allowed for the concatenated string from the source (not including the <paramref name="truncation"/> string).</param>
+        /// <param name="truncation">The truncation string value (default is "..." for ellipsis).</param>
+        /// <returns>Concatenated string.</returns>
+        public static string JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( this IEnumerable<String> source, string repeatDelimiter, string finalDelimiter, int? maxLength, string truncation = "..." )
+        {
+            if ( source == null || source.Count() == 0 )
+            {
+                return string.Empty;
+            }
+
+            var output = string.Empty;
+
+            var list = source.ToList();
+
+            if ( list.Count > 1 )
+            {
+                var delimited = string.Join( repeatDelimiter, list.Take( list.Count - 1 ) );
+
+                output = string.Concat( delimited, finalDelimiter, list.LastOrDefault() );
+            }
+            else
+            {
+                // only one element, just use it.
+                output = list[0];
+            }
+
+            if ( maxLength.HasValue && output.Length > maxLength.Value )
+            {
+                output = output.Substring( 0, maxLength.Value ) + truncation;
             }
 
             return output;
@@ -324,12 +366,7 @@ namespace Rock
         /// <returns></returns>
         public static string Right( this string str, int length )
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return str.Substring( str.Length - length );
+            return str.SubstringSafe( str.Length - length );
         }
 
         /// <summary>
@@ -441,7 +478,6 @@ namespace Rock
         public static IEnumerable<int> StringToIntList( this string str )
         {
             // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
-
             if ( String.IsNullOrEmpty( str ) )
             {
                 yield break;
@@ -688,18 +724,7 @@ namespace Rock
         /// <returns></returns>
         public static string Left( this string str, int length )
         {
-            if ( str == null )
-            {
-                return null;
-            }
-            else if ( str.Length <= length )
-            {
-                return str;
-            }
-            else
-            {
-                return str.Substring( 0, length );
-            }
+            return str.SubstringSafe( 0, length );
         }
 
         /// <summary>
@@ -1432,4 +1457,3 @@ namespace Rock
         #endregion String Extensions
     }
 }
-
