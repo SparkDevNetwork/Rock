@@ -1162,9 +1162,21 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            var financialAccountService = new FinancialAccountService( rockContext );
             var enableAccountHierarchy = GetAttributeValue( AttributeKey.EnableAccountHierarchy ).AsBoolean();
 
+            GetAvailableAccounts( rockContext, enableAccountHierarchy );
+
+            DatabindAddAccountsButton( enableAccountHierarchy );
+        }
+
+        /// <summary>
+        /// Gets the available accounts in chunks to prevent SQL complexity errors.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="enableAccountHierarchy">if set to <c>true</c> [enable account hierarchy].</param>
+        private void GetAvailableAccounts( RockContext rockContext, bool enableAccountHierarchy )
+        {
+            var financialAccountService = new FinancialAccountService( rockContext );
             var availableAccounts = financialAccountService.Queryable()
             .Where( f =>
                 f.IsActive
@@ -1185,32 +1197,39 @@ mission. We are so grateful for your commitment.</p>
 
             var accountIds = availableAccounts.Select( f => f.Id ).ToList();
 
-            var childList = financialAccountService.Queryable()
-                .Where( f =>
-                f.ParentAccountId.HasValue
-                    && accountIds.Contains( f.ParentAccountId.Value )
-                    &&!caapPromptForAccountAmounts.SelectableAccountIds.Contains( f.Id ) )
-                .ToList();
-
-            // Enumerate through all active accounts that are public
-            foreach ( var account in availableAccounts )
+            while ( accountIds.Any() )
             {
-                var accountItem = new AccountItem() { Id = account.Id, PublicName = account.PublicName, ParentAccountId = account.ParentAccountId };
+                // Process the accounts in chunks of 1000 to prevent any potential SQL complexity errors.
+                List<int> accountIdsChunk = accountIds.Take( 1000 ).ToList();
+                var accountsChunk = availableAccounts.Where( a => accountIdsChunk.Contains( a.Id ) );
 
-                if ( enableAccountHierarchy )
+                var childList = accountsChunk
+                    .Where( f =>
+                        f.ParentAccountId.HasValue
+                        && accountIds.Contains( f.ParentAccountId.Value )
+                        && !caapPromptForAccountAmounts.SelectableAccountIds.Contains( f.Id ) )
+                    .ToList();
+
+                // Enumerate through all active accounts that are public
+                foreach ( var account in accountsChunk )
                 {
-                    accountItem.HasChildren = childList.Any( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) );
-                    accountItem.Children = childList.Where( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) )
-                        .Select( f => new AccountItem() { Id = f.Id, PublicName = f.PublicName, ParentAccountId = f.ParentAccountId } )
-                        .ToList();
-                    // An account is considered a root item in the hierarchical mode if it is a top level account with children or is a parent account to any other child account.
-                    accountItem.IsRootItem = ( !account.ParentAccountId.HasValue && accountItem.HasChildren ) || availableAccounts.Any( f => f.ParentAccountId == account.Id );
+                    var accountItem = new AccountItem() { Id = account.Id, PublicName = account.PublicName, ParentAccountId = account.ParentAccountId };
+
+                    if ( enableAccountHierarchy )
+                    {
+                        accountItem.HasChildren = childList.Any( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) );
+                        accountItem.Children = childList.Where( f => f.ParentAccountId == accountItem.Id && !availableAccounts.Any( fa => fa.ParentAccountId == f.Id ) )
+                            .Select( f => new AccountItem() { Id = f.Id, PublicName = f.PublicName, ParentAccountId = f.ParentAccountId } )
+                            .ToList();
+                        // An account is considered a root item in the hierarchical mode if it is a top level account with children or is a parent account to any other child account.
+                        accountItem.IsRootItem = ( !account.ParentAccountId.HasValue && accountItem.HasChildren ) || availableAccounts.Any( f => f.ParentAccountId == account.Id );
+                    }
+
+                    AvailableAccounts.Add( accountItem );
                 }
 
-                AvailableAccounts.Add( accountItem );
+                accountIds = accountIds.Where( a => !accountIdsChunk.Contains( a ) ).ToList();
             }
-
-            DatabindAddAccountsButton( enableAccountHierarchy );
         }
 
         /// <summary>
