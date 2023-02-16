@@ -21,9 +21,11 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using Quartz;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Tasks;
 
 namespace Rock.Jobs
 {
@@ -33,9 +35,29 @@ namespace Rock.Jobs
     [DisplayName( "Charge Future Transactions" )]
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
+    #region Job Attributes
+
+    [SystemCommunicationField( "Receipt Email",
+        Key = AttributeKey.ReceiptEmail,
+        Description = "The system email to use to send the receipt.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = "7DBF229E-7DEE-A684-4929-6C37312A0039",
+        Order = 2 )]
+
+    #endregion Job Attributes
+
     [DisallowConcurrentExecution]
     public class ChargeFutureTransactions : IJob
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ReceiptEmail = "ReceiptEmail";
+        }
+
+        #endregion Attribute Keys
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -53,6 +75,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
             var futureTransactions = transactionService.GetFutureTransactions().Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now ).ToList();
@@ -62,7 +87,7 @@ namespace Rock.Jobs
             foreach ( var futureTransaction in futureTransactions )
             {
                 var automatedPaymentProcessor = new AutomatedPaymentProcessor( futureTransaction, rockContext );
-                automatedPaymentProcessor.ProcessCharge( out var errorMessage );
+                var transaction = automatedPaymentProcessor.ProcessCharge( out var errorMessage );
 
                 if ( !string.IsNullOrEmpty( errorMessage ) )
                 {
@@ -71,6 +96,7 @@ namespace Rock.Jobs
                 else
                 {
                     successCount++;
+                    SendReceipt( receiptEmail, transaction.Id );
                 }
             }
 
@@ -92,6 +118,28 @@ namespace Rock.Jobs
 
                 throw exception;
             }
+        }
+
+        /// <summary>
+        /// Sends the receipt.
+        /// </summary>
+        /// <param name="receiptEmail">The <see cref="Guid"/> of the receipt email.</param>
+        /// <param name="transactionId">The transaction identifier.</param>
+        private void SendReceipt( Guid? receiptEmail, int transactionId )
+        {
+            if ( !receiptEmail.HasValue )
+            {
+                return;
+            }
+
+            // Queue a bus message to send receipts
+            var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+            {
+                SystemEmailGuid = receiptEmail.Value,
+                TransactionId = transactionId
+            };
+
+            sendPaymentReceiptsTask.Send();
         }
     }
 }

@@ -187,6 +187,7 @@ namespace Rock.Jobs
             // We can use the dataview to get the person alias id query
             var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
+                DbContext = rockContextGetList,
                 DatabaseTimeoutSeconds = _sqlCommandTimeoutSeconds
             };
 

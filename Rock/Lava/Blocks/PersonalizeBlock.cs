@@ -133,9 +133,8 @@ namespace Rock.Lava.Blocks
                 if ( !string.IsNullOrEmpty( content ) )
                 {
                     var engine = context.GetService<ILavaEngine>();
-                    var render = engine.RenderTemplate( content );
-
-                    result.Write( render.Text );
+                    var renderResult = engine.RenderTemplate( content, new LavaRenderParameters { Context = context } );
+                    result.Write( renderResult.Text );
                 }
             }
             catch ( Exception ex )

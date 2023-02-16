@@ -268,6 +268,11 @@ namespace Rock.Workflow.Action
 
                     // Render the PDF from the HTML result.
                     var pdfGenerator = new Pdf.PdfGenerator();
+                    if ( result.FooterHtmlFragment.IsNotNullOrWhiteSpace() )
+                    {
+                        pdfGenerator.FooterHtml = result.FooterHtmlFragment;
+                    }
+
                     pdfStream = pdfGenerator.GetPDFDocumentFromHtml( result.Html );
 
                     // Upload the PDF.

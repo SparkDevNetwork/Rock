@@ -244,6 +244,19 @@ Hi Ted!
         }
 
         [TestMethod]
+        public void PersonalizeBlock_WithLavaContent_ResolvesWithCurrentContext()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN' %}
+Hi {{ CurrentPerson.NickName }}!
+{% endpersonalize %}
+";
+
+            // Verify that the CurrentPerson global variable can be resolved in the current context.
+            AssertOutputForPersonAndRequest( input, "Hi Bill!", TestGuids.TestPeople.BillMarble );
+        }
+
+        [TestMethod]
         public void PersonalizeBlock_WithNoParameters_IsHidden()
         {
             var input = @"
