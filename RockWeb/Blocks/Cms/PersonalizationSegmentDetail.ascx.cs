@@ -202,8 +202,7 @@ namespace RockWeb.Blocks.Cms
 
             // Person Filters
             dvpFilterDataView.SetValue( personalizationSegment.FilterDataViewId );
-            ShowDataViewWarningIfInvalid( personalizationSegment.FilterDataViewId, false );
-
+            
             // Session Filters
             tglSessionCountFiltersAllAny.Checked = AdditionalFilterConfiguration.SessionFilterExpressionType == FilterExpressionType.GroupAll;
             BindSessionCountFiltersGrid();
@@ -232,49 +231,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the SelectItem event of the dvpFilterDataView control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dvpFilterDataView_SelectItem( object sender, EventArgs e )
-        {
-            var selectedDataViewId = dvpFilterDataView.SelectedValueAsId();
-            ShowDataViewWarningIfInvalid( selectedDataViewId, true );
-        }
-
-        /// <summary>
-        /// Shows the data view warning if invalid.
-        /// </summary>
-        /// <param name="selectedDataViewId">The selected data view identifier.</param>
-        private void ShowDataViewWarningIfInvalid( int? selectedDataViewId, bool showAsError )
-        {
-            nbFilterDataViewWarning.Visible = false;
-            nbFilterDataViewError.Visible = false;
-            DataView selectedDataView;
-            var rockContext = new RockContext();
-            if ( selectedDataViewId != null )
-            {
-                selectedDataView = new DataViewService( rockContext ).Get( selectedDataViewId.Value );
-                if ( selectedDataView == null )
-                {
-                    return;
-                }
-
-                if ( !selectedDataView.IsPersisted() )
-                {
-                    if ( showAsError )
-                    {
-                        nbFilterDataViewError.Visible = true;
-                    }
-                    else
-                    {
-                        nbFilterDataViewWarning.Visible = true;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -295,13 +251,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             var rockContext = new RockContext();
-
-            var filterDataViewId = dvpFilterDataView.SelectedValueAsId();
-            ShowDataViewWarningIfInvalid( filterDataViewId, true );
-            if ( nbFilterDataViewError.Visible )
-            {
-                return;
-            }
 
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment;

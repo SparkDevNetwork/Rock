@@ -42,11 +42,7 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataViewItemPicker ID="dvpFilterDataView" runat="server" Label="Filter Data View" OnSelectItem="dvpFilterDataView_SelectItem" />
-                                <Rock:NotificationBox ID="nbFilterDataViewError" runat="server" NotificationBoxType="Danger"
-                                    Text="Segments only support data views that have been configured to persist. Please update the configuration of the selected dataview." />
-                                <Rock:NotificationBox ID="nbFilterDataViewWarning" runat="server" NotificationBoxType="Warning"
-                                    Text="The DataView filter must be a persisted dataview. Because this data view is no longer persisted, this Segment Filter is essentially inactive." />
+                                <Rock:DataViewItemPicker ID="dvpFilterDataView" runat="server" Label="Filter Data View" />
                             </div>
 
                             <div class="col-md-6">
