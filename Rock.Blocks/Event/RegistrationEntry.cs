@@ -3490,12 +3490,6 @@ namespace Rock.Blocks.Event
                 args.AmountToPayNow = 0;
             }
 
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > amountDue )
-            {
-                args.AmountToPayNow = amountDue;
-            }
-
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
@@ -3505,11 +3499,11 @@ namespace Rock.Blocks.Event
                     ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
                     : amountDue;
 
-                if ( args.AmountToPayNow < minimumInitialPayment )
-                {
-                    args.AmountToPayNow = minimumInitialPayment;
-                }
+                args.AmountToPayNow = args.AmountToPayNow < minimumInitialPayment ? minimumInitialPayment : args.AmountToPayNow;
             }
+
+            // Cannot pay more than is owed. This check should be the last one performed regarding payment in this method.
+            args.AmountToPayNow = args.AmountToPayNow > amountDue ? amountDue : args.AmountToPayNow;
 
             return context;
         }
