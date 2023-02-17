@@ -44,11 +44,7 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
-        /// <summary>
-        /// The shared save hook provider that is used by default by all
-        /// instances of DbContext.
-        /// </summary>
-        internal static readonly Internal.EntitySaveHookProvider SharedSaveHookProvider = new Internal.EntitySaveHookProvider();
+        #region Properties
 
         /// <summary>
         /// Gets or sets the entity save hook provider.
@@ -57,35 +53,6 @@ namespace Rock.Data
         /// The entity save hook provider.
         /// </value>
         internal Internal.EntitySaveHookProvider EntitySaveHookProvider { get; set; } = SharedSaveHookProvider;
-
-        /// <summary>
-        /// Is there a transaction in progress?
-        /// </summary>
-        private bool _transactionInProgress = false;
-        private TaskCompletionSource<bool> _wrappedTransactionCompleted = null;
-
-        /// <summary>
-        /// A list of action delegates to execute once the data has been committed
-        /// to the database.
-        /// </summary>
-        private List<Action> _commitedActions = new List<Action>();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContext"/> class.
-        /// </summary>
-        public DbContext() : base() { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContext"/> class.
-        /// </summary>
-        /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
-        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
-
-        /// <inheritdoc />
-        internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
-            base( objectContext, dbContextOwnsObjectContext )
-        {
-        }
 
         /// <summary>
         /// Gets any error messages that occurred during a SaveChanges
@@ -124,6 +91,60 @@ namespace Rock.Data
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock RealTime messages
+        /// should be sent in response to calls to one of the SaveChanges
+        /// methods.
+        /// </summary>
+        /// <remarks>
+        /// This <em>only</em> affects real-time messages. Other forms of
+        /// notifications will still take place.
+        /// </remarks>
+        /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
+        public bool IsRealTimeEnabled { get; set; } = true;
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The shared save hook provider that is used by default by all
+        /// instances of DbContext.
+        /// </summary>
+        internal static readonly Internal.EntitySaveHookProvider SharedSaveHookProvider = new Internal.EntitySaveHookProvider();
+
+        /// <summary>
+        /// Is there a transaction in progress?
+        /// </summary>
+        private bool _transactionInProgress = false;
+        private TaskCompletionSource<bool> _wrappedTransactionCompleted = null;
+
+        /// <summary>
+        /// A list of action delegates to execute once the data has been committed
+        /// to the database.
+        /// </summary>
+        private List<Action> _commitedActions = new List<Action>();
+
+        #endregion
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContext"/> class.
+        /// </summary>
+        public DbContext() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContext"/> class.
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
+        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+
+        /// <inheritdoc />
+        internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
+        {
+        }
+
 
         /// <summary>
         /// Wraps the action in a BeginTransaction and CommitTransaction.

@@ -127,7 +127,7 @@ namespace Rock.Transactions
         /// standard transaciton queue.
         /// </summary>
         /// <returns>A collection of <see cref="ITransaction"/> objects that are waiting to be processed.</returns>
-        public static List<ITransaction> GetQueuedStandardTransactions()
+        public static List<ITransaction> GetStandardQueuedTransactions()
         {
             var transactions = new List<ITransaction>();
 
@@ -204,7 +204,14 @@ namespace Rock.Transactions
                         queuedTransaction.WillEnqueue();
                     }
 
-                    CurrentlyExecutingTransaction.Execute();
+                    if ( CurrentlyExecutingTransaction is IAsyncTransaction asyncTransation )
+                    {
+                        asyncTransation.ExecuteAsync().Wait();
+                    }
+                    else
+                    {
+                        CurrentlyExecutingTransaction.Execute();
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -217,7 +224,14 @@ namespace Rock.Transactions
             {
                 try
                 {
-                    transaction.Execute();
+                    if ( transaction is IAsyncTransaction asyncTransaction )
+                    {
+                        asyncTransaction.ExecuteAsync().Wait();
+                    }
+                    else
+                    {
+                        transaction.Execute();
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -236,31 +250,22 @@ namespace Rock.Transactions
             int processingIntervalInMilliseconds = 1_000;
             var lastLoggedExceptionTime = DateTime.MinValue;
 
+            // Create a holder of each queue group. All transactions are grouped
+            // together by type and placed in their own processing queue. This
+            // prevents a transaction of one type from delaying processing the
+            // transactions of another type.
+            // We don't need a concurrent dictionary because our thread is the
+            // only one that will directly touch the dictionary.
+            var queueGroups = new Dictionary<Type, (ConcurrentQueue<ITransaction> Queue, Task Task)>();
+
             // Just keep running until we are asked to stop.
             while ( !cancellationToken.IsCancellationRequested )
             {
-                var startTime = RockDateTime.Now;
-                DateTime endTime;
+                var sw = System.Diagnostics.Stopwatch.StartNew();
 
                 try
                 {
-                    // If we have any transactions in the queue then fire up
-                    // a number of worker tasks to drain the queue in parallel.
-                    if ( _fastTransactionQueue.Count > 0 )
-                    {
-                        int workerCount = 3;
-                        var workers = new Task[workerCount];
-
-                        for ( int i = 0; i < workerCount; i++ )
-                        {
-                            workers[i] = Task.Run( () => FastQueueWorker( cancellationToken ) );
-                        }
-
-                        // Wait for all the worker tasks to complete. Since we are
-                        // running in a dedicated thread there is no concern about
-                        // a deadlock by calling Wait().
-                        Task.WhenAll( workers ).Wait();
-                    }
+                    ProcessFastQueueCycle( queueGroups );
                 }
                 catch ( Exception ex )
                 {
@@ -283,14 +288,14 @@ namespace Rock.Transactions
                 }
                 finally
                 {
-                    endTime = RockDateTime.Now;
+                    sw.Stop();
                 }
 
-                var executionTimeInMilliseconds = ( int ) ( endTime - startTime ).TotalMilliseconds;
+                var executionTimeInMilliseconds = sw.Elapsed.TotalMilliseconds;
 
                 // If we have a processing interval of 1,000ms and processing
                 // took 200ms then we want only want to sleep for 800ms.
-                var waitMilliseconds = processingIntervalInMilliseconds - executionTimeInMilliseconds;
+                var waitMilliseconds = processingIntervalInMilliseconds - ( int ) executionTimeInMilliseconds;
 
                 if ( waitMilliseconds > 0 )
                 {
@@ -300,28 +305,88 @@ namespace Rock.Transactions
         }
 
         /// <summary>
+        /// Processes a single cycle of the fast transaction queue.
+        /// </summary>
+        /// <param name="queueGroups">The queue groups that are known.</param>
+        private static void ProcessFastQueueCycle( Dictionary<Type, (ConcurrentQueue<ITransaction> Queue, Task Task)> queueGroups )
+        {
+            if ( _fastTransactionQueue.Count == 0 )
+            {
+                return;
+            }
+
+            // Dequeue all the existing transactions that need to be processed.
+            var transactions = new List<ITransaction>();
+
+            while ( _fastTransactionQueue.TryDequeue( out var transaction ) )
+            {
+                transactions.Add( transaction );
+            }
+
+            // Group them by type so we can process all transactions of a queue
+            // on a single task without blocking other transaction types.
+            var transactionGroups = transactions.GroupBy( t => t.GetType() ).ToList();
+
+            foreach ( var transactionGroup in transactionGroups )
+            {
+                // Try to find an existing queue group. If one isn't found then
+                // create it.
+                if ( !queueGroups.TryGetValue( transactionGroup.Key, out var queueGroup ) )
+                {
+                    queueGroup = (new ConcurrentQueue<ITransaction>(), null);
+                    queueGroups.Add( transactionGroup.Key, queueGroup );
+                }
+
+                // Dump all the transactions for this group into a new queue
+                // that will be drained by the worker task.
+                foreach ( var transaction in transactionGroup )
+                {
+                    queueGroup.Queue.Enqueue( transaction );
+                }
+
+                // If the processing task for this queue group has not
+                // been started, or has already completed, then start
+                // up a new processing task.
+                if ( queueGroup.Task == null || queueGroup.Task.IsCompleted )
+                {
+                    queueGroup.Task = Task.Run( () => FastQueueWorkerAsync( queueGroup.Queue ) );
+                }
+            }
+        }
+
+        /// <summary>
         /// Worker task that will run on the standard task pool to process
         /// transactions until the fast queue is empty.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token will be used to signal if we should stop processing.</param>
-        private static void FastQueueWorker( CancellationToken cancellationToken )
+        /// <param name="transactions">The list of transactions ot be processed by this worker.</param>
+        private static async Task FastQueueWorkerAsync( ConcurrentQueue<ITransaction> transactions )
         {
-            while ( !cancellationToken.IsCancellationRequested && _fastTransactionQueue.TryDequeue( out var transaction ) )
+            // We need to completely empty the queue, otherwise transactions
+            // may be lost if the fast queue is shutdown.
+            while ( transactions.TryDequeue( out var transaction ) )
             {
                 try
                 {
-                    var startTime = RockDateTime.Now;
-                    transaction.Execute();
-                    var duration = RockDateTime.Now - startTime;
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
 
-                    var durationMilliseconds = ( int ) duration.TotalMilliseconds;
+                    if ( transaction is IAsyncTransaction asyncTransaction )
+                    {
+                        await asyncTransaction.ExecuteAsync().ConfigureAwait( false );
+                    }
+                    else
+                    {
+                        transaction.Execute();
+                    }
+
+                    sw.Stop();
+                    var durationMilliseconds = sw.Elapsed.TotalMilliseconds;
 
                     // If the transaction took a long time to run, log something so it can be
                     // looked at later.
                     if ( durationMilliseconds > 2_500 )
                     {
                         var level = Logging.RockLogLevel.Info;
-                        var message = $"Fast execution of transaction {transaction.GetType().Name} took {durationMilliseconds} ms.";
+                        var message = $"Fast execution of transaction {transaction.GetType().Name} took {durationMilliseconds:N0} ms.";
 
                         if ( durationMilliseconds > 10_000 )
                         {

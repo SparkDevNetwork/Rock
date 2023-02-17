@@ -14,16 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Threading.Tasks;
+
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Represents a Transaction class
+    /// Represents a transaction that can be executed asynchronously.
     /// </summary>
-    public interface ITransaction
+    public interface IAsyncTransaction
     {
         /// <summary>
-        /// Executes this instance.
+        /// Executes this instance asynchronously.
         /// </summary>
-        void Execute();
+        /// <returns>A <see cref="Task"/> that represents the operation.</returns>
+        Task ExecuteAsync();
     }
 }

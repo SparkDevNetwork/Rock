@@ -14,16 +14,27 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Transactions
+
+namespace Rock.Enums.Event
 {
     /// <summary>
-    /// Represents a Transaction class
+    /// Tracks the attendance status of the individual.
     /// </summary>
-    public interface ITransaction
+    public enum AttendanceStatus
     {
         /// <summary>
-        /// Executes this instance.
+        /// The individual did not attend and is not present in the room.
         /// </summary>
-        void Execute();
+        DidNotAttend = 0,
+
+        /// <summary>
+        /// The individual did attend but may not be present in the room.
+        /// </summary>
+        DidAttend = 1,
+
+        /// <summary>
+        /// The individual did attend and is currently present in the room.
+        /// </summary>
+        IsPresent = 2
     }
 }
