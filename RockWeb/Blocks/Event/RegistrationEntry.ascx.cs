@@ -809,24 +809,7 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            var matchingRegistrationInstance = FindMatchingRegistrationInstance();
-
-                            if ( matchingRegistrationInstance == null )
-                            {
-                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
-                            }
-                            else if ( matchingRegistrationInstance.EndDateTime < RockDateTime.Now)
-                            {
-                                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", matchingRegistrationInstance.Name, matchingRegistrationInstance.EndDateTime.ToShortDateString() ) );
-                            }
-                            else if ( matchingRegistrationInstance.StartDateTime > RockDateTime.Today)
-                            {
-                                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, matchingRegistrationInstance.Name, matchingRegistrationInstance.StartDateTime.ToShortDateString() ) );
-                            }
-                            else
-                            {
-                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
-                            }
+                            FindMatchingRegistrationInstance();
                         }
                     }
                 }
@@ -838,13 +821,18 @@ namespace RockWeb.Blocks.Event
 
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
                 divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+
+                if ( RegistrationTemplate == null )
+                {
+                   FindMatchingRegistrationInstance();
+                }
             }
         }
 
         /// <summary>
         /// Finds the matching registration instance if the registrationInstanceId parameter was provided.
         /// </summary>
-        private RegistrationInstance FindMatchingRegistrationInstance()
+        private void FindMatchingRegistrationInstance()
         {
             /*
                 03/16/2022 - KA
@@ -860,7 +848,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !registrationInstanceId.HasValue )
             {
-                return null;
+                return;
             }
 
             var registrationInstance = new RegistrationInstanceService( new RockContext() )
@@ -872,7 +860,22 @@ namespace RockWeb.Blocks.Event
                     r.RegistrationTemplate.IsActive )
                 .FirstOrDefault();
 
-            return registrationInstance;
+            if ( registrationInstance == null )
+            {
+                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
+            else if ( registrationInstance.EndDateTime < RockDateTime.Now )
+            {
+                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", registrationInstance.Name, registrationInstance.EndDateTime.ToShortDateString() ) );
+            }
+            else if ( registrationInstance.StartDateTime > RockDateTime.Today )
+            {
+                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, registrationInstance.Name, registrationInstance.StartDateTime.ToShortDateString() ) );
+            }
+            else
+            {
+                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
         }
 
         /// <summary>
