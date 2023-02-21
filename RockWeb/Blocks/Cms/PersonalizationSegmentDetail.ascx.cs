@@ -542,6 +542,25 @@ namespace RockWeb.Blocks.Cms
 
             ppPageViewFilterPages.SetValues( pageViewFilterSegmentFilter.GetSelectedPages().Select( a => a.Id ) );
 
+            ComparisonHelper.PopulateComparisonControl( ddlPageUrlFilterComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlPageUrlFilterComparisonType.SetValue( pageViewFilterSegmentFilter.PageUrlComparisonType.ConvertToInt() );
+            rtbPageUrlCompareValue.Text = pageViewFilterSegmentFilter.PageUrlComparisonValue;
+
+            ComparisonHelper.PopulateComparisonControl( ddlPageReferrerFilterComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlPageReferrerFilterComparisonType.SetValue( pageViewFilterSegmentFilter.PageReferrerComparisonType.ConvertToInt() );
+            rtbPageReferrerCompareValue.Text = pageViewFilterSegmentFilter.PageReferrerComparisonValue;
+
+            if ( pageViewFilterSegmentFilter.PageUrlComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                lbPageViewAdvancedOptions.Visible = false;
+                pnlAdvancedOptions.Visible = true;
+            }
+            else
+            {
+                lbPageViewAdvancedOptions.Visible = true;
+                pnlAdvancedOptions.Visible = false;
+            }
+
             mdPageViewFilterConfiguration.Show();
         }
 
@@ -565,6 +584,11 @@ namespace RockWeb.Blocks.Cms
             pageViewFilter.ComparisonValue = nbPageViewFilterCompareValue.Text.AsInteger();
             pageViewFilter.SiteGuids = lstPageViewFilterWebSites.SelectedValuesAsGuid;
             pageViewFilter.PageGuids = ppPageViewFilterPages.SelectedIds.Select( a => PageCache.Get( a )?.Guid ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+
+            pageViewFilter.PageUrlComparisonType = ddlPageUrlFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.PageUrlComparisonValue = rtbPageUrlCompareValue.Text;
+            pageViewFilter.PageReferrerComparisonType = ddlPageReferrerFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.PageReferrerComparisonValue = rtbPageReferrerCompareValue.Text;
 
             pageViewFilter.SlidingDateRangeDelimitedValues = drpPageViewFilterSlidingDateRange.DelimitedValues;
             mdPageViewFilterConfiguration.Hide();
@@ -603,6 +627,17 @@ namespace RockWeb.Blocks.Cms
             }
 
             lPageViewFilter.Text = pageViewFilterSegmentFilter.GetDescription();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbPageViewAdvancedOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbPageViewAdvancedOptions_Click( object sender, EventArgs e )
+        {
+            pnlAdvancedOptions.Visible = true;
+            lbPageViewAdvancedOptions.Visible = false;
         }
 
         #endregion Page View Filters Related
