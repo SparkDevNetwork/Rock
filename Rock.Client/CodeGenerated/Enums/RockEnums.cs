@@ -1250,6 +1250,19 @@ namespace Rock.Client.Enums.Blocks.Security.Login
 
 }
 
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 {
     /// <summary>

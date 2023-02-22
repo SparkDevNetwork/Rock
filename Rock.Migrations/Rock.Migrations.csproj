@@ -100,6 +100,10 @@
     <Compile Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP.designer.cs">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202302152333004_AddNotificationMessageModels.cs" />
+    <Compile Include="Migrations\202302152333004_AddNotificationMessageModels.designer.cs">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1548,6 +1552,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP.resx">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302152333004_AddNotificationMessageModels.resx">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>

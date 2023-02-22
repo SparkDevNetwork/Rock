@@ -149,6 +149,8 @@
     <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Core\NotificationMessageActionBag.cs" />
+    <Compile Include="Entities\NotificationMessageTypeBag.cs" />
     <Compile Include="Engagement\AchievementCompletedMessageBag.cs" />
     <Compile Include="Event\AttendanceUpdatedMessageBag.cs" />
     <Compile Include="Entities\SnippetBag.cs" />

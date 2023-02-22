@@ -553,6 +553,8 @@ namespace Rock.Model
 
                 CommunicationService.SendConversationReadSmsRealTimeNotificationsInBackground( conversationKey );
             }
+
+            UpdateResponseNotificationMessagesInBackground( relatedSmsFromPhoneNumber, fromPersonId );
         }
 
         /// <summary>
@@ -566,9 +568,28 @@ namespace Rock.Model
             var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
             var namelessRecordValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Value;
 
-            var cr = Get( communicationResponseId );
+            var communicationResponse = Queryable()
+                .Where( cr => cr.Id == communicationResponseId )
+                .Select( cr => new
+                {
+                    cr.Guid,
+                    cr.RelatedSmsFromSystemPhoneNumberId,
+                    cr.FromPersonAliasId,
+                    FromPerson = cr.FromPersonAlias.Person,
+                    cr.CreatedDateTime,
+                    cr.IsRead,
+                    cr.Response,
+                    cr.MessageKey,
+                    Attachments = cr.Attachments.Select( a => new
+                    {
+                        a.BinaryFile.Guid,
+                        a.BinaryFile.MimeType,
+                        a.BinaryFile.FileName
+                    } )
+                } )
+                .FirstOrDefault();
 
-            var rockPhoneNumber = SystemPhoneNumberCache.Get( cr.RelatedSmsFromSystemPhoneNumberId ?? 0 );
+            var rockPhoneNumber = SystemPhoneNumberCache.Get( communicationResponse.RelatedSmsFromSystemPhoneNumberId ?? 0 );
 
             // Response must have an associated Rock phone number.
             if ( rockPhoneNumber == null )
@@ -577,46 +598,78 @@ namespace Rock.Model
             }
 
             // Response must have a sender person.
-            if ( !cr.FromPersonAliasId.HasValue )
+            if ( !communicationResponse.FromPersonAliasId.HasValue )
             {
                 throw new Exception( "Unable to determine message sender." );
             }
 
             var messageBag = new ConversationMessageBag
             {
-                ConversationKey = CommunicationService.GetSmsConversationKey( rockPhoneNumber.Guid, cr.FromPersonAlias.Person.Guid ),
-                MessageKey = $"R:{cr.Guid}",
+                ConversationKey = CommunicationService.GetSmsConversationKey( rockPhoneNumber.Guid, communicationResponse.FromPerson.Guid ),
+                MessageKey = $"R:{communicationResponse.Guid}",
                 RockContactKey = rockPhoneNumber.Guid.ToString(),
-                MessageDateTime = cr.CreatedDateTime,
-                IsRead = cr.IsRead,
-                Message = cr.Response,
+                MessageDateTime = communicationResponse.CreatedDateTime,
+                IsRead = communicationResponse.IsRead,
+                Message = communicationResponse.Response,
                 IsOutbound = false,
-                IsNamelessPerson = namelessRecordValueId == cr.FromPersonAlias.Person.RecordTypeValueId,
-                PersonGuid = cr.FromPersonAlias.Person.Guid,
-                FullName = cr.FromPersonAlias.Person.FullName,
-                ContactKey = cr.MessageKey,
+                IsNamelessPerson = namelessRecordValueId == communicationResponse.FromPerson.RecordTypeValueId,
+                PersonGuid = communicationResponse.FromPerson.Guid,
+                FullName = communicationResponse.FromPerson.FullName,
+                ContactKey = communicationResponse.MessageKey,
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            if ( cr.FromPersonAlias.Person.PhotoId.HasValue )
+            if ( communicationResponse.FromPerson.PhotoId.HasValue )
             {
-                messageBag.PhotoUrl = $"{publicUrl}GetImage.ashx?Id={cr.FromPersonAlias.Person.PhotoId}&maxwidth=256&maxheight=256";
+                messageBag.PhotoUrl = $"{publicUrl}GetImage.ashx?Id={communicationResponse.FromPerson.PhotoId}&maxwidth=256&maxheight=256";
             }
 
-            foreach ( var attachment in cr.Attachments )
+            foreach ( var attachment in communicationResponse.Attachments )
             {
-                var ext = System.IO.Path.GetExtension( attachment.BinaryFile.FileName ).ToLower();
-                var isImage = attachment.BinaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
+                var isImage = attachment.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
 
-                messageBag.Attachments.Add( new ConversationAttachmentBag
+                if ( isImage )
                 {
-                    FileName = attachment.BinaryFile.FileName,
-                    Url = $"{publicUrl}GetFile.ashx?Guid={attachment.BinaryFile.Guid}",
-                    ThumbnailUrl = isImage ? $"{publicUrl}GetImage.ashx?Guid={attachment.BinaryFile.Guid}&maxwidth=512&maxheight=512" : null
-                } );
+                    messageBag.Attachments.Add( new ConversationAttachmentBag
+                    {
+                        FileName = attachment.FileName,
+                        Url = $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}",
+                        ThumbnailUrl = $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512"
+                    } );
+                }
+                else
+                {
+                    messageBag.Attachments.Add( new ConversationAttachmentBag
+                    {
+                        FileName = attachment.FileName,
+                        Url = $"{publicUrl}GetFile.ashx?Guid={attachment.Guid}",
+                        ThumbnailUrl = null
+                    } );
+                }
             }
 
             return messageBag;
+        }
+
+        /// <summary>
+        /// Updates all notification messages in regards to a new response
+        /// being received or an existing response being read.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number that represents Rock's side of the conversation.</param>
+        /// <param name="fromPersonId">The identifier of the person that represents the other parties side of the conversation.</param>
+        internal static void UpdateResponseNotificationMessagesInBackground( SystemPhoneNumberCache phoneNumber, int fromPersonId )
+        {
+            Task.Run( () =>
+            {
+                try
+                {
+                    Rock.Core.NotificationMessageTypes.SmsConversation.UpdateNotificationMessages( phoneNumber, fromPersonId );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            } );
         }
     }
 }

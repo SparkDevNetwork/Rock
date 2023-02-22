@@ -27,6 +27,7 @@ using System.Text;
 using Humanizer;
 
 using Rock.Attribute;
+using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -278,6 +279,10 @@ namespace Rock.Jobs
             RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
+
+            RunCleanupTask( "remove old notification messages", () => RemoveOldNotificationMessages() );
+
+            RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
 
             /*
              * 21-APR-2022 DMV
@@ -2371,6 +2376,163 @@ SELECT @@ROWCOUNT
             SystemPhoneNumberService.DeleteExtraLegacyPhoneNumbers();
 
             return systemPhoneNumberIds.Count;
+        }
+
+        /// <summary>
+        /// Removes the old notification messages. This includes both expired
+        /// messages as well as obsolete messages.
+        /// </summary>
+        /// <returns>The number of messages that were removed.</returns>
+        private int RemoveOldNotificationMessages()
+        {
+            bool hasExpiredMessages = true;
+            List<(int NotificationMessageTypeId, int PersonId, string Key)> duplicateKeys;
+            int deletedCount = 0;
+
+            // Delete all the messages that have expired in batches of 1,000 at a time.
+            while ( hasExpiredMessages )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = commandTimeout;
+
+                    var messageService = new NotificationMessageService( rockContext );
+                    var messagesToDelete = messageService.Queryable()
+                        .Where( nm => nm.ExpireDateTime <= RockDateTime.Now )
+                        .Take( 1_000 )
+                        .ToList();
+
+                    if ( messagesToDelete.Any() )
+                    {
+                        messageService.DeleteRange( messagesToDelete );
+                        deletedCount += messagesToDelete.Count;
+
+                        rockContext.SaveChanges();
+                    }
+
+                    hasExpiredMessages = messagesToDelete.Count >= 1_000;
+                }
+            }
+
+            // Find all the messages that are duplicated.
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                var messageService = new NotificationMessageService( rockContext );
+
+                duplicateKeys = messageService.Queryable()
+                    .GroupBy( nm => new
+                    {
+                        nm.NotificationMessageTypeId,
+                        nm.PersonAlias.PersonId,
+                        nm.Key
+                    } )
+                    .Where( g => g.Count() > 1 )
+                    .Select( g => g.Key )
+                    .ToList()
+                    .Select( g => (g.NotificationMessageTypeId, g.PersonId, g.Key) )
+                    .ToList();
+            }
+
+            // Delete each duplicate set one at a time. The most recent
+            // message of the set is kept, older ones are removed.
+            foreach ( var (NotificationMessageTypeId, PersonId, Key) in duplicateKeys )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = commandTimeout;
+                    var messageService = new NotificationMessageService( rockContext );
+
+                    var messagesToDelete = messageService.Queryable()
+                        .Where( nm => nm.NotificationMessageTypeId == NotificationMessageTypeId
+                            && nm.PersonAlias.PersonId == PersonId
+                            && nm.Key == Key )
+                        .OrderByDescending( nm => nm.MessageDateTime )
+                        .Skip( 1 )
+                        .ToList();
+
+                    if ( messagesToDelete.Any() )
+                    {
+                        messageService.DeleteRange( messagesToDelete );
+                        deletedCount = messagesToDelete.Count;
+
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+
+            // Allow components a chance to delete any obsolete messages.
+            var components = NotificationMessageTypeContainer.Instance
+                .Components
+                .Select( c => c.Value.Value )
+                .ToList();
+
+            foreach ( var component in components )
+            {
+                deletedCount += component.DeleteObsoleteNotificationMessages( commandTimeout );
+            }
+
+            return deletedCount;
+        }
+
+        /// <summary>
+        /// Removes the old notification message types. This includes both
+        /// types that no longer have any messages as well as obsolete types
+        /// that are no longer valid.
+        /// </summary>
+        /// <returns>The number of message types that were removed.</returns>
+        private int RemoveOldNotificationMessageTypes()
+        {
+            bool hasExpiredMessageTypes = true;
+            var expireDateTime = RockDateTime.Now.AddDays( -30 );
+            int deletedCount = 0;
+
+            // Delete all the message types that have no messages associated
+            // with them and are more than 30 days old.
+            while ( hasExpiredMessageTypes )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = commandTimeout;
+
+                    var messageTypeService = new NotificationMessageTypeService( rockContext );
+                    var messageTypesToDelete = messageTypeService.Queryable()
+                        .Where( nmt => nmt.CreatedDateTime < expireDateTime
+                            && !nmt.NotificationMessages.Any() )
+                        .Take( 1_000 )
+                        .ToList();
+
+                    if ( messageTypesToDelete.Any() )
+                    {
+                        messageTypeService.DeleteRange( messageTypesToDelete );
+                        deletedCount += messageTypesToDelete.Count;
+
+                        rockContext.SaveChanges();
+                    }
+
+                    hasExpiredMessageTypes = messageTypesToDelete.Count >= 1_000;
+                }
+            }
+
+            // Allow components a chance to delete any obsolete messages types.
+            var components = NotificationMessageTypeContainer.Instance
+                .Components
+                .Select( c => c.Value.Value )
+                .ToList();
+
+            foreach ( var component in components )
+            {
+                deletedCount += component.DeleteObsoleteNotificationMessageTypes( commandTimeout );
+            }
+
+            // Allow components a chance to do any final cleanup.
+            foreach ( var component in components )
+            {
+                component.PerformCleanup( commandTimeout );
+            }
+
+            return deletedCount;
         }
 
         /// <summary>

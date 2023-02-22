@@ -182,6 +182,7 @@
     <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
+    <Folder Include="Framework\ViewModels\Core\" />
     <Folder Include="Framework\ViewModels\Crm\" />
     <Folder Include="Framework\ViewModels\Entities\" />
     <Folder Include="Framework\ViewModels\Event\" />
@@ -341,6 +342,7 @@
     <TypeScriptCompile Include="Framework\Enums\Core\moveType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\ncoaType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\noteApprovalStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\notificationMessageActionType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\printFrom.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\printTo.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\processed.ts" />
@@ -678,6 +680,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypeBag.d.ts" />
@@ -832,6 +835,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\noteTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\noteWatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\notificationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\notificationMessageBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\notificationMessageTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\notificationRecipientBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\pageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\pageContextBag.d.ts" />

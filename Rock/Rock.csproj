@@ -873,6 +873,9 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Core\NotificationMessageTypeComponent.cs" />
+    <Compile Include="Core\NotificationMessageTypeContainer.cs" />
+    <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -943,6 +946,8 @@
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationMessageTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
@@ -960,6 +965,11 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
+    <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.Logic.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessage.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessage.SaveHook.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessageService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
@@ -1638,6 +1648,7 @@
     <Compile Include="Transactions\IQueuedTransaction.cs" />
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />
@@ -1906,6 +1917,7 @@
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
