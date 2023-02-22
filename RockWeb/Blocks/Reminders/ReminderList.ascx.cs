@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Reminders
 
             var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
             pnlFilterOptions.Visible = showFilters;
-            if ( !showFilters )
+            if ( showFilters )
             {
                 selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
                 selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
