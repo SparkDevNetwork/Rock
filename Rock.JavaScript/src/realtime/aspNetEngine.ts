@@ -30,7 +30,7 @@ export class AspNetEngine extends Engine {
             const connection = hubConnection("/rock-rt", { useDefaultPath: false }) as IExtendedConnection;
             const hub = connection.createHubProxy("realTime");
 
-            hub.on("message", this.onMessage.bind(this));
+            hub.on("message", this.onMessageReceived.bind(this));
             connection.reconnecting(() => {
                 if (!this.isManuallyDisconnecting) {
                     this.transportReconnecting();
@@ -79,7 +79,7 @@ export class AspNetEngine extends Engine {
      * @param messageName The name of the message that was received.
      * @param messageParams The parameters to the message.
      */
-    private onMessage(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
+    private onMessageReceived(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
         this.emit(topicIdentifier, messageName, messageParams);
     }
 

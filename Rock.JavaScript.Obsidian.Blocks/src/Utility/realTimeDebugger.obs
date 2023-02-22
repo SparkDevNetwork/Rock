@@ -1,0 +1,350 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="RealTime Debugger">
+        <template #headerActions>
+            <span class="action clickable"
+                  @click="onClearClick">
+                <i class="fa fa-eraser" title="Clear message buffer."></i>
+            </span>
+        </template>
+
+        <template #preBody>
+            <TransitionVerticalCollapse>
+                <div v-if="isReconnecting || isDisconnected">
+                    <div v-if="isDisconnected" class="realtime-status realtime-status-disconnected">
+                        <i class="fa fa-fw fa-ban"></i>
+                        Disconnected
+                    </div>
+                    <div v-else-if="isReconnecting" class="realtime-status realtime-status-reconnecting">
+                        <i class="fa fa-fw fa-spin fa-sync"></i>
+                        Reconnecting
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+        </template>
+
+        <div class="d-flex flex-column outer-container">
+            <div ref="scrollContainer"
+                 class="flex-grow-1 messages-container">
+                <div v-for="msg in messages"
+                     class="message-container">
+                    <div class="message-bubble">
+                        <div class="message-text">
+                            <div>Topic: {{ msg.topic }}</div>
+                            <div>{{ msg.message }}</div>
+                            <pre v-if="msg.arguments" v-html="msg.arguments" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <RockForm @submit="onJoinChannel"
+                          :formResetKey="formResetKey">
+                    <div class="d-flex">
+                        <div class="mr-2 topic-input">
+                            <DropDownList v-model="topic"
+                                          label="Topic"
+                                          :items="config.topics"
+                                          :showBlankItem="false"
+                                          rules="required" />
+                        </div>
+                        <div class="flex-grow-1 mr-2">
+                            <TextBox v-model="channel"
+                                     label="Channel"
+                                     rules="required" />
+                        </div>
+                        <div style="margin-top: 26px;">
+                            <RockButton :btnType="BtnType.Primary"
+                                        type="submit">Join</RockButton>
+                        </div>
+                    </div>
+                </RockForm>
+            </div>
+        </div>
+    </Block>
+</template>
+
+<style scoped>
+.outer-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.footer {
+    border-top: 1px solid #eee;
+    padding: 12px;
+}
+
+.footer .topic-input {
+    flex-grow: 1;
+    max-width: 540px;
+}
+
+.messages-container {
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.message-container {
+    margin: 0px 0px 12px 0px;
+    display: flex;
+}
+
+.message-bubble {
+    padding: 8px;
+    border-radius: 8px;
+    background-color: rgb(218, 236, 248);
+    color: #333;
+}
+
+.message-text pre {
+    background: inherit;
+    border: none;
+    color: inherit;
+    padding: 0px;
+    margin: 0px;
+}
+
+.realtime-status {
+    text-align: center;
+    padding: 4px 24px;
+}
+
+.realtime-status-disconnected {
+    background-color: #fcf2f1;
+    color: #e55235;
+}
+
+.realtime-status-reconnecting {
+    background-color: #fffae5;
+    color: #8a6d3b;
+}
+
+.message-text :deep(pre .string) {
+    color: green;
+}
+
+.message-text :deep(pre .number) {
+    color: darkorange;
+}
+
+.message-text :deep(pre .boolean) {
+    color: blue;
+}
+
+.message-text :deep(pre .null) {
+    color: magenta;
+}
+
+.message-text :deep(pre .key) {
+    color: red;
+}
+</style>
+
+<script setup lang="ts">
+    import Block from "@Obsidian/Templates/block";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ref } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    type Message = {
+        topic: string;
+        message: string;
+        arguments?: string;
+    };
+
+    type Configuration = {
+        topics: ListItemBag[];
+    };
+
+    const config = useConfigurationValues<Configuration>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    let realTimeTopics: Record<string, ITopic> = {};
+    const messages = ref<Message[]>([]);
+    const topic = ref(config.topics.length > 0 ? config.topics[0].value ?? "" : "");
+    const channel = ref("");
+    const formResetKey = ref("");
+    const isReconnecting = ref(false);
+    const isAutoConnecting = ref(false);
+    const isDisconnected = ref(false);
+    const scrollContainer = ref<HTMLDivElement | null>(null);
+    const trackedChannels: { topic: string, channel: string }[] = [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Attempt to reconnect to the server and rejoin all channels that were
+     * previously joined.
+     */
+    async function startReconnect(): Promise<void> {
+        if (isAutoConnecting.value) {
+            return;
+        }
+
+        isAutoConnecting.value = true;
+        isReconnecting.value = true;
+
+        try {
+            const reconnectToChannels = [...trackedChannels];
+
+            trackedChannels.splice(0, trackedChannels.length);
+            realTimeTopics = {};
+
+            for (const tc of reconnectToChannels) {
+                await joinChannel(tc.topic, tc.channel);
+            }
+
+            isAutoConnecting.value = false;
+            isReconnecting.value = false;
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+            isDisconnected.value = true;
+        }
+    }
+
+    /**
+     * Joins the specified channel.
+     *
+     * @param topicIdentifier The identifier of the topic whose channel will be joined.
+     * @param channelName The name of the channel to join.
+     */
+    async function joinChannel(topicIdentifier: string, channelName: string): Promise<void> {
+        let topic = realTimeTopics[topicIdentifier];
+
+        if (!topic) {
+            topic = await getTopic(topicIdentifier);
+
+            topic.onMessage((message, args) => messageReceived(topicIdentifier, message, args));
+            topic.onReconnecting(() => isReconnecting.value = true);
+            topic.onReconnected(() => isReconnecting.value = false);
+            topic.onDisconnected(() => startReconnect());
+
+            realTimeTopics[topicIdentifier] = topic;
+        }
+
+        await invokeBlockAction("JoinChannel", {
+            connectionId: topic.connectionId,
+            topicIdentifier: topicIdentifier,
+            channelName: channelName
+        });
+
+        messages.value.push({
+            topic: topicIdentifier,
+            message: `Channel "${channelName}" was joined.`
+        });
+
+        setTimeout(() => {
+            if (scrollContainer.value) {
+                scrollContainer.value.scroll({
+                    top: scrollContainer.value.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        }, 10);
+    }
+
+    /**
+     * Called when the topic receives any message.
+     *
+     * @param topicIdentifier The topic that received the message.
+     * @param message The name of the message that was received.
+     * @param args The arguments that were passed to the message.
+     */
+    function messageReceived(topicIdentifier: string, message: string, args: unknown[]): void {
+        const performScroll = scrollContainer.value
+            && scrollContainer.value.scrollHeight - scrollContainer.value.offsetHeight - scrollContainer.value.scrollTop < 10;
+
+        var argsText = syntaxHighlight(JSON.stringify(args, null, 2));
+
+        messages.value.push({
+            topic: topicIdentifier,
+            message: `Message: ${message}`,
+            arguments: argsText
+        });
+
+        setTimeout(() => {
+            if (scrollContainer.value && performScroll) {
+                scrollContainer.value.scroll({
+                    top: scrollContainer.value.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        }, 10);
+    }
+
+    /**
+     * Performs basic syntax highlighting of the JSON string.
+     *
+     * @param json The JSON string to be highlighted.
+     */
+    function syntaxHighlight(json: string): string {
+        json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+            var cls = "number";
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = "key";
+                }
+                else {
+                    cls = "string";
+                }
+            }
+            else if (/true|false/.test(match)) {
+                cls = "boolean";
+            }
+            else if (/null/.test(match)) {
+                cls = "null";
+            }
+
+            return `<span class="${cls}">${match}</span>`;
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called in response to the Join button being clicked and the form
+     * validation succeding.
+     */
+    async function onJoinChannel(): Promise<void> {
+        await joinChannel(topic.value, channel.value);
+
+        trackedChannels.push({ topic: topic.value, channel: channel.value });
+
+        channel.value = "";
+        formResetKey.value = newGuid();
+    }
+
+    /**
+     * Called in response to the Clear button being clicked.
+     */
+    function onClearClick(): void {
+        messages.value.splice(0, messages.value.length);
+    }
+
+    // #endregion
+</script>

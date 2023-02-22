@@ -27,7 +27,7 @@ export class NetCoreEngine extends Engine {
             .withAutomaticReconnect()
             .build();
 
-        connection.on("message", this.onMessage.bind(this));
+        connection.on("message", this.onMessageReceived.bind(this));
         connection.onreconnecting(() => {
             if (!this.isManuallyDisconnecting) {
                 this.transportReconnecting();
@@ -66,7 +66,7 @@ export class NetCoreEngine extends Engine {
      * @param messageName The name of the message that was received.
      * @param messageParams The parameters to the message.
      */
-    private onMessage(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
+    private onMessageReceived(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
         this.emit(topicIdentifier, messageName, messageParams);
     }
 

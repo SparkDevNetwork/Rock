@@ -14,22 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.ViewModels.Blocks.Security.AccountEntry
+using System.Threading.Tasks;
+
+namespace Rock.Transactions
 {
     /// <summary>
-    /// A bag that contains the required information to render an account entry block's duplicate person item.
+    /// Represents a transaction that can be executed asynchronously.
     /// </summary>
-    public class AccountEntryDuplicatePersonItemBag
+    public interface IAsyncTransaction
     {
         /// <summary>
-        /// Gets or sets the person identifier.
+        /// Executes this instance asynchronously.
         /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person's full name.
-        /// </summary>
-        /// <remarks>May be obscured if the potential duplicate person doesn't match by exact name.</remarks>
-        public string FullName { get; set; }
+        /// <returns>A <see cref="Task"/> that represents the operation.</returns>
+        Task ExecuteAsync();
     }
 }

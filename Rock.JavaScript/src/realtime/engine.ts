@@ -39,6 +39,7 @@ const StateEvent = {
  */
 export abstract class Engine {
     private readonly emitter: Emitter<Record<EventType, unknown[]>>;
+    private readonly topicEmitter: Emitter<Record<EventType, { messageName: string, args: unknown[] }>>;
     private readonly stateEmitter: Emitter<Record<EventType, unknown[]>>;
     private startPromise: Promise<void> | null = null;
     private reconnectPromise: PromiseCompletionSource | null = null;
@@ -47,6 +48,7 @@ export abstract class Engine {
     protected constructor() {
         this.emitter = mitt();
         this.stateEmitter = mitt();
+        this.topicEmitter = mitt();
     }
 
     /**
@@ -167,6 +169,7 @@ export abstract class Engine {
         }
 
         this.disconnected();
+        this.closeConnection();
     }
 
     /**
@@ -232,6 +235,18 @@ export abstract class Engine {
     }
 
     /**
+     * Adds a listener for all incoming messages to the specified topic.
+     *
+     * @param topicIdentifier The identifier of the topic that will receive the message.
+     * @param handler The function to call when a message is received.
+     */
+    public onMessage(topicIdentifier: string, handler: (messageName: string, args: unknown[]) => void): void {
+        this.topicEmitter.on(topicIdentifier, ev => {
+            handler(ev.messageName, ev.args);
+        });
+    }
+
+    /**
      * Emits the event for the topic and message name.
      * 
      * @param topicIdentifier The identifier of the topic that the message was received from.
@@ -240,5 +255,6 @@ export abstract class Engine {
      */
     protected emit(topicIdentifier: string, messageName: string, eventArgs: unknown[]): void {
         this.emitter.emit(`${topicIdentifier}-${messageName}`, eventArgs);
+        this.topicEmitter.emit(topicIdentifier, { messageName: messageName, args: eventArgs });
     }
 }

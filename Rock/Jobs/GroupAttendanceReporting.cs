@@ -64,7 +64,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Key = AttributeKey.CommandTimeoutSeconds,
         Description = "Maximum amount of time (in seconds) to wait for the SQL operations to complete. Leave blank to use the default for this job (180).",
         IsRequired = false,
-        DefaultIntegerValue = 60 * 3,
+        DefaultIntegerValue = 180,
         Category = "General",
         Order = 7 )]
 

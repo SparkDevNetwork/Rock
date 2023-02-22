@@ -63,8 +63,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            var includeSegmentsWithNonPersistedDataViews = false;
-            var segmentList = PersonalizationSegmentCache.GetActiveSegments( includeSegmentsWithNonPersistedDataViews );
+            var segmentList = PersonalizationSegmentCache.GetActiveSegments();
 
             if ( !segmentList.Any() )
             {

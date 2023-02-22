@@ -14,22 +14,27 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.ViewModels.Blocks.Security.AccountEntry
+
+namespace Rock.Enums.Event
 {
     /// <summary>
-    /// A bag that contains the required information to render an account entry block's duplicate person item.
+    /// Tracks the attendance status of the individual.
     /// </summary>
-    public class AccountEntryDuplicatePersonItemBag
+    public enum AttendanceStatus
     {
         /// <summary>
-        /// Gets or sets the person identifier.
+        /// The individual did not attend and is not present in the room.
         /// </summary>
-        public int Id { get; set; }
+        DidNotAttend = 0,
 
         /// <summary>
-        /// Gets or sets the person's full name.
+        /// The individual did attend but may not be present in the room.
         /// </summary>
-        /// <remarks>May be obscured if the potential duplicate person doesn't match by exact name.</remarks>
-        public string FullName { get; set; }
+        DidAttend = 1,
+
+        /// <summary>
+        /// The individual did attend and is currently present in the room.
+        /// </summary>
+        IsPresent = 2
     }
 }

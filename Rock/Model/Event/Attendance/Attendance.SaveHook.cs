@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,8 +48,8 @@ namespace Rock.Model
                 PersonAttendanceHistoryChangeList = new History.HistoryChangeList();
 
                 _isDeleted = State == EntityContextState.Deleted;
-                bool previousDidAttendValue;
 
+                bool previousDidAttendValue;
                 bool previouslyDeclined;
 
                 if ( State == EntityContextState.Added )
@@ -105,6 +107,18 @@ namespace Rock.Model
                 {
                     preSavePersonAliasId = ( int? ) OriginalValues[nameof( attendance.PersonAliasId )];
                     PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Attendance" );
+                }
+
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendRealTimeMessage() )
+                {
+                    RockContext.ExecuteAfterCommit( () =>
+                    {
+                        // Use the fast queue for this because it is real-time.
+                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted )
+                            .Enqueue( true );
+                    } );
                 }
 
                 base.PreSave();
@@ -168,6 +182,45 @@ namespace Rock.Model
                 }
 
                 base.PostSave();
+            }
+
+            /// <summary>
+            /// Determines if we need to send any real-time messages for the
+            /// changes made to this entity.
+            /// </summary>
+            /// <returns><c>true</c> if a message should be sent, <c>false</c> otherwise.</returns>
+            private bool ShouldSendRealTimeMessage()
+            {
+                if ( !RockContext.IsRealTimeEnabled )
+                {
+                    return false;
+                }
+
+                if ( PreSaveState == EntityContextState.Added )
+                {
+                    return true;
+                }
+                else if ( PreSaveState == EntityContextState.Modified )
+                {
+                    if ( ( Entity.DidAttend ?? false ) != ( ( ( bool? ) OriginalValues[nameof( Entity.DidAttend )] ) ?? false ) )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.RSVP != ( RSVP ) OriginalValues[nameof( Entity.RSVP )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.PresentDateTime != ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )] )
+                    {
+                        return true;
+                    }
+                }
+                else if ( PreSaveState == EntityContextState.Deleted )
+                {
+                    return true;
+                }
+
+                return false;
             }
 
             private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage()
