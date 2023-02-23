@@ -129,7 +129,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             string dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( groupFirstAttendanceFilterSelection.SlidingDateRange );
 
-            selectionOutput = $"Attended '{groupsList}' {selectedSchedules}{comparisonType.ConvertToString()} {groupFirstAttendanceFilterSelection.AttendedCount} times. Date Range: {dateRangeText}";
+             selectionOutput = $"Attended '{groupsList}' for the first time in the Date Range: {dateRangeText}";
 
             return selectionOutput;
         }
@@ -296,7 +296,7 @@ namespace Rock.Reporting.DataFilter.Person
                 schedulePicker.SetValues( schedules );
             }
 
-            ddlIntegerCompare.SelectedValue = "1";
+            ddlIntegerCompare.SelectedValue = "256";
             tbAttendedCount.Text = "1";
             slidingDateRangePicker.DelimitedValues = groupFirstAttendanceFilterSelection.SlidingDateRange;
             cbChildGroups.Checked = groupFirstAttendanceFilterSelection.IncludeChildGroups;
@@ -338,6 +338,7 @@ namespace Rock.Reporting.DataFilter.Person
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             var groupFirstAttendanceFilterSelection = GetGroupFirstAttendanceFilterSelection( selection );
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( groupFirstAttendanceFilterSelection.SlidingDateRange );
 
             if ( groupFirstAttendanceFilterSelection.GroupGuids == null || groupFirstAttendanceFilterSelection.GroupGuids.Count == 0 )
             {
@@ -346,47 +347,58 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             var rockContext = serviceInstance.Context as RockContext;
-            var attendanceQry = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
-
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( groupFirstAttendanceFilterSelection.SlidingDateRange );
-            if ( dateRange.Start.HasValue )
-            {
-                var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
-            }
-
-            if ( dateRange.End.HasValue )
-            {
-                var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
-            }
+            var attendanceBaseQry = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
 
             var groupIds = GetGroupIds( groupFirstAttendanceFilterSelection.GroupGuids, groupFirstAttendanceFilterSelection.IncludeChildGroups );
             if ( groupIds.Count == 1 )
             {
                 // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                 int groupId = groupIds[0];
-                attendanceQry = attendanceQry.Where( a => a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == groupId );
+                attendanceBaseQry = attendanceBaseQry.Where( a => a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == groupId );
             }
             else if ( groupIds.Count > 1 )
             {
-                attendanceQry = attendanceQry.Where( a => a.Occurrence.GroupId.HasValue && groupIds.Contains( a.Occurrence.GroupId.Value ) );
+                attendanceBaseQry = attendanceBaseQry.Where( a => a.Occurrence.GroupId.HasValue && groupIds.Contains( a.Occurrence.GroupId.Value ) );
             }
 
             if ( groupFirstAttendanceFilterSelection.Schedules.Any() )
             {
-                attendanceQry = attendanceQry.Where( a => a.Occurrence.ScheduleId.HasValue && groupFirstAttendanceFilterSelection.Schedules.Contains( a.Occurrence.ScheduleId.Value ) );
+                attendanceBaseQry = attendanceBaseQry.Where( a => a.Occurrence.ScheduleId.HasValue && groupFirstAttendanceFilterSelection.Schedules.Contains( a.Occurrence.ScheduleId.Value ) );
             }
 
-            var qry = new PersonService( rockContext )
-                .Queryable()
-                .Where( p => attendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() == groupFirstAttendanceFilterSelection.AttendedCount );
+            var personAliasQry = new PersonAliasService( rockContext ).Queryable();
+            var personQryForJoin = new PersonService( rockContext ).Queryable();
 
-            var compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" ) as BinaryExpression;
-            var comparisonType = groupFirstAttendanceFilterSelection.IntegerCompare.ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            var result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
+            // Create explicitly joins to person alias and person tables so that rendered SQL has an INNER Joins vs OUTER joins on PersonAlias
+            var attendanceOccurrenceQry = attendanceBaseQry
+                .Join( personAliasQry, a => a.PersonAliasId, pa => pa.Id, ( a, pa ) => new
+                {
+                    axn = a,
+                    PersonId = pa.PersonId
+                } );
 
-            return result;
+            var firstAttendanceDataQry = attendanceOccurrenceQry
+                .GroupBy( pa => pa.PersonId )
+                .Select( fa => new
+                {
+                    PersonId = fa.Key,
+                    FirstAttendanceDate = fa.Min( a => a.axn.Occurrence.OccurrenceDate )
+                } );
+
+            if ( dateRange.Start.HasValue )
+            {
+                firstAttendanceDataQry = firstAttendanceDataQry.Where( fa => fa.FirstAttendanceDate >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                firstAttendanceDataQry = firstAttendanceDataQry.Where( fa => fa.FirstAttendanceDate < dateRange.End.Value );
+            }
+
+            var innerQry = firstAttendanceDataQry.Select( fa => fa.PersonId ).AsQueryable();
+            var qry = new PersonService( rockContext ).Queryable().Where( p => innerQry.Any( fa => fa == p.Id ) );
+
+            return FilterExpressionExtractor.Extract<Model.Person>( qry, parameterExpression, "p" );
         }
 
         private List<int> GetGroupIds( List<Guid> groupGuids, bool includeChildGroups )
