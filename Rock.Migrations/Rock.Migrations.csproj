@@ -108,6 +108,10 @@
     <Compile Include="Migrations\202302230939197_PopulateReplaceTransactionBlockEntryJob.designer.cs">
       <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs" />
+    <Compile Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.designer.cs">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1562,6 +1566,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202302230939197_PopulateReplaceTransactionBlockEntryJob.resx">
       <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.resx">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
