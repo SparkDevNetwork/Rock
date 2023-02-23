@@ -1020,6 +1020,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
     <Compile Include="Plugin\HotFixes\166_MigrationRollupsForV14_2_0.cs" />
     <Compile Include="Plugin\HotFixes\165_EnableTextToGiveMultiAcct.cs" />
     <Compile Include="Plugin\HotFixes\159_AddStaffFormsWorkflowCategory.cs" />
@@ -4211,6 +4212,8 @@
     <Content Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix.sql">
       <DependentUpon>157_MigrationRollupsFor13_7_0.cs</DependentUpon>
     </Content>
+    <None Include="Resources\updateGoogleStaticMap.sql" />
+    <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
