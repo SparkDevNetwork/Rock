@@ -28,7 +28,7 @@ namespace Rock.Logging
     /// produce real-time notifications or testing environments that require a light-weight logging implementation.
     /// </remarks>
     /// <seealso cref="Rock.Logging.IRockLogger" />
-    [RockInternal]
+    [RockInternal( "1.15" )]
     public class RockLoggerMemoryBuffer : IRockLogger
     {
         private const string DEFAULT_DOMAIN = "OTHER";

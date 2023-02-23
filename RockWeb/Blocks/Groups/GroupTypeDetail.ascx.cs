@@ -950,7 +950,7 @@ namespace RockWeb.Blocks.Groups
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
             ScheduleTypesRequired();
             cblScheduleTypes.RequiredErrorMessage = "A 'Group Schedule Option' must be selected under 'Attendance / Check-In' when Scheduling is enabled.";
-            ddlScheduleConfirmationLogic.SetValue( (int)groupType.ScheduleConfirmationLogic );
+            ddlScheduleConfirmationLogic.SetValue( ( int ) groupType.ScheduleConfirmationLogic );
             ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
             cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
             nbScheduleConfirmationOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();

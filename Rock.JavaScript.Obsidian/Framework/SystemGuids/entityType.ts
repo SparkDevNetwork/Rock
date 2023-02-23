@@ -107,6 +107,8 @@ export const EntityType = {
     AuthScope: "8926FE3B-5AB6-4E48-8191-09EB1682F743",
     /** The database authentication provider */
     AuthenticationDatabase: "4E9B798F-BB68-4C0E-9707-0928D15AB020",
+    /** The passwordless authentication provider */
+    AuthenticationPasswordless: "2D037783-09BD-48BA-8C1D-626B0BC82495",
     /** The pin authentication provider */
     AuthenticationPin: "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
     /** The EntityType Guid for Rock.Model.BackgroundCheck  */
@@ -501,6 +503,10 @@ export const EntityType = {
     NoteWatch: "A5C129C2-E64D-4B72-B94D-DBA6DA6AC2E3",
     /** The EntityType Guid for Rock.Model.Notification  */
     Notification: "6DB6D280-9740-41FD-B8BD-0AA29E12F4B6",
+    /** The EntityType Guid for Rock.Model.NotificationMessage  */
+    NotificationMessage: "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B",
+    /** The EntityType Guid for Rock.Model.NotificationMessageType  */
+    NotificationMessageType: "36FB1038-8836-429F-BAD4-04D32892D6D0",
     /** The EntityType Guid for Rock.Model.NotificationRecipient  */
     NotificationRecipient: "2ECE2776-0FE2-429D-B655-AB56A2D6EE0B",
     /** The obsidian event registration entry */
@@ -637,6 +643,10 @@ export const EntityType = {
     SmsActionConversation: "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
     /** The EntityType Guid for Rock.Model.SmsPipeline  */
     SmsPipeline: "64DA3A06-FD39-4E5B-8126-38404FB0092A",
+    /** The EntityType Guid for Rock.Model.Snippet */
+    Snippet: "93548852-201B-4EF6-AF27-BBF535A2CC2B",
+    /** The EntityType Guid for Rock.Model.SnippetType  */
+    SnippetType: "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05",
     /** The guid for the Step entity type */
     Step: "8EADB0DC-17F4-4541-A46E-53F89E21A622",
     /** The Step Flow entity type */
@@ -681,6 +691,8 @@ export const EntityType = {
     SystemCommunication: "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
     /** The EntityType Guid for Rock.Model.SystemEmail  */
     SystemEmail: "B21FD119-893E-46C0-B42D-E4CDD5C8C49D",
+    /** The EntityType Guid for Rock.Model.SystemPhoneNumber  */
+    SystemPhoneNumber: "66D62A9F-13CD-4160-8653-211B2A4ABF16",
     /** The EntityType Guid for Tag. */
     Tag: "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for Rock.Model.TaggedItem  */

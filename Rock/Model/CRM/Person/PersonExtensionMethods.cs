@@ -79,6 +79,11 @@ namespace Rock.Model
                 return null;
             }
 
+            if ( person.PrimaryFamily == null || person.PrimaryFamily.GroupLocations == null )
+            {
+                return null;
+            }
+
             // Get the most recent location for the primary family, preferring a mapped location if it exists.
             return person.PrimaryFamily.GroupLocations
             .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )

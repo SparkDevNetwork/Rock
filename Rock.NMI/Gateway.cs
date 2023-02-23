@@ -130,7 +130,7 @@ namespace Rock.NMI
         DefaultValue = null,
         Order = 10 )]
     [Rock.SystemGuid.EntityTypeGuid( "B8282486-7866-4ED5-9F24-093D25FF0820")]
-    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent, IAutomatedGatewayComponent
     {
         #region Attribute Keys
 
@@ -1938,7 +1938,77 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
         }
 
-        #endregion 
+        #endregion
+
+        #region IAutomatedGatewayComponent
+
+        /// <summary>
+        /// The most recent exception thrown by the gateway's remote API
+        /// </summary>
+        public Exception MostRecentException { get; private set; }
+
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="metadata">Optional. Additional key value pairs to send to the gateway</param>
+        /// <returns></returns>
+        /// <exception cref="ReferencePaymentInfoRequired"></exception>
+        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
+        {
+            MostRecentException = null;
+
+            try
+            {
+                var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    MostRecentException = new Exception( errorMessage );
+                    return null;
+                }
+
+                var paymentDetail = transaction.FinancialPaymentDetail;
+
+                var payment = new Payment
+                {
+                    AccountNumberMasked = paymentDetail.AccountNumberMasked,
+                    Amount = paymentInfo.Amount,
+                    ExpirationMonth = paymentDetail.ExpirationMonth,
+                    ExpirationYear = paymentDetail.ExpirationYear,
+                    IsSettled = transaction.IsSettled,
+                    SettledDate = transaction.SettledDate,
+                    NameOnCard = paymentDetail.NameOnCard,
+                    Status = transaction.Status,
+                    StatusMessage = transaction.StatusMessage,
+                    TransactionCode = transaction.TransactionCode,
+                    TransactionDateTime = transaction.TransactionDateTime ?? RockDateTime.Now
+                };
+
+                if ( paymentDetail.CreditCardTypeValueId.HasValue )
+                {
+                    payment.CreditCardTypeValue = DefinedValueCache.Get( paymentDetail.CreditCardTypeValueId.Value );
+                }
+
+                if ( paymentDetail.CurrencyTypeValueId.HasValue )
+                {
+                    payment.CurrencyTypeValue = DefinedValueCache.Get( paymentDetail.CurrencyTypeValueId.Value );
+                }
+
+                payment.GatewayPersonIdentifier = paymentDetail.GatewayPersonIdentifier;
+
+                return payment;
+            }
+            catch ( Exception e )
+            {
+                MostRecentException = e;
+                throw;
+            }
+        }
+
+        #endregion IAutomatedGatewayComponent
 
         #region IHostedGatewayComponent
 

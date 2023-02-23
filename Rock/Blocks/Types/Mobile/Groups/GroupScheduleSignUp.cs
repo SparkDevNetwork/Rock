@@ -433,7 +433,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionBadRequest( "Failed to remove attendance." );
                 }
 
-                attendanceService.ScheduledPersonRemove( attendance.Id );
+                attendanceService.ScheduledPersonClear( attendance.Id );
                 rockContext.SaveChanges();
 
                 return ActionOk();

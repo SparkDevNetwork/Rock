@@ -725,6 +725,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
 
         /// <summary>
+        /// The system security settings.
+        /// </summary>
+        public const string SYSTEM_SECURITY_SETTINGS = "450EF9DC-66F6-43A3-BE22-9CB8B1C42477";
+
+        /// <summary>
         /// The phone number lookup title
         /// </summary>
         public const string PHONE_NUMBER_LOOKUP_TITLE = "7FD2383A-A2E8-4158-8E78-2E2E0C6CBA11";
@@ -1027,5 +1032,14 @@ namespace Rock.SystemGuid
         /// The category treeview search results
         /// </summary>
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
+
+        #region Sign-Up Group (GroupType) Attributes
+
+        /// <summary>
+        /// The Sign-up Group - Group Type's project type attribute
+        /// </summary>
+        public const string GROUPTYPE_SIGNUP_GROUP_PROJECT_TYPE = "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09";
+
+        #endregion
     }
 }

@@ -156,7 +156,7 @@ namespace Rock.Badge.Component
             if ( isCondensed )
             {
                 return
-$@"<div class=""rockbadge rockbadge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"">
+$@"<div class=""rockbadge rockbadge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"" data-placement=""bottom"">
     <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
     <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
 </div>";

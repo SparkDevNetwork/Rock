@@ -26,6 +26,11 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for the mobile notes block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_NOTES = "37F44005-C4D8-4527-BA86-B6F8B72BF243";
+
+        /// <summary>
         /// The block template for the mobile group schedule preference landing page.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE = "7F89AE4D-BD8B-49ED-B8EC-F883D43505F2";
@@ -1392,6 +1397,20 @@ namespace Rock.SystemGuid
         /// Person Ethnicity - Not Hispanic or Latino
         /// </summary>
         public const string PERSON_ETHNICITY_NOT_HISPANIC_OR_LATINO = "2D1EF4CF-19E5-46BC-B4B1-591CFF57E0D8";
+
+        #endregion
+
+        #region Project Type
+
+        /// <summary>
+        /// Project Type - In-Person
+        /// </summary>
+        public const string PROJECT_TYPE_IN_PERSON = "FF3F0C5C-9775-4A09-9CCF-94902DB99BF6";
+
+        /// <summary>
+        /// Project Type = Project Due
+        /// </summary>
+        public const string PROJECT_TYPE_PROJECT_DUE = "C999D489-5B8F-4892-BCC3-90DFFBC524F5";
 
         #endregion
     }

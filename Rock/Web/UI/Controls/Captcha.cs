@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web;
 using System.Web.UI;
@@ -33,6 +34,12 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class Captcha : WebControl, IRockControl
     {
+        #region Fields
+
+        private HiddenFieldWithClass _hfToken;
+
+        #endregion
+
         #region Protected Properties
 
         /// <summary>
@@ -319,8 +326,9 @@ namespace Rock.Web.UI.Controls
         public Captcha() : base()
         {
             CustomValidator = new CustomValidator();
-            SiteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
-            SecretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
+            SiteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
+            SecretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
+            _hfToken = new HiddenFieldWithClass();
         }
 
         #endregion
@@ -342,6 +350,10 @@ namespace Rock.Web.UI.Controls
             CustomValidator.Display = ValidatorDisplay.Dynamic;
             CustomValidator.ValidationGroup = ValidationGroup;
             Controls.Add( CustomValidator );
+
+            _hfToken.ID = ID + "_hfToken";
+            _hfToken.CssClass = "js-captchaToken";
+            Controls.Add( _hfToken );
         }
 
         /// <summary>
@@ -354,19 +366,39 @@ namespace Rock.Web.UI.Controls
 
             var rockPage = Page as RockPage;
 
-            if ( rockPage != null )
+            if ( rockPage != null && SiteKey.IsNotNullOrWhiteSpace() )
             {
+                string script = @"
+function onloadTurnstileCallback(token) {
+
+    let retryCount = 3;
+    const hfToken = document.querySelector('.js-captchaToken');
+    // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
+    if (!hfToken) {
+        if (retryCount > 0) {
+            retryCount--;
+            setTimeout(() => onloadTurnstileCallback(token), 1000);
+        }
+    } else {
+        hfToken.value = token;
+    }
+}
+";
                 // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
-                rockPage.AddScriptSrcToHead( "captchaScriptId", "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize" );
+                rockPage.AddScriptSrcToHead( "captchaScriptId", "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" );
+                RockPage.AddScriptToHead( rockPage, script, true );
             }
 
-            string script = string.Format( @"
+            if ( SiteKey.IsNotNullOrWhiteSpace() )
+            {
+                string script = string.Format( @"
 ;(function () {{
     Rock.controls.captcha.initialize({{id: '{0}', key: '{1}'}});
 }})();
 ", ClientID, SiteKey );
 
-            ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
+                ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
+            }
         }
 
         /// <summary>
@@ -394,8 +426,13 @@ namespace Rock.Web.UI.Controls
         /// <returns>True if the user response to the captcha is valid.</returns>
         public bool IsResponseValid()
         {
-            var userResponse = HttpContext.Current.Request.Params["g-recaptcha-response"];
+            var userResponse = HttpContext.Current.Request.Form[$"{UniqueID}_hfToken"];
             string remoteIp = HttpContext.Current.Request.UserHostAddress;
+
+            if ( string.IsNullOrWhiteSpace( SiteKey ) || string.IsNullOrWhiteSpace( SecretKey ) )
+            {
+                return true;
+            }
 
             if ( ValidatedResult.HasValue )
             {
@@ -414,7 +451,7 @@ namespace Rock.Web.UI.Controls
 
             try
             {
-                var client = new RestClient( "https://www.google.com/recaptcha/api/siteverify" );
+                var client = new RestClient( "https://challenges.cloudflare.com/turnstile/v0/siteverify" );
                 var request = new RestRequest( Method.POST );
 
                 request.AddParameter( "secret", SecretKey );
@@ -422,9 +459,9 @@ namespace Rock.Web.UI.Controls
                 request.AddParameter( "remoteip", remoteIp );
                 request.Timeout = 5000;
 
-                var response = client.Execute<ReCaptchaResponse>( request );
+                var response = client.Execute<CloudFlareCaptchaResponse>( request );
 
-                ValidatedResult = JsonConvert.DeserializeObject<ReCaptchaResponse>( response.Content ).Success;
+                ValidatedResult = response.Data.Success;
             }
             catch (Exception e)
             {
@@ -460,11 +497,15 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
             writer.AddAttribute( "data-required", Required.ToString().ToLower() );
             writer.AddAttribute( "data-required-error-message", errorMessage );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-captcha " + CssClass );
+            writer.AddAttribute( "data-sitekey", SiteKey );
+            writer.AddAttribute( "data-callback", "onloadTurnstileCallback" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "cf-turnstile js-captcha " + CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
             CustomValidator.RenderControl( writer );
+
+            _hfToken.RenderControl( writer );
         }
 
         #endregion
@@ -484,6 +525,30 @@ namespace Rock.Web.UI.Controls
 
             [JsonProperty( "error-codes" )]
             public string[] ErrorCodes { get; set; }
+        }
+
+        /// <summary>
+        /// Support class to handle the response Cloudflares captcha reponse
+        /// </summary>
+        private class CloudFlareCaptchaResponse
+        {
+            [JsonProperty( "success" )]
+            public bool Success { get; set; }
+
+            [JsonProperty( "challenge_ts" )]
+            public DateTime ChallengeTimeStamp { get; set; }
+
+            [JsonProperty( "hostname" )]
+            public string HostName { get; set; }
+
+            [JsonProperty( "error-codes" )]
+            public List<string> ErrorCodes { get; set; }
+
+            [JsonProperty( "action" )]
+            public string Action { get; set; }
+
+            [JsonProperty( "cdata" )]
+            public string CustomerData { get; set; }
         }
 
         #endregion

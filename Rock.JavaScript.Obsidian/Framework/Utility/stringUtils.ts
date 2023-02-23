@@ -119,39 +119,6 @@ export function pluralConditional(num: number, singular: string, plural: string)
 }
 
 /**
- * Formats as a phone number
- * 3214567 => 321-4567
- * 3214567890 => (321) 456-7890
- * @param str
- */
-export function formatPhoneNumber(str: string): string {
-    str = stripPhoneNumber(str);
-
-    if (str.length === 7) {
-        return `${str.substring(0, 3)}-${str.substring(3, 7)}`;
-    }
-
-    if (str.length === 10) {
-        return `(${str.substring(0, 3)}) ${str.substring(3, 6)}-${str.substring(6, 10)}`;
-    }
-
-    return str;
-}
-
-/**
- * Strips special characters from the phone number.
- * (321) 456-7890 => 3214567890
- * @param str
- */
-export function stripPhoneNumber(str: string): string {
-    if (!str) {
-        return "";
-    }
-
-    return str.replace(/\D/g, "");
-}
-
-/**
  * Pad the left side of a string so it is at least length characters long.
  *
  * @param str The string to be padded.
@@ -272,7 +239,7 @@ export function escapeHtml(str: string): string {
  * The default compare value function for UI controls. This checks if both values
  * are GUIDs and if so does a case-insensitive compare, otherwise it does a
  * case-sensitive compare of the two values.
- * 
+ *
  * @param value The value selected in the UI.
  * @param itemValue The item value to be compared against.
  *
@@ -300,8 +267,6 @@ export default {
     isEmpty,
     toTitleCase,
     pluralConditional,
-    formatPhoneNumber,
-    stripPhoneNumber,
     padLeft,
     padRight,
     truncate

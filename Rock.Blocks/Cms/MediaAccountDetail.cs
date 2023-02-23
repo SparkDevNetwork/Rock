@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
 using Rock.Web.Cache;
@@ -123,8 +124,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = BlockCache.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = BlockCache.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -350,7 +351,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${MediaAccount.FriendlyTypeName}." );
                 return false;

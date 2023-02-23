@@ -176,6 +176,8 @@ export const DefinedType = {
     PersonalDeviceType: "C1848F4C-D6F8-4514-8DB6-CD3C19621025",
     /** The PowerBI Accounts Defined Type guid */
     PowerbiAccounts: "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF",
+    /** Guid for the types of Projects (such as In-Person, Project Due, etc.) */
+    ProjectType: "B7842AF3-6F04-495E-9A6C-F403D06C02F3",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes: "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
     /** The REST allowed domains */

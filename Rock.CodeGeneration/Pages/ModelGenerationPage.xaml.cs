@@ -2589,6 +2589,7 @@ namespace Rock.ViewModels.Entities
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.ViewModels\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
         }

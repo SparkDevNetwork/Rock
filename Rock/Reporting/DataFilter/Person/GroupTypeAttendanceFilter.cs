@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -36,59 +37,40 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "55E78F48-F849-444A-B285-FDA99E7236E7")]
+    [Rock.SystemGuid.EntityTypeGuid( "55E78F48-F849-444A-B285-FDA99E7236E7" )]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         #region Properties
 
-        /// <summary>
-        /// Gets the entity type that filter applies to.
-        /// </summary>
-        /// <value>
-        /// The entity that filter applies to.
-        /// </value>
+        /// <inheritdoc/>
         public override string AppliesToEntityType
         {
-            get { return "Rock.Model.Person"; }
+            get
+            {
+                return "Rock.Model.Person";
+            }
         }
 
-        /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
+        /// <inheritdoc/>
         public override string Section
         {
-            get { return "Attendance"; }
+            get
+            {
+                return "Attendance";
+            }
         }
 
         #endregion
 
         #region Public Methods
 
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        /// <value>
-        /// The title.
-        /// </value>
+        /// <inheritdoc/>
         public override string GetTitle( Type entityType )
         {
             return "Attendance in Group Types";
         }
 
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <value>
-        /// The client format script.
-        /// </value>
+        /// <inheritdoc/>
         public override string GetClientFormatSelection( Type entityType )
         {
             return "'Attended ' + " +
@@ -99,27 +81,31 @@ namespace Rock.Reporting.DataFilter.Person
                 "$('.js-slidingdaterange-text-value', $content).val()";
         }
 
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string s = "Group Type Attendance";
+            var filterName = "Group Type Attendance";
 
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = GroupTypeCache.Get( options[0].AsGuid() );
+                var groupType = string.Empty;
+                string[] listOfGroupTypeIds = options[0].Split( ',' );
+
+                foreach ( string groupTypeId in listOfGroupTypeIds )
+                {
+                    groupType += $" { GroupTypeCache.Get( groupTypeId.AsGuid() ) },";
+                }
+
+                groupType = groupType.TrimStart( ' ' );
+                groupType = groupType.TrimEnd( ',' );
 
                 ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 bool includeChildGroups = options.Length > 4 ? options[4].AsBoolean() : false;
 
                 string dateRangeText;
                 int? lastXWeeks = options[3].AsIntegerOrNull();
-                if (lastXWeeks.HasValue)
+                if ( lastXWeeks.HasValue )
                 {
                     dateRangeText = " in last " + ( lastXWeeks.Value * 7 ).ToString() + " days";
                 }
@@ -128,32 +114,29 @@ namespace Rock.Reporting.DataFilter.Person
                     dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( options[3].Replace( ',', '|' ) );
                 }
 
-                s = string.Format(
+                filterName = string.Format(
                     "Attended '{0}'{4} {1} {2} times. Date Range: {3}",
-                    groupType != null ? groupType.Name : "?",
+                    groupType ?? "?",
                     comparisonType.ConvertToString(),
                     options[2],
                     dateRangeText,
                     includeChildGroups ? " (or child group types) " : string.Empty );
             }
 
-            return s;
+            return filterName;
         }
 
-        /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var gtpGroupType = new GroupTypePicker();
-            gtpGroupType.ID = filterControl.ID + "_0";
-            gtpGroupType.AddCssClass( "js-group-type" );
-            filterControl.Controls.Add( gtpGroupType );
-
-            gtpGroupType.UseGuidAsValue = true;
-            gtpGroupType.IsSortedByName = true;
-            gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            var gtpGroupsTypes = new GroupTypesPicker();
+            gtpGroupsTypes.ID = filterControl.ID + "_0";
+            gtpGroupsTypes.AddCssClass( "js-group-type" );
+            gtpGroupsTypes.RepeatDirection = RepeatDirection.Horizontal;
+            gtpGroupsTypes.UseGuidAsValue = true;
+            gtpGroupsTypes.IsSortedByName = true;
+            gtpGroupsTypes.SetGroupTypes( GroupTypeCache.All() );
+            filterControl.Controls.Add( gtpGroupsTypes );
 
             var cbChildGroupTypes = new RockCheckBox();
             cbChildGroupTypes.ID = filterControl.ID + "_cbChildGroupTypes";
@@ -179,31 +162,33 @@ namespace Rock.Reporting.DataFilter.Person
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             filterControl.Controls.Add( slidingDateRangePicker );
 
-            var controls = new Control[5] { gtpGroupType, cbChildGroupTypes, ddlIntegerCompare, tbAttendedCount, slidingDateRangePicker };
+            var controls = new Control[5] { gtpGroupsTypes, cbChildGroupTypes, ddlIntegerCompare, tbAttendedCount, slidingDateRangePicker };
 
             // convert pipe to comma delimited
             var defaultDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
             var defaultCount = 4;
 
+            var groupValues = string.Empty;
+            foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
+            {
+                groupValues += $"{ groupTypeOutput },";
+            }
+
+            groupValues = groupValues.TrimEnd( ',' );
+
             // set the default values in case this is a newly added filter
             SetSelection(
                 entityType,
                 controls,
-                string.Format( "{0}|{1}|{2}|{3}|false", gtpGroupType.Items.Count > 0 ? gtpGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString(), defaultCount, defaultDelimitedValues ) );
+                string.Format( "{0}|{1}|{2}|{3}|false", groupValues, ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString(), defaultCount, defaultDelimitedValues ) );
 
             return controls;
         }
 
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
+        /// <inheritdoc/>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            var gtpGroupType = controls[0] as GroupTypePicker;
+            var gtpGroupsTypes = controls[0] as GroupTypesPicker;
             var cbChildGroupTypes = controls[1] as RockCheckBox;
             var ddlIntegerCompare = controls[2] as DropDownList;
             var tbAttendedCount = controls[3] as RockTextBox;
@@ -215,7 +200,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             writer.AddAttribute( "class", "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            gtpGroupType.RenderControl( writer );
+            gtpGroupsTypes.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -253,34 +238,32 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
         }
 
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var gtpGroupType = controls[0] as GroupTypePicker;
+            var gtpGroupsTypes = controls[0] as GroupTypesPicker;
             var cbChildGroupTypes = controls[1] as RockCheckBox;
             var ddlIntegerCompare = controls[2] as DropDownList;
             var tbAttendedCount = controls[3] as RockTextBox;
             var slidingDateRangePicker = controls[4] as SlidingDateRangePicker;
 
+            var groupValues = string.Empty;
+            foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
+            {
+                groupValues += $"{ groupTypeOutput },";
+            }
+
+            groupValues = groupValues.TrimEnd( ',' );
+
             // convert the date range from pipe-delimited to comma since we use pipe delimited for the selection values
-            var dateRangeCommaDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace('|', ',');
-            return string.Format( "{0}|{1}|{2}|{3}|{4}", gtpGroupType.SelectedValue, ddlIntegerCompare.SelectedValue, tbAttendedCount.Text, dateRangeCommaDelimitedValues, cbChildGroupTypes.Checked.ToTrueFalse() );
+            var dateRangeCommaDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( '|', ',' );
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", groupValues, ddlIntegerCompare.SelectedValue, tbAttendedCount.Text, dateRangeCommaDelimitedValues, cbChildGroupTypes.Checked.ToTrueFalse() );
         }
 
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
+        /// <inheritdoc/>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            var gtpGroupType = controls[0] as GroupTypePicker;
+            var gtpGroupsTypes = controls[0] as GroupTypesPicker;
             var cbChildGroupTypes = controls[1] as RockCheckBox;
             var ddlIntegerCompare = controls[2] as DropDownList;
             var tbAttendedCount = controls[3] as RockTextBox;
@@ -289,12 +272,12 @@ namespace Rock.Reporting.DataFilter.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                gtpGroupType.SelectedValue = options[0];
+                gtpGroupsTypes.SelectedGroupTypeGuids = options[0].Split( ',' ).AsGuidList();
                 ddlIntegerCompare.SelectedValue = options[1];
                 tbAttendedCount.Text = options[2];
                 int? lastXWeeks = options[3].AsIntegerOrNull();
 
-                if (lastXWeeks.HasValue)
+                if ( lastXWeeks.HasValue )
                 {
                     //// selection was from when it just simply a LastXWeeks instead of Sliding Date Range
                     // Last X Weeks was treated as "LastXWeeks * 7" days, so we have to convert it to a SlidingDateRange of Days to keep consistent behavior
@@ -317,14 +300,7 @@ namespace Rock.Reporting.DataFilter.Person
             }
         }
 
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] options = selection.Split( '|' );
@@ -333,7 +309,13 @@ namespace Rock.Reporting.DataFilter.Person
                 return null;
             }
 
-            Guid groupTypeGuid = options[0].AsGuid();
+            string[] listOfGroupTypeIds = options[0].Split( ',' );
+            var listOfGuidTypes = new List<Guid>();
+            foreach ( string groupTypeId in listOfGroupTypeIds )
+            {
+                listOfGuidTypes.Add( groupTypeId.AsGuid() );
+            }
+
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             int? attended = options[2].AsIntegerOrNull();
             string slidingDelimitedValues;
@@ -358,24 +340,12 @@ namespace Rock.Reporting.DataFilter.Person
 
             bool includeChildGroupTypes = options.Length >= 5 ? options[4].AsBooleanOrNull() ?? false : false;
 
-            var groupTypeService = new GroupTypeService( new RockContext() );
-
-            var groupType = groupTypeService.Get( groupTypeGuid );
-            List<int> groupTypeIds = new List<int>();
-            if ( groupType != null )
+            var groupTypeIds = new List<int?>();
+            if ( listOfGuidTypes != null )
             {
-                groupTypeIds.Add( groupType.Id );
-
-                if ( includeChildGroupTypes )
+                foreach ( Guid guid in listOfGuidTypes )
                 {
-                    var childGroupTypes = groupTypeService.GetCheckinAreaDescendants( groupType.Id );
-                    if ( childGroupTypes.Any() )
-                    {
-                        groupTypeIds.AddRange( childGroupTypes.Select( a => a.Id ) );
-
-                        // get rid of any duplicates
-                        groupTypeIds = groupTypeIds.Distinct().ToList();
-                    }
+                    groupTypeIds.Add( GroupTypeCache.GetId( guid ) );
                 }
             }
 
@@ -396,7 +366,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             if ( groupTypeIds.Count == 1 )
             {
-                int groupTypeId = groupTypeIds[0];
+                int? groupTypeId = groupTypeIds[0];
                 attendanceQry = attendanceQry.Where( a => a.Occurrence.Group.GroupTypeId == groupTypeId );
             }
             else if ( groupTypeIds.Count > 1 )

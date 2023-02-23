@@ -405,7 +405,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.15" )]
         public static void StartQuartzScheduler()
         {
             QuartzScheduler?.Start();
@@ -422,7 +422,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.15" )]
         public static void ShutdownQuartzScheduler()
         {
             QuartzScheduler?.Shutdown();

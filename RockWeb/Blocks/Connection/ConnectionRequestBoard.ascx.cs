@@ -187,8 +187,10 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private List<ConnectionRequestViewModelWithModel> _ConnectionRequestViewModelsWithFullModel;
+        private bool _isExporting = false;
 
         #endregion
+
         #region Properties
 
         /// <summary>
@@ -2246,8 +2248,9 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Get the grid panel.
         /// </summary>
-        private void BindRequestsGrid()
+        private void BindRequestsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
             var connectionRequestEntityId = ConnectionRequestEntityTypeId;
 
             gRequests.EntityIdField = "Id";
@@ -2271,8 +2274,25 @@ namespace RockWeb.Blocks.Connection
             var rockContext = new RockContext();
             var modelQuery = GetConnectionRequestModelWithFullModelQuery( rockContext );
             _ConnectionRequestViewModelsWithFullModel = modelQuery.ToList();
-            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
-            gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            if ( isExporting )
+            {
+                var connectionOpportunity = GetConnectionOpportunity();
+                gRequests.ExportFilename = connectionOpportunity.Name + "_" + RockDateTime.Now.ToString( "yyyyMMdd_hhmmtt" );
+                foreach ( var column in gRequests.Columns.OfType<SecurityField>().ToList() )
+                {
+                    gRequests.Columns.Remove( column );
+                }
+
+                gRequests.ObjectList = new Dictionary<string, object>();
+                _ConnectionRequestViewModelsWithFullModel.ForEach( i => gRequests.ObjectList.Add( i.Id.ToString(), i.ConnectionRequest ) );
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => ( ConnectionRequestViewModel ) a ).AsQueryable() );
+            }
+            else
+            {
+                gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+            }
+
             gRequests.DataBind();
         }
 
@@ -2298,7 +2318,7 @@ namespace RockWeb.Blocks.Connection
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRequestsGrid();
+            BindRequestsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -2346,7 +2366,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var model = e.Row.DataItem as ConnectionRequest;
+            dynamic model = e.Row.DataItem as ConnectionRequest;
+            if ( _isExporting )
+            {
+                model = e.Row.DataItem as ConnectionRequestViewModel;
+            }
+
             if ( model == null )
             {
                 return;
@@ -5011,51 +5036,88 @@ namespace RockWeb.Blocks.Connection
             if ( _connectionTypeViewModels == null )
             {
                 var rockContext = new RockContext();
-                var connectionTypeService = new ConnectionTypeService( rockContext );
+                var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 var typeGuidsFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
 
-                var query = connectionTypeService.Queryable().AsNoTracking()
-                    .Include( ct => ct.ConnectionOpportunities )
-                    .Where( ct => ct.IsActive );
+                var opportunityQuery = connectionOpportunityService.Queryable()
+                    .AsNoTracking()
+                    .Include( a => a.ConnectionOpportunityCampuses )
+                    .Where( co => co.IsActive && co.ConnectionType.IsActive );
 
+                var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
                 if ( typeGuidsFilter.Any() )
                 {
-                    query = query.Where( ct => typeGuidsFilter.Contains( ct.Guid ) );
+                    opportunityQuery = opportunityQuery.Where( o => typeFilter.Contains( o.ConnectionType.Guid ) );
                 }
 
-                _connectionTypeViewModels = query
-                    .Select( ct => new ConnectionTypeViewModel
+                var selfAssignedOpportunities = new List<int>();
+                var isSelfAssignedOpportunitiesQueried = false;
+                var opportunities = opportunityQuery.ToList();
+
+                foreach ( var opportunity in opportunities.OrderBy( o => o.Order ).ThenBy( o => o.Name ) )
+                {
+                    if ( opportunity.ConnectionType.EnableRequestSecurity && !isSelfAssignedOpportunitiesQueried )
                     {
-                        Id = ct.Id,
-                        Name = ct.Name,
-                        IconCssClass = ct.IconCssClass,
-                        DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
-                        Order = ct.Order,
-                        ConnectionOpportunities = ct.ConnectionOpportunities
-                            .OrderBy( co => co.Order )
-                            .ThenBy( co => co.Name )
-                            .Where( co => co.IsActive )
-                            .Select( co => new ConnectionOpportunityViewModel
+                        isSelfAssignedOpportunitiesQueried = true;
+                        selfAssignedOpportunities = new ConnectionRequestService( rockContext )
+                            .Queryable()
+                            .Where( a => a.ConnectorPersonAlias.PersonId == CurrentPersonId.Value )
+                            .Select( a => a.ConnectionOpportunityId )
+                            .Distinct()
+                            .ToList();
+                    }
+
+                    var canView = opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                                    ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
+
+                    // Is user is authorized to view this opportunity type...
+                    if ( canView )
+                    {
+                        _connectionTypeViewModels = _connectionTypeViewModels ?? new List<ConnectionTypeViewModel>();
+                        // Check if the opportunity's type has been added to summary yet, and if not, add it
+                        var connectionTypeViewModel = _connectionTypeViewModels.Where( c => c.Id == opportunity.ConnectionTypeId ).FirstOrDefault();
+                        if ( connectionTypeViewModel == null )
+                        {
+                            connectionTypeViewModel = new ConnectionTypeViewModel
                             {
-                                Id = co.Id,
-                                Name = co.Name,
-                                PublicName = co.PublicName,
-                                IconCssClass = co.IconCssClass,
-                                PhotoId = co.PhotoId,
-                                Description = co.Description,
-                                ConnectionTypeName = ct.Name,
-                                Order = co.Order,
-                                ConnectionOpportunityCampusIds = co.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList()
-                            } ).OrderBy( o => o.Order ).ThenBy( o => o.Name )
-                            .ToList()
-                    } )
-                    .ToList()
+                                Id = opportunity.ConnectionType.Id,
+                                Name = opportunity.ConnectionType.Name,
+                                IconCssClass = opportunity.ConnectionType.IconCssClass,
+                                DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
+                                Order = opportunity.ConnectionType.Order,
+                                ConnectionOpportunities = new List<ConnectionOpportunityViewModel>()
+                            };
+
+                            _connectionTypeViewModels.Add( connectionTypeViewModel );
+                        }
+
+                        if ( opportunity.IsActive )
+                        {
+                            // Add the opportunity
+                            var opportunitySummary = new ConnectionOpportunityViewModel
+                            {
+                                Id = opportunity.Id,
+                                Name = opportunity.Name,
+                                PublicName = opportunity.PublicName,
+                                IconCssClass = opportunity.IconCssClass,
+                                PhotoId = opportunity.PhotoId,
+                                Description = opportunity.Description,
+                                ConnectionTypeName = opportunity.Name,
+                                Order = opportunity.Order,
+                                ConnectionOpportunityCampusIds = opportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList()
+                            };
+
+                            connectionTypeViewModel.ConnectionOpportunities.Add( opportunitySummary );
+                        }
+                    }
+                }
+
+                _connectionTypeViewModels = _connectionTypeViewModels
+                    .Where( vm => vm.ConnectionOpportunities.Any() )
                     .OrderBy( ct => ct.Order )
                     .ThenBy( ct => ct.Name )
                     .ThenBy( ct => ct.Id )
                     .ToList();
-
-                _connectionTypeViewModels = _connectionTypeViewModels.Where( vm => vm.ConnectionOpportunities.Any() ).ToList();
             }
 
             return _connectionTypeViewModels;

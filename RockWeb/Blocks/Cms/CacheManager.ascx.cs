@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Cms
             var cacheStats = RockCache.GetAllStatistics();
             foreach ( CacheItemStatistics cacheItemStat in cacheStats.OrderBy( s => s.Name ) )
             {
-                ddlCacheTypes.Items.Add( new ListItem( cacheItemStat.Name, cacheItemStat.Name ) );
+                ddlCacheTypes.Items.Add( new ListItem( cacheItemStat.Name, cacheItemStat.FullName ) );
             }
         }
 
@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rcbEnableStatistics_CheckedChanged(object sender, EventArgs e)
+        protected void rcbEnableStatistics_CheckedChanged( object sender, EventArgs e )
         {
             // Save updated value.
             SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, rcbEnableStatistics.Checked.ToString() );
@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Cms
         private bool IsValid()
         {
             // Don't need to check for an edited tag as only the description is being changed.
-            if(hfTagId.Value.IsNotNullOrWhiteSpace() )
+            if ( hfTagId.Value.IsNotNullOrWhiteSpace() )
             {
                 return true;
             }
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveTag()
         {
-            if (hfTagId.Value == string.Empty)
+            if ( hfTagId.Value == string.Empty )
             {
                 SaveNewTag();
             }
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Cms
         /// Updates and existing tag.
         /// </summary>
         /// <param name="cacheTagId">The Id of the tag.</param>
-        private void UpdateExistingTag(int cacheTagId )
+        private void UpdateExistingTag( int cacheTagId )
         {
             using ( var rockContext = new RockContext() )
             {

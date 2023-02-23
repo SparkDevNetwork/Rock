@@ -683,7 +683,7 @@ namespace Rock.Net
         /// </remarks>
         /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
         /// <returns>The resolved URL.</returns>
-        [RockInternal]
+        [RockInternal( "1.15" )]
         public string ResolveRockUrl( string input )
         {
             if ( input.IsNullOrWhiteSpace() )

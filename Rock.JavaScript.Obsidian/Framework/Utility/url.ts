@@ -108,3 +108,34 @@ export function syncRefsWithQueryParams(refs: Record<string, Ref>): void {
         };
     }
 }
+
+/**
+ * Removes query parameters from the current URL and replaces the state in history.
+ *
+ * @param queryParamKeys The string array of query parameter keys to remove from the current URL.
+ */
+export function removeCurrentUrlQueryParams(...queryParamKeys: string[]): void {
+    removeUrlQueryParams(window.location.href, ...queryParamKeys);
+}
+
+/**
+ * Removes query parameters from the current URL and replaces the state in history.
+ *
+ * @param url The URL from which to remove the query parameters.
+ * @param queryParamKeys The string array of query parameter keys to remove from the current URL.
+ */
+export function removeUrlQueryParams(url: string | URL, ...queryParamKeys: string[]): void {
+    if (!queryParamKeys || !queryParamKeys.length) {
+        return;
+    }
+
+    if (typeof url === "string") {
+        url = new URL(url);
+    }
+
+    const queryParams = url.searchParams;
+
+    queryParamKeys.forEach((queryParamKey: string) => queryParams.delete(queryParamKey));
+
+    window.history.replaceState(null, "", url);
+}

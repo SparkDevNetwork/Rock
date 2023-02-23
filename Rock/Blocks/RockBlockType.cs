@@ -297,7 +297,7 @@ namespace Rock.Blocks
         /// </summary>
         /// <returns>A response that contains the new security grant token or an empty string.</returns>
         [BlockAction( "RenewSecurityGrantToken" )]
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public BlockActionResult RenewSecurityGrantTokenAction()
         {
             return ActionOk( RenewSecurityGrantToken() );

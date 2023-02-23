@@ -1608,7 +1608,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // Check the number of IQRs that the amount varies
             var numberOfAmountIqrs = GetAmountIqrCount( quartileRanges, transactionAmount );
 
-            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert, mostRecentOldTransactionDate );
+            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert,
+                mostRecentOldTransactionDate,
+                context.TransactionWindowDurationHours );
             var meanFrequencyDays = transactionStats.MeanFrequencyDays;
 
             // Store Frequency Std Dev
@@ -1962,7 +1964,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR, quartileRanges.IQRAmount );
 
             // Create a parallel array that stores the days since the last transaction for the transaction at that index
-            var transactionStats = GetFrequencyStats( transactions.Select( a => a.TransactionDateTime ).ToList(), mostRecentOldTransactionDate );
+            var transactionStats = GetFrequencyStats( transactions.Select( a => a.TransactionDateTime ).ToList(),
+                mostRecentOldTransactionDate,
+                context.TransactionWindowDurationHours );
 
             // Store Mean Frequency
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS, transactionStats.MeanFrequencyDays );
@@ -1985,26 +1989,38 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// </summary>
         /// <param name="transactionDateTimes">The transaction date times.</param>
         /// <param name="mostRecentOldTransactionDate">The most recent old transaction date (last transaction that was over 12 months ago).</param>
-        private static FrequencyStats GetFrequencyStats( List<DateTime> transactionDateTimes, DateTime? mostRecentOldTransactionDate )
+        /// <param name="transactionWindowDurationHours">The duration of the window within which transactions are considered as a single giving event.</param>
+        private static FrequencyStats GetFrequencyStats( List<DateTime> transactionDateTimes, DateTime? mostRecentOldTransactionDate, int? transactionWindowDurationHours = null )
         {
+            // Calculate the days elapsed between transactions.
             var daysSinceLastTransactionList = new List<decimal?>();
             var lastTransactionDateTime = mostRecentOldTransactionDate;
             foreach ( var transactionDateTime in transactionDateTimes.OrderBy( a => a ) )
             {
+                decimal? daysSince = null;
                 if ( lastTransactionDateTime.HasValue )
                 {
-                    var daysSince = ( transactionDateTime - lastTransactionDateTime.Value ).TotalDays;
-                    daysSinceLastTransactionList.Add( ( decimal ) daysSince );
+                    // If a transaction window is specified, consider transactions that occur within the same window as a single instance
+                    // to avoid skewing the frequency calculations.
+                    if ( transactionWindowDurationHours == null
+                        || transactionWindowDurationHours <= ( transactionDateTime - lastTransactionDateTime.Value ).TotalHours )
+                    {
+                        daysSince = ( decimal ) ( transactionDateTime - lastTransactionDateTime.Value ).TotalDays;
+                        lastTransactionDateTime = transactionDateTime;
+                    }
                 }
                 else
                 {
-                    daysSinceLastTransactionList.Add( null );
+                    lastTransactionDateTime = transactionDateTime;
                 }
 
-                lastTransactionDateTime = transactionDateTime;
+                daysSinceLastTransactionList.Add( daysSince );
             }
 
-            var daysSinceLastTransactionWithValue = daysSinceLastTransactionList.Where( d => d.HasValue ).Select( d => d.Value ).ToList();
+            var daysSinceLastTransactionWithValue = daysSinceLastTransactionList
+                .Where( d => d.HasValue )
+                .Select( d => d.Value )
+                .ToList();
             double meanFrequencyDays;
             double frequencyStdDevDays;
             if ( daysSinceLastTransactionWithValue.Any() )
@@ -2344,7 +2360,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             var quartileRanges = GetQuartileRanges( transactionAmountsForAlert );
 
-            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert, mostRecentOldTransactionDateTime );
+            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert,
+                mostRecentOldTransactionDateTime,
+                context.TransactionWindowDurationHours );
 
             if ( !transactionStats.NextExpectedGiftDate.HasValue )
             {
@@ -2573,6 +2591,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// </summary>
             /// <value>The maximum days since last gift.</value>
             public int MaxDaysSinceLastGift { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time period within which transactions will be considered as a single giving event,
+            /// for the purposes of calculating giving frequency and consistency.
+            /// See also <see cref="GivingJourneySettings.TransactionWindowDurationHours"/>
+            /// </summary>
+            /// <value>A period of time in hours.</value>
+            public int? TransactionWindowDurationHours { get; set; } = null;
 
             #endregion Fields
 

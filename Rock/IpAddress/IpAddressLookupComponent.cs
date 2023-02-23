@@ -36,7 +36,7 @@ namespace Rock.IpAddress
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14" )]
     public abstract class IpAddressLookupComponent : Component
     {
         /// <summary>

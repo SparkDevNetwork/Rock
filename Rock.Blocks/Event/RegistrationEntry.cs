@@ -33,6 +33,7 @@ using Rock.ElectronicSignature;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
@@ -523,7 +524,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Rock.Security.Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
                 return ActionOk( new RegistrationEntrySignatureDocument
                 {
@@ -570,7 +571,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Rock.Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -591,7 +592,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Rock.Security.Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Encryption.EncryptString( signedData.ToJson() ) );
             }
         }
 
@@ -2154,7 +2155,7 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Rock.Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
                 var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
@@ -3489,12 +3490,6 @@ namespace Rock.Blocks.Event
                 args.AmountToPayNow = 0;
             }
 
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > amountDue )
-            {
-                args.AmountToPayNow = amountDue;
-            }
-
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
@@ -3504,11 +3499,11 @@ namespace Rock.Blocks.Event
                     ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
                     : amountDue;
 
-                if ( args.AmountToPayNow < minimumInitialPayment )
-                {
-                    args.AmountToPayNow = minimumInitialPayment;
-                }
+                args.AmountToPayNow = args.AmountToPayNow < minimumInitialPayment ? minimumInitialPayment : args.AmountToPayNow;
             }
+
+            // Cannot pay more than is owed. This check should be the last one performed regarding payment in this method.
+            args.AmountToPayNow = args.AmountToPayNow > amountDue ? amountDue : args.AmountToPayNow;
 
             return context;
         }

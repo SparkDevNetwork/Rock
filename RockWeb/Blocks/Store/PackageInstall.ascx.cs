@@ -157,19 +157,19 @@ namespace RockWeb.Blocks.Store
                 switch ( installResponse.PurchaseResult )
                 {
                     case PurchaseResult.AuthenticationFailed:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Could Not Authenticate</strong> {0} If you need further help see the <a href='{1}'>Rock Shop Help Page</a>.</div>", installResponse.Message, "https://rockrms.com/RockShopHelp" );
+                        lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Could Not Authenticate</strong> {installResponse.Message} If you need further help see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
                         break;
                     case PurchaseResult.Error:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {0}</div>", installResponse.Message );
+                        lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {installResponse.Message}</div>";
                         break;
                     case PurchaseResult.NoCardOnFile:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{0}'>Account Page</a> or see the <a href='{1}'>Rock Shop Help Page</a>.</div>", ResolveRockUrl( "~/RockShop/Account" ), "https://rockrms.com/RockShopHelp" );
+                        lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{ResolveRockUrl( "~/RockShop/Account" )}'>Account Page</a> or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
                         break;
                     case PurchaseResult.NotAuthorized:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchases for this organization. Please see your organization's primary contact to enable your account for purchases or see the <a href='{0}'>Rock Shop Help Page</a>.</div>", "https://rockrms.com/RockShopHelp" );
+                        lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchases for this organization. Please see your organization's primary contact to enable your account for purchases or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
                         break;
                     case PurchaseResult.PaymentFailed:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a> or see the <a href='{2}'>Rock Shop Help Page</a>.</div>", installResponse.Message, ResolveRockUrl( "~/RockShop/Account" ), "https://rockrms.com/RockShopHelp" );
+                        lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {installResponse.Message}. Please update your card's information from your <a href='{ResolveRockUrl( "~/RockShop/Account" )}'>Account Page</a> or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
                         break;
                     case PurchaseResult.Success:
                         ProcessInstall( installResponse );
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Store
             }
             else
             {
-                lMessages.Text = string.Format( "<div class='alert alert-danger margin-t-md'><strong>Install Error</strong> An error occurred while attempting to authenticate your install of this package. The error was: {0}.</div>", ( string.IsNullOrWhiteSpace( errorResponse ) ? "Unknown" : errorResponse ) );
+                lMessages.Text = $"<div class='alert alert-danger margin-t-md'><strong>Install Error</strong> An error occurred while attempting to authenticate your install of this package. The error was: {( string.IsNullOrWhiteSpace( errorResponse ) ? "Unknown" : errorResponse )}.</div>";
             }
         }
 
@@ -269,10 +269,10 @@ namespace RockWeb.Blocks.Store
             bool wasActionTaken = false;
 
             // create package directory
-            string packageDirectory = string.Format( "{0}/{1} - {2}", rockShopWorkingDir, purchaseResponse.PackageId, purchaseResponse.PackageName );
+            string packageDirectory = $"{rockShopWorkingDir}/{purchaseResponse.PackageId} - {purchaseResponse.PackageName}";
             EnsureDirectoryExists( packageDirectory );
 
-            string destinationFile = string.Format( "{0}/{1} - {2}.plugin", packageDirectory, installStep.VersionId, installStep.VersionLabel );
+            string destinationFile = $"{packageDirectory}/{installStep.VersionId} - {installStep.VersionLabel}.plugin";
 
             // download file
             try
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Store
             catch ( Exception ex )
             {
                 CleanUpPackage( destinationFile );
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {0}</em></div>", ex.Message );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {ex.Message}</em></div>";
                 return false;
             }
 
@@ -308,13 +308,13 @@ namespace RockWeb.Blocks.Store
             }
             catch ( Exception ex )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {0}</em></div>", ex.Message );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {ex.Message}</em></div>";
                 return false;
             }
 
             if ( !wasActionTaken )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Package Installation Error</strong> Package version {0} was installed without completing any action.  Please contact the package administrator for support.</div>", installStep.VersionLabel );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Package Installation Error</strong> Package version {installStep.VersionLabel} was installed without completing any action.  Please contact the package administrator for support.</div>";
                 return false;
             }
 
@@ -331,7 +331,7 @@ namespace RockWeb.Blocks.Store
             cbAgreeToTerms.Visible = false;
             btnInstall.Visible = false;
             // show result message
-            lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
+            lMessages.Text = $"<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{installStep.PostInstallInstructions}</p>";
 
             return true;
         }
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Store
             }
             catch ( Exception ex )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {0}</em></div>", ex.Message );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {ex.Message}</em></div>";
                 return false;
             }
 
@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Store
             }
             catch ( Exception ex )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {0}</em></div>", ex.Message );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {ex.Message}</em></div>";
                 return false;
             }
 
@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Store
             }
             catch( Exception ex )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {0}</em></div>", ex.Message );
+                lMessages.Text = $"<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {ex.Message}</em></div>";
                 return;
             }
         }

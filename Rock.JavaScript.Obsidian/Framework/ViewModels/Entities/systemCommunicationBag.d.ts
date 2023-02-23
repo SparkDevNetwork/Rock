@@ -103,8 +103,8 @@ export type SystemCommunicationBag = {
     /** Gets or sets the title of the notification. */
     pushTitle?: string | null;
 
-    /** Gets or sets the SMS from number. */
-    sMSFromDefinedValueId?: number | null;
+    /** Gets or sets the system phone number identifier used for SMS sending. */
+    smsFromSystemPhoneNumberId?: number | null;
 
     /** Gets or sets the SMS message content. */
     sMSMessage?: string | null;

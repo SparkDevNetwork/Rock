@@ -222,6 +222,9 @@ Hi Ted!
             var expectedOutputBill = "";
             var expectedOutputTed = "Hi Ted!";
 
+            // Establish the initial conditions by ensuring that Bill does not exist in the target segments.
+            RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
+
             // Verify that if Bill is the current user, the content is not rendered.
             // Bill does not match the filter "IN_SMALL_GROUP".
             AssertOutputForPersonAndRequest( input, expectedOutputBill, TestGuids.TestPeople.BillMarble );
@@ -238,6 +241,19 @@ Hi Ted!
             // Verify that if Bill is the current user, the content is rendered when Ted is the context Person.
             // Bill does not match the filter "IN_SMALL_GROUP", but Ted does.
             AssertOutputForPersonAndRequest( input, expectedOutputTed, TestGuids.TestPeople.BillMarble, string.Empty, options );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_WithLavaContent_ResolvesWithCurrentContext()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN' %}
+Hi {{ CurrentPerson.NickName }}!
+{% endpersonalize %}
+";
+
+            // Verify that the CurrentPerson global variable can be resolved in the current context.
+            AssertOutputForPersonAndRequest( input, "Hi Bill!", TestGuids.TestPeople.BillMarble );
         }
 
         [TestMethod]
@@ -275,6 +291,9 @@ Bill should not see this because he only matches the 'ALL_MEN' segment.
 {% endpersonalize %}
 ";
             var expectedOutput = @"";
+
+            // Establish the initial conditions by ensuring that Bill does not exist in the target segments.
+            RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
 
             AssertOutputForPersonAndRequest( input, expectedOutput, TestGuids.TestPeople.BillMarble );
         }

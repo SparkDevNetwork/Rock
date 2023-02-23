@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.ServiceModel.Channels;
 
 using Microsoft.AspNet.SignalR.Hubs;
 
@@ -108,12 +107,12 @@ namespace Rock.RealTime.AspNet
         #region ITopicClients
 
         /// <inheritdoc/>
-        public T All => GetProxy( _context.Group( TopicIdentifier ) );
+        public T All => GetProxy( _context.Group( Engine.GetQualifiedAllChannelName( TopicIdentifier ) ) );
 
         /// <inheritdoc/>
         public T AllExcept( IReadOnlyList<string> excludedConnectionIds )
         {
-            return GetProxy( _context.Group( TopicIdentifier, excludedConnectionIds.ToArray() ) );
+            return GetProxy( _context.Group( Engine.GetQualifiedAllChannelName( TopicIdentifier ), excludedConnectionIds.ToArray() ) );
         }
 
         /// <inheritdoc/>
@@ -131,37 +130,37 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public T Channel( string channelName )
         {
-            return GetProxy( _context.Group( $"{TopicIdentifier}-{channelName}" ) );
+            return GetProxy( _context.Group( Engine.GetQualifiedChannelName( TopicIdentifier, channelName ) ) );
         }
 
         /// <inheritdoc/>
         public T ChannelExcept( string channelName, IReadOnlyList<string> excludedConnectionIds )
         {
-            return GetProxy( _context.Groups( new[] { $"{TopicIdentifier}-{channelName}" }, excludedConnectionIds.ToArray() ) );
+            return GetProxy( _context.Groups( new[] { Engine.GetQualifiedChannelName( TopicIdentifier, channelName ) }, excludedConnectionIds.ToArray() ) );
         }
 
         /// <inheritdoc/>
         public T Channels( IReadOnlyList<string> channelNames )
         {
-            return GetProxy( _context.Groups( channelNames.Select( cn => $"{TopicIdentifier}-{cn}" ).ToArray() ) );
+            return GetProxy( _context.Groups( channelNames.Select( cn => Engine.GetQualifiedChannelName( TopicIdentifier, cn ) ).ToArray() ) );
         }
 
         /// <inheritdoc/>
         public T Person( int personId )
         {
-            return GetProxy( _context.Group( $"{TopicIdentifier}-rock:person:{personId}" ) );
+            return GetProxy( _context.Group( Engine.GetQualifiedPersonChannelName( TopicIdentifier, personId ) ) );
         }
 
         /// <inheritdoc/>
         public T People( IReadOnlyList<int> personIds )
         {
-            return GetProxy( _context.Groups( personIds.Select( id => $"{TopicIdentifier}-rock:person:{id}" ).ToArray() ) );
+            return GetProxy( _context.Groups( personIds.Select( id => Engine.GetQualifiedPersonChannelName( TopicIdentifier, id ) ).ToArray() ) );
         }
 
         /// <inheritdoc/>
         public T Visitor( int visitorAliasId )
         {
-            return GetProxy( _context.Group( $"{TopicIdentifier}-rock:visitor:{visitorAliasId}" ) );
+            return GetProxy( _context.Group( Engine.GetQualifiedVisitorChannelName( TopicIdentifier, visitorAliasId ) ) );
         }
 
         #endregion

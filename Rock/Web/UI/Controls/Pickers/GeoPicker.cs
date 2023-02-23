@@ -264,7 +264,7 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private HiddenField _hfGeoDisplayName;
-        private HiddenField _hfGeoPath;
+        private HiddenFieldWithClass _hfGeoPath;
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
 
@@ -587,11 +587,9 @@ namespace Rock.Web.UI.Controls
 
             // TBD TODO -- do I need this hfGeoDisplayName_???
             _hfGeoDisplayName = new HiddenField();
-            _hfGeoDisplayName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _hfGeoDisplayName.ID = string.Format( "hfGeoDisplayName_{0}", this.ClientID );
-            _hfGeoPath = new HiddenField();
-            _hfGeoPath.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _hfGeoPath.ID = string.Format( "hfGeoPath_{0}", this.ClientID );
+            _hfGeoPath = new HiddenFieldWithClass();
+            _hfGeoPath.ID = "hfGeoPath";
 
             if ( ModePanel != null )
             {
@@ -599,7 +597,7 @@ namespace Rock.Web.UI.Controls
             }
 
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary js-geopicker-select";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
             _btnSelect.InnerText = "Done";
             _btnSelect.CausesValidation = false;

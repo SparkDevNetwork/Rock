@@ -15,7 +15,8 @@
                            pickerContentBoxHeight="auto"
                            pickerContentHeadingText="Geography Picker"
                            disablePickerContentBoxScroll
-                           showFullscreenButton>
+                           showFullscreenButton
+                           forceContentReloadOnOpen>
 
         <template #innerLabel>
             <span class="selected-names" v-html="pickerLabel"></span>

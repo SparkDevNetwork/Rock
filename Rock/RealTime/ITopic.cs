@@ -31,7 +31,7 @@ namespace Rock.RealTime
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14.1" )]
     public interface ITopic
     {
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.RealTime
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14.1" )]
     public interface ITopic<T> : ITopic
         where T : class
     {

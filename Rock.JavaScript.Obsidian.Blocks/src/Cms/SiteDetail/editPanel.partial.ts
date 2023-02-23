@@ -21,7 +21,7 @@ import CheckBox from "@Obsidian/Controls/checkBox";
 import TextBox from "@Obsidian/Controls/textBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
-import PagePicker from "@Obsidian/Controls/pagePicker";
+import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import PanelWidget from "@Obsidian/Controls/panelWidget";
 import CodeEditor from "@Obsidian/Controls/codeEditor";

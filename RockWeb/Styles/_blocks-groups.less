@@ -2,6 +2,7 @@
     Used to manage styles for specific blocks.
 
     1. Group Viewer - styles for the group viewer block.
+    2. Sign-Up Detail - styles for the Sign-Up Detail block.
 
 */
 
@@ -31,5 +32,106 @@
   @media (min-width: @screen-md-min) {
     top: 16px;
     max-height: ~"calc(100vh - 112px)";
+  }
+}
+
+// 2. Sign-Up Detail
+// -------------------------
+.sign-up-opportunities-grid-header-title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sign-up-opportunities-grid-header-description {
+  display: flex;
+  flex-direction: column;
+  border-bottom: solid 1px #767676;
+
+  .btn-group {
+    align-self: flex-end;
+    margin-top: 12px;
+  }
+
+  @media (min-width: @screen-md-min) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    .btn-group {
+      align-self: auto;
+      margin-top: 0;
+    }
+  }
+}
+
+.sign-up-opportunities-grid-slots-badge {
+  .tooltip-inner {
+    max-width: 100%;
+  }
+}
+
+.sign-up-slots-badge {
+  width: 215px;
+  background-color: @gray-200;
+  position: relative;
+
+  .sign-up-slots {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .slots-filled {
+    &-warning {
+      background-color: @brand-warning;
+    }
+
+    &-success {
+      background-color: @brand-success;
+    }
+
+    &-success-plus {
+      background-color: #13a473;
+    }
+
+    &-danger {
+      background-color: @brand-danger;
+    }
+  }
+
+  .slots-min,
+  .slots-desired {
+    &-warning {
+      border-right: solid 2px @brand-warning;
+    }
+
+    &-success {
+      border-right: solid 2px @brand-success;
+    }
+
+    &-white {
+      border-right: solid 2px @white;
+    }
+  }
+}
+
+[id^=sign-up-slots-badge-tooltip-] {
+  display: none;
+}
+
+.sign-up-slots-badge-tooltip {
+  display: flex;
+
+  .slot-counts {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    white-space: nowrap;
+
+    span {
+      white-space: nowrap;
+    }
   }
 }

@@ -573,7 +573,11 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                _ceEditor.Text = value;
+                if ( _ceEditor != null )
+                {
+                    // we can ignore this if the control hasn't been created - the value will get set we create it.
+                    _ceEditor.Text = value;
+                }
                 base.Text = value;
             }
         }

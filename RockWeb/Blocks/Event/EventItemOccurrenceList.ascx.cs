@@ -409,6 +409,19 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
+                    // If a date range was not specified display all of the event items but still calculate the next date if possible.
+                    lowerDateRange = RockDateTime.Today;
+                    upperDateRange = lowerDateRange.Value.AddYears( 1 ).AddDays( -1 );
+
+                    foreach ( var eventItemOccurrenceWithDates in eventItemOccurrencesWithDates )
+                    {
+                        eventItemOccurrenceWithDates.StartDateTimes = eventItemOccurrenceWithDates.EventItemOccurrence.GetStartTimes( lowerDateRange.Value, upperDateRange.Value.AddDays( 1 ) );
+                        if ( eventItemOccurrenceWithDates.StartDateTimes != null && eventItemOccurrenceWithDates.StartDateTimes.Any() )
+                        {
+                            eventItemOccurrenceWithDates.NextStartDateTime = eventItemOccurrenceWithDates.StartDateTimes.Min();
+                        }
+                    }
+
                     dateCol.HeaderText = "Next Start Date";
                 }
 

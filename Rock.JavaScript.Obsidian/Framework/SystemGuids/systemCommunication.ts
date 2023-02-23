@@ -92,8 +92,14 @@ export const SystemCommunication = {
     SecurityAccountCreated: "84e373e9-3aaf-4a31-b3fb-a8e3f0666710",
     /** Gets the template guid for the Confirm Account communication */
     SecurityConfirmAccount: "17aaceef-15ca-4c30-9a3a-11e6cf7e6411",
+    /** Gets the template guid for Confirm Account (Passwordless) communication */
+    SecurityConfirmAccountPasswordless: "543B7C09-80C0-4DAB-8487-10569474D9C7",
+    /** Gets the template guid for Passwordless Login Confirmation communication */
+    SecurityConfirmLoginPasswordless: "A7AD9FD5-A343-4ADA-868D-A3528D650143",
     /** Gets the template guid for the Forgot Username communication */
     SecurityForgotUsername: "113593ff-620e-4870-86b1-7a0ec0409208",
+    /** Gets the template guid for Sign-Up Group Reminders. */
+    SignupGroupReminder: "530ADF1E-C2D9-4A67-BADF-5EF65222CA7E",
     /** Gets the template guid for a Spark Data notification */
     SparkDataNotification: "CBCBE0F0-67FB-6393-4D9C-592C839A2E54",
     /** Gets the template guid for the system Electronic Signature Receipt */

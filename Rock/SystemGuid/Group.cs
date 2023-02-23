@@ -105,5 +105,10 @@ namespace Rock.SystemGuid
         /// RSR - Prayer Access
         /// </summary>
         public const string GROUP_RSR_PRAYER_ACCESS = "9E17621E-F559-44E9-8C40-E8CF44CF8FCF";
+
+        /// <summary>
+        /// A parent Group for all Sign-up Groups
+        /// </summary>
+        public const string GROUP_SIGNUP_GROUPS = "D649638A-EF91-42D8-9B38-32172D614A5F";
     }
 }

@@ -110,7 +110,7 @@
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" Visible="false" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
-                                    <Rock:PersonPicker ID="ppAdministrator" runat="server" />
+                                    <Rock:PersonPicker ID="ppAdministrator" runat="server" EnableSelfSelection="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <asp:Panel runat="server" ID="pnlElevatedSecurity">
@@ -198,7 +198,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
-                                    <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline or if they're request will be auto accepted. This setting overrides the group type's setting." />
+                                    <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting overrides the group type's setting." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />

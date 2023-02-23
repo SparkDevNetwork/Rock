@@ -719,7 +719,7 @@ namespace Rock.Model
 
             // Queue a transaction to update the status of all affected scheduled transactions
             var updatePaymentStatusTxn = new UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
-            RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
+            updatePaymentStatusTxn.Enqueue();
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
@@ -761,7 +761,7 @@ namespace Rock.Model
                     // Queue a transaction to launch workflow
                     var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
-                    RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                    launchWorkflowsTxn.Enqueue();
                 }
             }
 

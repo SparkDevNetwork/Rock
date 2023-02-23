@@ -20,11 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Rock.Chart;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -233,6 +231,7 @@ FROM (
                             rockContextForMetricValues.Database.CommandTimeout = commandTimeout;
                             var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
                             var metricValueService = new MetricValueService( rockContextForMetricValues );
+                            var metricValuePartitionService = new MetricValuePartitionService( rockContextForMetricValues );
                             List<ResultValue> resultValues = new List<ResultValue>();
                             bool getMetricValueDateTimeFromResultSet = false;
                             if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
@@ -496,51 +495,34 @@ FROM (
                                     }
                                 }
 
-                                // If a single metricValueDateTime was specified, delete any existing metric values for this DateTime and add the current results.
-                                var dbTransaction = rockContextForMetricValues.Database.BeginTransaction();
+                                var measureMetricValueType = MetricValueType.Measure;
                                 if ( getMetricValueDateTimeFromResultSet )
                                 {
-                                    var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
-                                    foreach ( var metricValueDateTime in metricValueDateTimes )
-                                    {
-                                        bool alreadyHasMetricValues = metricValueService.Queryable()
-                                            .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime ).Any();
-                                        if ( alreadyHasMetricValues )
-                                        {
-                                            // Use direct SQL to remove any existing metric values.
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValuePartition
-                                                    WHERE MetricValueId IN (
-                                                        SELECT Id
-                                                        FROM MetricValue
-                                                        WHERE MetricId = @metricId
-                                                        AND MetricValueDateTime = @metricValueDateTime
-                                                    )
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                    var sourceSQLData = metricValuesToAdd.SelectMany( mv => mv.MetricValuePartitions,
+                                        ( metricValue, partition ) => new { metricValue.MetricValueDateTime, partition.MetricPartitionId, partition.EntityId }
+                                    ).Distinct()
+                                    .ToHashSet();
 
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValue
-                                                    WHERE MetricId = @metricId
-                                                    AND MetricValueDateTime = @metricValueDateTime
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
-                                        }
-                                    }
+                                    var metricsToBeDeleted = metricValueService.Queryable()
+                                        .Where( m => m.MetricId == metricId && m.MetricValueType == measureMetricValueType )
+                                        .Join( metricValuePartitionService.Queryable(),
+                                            m => m.Id, mvp => mvp.MetricValueId, ( m, mvp ) => new { metricValue = m, metricValuePartition = mvp } )
+                                        .ToList() // converting to list to get the result in the memory to preform the subsequent operations
+                                        .Join( sourceSQLData,
+                                            outerKeySelector: m => new { m.metricValue.MetricValueDateTime, m.metricValuePartition.MetricPartitionId, m.metricValuePartition.EntityId },
+                                            innerKeySelector: s => new { s.MetricValueDateTime, s.MetricPartitionId, s.EntityId },
+                                            ( m, s ) => m
+                                        ).Distinct()
+                                        .ToArray(); // the result needs to be collected in the memory as it is being used in the following two queries
+
+                                    rockContextForMetricValues.MetricValuePartitions.RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
+                                    rockContextForMetricValues.MetricValues.RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
                                 }
 
                                 metricValueService.AddRange( metricValuesToAdd );
 
                                 // Disable SaveChanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted or updated.
                                 rockContextForMetricValues.SaveChanges( true );
-
-                                dbTransaction.Commit();
                             }
 
                             rockContextForMetricEntity.SaveChanges();
@@ -670,15 +652,15 @@ FROM (
                 .ToList();
 
             var summaries = groupBySum.Select( s => new MetricValueSummary
-                {
-                    MetricId = s.MetricId,
-                    MetricTitle = s.MetricTitle,
-                    SeriesName = seriesName,
-                    ValueTotal = s.YValueTotal,
-                    MetricType = s.MetricValueType,
-                    StartDateTimeStamp = startDate.HasValue ? startDate.Value.ToJavascriptMilliseconds() : 0,
-                    EndDateTimeStamp = endDate.HasValue ? endDate.Value.ToJavascriptMilliseconds() : 0
-                } )
+            {
+                MetricId = s.MetricId,
+                MetricTitle = s.MetricTitle,
+                SeriesName = seriesName,
+                ValueTotal = s.YValueTotal,
+                MetricType = s.MetricValueType,
+                StartDateTimeStamp = startDate.HasValue ? startDate.Value.ToJavascriptMilliseconds() : 0,
+                EndDateTimeStamp = endDate.HasValue ? endDate.Value.ToJavascriptMilliseconds() : 0
+            } )
                 .ToList();
 
             return summaries;

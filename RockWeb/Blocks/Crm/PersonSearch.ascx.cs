@@ -392,11 +392,7 @@ namespace RockWeb.Blocks.Crm
                             var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                             var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
                             people = personService.Queryable()
-                                .Where( p => ( term != "" && p.Email.Contains( term ) )
-                                        || searchKeyQry.Any( a => emailSearchTypeValueId.HasValue
-                                            && a.SearchTypeValueId == emailSearchTypeValueId.Value
-                                            && a.PersonAlias.PersonId == p.Id
-                                            && a.SearchValue.Contains( term ) ) );
+                                .Where( p => term != "" && p.Email.Contains( term ) );
                             break;
                         }
                     case ( "birthdate" ):
@@ -421,10 +417,31 @@ namespace RockWeb.Blocks.Crm
                         }
                 }
 
-                IEnumerable<int> personIdList = people.Select( p => p.Id );
+                IEnumerable<int> personIdList;
+
+                if ( type.ToLower() == "email" )
+                {
+                    /*
+                      SK: 01/26/2023
+                      We restructured this part to use this at this stage in order to fix the deadlock issue found in the Spark website.
+                    */
+                    var emailSearchTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                    var searchKeyQry = new PersonSearchKeyService( rockContext )
+                        .Queryable( "PersonAlias" )
+                        .Where( a => emailSearchTypeValueId.HasValue
+                                                 && a.PersonAliasId.HasValue
+                                                 && a.SearchTypeValueId == emailSearchTypeValueId.Value
+                                                 && a.SearchValue.Contains( term ) );
+                    personIdList = people.Select( p => p.Id ).Concat( searchKeyQry.Select( a => a.PersonAlias.PersonId ) );
+                    personIdList = personIdList.Distinct();
+                }
+                else
+                {
+                    personIdList = people.Select( p => p.Id ).Distinct();
+                }
 
                 // just leave the personIdList as a Queryable if it is over 10000 so that we don't throw a SQL exception due to the big list of ids
-                if ( people.Count() < 10000 )
+                if ( personIdList.Count() < 10000 )
                 {
                     personIdList = personIdList.ToList();
                 }

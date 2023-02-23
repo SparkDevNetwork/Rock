@@ -30,7 +30,7 @@ namespace Rock.Field
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.13.4" )]
     public enum ConfigurationValueUsage
     {
         /// <summary>

@@ -47,6 +47,10 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
+    <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
+    <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
     <Compile Include="Cms\ContentChannelDateType.cs" />
@@ -58,6 +62,7 @@
     <Compile Include="Cms\PersistedDatasetScriptType.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
+    <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
     <Compile Include="Controls\DayOfWeek.cs" />
@@ -83,6 +88,7 @@
     <Compile Include="Core\MoveType.cs" />
     <Compile Include="Core\NcoaType.cs" />
     <Compile Include="Core\NoteApprovalStatus.cs" />
+    <Compile Include="Core\NotificationMessageActionType.cs" />
     <Compile Include="Core\PrintFrom.cs" />
     <Compile Include="Core\PrintTo.cs" />
     <Compile Include="Core\Processed.cs" />
@@ -102,6 +108,7 @@
     <Compile Include="Engagement\StreakStructureType.cs" />
     <Compile Include="EnumDomainAttribute.cs" />
     <Compile Include="Event\AttendanceGraphBy.cs" />
+    <Compile Include="Event\AttendanceStatus.cs" />
     <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
     <Compile Include="Event\InteractiveExperienceCampusBehavior.cs" />
     <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />

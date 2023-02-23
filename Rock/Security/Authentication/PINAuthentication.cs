@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -109,7 +109,6 @@ namespace Rock.Security.Authentication
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override bool IsReturningFromAuthentication( System.Web.HttpRequest request )
         {
             return false;

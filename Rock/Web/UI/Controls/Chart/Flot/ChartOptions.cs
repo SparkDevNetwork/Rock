@@ -28,6 +28,7 @@ namespace Rock.Web.UI.Controls
     /// A serializable set of configuration options that can be used to construct a chart control on a Rock page.
     /// This class can be serialized to JSON, and properties are case sensitive.
     /// </summary>
+    [RockObsolete( "1.15" )]
     [Obsolete( "These option settings are used by the superseded Flot Chart library implementation." )]
     public class ChartOptions
     {

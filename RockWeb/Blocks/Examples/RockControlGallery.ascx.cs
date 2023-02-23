@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Examples
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
             htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
 
-            mfpExample.MergeFields.Add( "GlobalAttribute,Rock.Model.Person" );
+            mfpExample.MergeFields.Add( "GlobalAttribute,Rock.Model.Person,Rock.Model.Group" );
 
             var selectableAccountIds = new FinancialAccountService( new RockContext() ).Queryable().Where( a => a.ParentAccountId == null ).Take( 4 ).Select( a => a.Id ).ToArray();
             caapExampleSingleAccount.SelectableAccountIds = selectableAccountIds;

@@ -61,7 +61,12 @@ namespace Rock.Client
         public int RelatedMediumEntityTypeId { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.15"
+        [Obsolete( "Use RelatedSmsFromSystemPhoneNumberId instead.", false )]
         public int? RelatedSmsFromDefinedValueId { get; set; }
+
+        /// <summary />
+        public int? RelatedSmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary />
         public int RelatedTransportEntityTypeId { get; set; }
@@ -113,7 +118,10 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.RelatedCommunicationId = source.RelatedCommunicationId;
             this.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
+            #pragma warning disable 612, 618
             this.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
+            #pragma warning restore 612, 618
+            this.RelatedSmsFromSystemPhoneNumberId = source.RelatedSmsFromSystemPhoneNumberId;
             this.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
             this.Response = source.Response;
             this.ToPersonAliasId = source.ToPersonAliasId;

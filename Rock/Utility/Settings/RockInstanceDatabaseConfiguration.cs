@@ -41,6 +41,7 @@ namespace Rock.Utility.Settings
         private string _recoverMode = null;
         private string _edition = null;
         private string _serviceObjective = null;
+        private string _compatibility = null;
 
         #endregion
 
@@ -120,7 +121,7 @@ namespace Rock.Utility.Settings
             _readCommittedSnapshotEnabled = null;
             _edition = null;
             _recoverMode = null;
-
+            _compatibility = null;
         }
 
         /// <summary>
@@ -410,6 +411,42 @@ WHERE  name = DB_NAME()
             }
         }
 
+        /// <summary>
+        /// Gets the compatibility version of the database.
+        /// </summary>
+        public string CompatibilityVersion
+        {
+            get
+            {
+                if ( string.IsNullOrWhiteSpace( _compatibility ) )
+                {
+                    GetCompatibilityLevel();
+                }
+
+                switch ( _compatibility )
+                {
+                    case "150":
+                        return "SQL Server 2019";
+                    case "140":
+                        return "SQL Server 2017";
+                    case "130":
+                        return "SQL Server 2016";
+                    case "120":
+                        return "SQL Server 2014";
+                    case "110":
+                        return "SQL Server 2012";
+                    case "100":
+                        return "SQL Server 2008";
+                    case "90":
+                        return "SQL Server 2005";
+                    case "80":
+                        return "SQL Server 2000";
+                    default:
+                        return "Unkown";
+                }
+            }
+        }
+
         private void GetPlatformAndVersionInfo()
         {
             _versionInfoRetrieved = true;
@@ -530,6 +567,32 @@ FROM   sys.databases WHERE [name] = '{0}'
                 _readCommittedSnapshotEnabled = null;
             }
 
+        }
+
+        private void GetCompatibilityLevel()
+        {
+            try
+            {
+                var sql = @"
+SELECT compatibility_level
+FROM   sys.databases
+WHERE  name = DB_NAME()
+";
+
+                var reader = GetDataReader( sql, System.Data.CommandType.Text, null );
+
+                if ( reader != null )
+                {
+                    reader.Read();
+
+                    _compatibility = reader.GetValue( 0 ).ToString();
+                }
+            }
+            catch
+            {
+                // Ignore errors and continue.
+                _compatibility = "#ERROR#";
+            }
         }
 
         private void GetServiceObjectiveInfo()

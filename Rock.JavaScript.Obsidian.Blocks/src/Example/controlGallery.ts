@@ -21,7 +21,6 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
- * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
@@ -77,7 +76,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import Dialog from "@Obsidian/Controls/dialog";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import DatePartsPicker, { DatePartsPickerValue } from "@Obsidian/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker";
@@ -172,7 +171,7 @@ import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import TabbedContent from "@Obsidian/Controls/tabbedContent";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
-import PagePicker from "@Obsidian/Controls/pagePicker";
+import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
@@ -196,6 +195,11 @@ import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.obs";
 import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.obs";
 import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+import LocationList from "@Obsidian/Controls/locationList.obs";
+import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+import RacePicker from "@Obsidian/Controls/racePicker.obs";
+import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
 
 // #region Gallery Support
 
@@ -438,7 +442,7 @@ export const GalleryAndResult = defineComponent({
     </div>
     <div v-if="value !== void 0" class="col-sm-6">
         <div class="well">
-            <h4>Current Value</h4>
+            <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
             <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
                 <h5><code>{{ key }}</code></h5>
                 <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
@@ -932,13 +936,16 @@ const phoneNumberBoxGallery = defineComponent({
     name: "PhoneNumberBoxGallery",
     components: {
         GalleryAndResult,
-        PhoneNumberBox
+        PhoneNumberBox,
+        RockForm,
+        RockButton
     },
     setup() {
         return {
-            phoneNumber: ref("8005551234"),
-            importCode: getControlImportPath("phoneNumberBox"),
-            exampleCode: `<PhoneNumberBox label="Phone 2" v-model="phoneNumber" />`
+            phoneNumber: ref(null),
+            submit: ref(false),
+            importCode: getSfcControlImportPath("phoneNumberBox"),
+            exampleCode: `<PhoneNumberBox label="Phone Number" v-model="phoneNumber" />`
         };
     },
     template: `
@@ -947,7 +954,11 @@ const phoneNumberBoxGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
+
+    <RockForm v-model:submit="submit">
+        <PhoneNumberBox label="Phone Number" v-model="phoneNumber" />
+        <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
 
     <template #settings>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -2466,7 +2477,7 @@ const definedValuePickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DefinedValuePicker rules="required" label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
+    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
 
     <template #settings>
         <div class="row">
@@ -5621,7 +5632,7 @@ const pagePickerGallery = defineComponent({
                     text: "Universal Search"
                 }
             }),
-            importCode: getControlImportPath("pagePicker"),
+            importCode: getSfcControlImportPath("pagePicker"),
             exampleCode: `<PagePicker label="Page" v-model="value" :multiple="false" promptForPageRoute showSelectCurrentPage />`
         };
     },
@@ -6598,7 +6609,7 @@ const locationPickerGallery = defineComponent({
     setup() {
         return {
             value: ref(null),
-            importCode: getControlImportPath("locationPicker"),
+            importCode: getSfcControlImportPath("locationPicker"),
             exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
         };
     },
@@ -6612,6 +6623,330 @@ const locationPickerGallery = defineComponent({
     <LocationPicker label="Location" v-model="value" :multiple="multiple" />
 
     <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates location list */
+const locationListGallery = defineComponent({
+    name: "LocationListGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        TextBox,
+        DefinedValuePicker,
+        LocationList
+    },
+    setup() {
+        return {
+            value: ref(null),
+            locationType: ref(""),
+            parentLocation: ref(""),
+            showCityState: ref(false),
+            multiple: ref(false),
+            allowAdd: ref(false),
+            showBlankItem: ref(false),
+            isAddressRequired: ref(false),
+            parentLocationGuid: ref("e0545b4d-4f97-43b0-971f-94b593ae2134"),
+            importCode: getSfcControlImportPath("locationList"),
+            exampleCode: `<LocationList label="Location" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <LocationList label="Location" v-model="value" :multiple="multiple" :locationTypeValueGuid="locationType?.value" :allowAdd="allowAdd" :showCityState="showCityState" :showBlankItem="showBlankItem" :isAddressRequired="isAddressRequired" :parentLocationGuid="parentLocationGuid" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox v-model="showCityState" label="Show City/State" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="multiple" label="Multiple" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="allowAdd" label="Allow Adding Values" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="showBlankItem" label="Show Blank Item" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isAddressRequired" label="Require Address" help="Only applies when adding a new location." />
+            </div>
+            <div class="col-md-3">
+                <TextBox v-model="parentLocationGuid" label="Parent Location Guid" />
+            </div>
+            <div class="col-md-3">
+                <DefinedValuePicker v-model="locationType" label="Location Type" definedTypeGuid="3285DCEF-FAA4-43B9-9338-983F4A384ABA" showBlankItem />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates ethnicity picker */
+const ethnicityPickerGallery = defineComponent({
+    name: "EthnicityPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        EthnicityPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("ethnicityPicker"),
+            exampleCode: `<EthnicityPicker v-model="value" :multiple="false" :showBlankItem="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <EthnicityPicker
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates race picker */
+const racePickerGallery = defineComponent({
+    name: "RacePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        RacePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("racePicker"),
+            exampleCode: `<RacePicker v-model="value" :multiple="false" :showBlankItem="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RacePicker
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates media element picker */
+const mediaElementPickerGallery = defineComponent({
+    name: "MediaElementPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        TextBox,
+        DropDownList,
+        MediaElementPicker
+    },
+    setup() {
+        return {
+            value: ref(null),
+            account: ref(null),
+            folder: ref(null),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            hideRefresh: ref(false),
+            required: ref(false),
+            hideAccountPicker: ref(false),
+            hideFolderPicker: ref(false),
+            hideMediaPicker: ref(false),
+            importCode: getSfcControlImportPath("mediaElementPicker"),
+            exampleCode: `<MediaElementPicker label="Media" v-model="value" :isRefreshDisallowed="false" :hideAccountPicker="hideAccountPicker" :hideFolderPicker="hideFolderPicker" :hideMediaPicker="hideMediaPicker" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{account, folder, modelValue: value}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <MediaElementPicker label="Media Element"
+        v-model="value"
+        v-model:account="account"
+        v-model:folder="folder"
+        :multiple="multiple"
+        :showBlankItem="showBlankItem"
+        :hideRefreshButtons="hideRefresh"
+        :rules="required ? 'required' : ''"
+        :hideAccountPicker="hideAccountPicker"
+        :hideFolderPicker="hideFolderPicker"
+        :hideMediaPicker="hideMediaPicker"
+    />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox v-model="multiple" label="Multiple" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="hideRefresh" label="Hide Refresh Buttons" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="required" label="Required" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="hideAccountPicker" label="Hide Account Picker" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="hideFolderPicker" label="Hide Folder Picker" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="hideMediaPicker" label="Hide Media Picker" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates merge field picker */
+const mergeFieldPickerGallery = defineComponent({
+    name: "MergeFieldPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        MergeFieldPicker,
+        TextBox
+    },
+    setup() {
+        const value = ref([
+            {
+                "value": "Rock.Model.Group|ArchivedByPersonAlias|Person|Aliases|AliasedDateTime",
+                "text": "Aliased Date Time"
+            },
+            {
+                "value": "Rock.Model.Person|ConnectionStatusValue|Category|CreatedByPersonAliasId",
+                "text": "Created By Person Alias Id"
+            }
+        ]);
+
+        return {
+            multiple: ref(true),
+            value,
+            additionalFields: ref("GlobalAttribute,Rock.Model.Person,Rock.Model.Group"),
+            importCode: getSfcControlImportPath("mergeFieldPicker"),
+            exampleCode: `<MergeFieldPicker label="Merge Field" v-model="value" :multiple="false" additionalFields="GlobalAttribute,Rock.Model.Person,Rock.Model.Group" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MergeFieldPicker label="Merge Field" v-model="value" :multiple="multiple" :additionalFields="additionalFields" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Root Merge Fields" v-model="additionalFields" />
+            </div>
+        </div>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
 </GalleryAndResult>`
@@ -6741,6 +7076,11 @@ const controlGalleryComponents: Record<string, Component> = [
     groupTypePickerGallery,
     locationAddressPickerGallery,
     locationPickerGallery,
+    locationListGallery,
+    ethnicityPickerGallery,
+    racePickerGallery,
+    mediaElementPickerGallery,
+    mergeFieldPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

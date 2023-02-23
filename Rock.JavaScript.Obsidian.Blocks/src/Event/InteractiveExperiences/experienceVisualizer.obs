@@ -71,6 +71,7 @@
 
     let realTimeTopic: ITopic<IParticipantTopic> | null = null;
     let occurrenceEndDateTime: RockDateTime | null = null;
+    let checkForNewOccurrenceTimeout: NodeJS.Timeout | null = null;
 
     const styleNode = document.createElement("style");
     styleNode.textContent = "";
@@ -84,22 +85,25 @@
 
     // #region Functions
 
-    async function startRealTime(): Promise<void> {
+    async function startRealTime(isReconnecting: boolean): Promise<void> {
         var topic = await getTopic<IParticipantTopic>("Rock.RealTime.Topics.InteractiveExperienceParticipantTopic");
 
-        topic.onReconnect(async server => {
-            if (experienceToken.value) {
-                await joinExperience(server, experienceToken.value);
-            }
+        topic.onDisconnected(async () => {
+            await startRealTime(true);
+            await clearExperience();
+            checkForNewOccurrence();
         });
 
         setupTopicListeners(topic);
 
         realTimeTopic = topic;
-        setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+
+        if (!isReconnecting) {
+            setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+        }
     }
 
-    async function joinExperience(server: IParticipantTopic, token: string): Promise<void> {
+    async function joinExperience(token: string): Promise<void> {
         if (!realTimeTopic) {
             return;
         }
@@ -108,7 +112,7 @@
             // Clear out any existing responses.
             occurrenceResponses.slice();
 
-            const response = await server.joinExperience(token);
+            const response = await realTimeTopic.server.joinExperience(token);
 
             eventId.value = response.occurrenceIdKey ?? null;
 
@@ -254,7 +258,13 @@
 
     async function clearExperience(): Promise<void> {
         if (eventId.value && realTimeTopic) {
-            await realTimeTopic.server.leaveExperience(eventId.value);
+            try {
+                await realTimeTopic.server.leaveExperience(eventId.value);
+            }
+            catch {
+                // Intentionally ignored. This throws an error if we are
+                // reconnecting.
+            }
         }
 
         experienceToken.value = null;
@@ -266,6 +276,11 @@
     }
 
     async function checkForNewOccurrence(): Promise<void> {
+        if (checkForNewOccurrenceTimeout) {
+            clearTimeout(checkForNewOccurrenceTimeout);
+            checkForNewOccurrenceTimeout = null;
+        }
+
         try {
             // If we already have an occurrence and it hasn't ended yet then
             // don't check for a new one. Otherwise we might switch visualizers
@@ -290,7 +305,7 @@
         }
         finally {
             // Re-check every minute.
-            setTimeout(checkForNewOccurrence, 60_000);
+            checkForNewOccurrenceTimeout = setTimeout(checkForNewOccurrence, 60_000);
         }
     }
 
@@ -313,12 +328,12 @@
         occurrenceEndDateTime = RockDateTime.parseISO(occurrence.occurrenceEndDateTime ?? "");
 
         if (occurrence.experienceToken) {
-            await joinExperience(realTimeTopic.server, occurrence?.experienceToken);
+            await joinExperience(occurrence.experienceToken);
         }
     }
 
     async function startup(): Promise<void> {
-        await startRealTime();
+        await startRealTime(false);
         await checkForNewOccurrence();
     }
 
@@ -393,6 +408,9 @@
             if (realTimeTopic && eventId.value) {
                 await realTimeTopic.server.pingExperience(eventId.value);
             }
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
         }
         finally {
             setTimeout(onPingTimer, config.keepAliveInterval * 1000);

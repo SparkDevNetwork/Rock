@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         /// The pin authentication provider
         /// </summary>
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The passwordless authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PASSWORDLESS = "2D037783-09BD-48BA-8C1D-626B0BC82495";
 
         /// <summary>
         /// The guid for the Rock.Model.Badge entity
@@ -1759,5 +1764,30 @@ namespace Rock.SystemGuid
         /// The Test Redirection Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Snippet"/>
+        /// </summary>
+        public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SnippetType"/> 
+        /// </summary>
+        public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SystemPhoneNumber"/> 
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "66D62A9F-13CD-4160-8653-211B2A4ABF16";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessage"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE = "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
     }
 }

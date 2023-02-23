@@ -171,11 +171,24 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Updates the default value of the system settings associated with the provided <paramref name="key"/>.
         /// </summary>
+        /// <remarks>If you are unsure if the system settings exists for the provided <paramref name="key"/>, please use <see cref="SetValue(string, string, Guid)"/> to prevent unintentionally creating duplicates.</remarks>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( string key, string value )
+        {
+            SetValue( key, value, Guid.NewGuid() );
+        }
+
+        /// <summary>
+        /// Updates the default value of the system settings associated with the provided <paramref name="key"/>
+        /// or adds new system settings with the <paramref name="key"/>, <paramref name="value"/>, and <paramref name="guid"/>.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="guid">The guid to use if there are no system settings associated with the provided <paramref name="key"/>.</param>
+        public static void SetValue( string key, string value, Guid guid )
         {
             var rockContext = new Rock.Data.RockContext();
             var attributeService = new AttributeService( rockContext );
@@ -183,13 +196,16 @@ namespace Rock.Web
 
             if ( attribute == null )
             {
-                attribute = new Rock.Model.Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
-                attribute.EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER;
-                attribute.EntityTypeQualifierValue = string.Empty;
-                attribute.Key = key;
-                attribute.Name = key.SplitCase();
-                attribute.DefaultValue = value;
+                attribute = new Rock.Model.Attribute
+                {
+                    FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id,
+                    EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
+                    EntityTypeQualifierValue = string.Empty,
+                    Key = key,
+                    Name = key.SplitCase(),
+                    DefaultValue = value,
+                    Guid = guid
+                };
                 attributeService.Add( attribute );
             }
             else

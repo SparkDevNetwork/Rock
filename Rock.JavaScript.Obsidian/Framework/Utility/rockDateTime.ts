@@ -670,5 +670,27 @@ export class RockDateTime {
         return this.dateTime.toMillis() === otherDateTime.dateTime.toMillis();
     }
 
+    /**
+     * Checks if this instance is later than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred after another point in time, regardless of time zone.
+     */
+    public isLaterThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() > otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Checks if this instance is earlier than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred before another point in time, regardless of time zone.
+     */
+    public isEarlierThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() < otherDateTime.dateTime.toMillis();
+    }
+
     // #endregion
 }

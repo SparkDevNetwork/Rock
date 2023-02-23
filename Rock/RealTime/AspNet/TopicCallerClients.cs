@@ -63,12 +63,12 @@ namespace Rock.RealTime.AspNet
         public T Current => GetProxy( _context.Caller );
 
         /// <inheritdoc/>
-        public T Others => GetProxy( _context.Others );
+        public T Others => GetProxy( _context.OthersInGroup( Engine.GetQualifiedAllChannelName( TopicIdentifier ) ) );
 
         /// <inheritdoc/>
         public T OthersInChannel( string channelName )
         {
-            return GetProxy( _context.OthersInGroup( channelName ) );
+            return GetProxy( _context.OthersInGroup( Engine.GetQualifiedChannelName( TopicIdentifier, channelName ) ) );
         }
 
         #endregion

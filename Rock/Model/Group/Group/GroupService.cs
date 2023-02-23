@@ -803,7 +803,7 @@ namespace Rock.Model
         /// <summary>
         /// Internal DTO class for GroupRequirements.
         /// </summary>
-        private class GroupRequirementDTO
+        private class GroupRequirementViewModel
         {
             public int GroupMemberId;
             public DateTime? RequirementWarningDateTime;
@@ -812,18 +812,18 @@ namespace Rock.Model
             public GroupRequirement GroupRequirement;
         }
         /// <summary>
-        /// Gets a list of <see cref="GroupRequirementDTO"/>s for the group.
+        /// Gets a list of <see cref="GroupRequirementViewModel"/>s for the group.
         /// </summary>
         /// <param name="group"></param>
         /// <returns></returns>
-        private List<GroupRequirementDTO> GetGroupMemberRequirementList( Group group )
+        private List<GroupRequirementViewModel> GetGroupMemberRequirementList( Group group )
         {
             var rockContext = this.Context as RockContext;
             var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberRequirementQuery = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
 
             return groupMemberRequirementQuery
-                .Select( a => new GroupRequirementDTO()
+                .Select( a => new GroupRequirementViewModel()
                 {
                     GroupMemberId = a.GroupMemberId,
                     RequirementWarningDateTime = a.RequirementWarningDateTime,
@@ -848,9 +848,9 @@ namespace Rock.Model
         /// Internal method for GroupMemberIdsWithRequirementWarnings.
         /// </summary>
         /// <param name="group">The group.</param>
-        /// <param name="groupMemberRequirementList">The list of <see cref="GroupRequirementDTO"/>s.</param>
+        /// <param name="groupMemberRequirementList">The list of <see cref="GroupRequirementViewModel"/>s.</param>
         /// <returns></returns>
-        private List<int> GroupMemberIdsWithRequirementWarnings( Group group, List<GroupRequirementDTO> groupMemberRequirementList )
+        private List<int> GroupMemberIdsWithRequirementWarnings( Group group, List<GroupRequirementViewModel> groupMemberRequirementList )
         {
             return groupMemberRequirementList
                 .Where( a => a.RequirementWarningDateTime != null

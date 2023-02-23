@@ -695,7 +695,7 @@ namespace Rock.Financial
         /// <returns>DateTime.</returns>
         public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
         {
-            return RockDateTime.Today;
+            return RockDateTime.Today.AddDays( 1 ).Date;
         }
 
         /// <summary>

@@ -155,7 +155,7 @@ namespace Rock.Model
                 PushOpenMessage = model.PushOpenMessage,
                 PushSound = model.PushSound,
                 PushTitle = model.PushTitle,
-                SMSFromDefinedValueId = model.SMSFromDefinedValueId,
+                SmsFromSystemPhoneNumberId = model.SmsFromSystemPhoneNumberId,
                 SMSMessage = model.SMSMessage,
                 Subject = model.Subject,
                 Title = model.Title,
@@ -248,7 +248,10 @@ namespace Rock.Model
             target.PushOpenMessage = source.PushOpenMessage;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
+            #pragma warning disable 612, 618
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            #pragma warning restore 612, 618
+            target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
             target.Title = source.Title;

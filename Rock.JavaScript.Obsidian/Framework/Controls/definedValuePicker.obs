@@ -10,11 +10,11 @@
                 <TextBox label="Value" v-model="newValue" rules="required" />
                 <TextBox label="Description" v-model="newDescription" textMode="multiline" />
                 <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
-                <RockButton type="submit" :btnType="saveButtonType" :btnSize="formButtonSize">Add</RockButton>
-                <RockButton :btnType="cancelButtonType" :btnSize="formButtonSize" @click="hideAddForm">Cancel</RockButton>
+                <RockButton type="submit" :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall">Add</RockButton>
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
             </RockForm>
 
-            <RockButton v-if="fetchError || saveError" :btnType="cancelButtonType" :btnSize="formButtonSize" @click="hideAddForm">Cancel</RockButton>
+            <RockButton v-if="fetchError || saveError" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
         </Loading>
     </template>
 
@@ -22,11 +22,11 @@
         <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
-                    <RockButton @click="showAddForm" :btnType="plusButtonType" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
                 </span>
             </template>
             <template #append="{ isInputGroupSupported }" v-if="allowAdd">
-                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="addItemButtonType">Add Item</RockButton>
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="BtnType.Link">Add Item</RockButton>
             </template>
         </BaseAsyncPicker>
     </template>
@@ -204,12 +204,6 @@
     const attributeValues = ref<Record<string, string>>({});
     const newValue = ref("");
     const newDescription = ref("");
-
-    const saveButtonType = BtnType.Primary;
-    const cancelButtonType = BtnType.Link;
-    const formButtonSize = BtnSize.ExtraSmall;
-    const plusButtonType = BtnType.Default;
-    const addItemButtonType = BtnType.Link;
 
     // #endregion
 </script>

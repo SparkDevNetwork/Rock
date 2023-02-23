@@ -60,6 +60,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Cms\BlockTypeDetail.cs" />
+    <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\LayoutDetail.cs" />
@@ -71,6 +72,9 @@
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Cms\SiteDetail.cs" />
     <Compile Include="Core\AssetStorageProviderDetail.cs" />
+    <Compile Include="Communication\SnippetDetail.cs" />
+    <Compile Include="Communication\SnippetTypeDetail.cs" />
+    <Compile Include="Communication\SystemPhoneNumberDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Core\CategoryDetail.cs" />
@@ -87,6 +91,9 @@
     <Compile Include="Security\ForgotUserName.cs" />
     <Compile Include="Security\ConfirmAccount.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />
+    <Compile Include="Engagement\SignUp\SignUpAttendanceDetail.cs" />
+    <Compile Include="Engagement\SignUp\SignUpFinder.cs" />
+    <Compile Include="Engagement\SignUp\SignUpRegister.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualizer.cs" />
@@ -97,6 +104,7 @@
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
+    <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
     <Compile Include="IHasCustomActions.cs" />
     <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
@@ -106,6 +114,9 @@
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
     <Compile Include="WebFarm\WebFarmSettings.cs" />
+    <Compile Include="Security\Login.cs" />
+    <Compile Include="Utility\RealTimeDebugger.cs" />
+    <Compile Include="Utility\SmsTestTransport.cs" />
     <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
@@ -149,6 +160,7 @@
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Utility\" />
+    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />

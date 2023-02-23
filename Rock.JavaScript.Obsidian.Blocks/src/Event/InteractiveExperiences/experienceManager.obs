@@ -90,13 +90,7 @@
 
         var topic = await getTopic<IParticipantTopic>("Rock.RealTime.Topics.InteractiveExperienceParticipantTopic");
 
-        topic.onReconnect(async server => {
-            if (config.experienceToken) {
-                const response = await server.joinExperience(config.experienceToken);
-
-                occurrenceIdKey.value = response.occurrenceIdKey ?? null;
-            }
-        });
+        topic.onDisconnected(startRealTime);
 
         const response = await topic.server.joinExperience(config.experienceToken);
 

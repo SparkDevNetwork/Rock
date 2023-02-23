@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="options.caption" alertType="warning">{{ options.caption }}</Alert>
+
+    <SimpleGrid :items="options.duplicatePeople">
+        <template #header>
+            <tr>
+                <th>You?</th>
+                <th>Name</th>
+            </tr>
+        </template>
+        <template #row="{item}: {item: AccountEntryDuplicatePersonItemBag}">
+            <tr>
+                <td><input v-model="internalModelValue" :disabled="disabled" name="DuplicatePerson" type="radio" :value="item" /></td>
+                <td>{{ item.fullName }}</td>
+            </tr>
+        </template>
+    </SimpleGrid>
+
+    <div class="radio">
+        <label>
+            <input v-model="internalModelValue" :disabled="disabled" name="DuplicatePerson" type="radio" :value="null" />
+            <span class="label-text"><strong>None of these are me</strong></span>
+        </label>
+    </div>
+
+    <div class="actions">
+        <RockButton :btnType="BtnType.Link" :disabled="disabled" @click="onPreviousClicked">Previous</RockButton>
+        <RockButton :btnType="BtnType.Primary" :disabled="disabled" @click="onNextClicked">Next</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import SimpleGrid from "./simpleGrid.partial.obs";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { AccountEntryDuplicatePersonItemBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryDuplicatePersonItemBag";
+    import { AccountEntryDuplicatePersonSelectionStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryDuplicatePersonSelectionStepBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AccountEntryDuplicatePersonItemBag | null>,
+            required: false,
+            default: null
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        options: {
+            type: Object as PropType<AccountEntryDuplicatePersonSelectionStepBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AccountEntryDuplicatePersonItemBag | null): void,
+        (e: "movePrevious"): void,
+        (e: "personSelected"): void,
+        (e: "noPersonSelected"): void
+    }>();
+
+    //#region Values
+
+    const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the next button being clicked.
+     */
+    function onNextClicked(): void {
+        if (internalModelValue.value) {
+            emit("personSelected");
+        }
+        else {
+            emit("noPersonSelected");
+        }
+    }
+
+    /**
+     * Event handler for the previous button being clicked.
+     */
+    function onPreviousClicked(): void {
+        emit("movePrevious");
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+</script>

@@ -144,17 +144,34 @@ namespace Rock
         /// <param name="encodedString"></param>
         public static string ScrubEncodedStringForXSSObjects( this string encodedString )
         {
-            // Characters used by DOM Objects; javascript, document, window and URLs
-            char[] badCharacters = new char[] { '<', '>', ':', '*' };
-
             var decodedString = encodedString.GetFullyUrlDecodedValue();
 
-            if ( decodedString.IndexOfAny( badCharacters ) >= 0 )
+            if ( decodedString.HasXssObjects() )
             {
                 return "%2f";
             }
 
             return encodedString;
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="decodedString"/> has XSS objects.
+        /// </summary>
+        /// <param name="decodedString">The decoded string.</param>
+        /// <returns>
+        ///   <c>true</c> if <paramref name="decodedString"/> has XSS objects; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasXssObjects( this string decodedString )
+        {
+            // Characters used by DOM Objects; javascript, document, window and URLs
+            char[] badCharacters = new char[] { '<', '>', ':', '*' };
+
+            if ( decodedString?.IndexOfAny( badCharacters ) >= 0 )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -366,12 +383,7 @@ namespace Rock
         /// <returns></returns>
         public static string Right( this string str, int length )
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return str.Substring( str.Length - length );
+            return str.SubstringSafe( str.Length - length );
         }
 
         /// <summary>
@@ -729,18 +741,7 @@ namespace Rock
         /// <returns></returns>
         public static string Left( this string str, int length )
         {
-            if ( str == null )
-            {
-                return null;
-            }
-            else if ( str.Length <= length )
-            {
-                return str;
-            }
-            else
-            {
-                return str.Substring( 0, length );
-            }
+            return str.SubstringSafe( 0, length );
         }
 
         /// <summary>

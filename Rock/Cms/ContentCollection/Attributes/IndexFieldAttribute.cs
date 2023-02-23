@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Attributes
 {
     /// <summary>
     /// Attribute for passing index information 
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class IndexFieldAttribute : System.Attribute
     {
         /// <summary>

@@ -505,6 +505,7 @@ namespace RockWeb.Blocks.Mobile
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
             ppEditInteractiveExperiencePage.SetValue( additionalSettings.InteractiveExperiencePageId );
             ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
+            ppEditSmsConversationPage.SetValue( additionalSettings.SmsConversationPageId );
 
             ppEditInteractiveExperiencePage.SiteType = SiteType.Mobile;
 
@@ -950,6 +951,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
             additionalSettings.InteractiveExperiencePageId = ppEditInteractiveExperiencePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
+            additionalSettings.SmsConversationPageId = ppEditSmsConversationPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;

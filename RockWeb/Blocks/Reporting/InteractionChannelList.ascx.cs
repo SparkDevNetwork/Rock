@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( LavaService.RockLiquidIsEnabled )
                 {
-                    defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+                    defaultTemplate = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( "DefaultTemplate" ) );
 
                     LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "DefaultTemplate" ) );
                 }

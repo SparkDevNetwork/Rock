@@ -1279,6 +1279,7 @@ namespace RockWeb.Blocks.Connection
             gStatuses.DataBind();
 
             rblConnectionStatuses.Items.Clear();
+            rblConnectionStatuses.Items.Add( new ListItem { Value = Rock.Constants.None.IdValue, Text = "All" } );
             StatusesState.ForEach( status => rblConnectionStatuses.Items.Add( new ListItem { Text = status.Name, Value = status.Id.ToString() } ) );
         }
 
@@ -1691,7 +1692,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
 
-                    rblConnectionStatuses.SelectedValue = connectionWorkflow.ManualTriggerFilterConnectionStatusId?.ToString();
+                    rblConnectionStatuses.SelectedValue = connectionWorkflow.ManualTriggerFilterConnectionStatusId?.ToString() ?? Rock.Constants.None.IdValue;
                 }
             }
 
@@ -2009,6 +2010,9 @@ namespace RockWeb.Blocks.Connection
                     dlgConnectionStatuses.Hide();
                     break;
                 case "CONNECTIONWORKFLOWS":
+                    ddlTriggerType.SetValue( 0 );
+                    wpWorkflowType.SetValue( null );
+                    rblConnectionStatuses.SelectedValue = null;
                     dlgConnectionWorkflow.Hide();
                     break;
                 case "CONNECTIONREQUESTATTRIBUTES":

@@ -596,6 +596,7 @@ namespace Rock.Tests.Integration.Lava
         public void ExecuteForEngines( List<Type> engines, Action<ILavaEngine> testMethod )
         {
             var exceptions = new List<Exception>();
+            var failedEngines = new List<string>();
 
             foreach ( var engineType in engines )
             {
@@ -610,6 +611,8 @@ namespace Rock.Tests.Integration.Lava
                 }
                 catch ( Exception ex )
                 {
+                    failedEngines.Add( engine.EngineName );
+
                     // Write the error to debug output.
                     Debug.Print( $"\n** ERROR: {engine.EngineName}\n** {ex.ToString()}" );
 
@@ -619,7 +622,7 @@ namespace Rock.Tests.Integration.Lava
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( "Test failed for one or more Lava engines.", exceptions );
+                throw new AggregateException( $"Test failed for { failedEngines.AsDelimited( "/" ) }.", exceptions );
             }
         }
 
@@ -734,91 +737,99 @@ namespace Rock.Tests.Integration.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
         {
-            options = options ?? new LavaTestRenderOptions();
-
-            var outputString = GetTemplateOutput( engine, inputTemplate, options );
-
-            Assert.IsNotNull( outputString, "Template failed to render." );
-
-            DebugWriteRenderResult( engine, inputTemplate, outputString );
-
-            // Apply formatting options to the output.
-            if ( options.IgnoreWhiteSpace )
+            try
             {
-                outputString = Regex.Replace( outputString, @"\s*", string.Empty );
-            }
+                options = options ?? new LavaTestRenderOptions();
 
-            if ( options.IgnoreCase )
-            {
-                outputString = outputString.ToLower();
-            }
+                var outputString = GetTemplateOutput( engine, inputTemplate, options );
 
-            var matchType = options.OutputMatchType;
+                Assert.IsNotNull( outputString, "Template failed to render." );
 
-            if ( expectedOutputs.Count() > 1 )
-            {
-                if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
-                {
-                    matchType = LavaTestOutputMatchTypeSpecifier.Contains;
-                }
-            }
+                DebugWriteRenderResult( engine, inputTemplate, outputString );
 
-            foreach ( var expectedOutputString in expectedOutputs )
-            {
-                var expectedOutput = expectedOutputString;
-
-                // If ignoring whitespace, strip it from the comparison string.
+                // Apply formatting options to the output.
                 if ( options.IgnoreWhiteSpace )
                 {
-                    expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
+                    outputString = Regex.Replace( outputString, @"\s*", string.Empty );
                 }
 
-                var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx
-                    || ( options.Wildcards != null && options.Wildcards.Any() );
-
-                if ( matchRegex )
+                if ( options.IgnoreCase )
                 {
-                    // Replace wildcards with a non-Regex symbol.
-                    foreach ( var wildcard in options.Wildcards )
-                    {
-                        expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
-                    }
-
-                    expectedOutput = Regex.Escape( expectedOutput );
-
-                    // Require a match of 1 or more characters for a wildcard.
-                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
-
-                    if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
-                    {
-                        // If the inputTemplate is not specified as a RegEx, add anchors for the start and end of the template.
-                        expectedOutput = "^" + expectedOutput + "$";
-                    }
-
-                    var regex = new Regex( expectedOutput );
-
-                    StringAssert.Matches( outputString, regex );
+                    outputString = outputString.ToLower();
                 }
-                else
-                {
-                    if ( options.IgnoreCase )
-                    {
-                        expectedOutput = expectedOutput.ToLower();
-                    }
 
+                var matchType = options.OutputMatchType;
+
+                if ( expectedOutputs.Count() > 1 )
+                {
                     if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
-                        Assert.That.Equal( expectedOutput, outputString );
-                    }
-                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
-                    {
-                        Assert.That.Contains( outputString, expectedOutput );
-                    }
-                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
-                    {
-                        Assert.That.DoesNotContain( outputString, expectedOutput );
+                        matchType = LavaTestOutputMatchTypeSpecifier.Contains;
                     }
                 }
+
+                foreach ( var expectedOutputString in expectedOutputs )
+                {
+                    var expectedOutput = expectedOutputString;
+
+                    // If ignoring whitespace, strip it from the comparison string.
+                    if ( options.IgnoreWhiteSpace )
+                    {
+                        expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
+                    }
+
+                    var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx
+                        || ( options.Wildcards != null && options.Wildcards.Any() );
+
+                    if ( matchRegex )
+                    {
+                        // Replace wildcards with a non-Regex symbol.
+                        foreach ( var wildcard in options.Wildcards )
+                        {
+                            expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
+                        }
+
+                        expectedOutput = Regex.Escape( expectedOutput );
+
+                        // Require a match of 1 or more characters for a wildcard.
+                        expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
+
+                        if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
+                        {
+                            // If the inputTemplate is not specified as a RegEx, add anchors for the start and end of the template.
+                            expectedOutput = "^" + expectedOutput + "$";
+                        }
+
+                        var regex = new Regex( expectedOutput );
+
+                        StringAssert.Matches( outputString, regex );
+                    }
+                    else
+                    {
+                        if ( options.IgnoreCase )
+                        {
+                            expectedOutput = expectedOutput.ToLower();
+                        }
+
+                        if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                        {
+                            Assert.That.Equal( expectedOutput, outputString );
+                        }
+                        else if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                        {
+                            Assert.That.Contains( outputString, expectedOutput );
+                        }
+                        else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
+                        {
+                            Assert.That.DoesNotContain( outputString, expectedOutput );
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Specify the engine identifer in the top-level exception.
+                throw new Exception( $"[{engine.EngineName}] Template render failed.", ex );
             }
         }
 

@@ -145,6 +145,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ImageBinaryFileId { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.AchievementType.AlternateImageBinaryFileId"/>
+        [DataMember]
+        public int? AlternateImageBinaryFileId { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.AchievementType.CustomSummaryLavaTemplate"/>
         [DataMember]
         public string CustomSummaryLavaTemplate { get; private set; }
@@ -305,6 +309,7 @@ namespace Rock.Web.Cache
             CategoryId = achievementType.CategoryId;
             IsPublic = achievementType.IsPublic;
             ImageBinaryFileId = achievementType.ImageBinaryFileId;
+            AlternateImageBinaryFileId = achievementType.AlternateImageBinaryFileId;
             CustomSummaryLavaTemplate = achievementType.CustomSummaryLavaTemplate;
         }
 

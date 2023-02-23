@@ -28,7 +28,6 @@ type CategorizedAttributes = PublicAttributeCategoryBag & {
     attributes: PublicAttributeBag[]
 };
 
-
 export default defineComponent({
     name: "AttributeValuesContainer",
     components: {
@@ -55,6 +54,10 @@ export default defineComponent({
             default: true
         },
         showAbbreviatedName: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        displayWithinExistingRow: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -189,7 +192,18 @@ export default defineComponent({
     template: `
 <RockSuspense>
     <template #default>
-        <TabbedContent v-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
+        <div v-if="displayWithinExistingRow" :class="columnClass" v-for="a in validAttributes" :key="a.attributeGuid">
+            <RockField
+                :isEditMode="isEditMode"
+                :attribute="a"
+                :modelValue="values[a.key]"
+                @update:modelValue="onUpdateValue(a.key, $event)"
+                :showEmptyValue="showEmptyValues"
+                :showAbbreviatedName="showAbbreviatedName"
+            />
+        </div>
+
+        <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
             <template #tab="{item}">
                 {{ item.name }}
             </template>

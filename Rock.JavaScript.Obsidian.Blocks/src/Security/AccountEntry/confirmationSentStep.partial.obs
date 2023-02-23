@@ -1,0 +1,17 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Alert v-if="options.caption" alertType="warning">{{ options.caption }}</Alert>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { AccountEntryConfirmationSentStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryConfirmationSentStepBag";
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<AccountEntryConfirmationSentStepBag>,
+            required: true
+        }
+    });
+</script>

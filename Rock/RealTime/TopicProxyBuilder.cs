@@ -175,7 +175,7 @@ namespace Rock.RealTime
         ///     messageArguments[1] = argument2;
         ///     messageArguments[N-1] = argumentN;
         ///
-        ///     return RockHubHelper.SendMessageAsync( this._client, this._topicIdentifier, [methodName], messageArguments, optionalCancellationToken ?? CancellationToken.None );
+        ///     return RealTimeHelper.SendMessageAsync( this._client, this._topicIdentifier, [methodName], messageArguments, optionalCancellationToken ?? CancellationToken.None );
         /// }
         /// </code>
         /// </remarks>
@@ -185,7 +185,7 @@ namespace Rock.RealTime
         /// <param name="topicIdentifierField">The field definition that represents the <c>_topicIdentifier</c> private field.</param>
         private static void BuildMethod( TypeBuilder type, MethodInfo interfaceMethodInfo, FieldInfo clientField, FieldInfo topicIdentifierField )
         {
-            // Find the RockHubHelper.SendMessageAsync method that will be
+            // Find the RealTimeHelper.SendMessageAsync method that will be
             // invoked by the proxy method.
             var invokeMethod = typeof( RealTimeHelper ).GetMethod(
                 nameof( RealTimeHelper.SendMessageAsync ), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
@@ -235,17 +235,17 @@ namespace Rock.RealTime
             // object[] messageArguments;
             generator.DeclareLocal( typeof( object[] ) );
 
-            // The first argument to RockHubHelper.SendMessageAsync() is the proxy (this._client).
+            // The first argument to RealTimeHelper.SendMessageAsync() is the proxy (this._client).
             generator.Emit( OpCodes.Ldarg_0 );
             generator.Emit( OpCodes.Ldfld, clientField );
 
             var isTypeLabel = generator.DefineLabel();
 
-            // The second argument to RockHubHelper.SendMessageAsync() is the topic identifier.
+            // The second argument to RealTimeHelper.SendMessageAsync() is the topic identifier.
             generator.Emit( OpCodes.Ldarg_0 );
             generator.Emit( OpCodes.Ldfld, topicIdentifierField );
 
-            // The third argument to RockHubHelper.SendMessageAsync() is the method name.
+            // The third argument to RealTimeHelper.SendMessageAsync() is the method name.
             generator.Emit( OpCodes.Ldstr, methodName );
 
             // messageArguments = new object[paramTypes.Length];
@@ -264,7 +264,7 @@ namespace Rock.RealTime
                 generator.Emit( OpCodes.Stelem_Ref );
             }
 
-            // The fourth argument to RockHubHelper.SendMessageAsync() is messageArguments.
+            // The fourth argument to RealTimeHelper.SendMessageAsync() is messageArguments.
             generator.Emit( OpCodes.Ldloc_0 );
 
             // If the method takes a cancellation token then pass it along to
@@ -282,7 +282,7 @@ namespace Rock.RealTime
                 generator.Emit( OpCodes.Call, typeof( CancellationToken ).GetProperty( "None", BindingFlags.Public | BindingFlags.Static ).GetMethod );
             }
 
-            // RockHubHelper.SendMessageAsync( this._client, this._topicIdentifier, methodName, methodArguments, optionalCancellationToken ?? CancellationToken.None );
+            // RealTimeHelper.SendMessageAsync( this._client, this._topicIdentifier, methodName, methodArguments, optionalCancellationToken ?? CancellationToken.None );
             generator.Emit( OpCodes.Call, invokeMethod );
 
             // Return the Task returned by the call to SendMessageAsync().
