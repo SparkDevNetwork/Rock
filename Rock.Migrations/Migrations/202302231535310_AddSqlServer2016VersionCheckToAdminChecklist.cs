@@ -56,7 +56,7 @@ namespace Rock.Migrations
                     var versionParts = RockInstanceConfig.Database.VersionNumber.Split( '.' );
                     int.TryParse( versionParts[0], out var majorVersion );
 
-                    if ( majorVersion > 13 )
+                    if ( majorVersion >= 13 )
                     {
                         isOk = true;
                     }
